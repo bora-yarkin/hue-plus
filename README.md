@@ -10,7 +10,7 @@ Needs Home Assistant 2026.10 or newer and the Hue integration set up with a v2 b
 When you add Hue Plus, the setup screen asks what to do with the Hue integration's own entities:
 
 - **Leave them alone** (the default). Nothing is hidden, renamed or removed: your dashboards, automations and groups keep working as they are.
-  Hue Plus's entity for each Hue entity has the same name ending in `_plus` (`light.floor_light` and `light.floor_light_plus`) and starts in the same area.
+  Hue Plus's entity for each Hue entity has the same name ending in `_plus` (`light.floor_light` and `light.floor_light_plus`), and it follows the Hue entity: its area, name, icon, labels and whether you hid it, and its device's area and name, are copied from the Hue entity and Hue device whenever they change and when Home Assistant starts. The copying goes one way (Hue to Hue Plus), so a setting changed on a `_plus` entity itself is put back.
   In this mode live scenes, areas and locating a light only work on Hue lights; Hue Plus never touches your other lights.
 - **Hide and rename them.** The Hue integration's entities are hidden and renamed (`light.floor_light` becomes `light.floor_light_hue`) and Hue Plus's take their names, so existing dashboards and automations use Hue Plus. Removing Hue Plus gives the names back.
 

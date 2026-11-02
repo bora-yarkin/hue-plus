@@ -4,6 +4,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.3.0]
+
+### Added
+- Next to the Hue integration, Hue Plus's `_plus` entities and devices follow the Hue ones: area, name, icon, labels, being hidden by the user, and the device's area and name are copied from the Hue entity and device whenever they change and when Home Assistant starts. One way only (Hue to Hue Plus).
+
 ## [0.2.0]
 
 First public version.

@@ -45,6 +45,7 @@ from .const import (
 from .coordinator import BridgeCoordinator
 from .entity import bridge_device
 from .lights import adopt
+from .lights.alongside import async_follow_hue_settings
 from .runtime import HuePlusConfigEntry, Runtime, SyncBoxRuntime
 from .scenes import setup as scenes_setup
 from .streaming.manager import StreamingManager
@@ -122,6 +123,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: HuePlusConfigEntry) -> b
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     forget.async_forget_removed_devices(hass, entry)
     follow.async_follow_hue(hass, entry)
+    async_follow_hue_settings(hass, entry)
     if runtime.sync is not None:
         sync_setup.start(hass, entry, runtime.sync)
     entry.async_on_unload(entry.add_update_listener(_reload))
