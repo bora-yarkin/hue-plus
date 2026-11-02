@@ -15,11 +15,11 @@ RANGE = f("int", "How much of the palette is on show across the lights at once, 
 BRIGHTNESS = f("int", "The brightness the palette's brightest colour reaches, from 1 to 255.", min=1, max=255)
 PALETTE = f(
     "object",
-    'The colours, 1 to 16, each {"hs": [hue, saturation]}, {"xy": [x, y]} or {"k": kelvin}, and an optional "b" (brightness, 1 to 100).',
+    'The colours, 1 to 16, each an item with "hs" ([hue, saturation]), "xy" ([x, y]) or "k" (kelvin), and an optional "b" (brightness, 1 to 100).',
     example='[{"hs": [20, 90]}, {"k": 2200, "b": 60}]',
 )
 SPREAD = f("select", SPEC_SPREADS_HINT, options=list(SPREADS))
-LIGHTS = f("object", 'The lights: [{"entity_id": "light.x", "x": 0, "y": 0, "z": 0}], with x, y, z from -1 to 1 saying where each stands.')
+LIGHTS = f("object", 'The lights: a list of items, each with "entity_id" and x, y, z from -1 to 1 saying where it stands.')
 PRESET = f("select", "A shipped palette to start from.", options=list(presets()))
 COLOUR_SOURCE = f(
     "select",
@@ -28,17 +28,17 @@ COLOUR_SOURCE = f(
 )
 EFFECTS = f(
     "object",
-    'Brightness effects, up to 4: [{"type": "pulse"|"flicker"|"sparkle"|"lightning", "speed": 1-12, "strength": 1-100}]. They work on any colour source.',
+    'Brightness effects, up to 4: a list of items, each with "type" (pulse, flicker, sparkle or lightning), "speed" (1 to 12) and "strength" (1 to 100). They work on any colour source.',
     example='[{"type": "pulse", "speed": 4, "strength": 60}]',
 )
 LOOKS = f(
     "object",
-    'What single lights do differently, by light: {"light.x": {"palette": [...], "brightness": 1-255, "effects": [...], "native": "underwater"}}. '
+    'What single lights do differently, by light: an item for each light\'s entity id, with "palette", "brightness" (1 to 255), "effects" and "native" (for example underwater). '
     "A light with no look follows the scene. native is one of the light's own effects (Hue lights only, experimental); it plays with the look's palette colours.",
 )
 ACTIONS = f(
     "object",
-    'Devices to switch when the scene starts: [{"entity_id": "media_player.tv", "do": "off"}]. On or off only, for lights, switches, fans, media players, climate, humidifiers, input_booleans and covers.',
+    'Devices to switch when the scene starts: a list of items, each with "entity_id" and "do" (on or off). On or off only, for lights, switches, fans, media players, climate, humidifiers, input_booleans and covers.',
     example='[{"entity_id": "media_player.tv", "do": "off"}]',
 )
 UI = f("object", "Data a screen keeps next to this (icons, drawings). Stored as it is, up to 16 KB.")

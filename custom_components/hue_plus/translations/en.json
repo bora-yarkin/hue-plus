@@ -678,7 +678,7 @@
         },
         "lights": {
           "name": "Lights",
-          "description": "The lights with their positions from -1 to 1, as a list of {light, x, y, z}."
+          "description": "The lights with their positions from -1 to 1, as a list of items with light, x, y and z."
         }
       }
     },
@@ -700,7 +700,7 @@
         },
         "lights": {
           "name": "Lights",
-          "description": "The lights with their positions, as a list of {light, x, y, z}."
+          "description": "The lights with their positions, as a list of items with light, x, y and z."
         }
       }
     },
@@ -993,7 +993,7 @@
         },
         "slots": {
           "name": "Slots",
-          "description": "The times and scenes, for example [{\"time\": \"07:00\", \"scene\": \"Energize\"}, {\"time\": \"21:00\", \"scene\": \"Nightlight\"}]."
+          "description": "The times and scenes: a list of items, each with \"time\" (for example 07:00) and \"scene\" (a scene name or id)."
         },
         "days": {
           "name": "Days",
@@ -1157,11 +1157,11 @@
         },
         "lights": {
           "name": "Lights",
-          "description": "The lights: [{\"entity_id\": \"light.x\", \"x\": 0, \"y\": 0, \"z\": 0}], with x, y, z from -1 to 1 saying where each stands."
+          "description": "The lights: a list of items, each with \"entity_id\" and x, y, z from -1 to 1 saying where it stands."
         },
         "palette": {
           "name": "Palette",
-          "description": "The colours, 1 to 16, each {\"hs\": [hue, saturation]}, {\"xy\": [x, y]} or {\"k\": kelvin}, and an optional \"b\" (brightness, 1 to 100)."
+          "description": "The colours, 1 to 16, each an item with \"hs\" ([hue, saturation]), \"xy\" ([x, y]) or \"k\" (kelvin), and an optional \"b\" (brightness, 1 to 100)."
         },
         "speed": {
           "name": "Speed",
@@ -1185,15 +1185,15 @@
         },
         "effects": {
           "name": "Effects",
-          "description": "Brightness effects, up to 4: [{\"type\": \"pulse\"|\"flicker\"|\"sparkle\"|\"lightning\", \"speed\": 1-12, \"strength\": 1-100}]. They work on any colour source."
+          "description": "Brightness effects, up to 4: a list of items, each with \"type\" (pulse, flicker, sparkle or lightning), \"speed\" (1 to 12) and \"strength\" (1 to 100). They work on any colour source."
         },
         "looks": {
           "name": "Looks",
-          "description": "What single lights do differently, by light: {\"light.x\": {\"palette\": [...], \"brightness\": 1-255, \"effects\": [...], \"native\": \"underwater\"}}. A light with no look follows the scene. native is one of the light's own effects (Hue lights only, experimental); it plays with the look's palette colours."
+          "description": "What single lights do differently, by light: an item for each light's entity id, with \"palette\", \"brightness\" (1 to 255), \"effects\" and \"native\" (for example underwater). A light with no look follows the scene. native is one of the light's own effects (Hue lights only, experimental); it plays with the look's palette colours."
         },
         "actions": {
           "name": "Actions",
-          "description": "Devices to switch when the scene starts: [{\"entity_id\": \"media_player.tv\", \"do\": \"off\"}]. On or off only, for lights, switches, fans, media players, climate, humidifiers, input_booleans and covers."
+          "description": "Devices to switch when the scene starts: a list of items, each with \"entity_id\" and \"do\" (on or off). On or off only, for lights, switches, fans, media players, climate, humidifiers, input_booleans and covers."
         },
         "fps": {
           "name": "Fps",
@@ -1275,7 +1275,7 @@
         },
         "palette": {
           "name": "Palette",
-          "description": "The colours, 1 to 16, each {\"hs\": [hue, saturation]}, {\"xy\": [x, y]} or {\"k\": kelvin}, and an optional \"b\" (brightness, 1 to 100)."
+          "description": "The colours, 1 to 16, each an item with \"hs\" ([hue, saturation]), \"xy\" ([x, y]) or \"k\" (kelvin), and an optional \"b\" (brightness, 1 to 100)."
         },
         "speed": {
           "name": "Speed",
@@ -1299,15 +1299,15 @@
         },
         "effects": {
           "name": "Effects",
-          "description": "Brightness effects, up to 4: [{\"type\": \"pulse\"|\"flicker\"|\"sparkle\"|\"lightning\", \"speed\": 1-12, \"strength\": 1-100}]. They work on any colour source."
+          "description": "Brightness effects, up to 4: a list of items, each with \"type\" (pulse, flicker, sparkle or lightning), \"speed\" (1 to 12) and \"strength\" (1 to 100). They work on any colour source."
         },
         "looks": {
           "name": "Looks",
-          "description": "What single lights do differently, by light: {\"light.x\": {\"palette\": [...], \"brightness\": 1-255, \"effects\": [...], \"native\": \"underwater\"}}. A light with no look follows the scene. native is one of the light's own effects (Hue lights only, experimental); it plays with the look's palette colours."
+          "description": "What single lights do differently, by light: an item for each light's entity id, with \"palette\", \"brightness\" (1 to 255), \"effects\" and \"native\" (for example underwater). A light with no look follows the scene. native is one of the light's own effects (Hue lights only, experimental); it plays with the look's palette colours."
         },
         "actions": {
           "name": "Actions",
-          "description": "Devices to switch when the scene starts: [{\"entity_id\": \"media_player.tv\", \"do\": \"off\"}]. On or off only, for lights, switches, fans, media players, climate, humidifiers, input_booleans and covers."
+          "description": "Devices to switch when the scene starts: a list of items, each with \"entity_id\" and \"do\" (on or off). On or off only, for lights, switches, fans, media players, climate, humidifiers, input_booleans and covers."
         },
         "area": {
           "name": "Area",
@@ -1315,7 +1315,7 @@
         },
         "lights": {
           "name": "Lights",
-          "description": "The lights: [{\"entity_id\": \"light.x\", \"x\": 0, \"y\": 0, \"z\": 0}], with x, y, z from -1 to 1 saying where each stands."
+          "description": "The lights: a list of items, each with \"entity_id\" and x, y, z from -1 to 1 saying where it stands."
         },
         "ui": {
           "name": "Ui",
@@ -1347,7 +1347,7 @@
         },
         "lights": {
           "name": "Lights",
-          "description": "The lights: [{\"entity_id\": \"light.x\", \"x\": 0, \"y\": 0, \"z\": 0}], with x, y, z from -1 to 1 saying where each stands."
+          "description": "The lights: a list of items, each with \"entity_id\" and x, y, z from -1 to 1 saying where it stands."
         },
         "ui": {
           "name": "Ui",

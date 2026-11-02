@@ -186,7 +186,7 @@ SPEC: dict[str, dict[str, Any]] = {
             "area_type": f("select", "What it is for.", True, options=["music", "screen", "monitor", "3dspace", "other"]),
             "lights": f(
                 "lights",
-                "The lights with their positions from -1 to 1, as a list of {light, x, y, z}.",
+                "The lights with their positions from -1 to 1, as a list of items with light, x, y and z.",
                 True,
                 example="[{light: Bed Light, x: 0, y: 1, z: 0}]",
             ),
@@ -198,7 +198,7 @@ SPEC: dict[str, dict[str, Any]] = {
             "area": f("text", "The area (id or name).", True),
             "name": f("text", "A new name."),
             "area_type": f("select", "A new type.", options=["music", "screen", "monitor", "3dspace", "other"]),
-            "lights": f("lights", "The lights with their positions, as a list of {light, x, y, z}."),
+            "lights": f("lights", "The lights with their positions, as a list of items with light, x, y and z."),
         },
     },
     "delete_entertainment_area": {
@@ -313,7 +313,7 @@ SPEC: dict[str, dict[str, Any]] = {
             "group_type": f("select", "Room or zone.", default="room", options=["room", "zone"]),
             "slots": f(
                 "object",
-                'The times and scenes, for example [{"time": "07:00", "scene": "Energize"}, {"time": "21:00", "scene": "Nightlight"}].',
+                'The times and scenes: a list of items, each with "time" (for example 07:00) and "scene" (a scene name or id).',
                 True,
             ),
             "days": f(
