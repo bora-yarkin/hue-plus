@@ -1,0 +1,1426 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Philips Hue Plus",
+        "menu_options": {
+          "bridge": "A Hue bridge (through the Hue integration)",
+          "syncbox": "A Hue Play HDMI Sync Box"
+        }
+      },
+      "bridge": {
+        "title": "Philips Hue Plus",
+        "description": "Choose the Hue bridge to add Hue Plus to.",
+        "data": {
+          "hue_entry_id": "Hue bridge"
+        }
+      },
+      "takeover": {
+        "title": "The Hue integration's entities",
+        "description": "Hue Plus makes its own entity for everything the Hue integration shows. What should happen to the Hue integration's entities?",
+        "data": {
+          "takeover": "Hue integration's entities"
+        }
+      },
+      "syncbox": {
+        "title": "Hue Play HDMI Sync Box",
+        "description": "Enter the address of the sync box (its name on the network or its IP address).",
+        "data": {
+          "syncbox_host": "Address"
+        }
+      },
+      "syncbox_register": {
+        "title": "Register with the sync box",
+        "description": "Hold the button on the sync box until its light turns green, then submit this form."
+      },
+      "syncbox_reauth": {
+        "title": "Register with the sync box again",
+        "description": "The sync box no longer accepts Hue Plus. Hold the button on the box until its light turns green, then submit this form."
+      },
+      "reauth_confirm": {
+        "title": "Hue Spotify sync",
+        "description": "The sync service no longer accepts the stored token."
+      },
+      "reauth_credentials": {
+        "title": "Hue Spotify sync credentials",
+        "description": "Enter the new token and UUID, or put a file named hue_plus_spotify_token.json with auth and uuid in the Home Assistant configuration folder and submit this form.",
+        "data": {
+          "auth": "Token",
+          "uuid": "UUID"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "The sync service does not accept this token. Check the token and the UUID.",
+      "cannot_connect": "The sync service could not be reached.",
+      "wrong_account": "This token belongs to a different Hue account than the stored one.",
+      "invalid_host": "That is not a name or an address.",
+      "registration_pending": "The box did not register Hue Plus. Hold its button until the light turns green, then submit again."
+    },
+    "abort": {
+      "no_hue_bridge": "Set up the Hue integration first (it has to use the bridge's v2 API).",
+      "already_configured": "Hue Plus is already set up for this bridge.",
+      "reauth_successful": "The new credentials are stored.",
+      "no_options": "A sync box has no options."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Philips Hue Plus",
+        "menu_options": {
+          "modules": "Choose the modules",
+          "credentials": "Spotify sync token (by hand)",
+          "streaming": "Local streaming registration"
+        }
+      },
+      "streaming": {
+        "title": "Register for local streaming",
+        "description": "Press the round link button on the Hue bridge, then submit this form. Hue Plus asks the bridge for its own key, which streaming needs; it shows up in the bridge's list of authorized apps."
+      },
+      "modules": {
+        "title": "Modules",
+        "description": "Switch on what you want. The Spotify sync needs a token from your Hue account, which is asked for next.",
+        "data": {
+          "modules": "Modules"
+        }
+      },
+      "credentials": {
+        "title": "Hue Spotify sync credentials",
+        "description": "Enter the token and UUID of the Hue app's Spotify sync, or put a file named hue_plus_spotify_token.json with auth and uuid in the Home Assistant configuration folder and submit this form. The file is deleted once the credentials are stored.",
+        "data": {
+          "auth": "Token",
+          "uuid": "UUID"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "The sync service does not accept this token. Check the token and the UUID.",
+      "cannot_connect": "The sync service could not be reached.",
+      "link_button_not_pressed": "The bridge did not register Hue Plus. Press its link button, then submit again."
+    },
+    "abort": {
+      "no_options": "A sync box has no options."
+    }
+  },
+  "selector": {
+    "takeover": {
+      "options": {
+        "alongside": "Leave them alone: nothing is hidden or renamed, so existing dashboards and automations keep working. Hue Plus's entities get the same names ending in _plus.",
+        "replace": "Hide and rename them: the Hue integration's entities are hidden and renamed (ending in _hue), and Hue Plus's entities take their names, so existing dashboards and automations use Hue Plus."
+      }
+    },
+    "modules": {
+      "options": {
+        "bridge": "Bridge: firmware, apps, automations, scenes, rooms, entertainment areas, Matter, settings",
+        "lights": "Lights: Hue Plus's own light entities, next to or in place of the Hue integration's",
+        "devices": "Devices: the Hue integration's sensors, buttons, scenes, switches and selects, taken over",
+        "zones": "Zones: per-zone control of gradient lights",
+        "streaming": "Streaming: send colours straight to an entertainment area (experimental; needs a registration with the bridge)",
+        "scenes": "Scenes: live scenes across the lights of an area",
+        "sync": "Spotify sync: start, stop and tune Hue's cloud sync"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "now_playing": {
+        "name": "Now playing"
+      },
+      "zigbee_connectivity": {
+        "name": "Zigbee connectivity",
+        "state": {
+          "connected": "Connected",
+          "connectivity_issue": "Connectivity issue",
+          "disconnected": "Disconnected",
+          "unidirectional_incoming": "Unidirectional incoming"
+        }
+      }
+    },
+    "number": {
+      "brightness": {
+        "name": "Sync brightness"
+      },
+      "light_delay": {
+        "name": "Light delay"
+      }
+    },
+    "select": {
+      "intensity": {
+        "name": "Intensity"
+      },
+      "palette": {
+        "name": "Palette"
+      },
+      "style": {
+        "name": "Style"
+      },
+      "area": {
+        "name": "Area"
+      },
+      "active_scene": {
+        "name": "Scene"
+      }
+    },
+    "binary_sensor": {
+      "entertainment_area": {
+        "name": "Entertainment area {area_name}"
+      }
+    },
+    "event": {
+      "button": {
+        "name": "Button {button_id}",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "double_short_release": "Double press",
+              "initial_press": "Initial press",
+              "long_press": "Long press",
+              "long_release": "Long release",
+              "repeat": "Repeat",
+              "short_release": "Short press"
+            }
+          }
+        }
+      },
+      "rotary": {
+        "name": "Rotary",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "clock_wise": "Clockwise",
+              "counter_clock_wise": "Counterclockwise"
+            }
+          }
+        }
+      }
+    },
+    "light": {
+      "hue_light": {
+        "state_attributes": {
+          "effect": {
+            "state": {
+              "candle": "Candle",
+              "cosmos": "Cosmos",
+              "enchant": "Enchant",
+              "fire": "Fire",
+              "glisten": "Glisten",
+              "opal": "Opal",
+              "prism": "Prism",
+              "sparkle": "Sparkle",
+              "sunbeam": "Sunbeam",
+              "sunrise": "Sunrise",
+              "sunset": "Sunset",
+              "underwater": "Underwater"
+            }
+          }
+        }
+      }
+    },
+    "switch": {
+      "light_sensor_enabled": {
+        "name": "Light sensor enabled"
+      },
+      "motion_aware": {
+        "name": "MotionAware"
+      },
+      "motion_sensor_enabled": {
+        "name": "Motion sensor enabled"
+      }
+    }
+  },
+  "services": {
+    "get_resources": {
+      "name": "Get resources",
+      "description": "Returns what the bridge holds: authorized apps, automations and their templates, rooms, zones, scenes, smart scenes, entertainment areas, Matter fabrics, devices, firmware and bridge status.",
+      "fields": {
+        "kinds": {
+          "name": "Kinds",
+          "description": "What to return. Everything when empty."
+        }
+      }
+    },
+    "timed_effect": {
+      "name": "Timed effect",
+      "description": "Starts a sunrise or sunset on a light: it fades over the duration. Use no_effect to stop one.",
+      "fields": {
+        "light": {
+          "name": "Light",
+          "description": "The light: its Hue id, the name of its device, or its Home Assistant entity."
+        },
+        "effect": {
+          "name": "Effect",
+          "description": "The effect."
+        },
+        "duration": {
+          "name": "Duration",
+          "description": "How long it takes, in seconds (not needed for no_effect)."
+        }
+      }
+    },
+    "signal": {
+      "name": "Signal",
+      "description": "Makes a light signal: it blinks for a while and then goes back to what it was doing.",
+      "fields": {
+        "light": {
+          "name": "Light",
+          "description": "The light: its Hue id, the name of its device, or its Home Assistant entity."
+        },
+        "signal": {
+          "name": "Signal",
+          "description": "The kind of signal."
+        },
+        "duration": {
+          "name": "Duration",
+          "description": "How long, in seconds."
+        },
+        "colors_xy": {
+          "name": "Colors xy",
+          "description": "One or two colours as [x, y] pairs, for the signals that use colours."
+        }
+      }
+    },
+    "set_power_on": {
+      "name": "Set power on",
+      "description": "Sets what a light does when it gets power: safety (a warm white), powerfail (back to how it was), last_on_state, or custom with the state to switch on with.",
+      "fields": {
+        "light": {
+          "name": "Light",
+          "description": "The light: its Hue id, the name of its device, or its Home Assistant entity."
+        },
+        "preset": {
+          "name": "Preset",
+          "description": "The behaviour."
+        },
+        "on": {
+          "name": "On",
+          "description": "For custom: switch on, toggle, or keep the previous state."
+        },
+        "brightness": {
+          "name": "Brightness",
+          "description": "For custom: the brightness in percent."
+        },
+        "color_temperature_kelvin": {
+          "name": "Color temperature kelvin",
+          "description": "For custom: a white temperature in kelvin."
+        },
+        "color_xy": {
+          "name": "Color xy",
+          "description": "For custom: a colour as an [x, y] pair."
+        }
+      }
+    },
+    "set_motion_area": {
+      "name": "Set motion area",
+      "description": "Switches a motion area on or off, or renames it. A motion area uses the lights themselves as a motion sensor (Bridge Pro).",
+      "fields": {
+        "area": {
+          "name": "Area",
+          "description": "The motion area (id or name)."
+        },
+        "enabled": {
+          "name": "Enabled",
+          "description": "On or off."
+        },
+        "name": {
+          "name": "Name",
+          "description": "A new name."
+        }
+      }
+    },
+    "create_motion_area": {
+      "name": "Create motion area",
+      "description": "Experimental. Creates a motion area from three or more lights of a zone. The bridge's documentation does not describe this, so the request is a guess from what an existing area looks like.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "The name."
+        },
+        "zone": {
+          "name": "Zone",
+          "description": "The zone (id or name)."
+        },
+        "lights": {
+          "name": "Lights",
+          "description": "The lights (names or ids), at least three."
+        }
+      }
+    },
+    "delete_motion_area": {
+      "name": "Delete motion area",
+      "description": "Deletes a motion area.",
+      "fields": {
+        "area": {
+          "name": "Area",
+          "description": "The motion area (id or name)."
+        },
+        "confirm": {
+          "name": "Confirm",
+          "description": "Must be true: this cannot be undone."
+        }
+      }
+    },
+    "set_streaming_end_state": {
+      "name": "Set streaming end state",
+      "description": "Experimental. Sets what the lights of an entertainment area do when a sync stops: back to the last state, off, stay as they are (pause), or a scene. Only last_state has been seen on a real bridge; the other names are guesses.",
+      "fields": {
+        "area": {
+          "name": "Area",
+          "description": "The entertainment area (id or name)."
+        },
+        "end_state": {
+          "name": "End state",
+          "description": "What happens."
+        },
+        "scene": {
+          "name": "Scene",
+          "description": "For scene: the scene (id or name)."
+        }
+      }
+    },
+    "configure_light": {
+      "name": "Configure light",
+      "description": "Experimental. Sets what a light is for (decorative, functional or mixed, as in the Hue app) and, for a gradient light, which way it is mounted. Not yet tried on a real bridge.",
+      "fields": {
+        "light": {
+          "name": "Light",
+          "description": "The light: its Hue id, the name of its device, or its Home Assistant entity."
+        },
+        "function": {
+          "name": "Function",
+          "description": "What the light is for."
+        },
+        "gradient_orientation": {
+          "name": "Gradient orientation",
+          "description": "A gradient light's mounting direction."
+        },
+        "gradient_order": {
+          "name": "Gradient order",
+          "description": "A gradient light's segment order."
+        }
+      }
+    },
+    "identify": {
+      "name": "Identify",
+      "description": "Makes a light flash briefly so you can see which one it is.",
+      "fields": {
+        "light": {
+          "name": "Light",
+          "description": "The light: its Hue id, the name of its device, or its Home Assistant entity."
+        }
+      }
+    },
+    "set_name": {
+      "name": "Set name",
+      "description": "Renames a light, device, room, zone, scene, entertainment area or automation. For a light, room or zone it can also set the icon type.",
+      "fields": {
+        "resource": {
+          "name": "Resource",
+          "description": "What to rename."
+        },
+        "id": {
+          "name": "Id",
+          "description": "Its id or name."
+        },
+        "name": {
+          "name": "Name",
+          "description": "The new name."
+        },
+        "archetype": {
+          "name": "Archetype",
+          "description": "The icon type, for example bedroom or floor_shade."
+        }
+      }
+    },
+    "create_scene": {
+      "name": "Create scene",
+      "description": "Creates a scene for a room or zone. Without actions it records how the lights in it look right now.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "The scene's name."
+        },
+        "group": {
+          "name": "Group",
+          "description": "The room or zone (id or name)."
+        },
+        "group_type": {
+          "name": "Group type",
+          "description": "Room or zone."
+        },
+        "lights": {
+          "name": "Lights",
+          "description": "Only these lights (names or ids). All lights of the group when empty."
+        },
+        "actions": {
+          "name": "Actions",
+          "description": "The scene's actions as the bridge writes them, instead of recording the current look."
+        },
+        "speed": {
+          "name": "Speed",
+          "description": "How fast a dynamic scene moves, from 0 to 1."
+        },
+        "auto_dynamic": {
+          "name": "Auto dynamic",
+          "description": "Whether it starts moving when recalled."
+        }
+      }
+    },
+    "update_scene": {
+      "name": "Update scene",
+      "description": "Changes a scene: its name, speed, whether it starts moving, or its actions.",
+      "fields": {
+        "scene": {
+          "name": "Scene",
+          "description": "The scene (id or name)."
+        },
+        "name": {
+          "name": "Name",
+          "description": "A new name."
+        },
+        "speed": {
+          "name": "Speed",
+          "description": "From 0 to 1."
+        },
+        "auto_dynamic": {
+          "name": "Auto dynamic",
+          "description": "Whether it starts moving when recalled."
+        },
+        "actions": {
+          "name": "Actions",
+          "description": "New actions as the bridge writes them."
+        }
+      }
+    },
+    "delete_scene": {
+      "name": "Delete scene",
+      "description": "Deletes a scene from the bridge.",
+      "fields": {
+        "scene": {
+          "name": "Scene",
+          "description": "The scene (id or name)."
+        },
+        "confirm": {
+          "name": "Confirm",
+          "description": "Must be true: this cannot be undone."
+        }
+      }
+    },
+    "set_smart_scene": {
+      "name": "Set smart scene",
+      "description": "Turns a smart scene (a scene that changes with the time of day) on or off.",
+      "fields": {
+        "smart_scene": {
+          "name": "Smart scene",
+          "description": "The smart scene (id or name)."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Activate or deactivate."
+        }
+      }
+    },
+    "create_smart_scene": {
+      "name": "Create smart scene",
+      "description": "Creates a smart scene. The week's time slots are passed to the bridge as they are.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "The name."
+        },
+        "group": {
+          "name": "Group",
+          "description": "The room or zone."
+        },
+        "group_type": {
+          "name": "Group type",
+          "description": "Room or zone."
+        },
+        "week_timeslots": {
+          "name": "Week timeslots",
+          "description": "The time slots as the bridge writes them."
+        }
+      }
+    },
+    "delete_smart_scene": {
+      "name": "Delete smart scene",
+      "description": "Deletes a smart scene.",
+      "fields": {
+        "smart_scene": {
+          "name": "Smart scene",
+          "description": "The smart scene (id or name)."
+        },
+        "confirm": {
+          "name": "Confirm",
+          "description": "Must be true: this cannot be undone."
+        }
+      }
+    },
+    "create_room": {
+      "name": "Create room",
+      "description": "Creates a room. A room holds devices; a device can be in one room only.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "The name."
+        },
+        "archetype": {
+          "name": "Archetype",
+          "description": "The icon type, for example bedroom."
+        },
+        "members": {
+          "name": "Members",
+          "description": "The devices (names or ids)."
+        }
+      }
+    },
+    "update_room": {
+      "name": "Update room",
+      "description": "Renames a room, changes its icon type, or replaces the devices in it.",
+      "fields": {
+        "room": {
+          "name": "Room",
+          "description": "The room (id or name)."
+        },
+        "name": {
+          "name": "Name",
+          "description": "A new name."
+        },
+        "archetype": {
+          "name": "Archetype",
+          "description": "A new icon type."
+        },
+        "members": {
+          "name": "Members",
+          "description": "The devices in it from now on (names or ids)."
+        }
+      }
+    },
+    "delete_room": {
+      "name": "Delete room",
+      "description": "Deletes a room. Its lights stay on the bridge, unassigned.",
+      "fields": {
+        "room": {
+          "name": "Room",
+          "description": "The room (id or name)."
+        },
+        "confirm": {
+          "name": "Confirm",
+          "description": "Must be true: this cannot be undone."
+        }
+      }
+    },
+    "create_zone": {
+      "name": "Create zone",
+      "description": "Creates a zone. A zone holds lights, and a light can be in several zones.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "The name."
+        },
+        "archetype": {
+          "name": "Archetype",
+          "description": "The icon type."
+        },
+        "members": {
+          "name": "Members",
+          "description": "The lights (names or ids)."
+        }
+      }
+    },
+    "update_zone": {
+      "name": "Update zone",
+      "description": "Renames a zone, changes its icon type, or replaces the lights in it.",
+      "fields": {
+        "zone": {
+          "name": "Zone",
+          "description": "The zone (id or name)."
+        },
+        "name": {
+          "name": "Name",
+          "description": "A new name."
+        },
+        "archetype": {
+          "name": "Archetype",
+          "description": "A new icon type."
+        },
+        "members": {
+          "name": "Members",
+          "description": "The lights in it from now on (names or ids)."
+        }
+      }
+    },
+    "delete_zone": {
+      "name": "Delete zone",
+      "description": "Deletes a zone.",
+      "fields": {
+        "zone": {
+          "name": "Zone",
+          "description": "The zone (id or name)."
+        },
+        "confirm": {
+          "name": "Confirm",
+          "description": "Must be true: this cannot be undone."
+        }
+      }
+    },
+    "create_entertainment_area": {
+      "name": "Create entertainment area",
+      "description": "Creates an entertainment area: the lights that take part in music, screen or game sync and where they stand.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "The name."
+        },
+        "area_type": {
+          "name": "Area type",
+          "description": "What it is for."
+        },
+        "lights": {
+          "name": "Lights",
+          "description": "The lights with their positions from -1 to 1, as a list of {light, x, y, z}."
+        }
+      }
+    },
+    "update_entertainment_area": {
+      "name": "Update entertainment area",
+      "description": "Renames an entertainment area, changes its type, or replaces its lights and positions.",
+      "fields": {
+        "area": {
+          "name": "Area",
+          "description": "The area (id or name)."
+        },
+        "name": {
+          "name": "Name",
+          "description": "A new name."
+        },
+        "area_type": {
+          "name": "Area type",
+          "description": "A new type."
+        },
+        "lights": {
+          "name": "Lights",
+          "description": "The lights with their positions, as a list of {light, x, y, z}."
+        }
+      }
+    },
+    "delete_entertainment_area": {
+      "name": "Delete entertainment area",
+      "description": "Deletes an entertainment area.",
+      "fields": {
+        "area": {
+          "name": "Area",
+          "description": "The area (id or name)."
+        },
+        "confirm": {
+          "name": "Confirm",
+          "description": "Must be true: this cannot be undone."
+        }
+      }
+    },
+    "control_entertainment_area": {
+      "name": "Control entertainment area",
+      "description": "Starts or stops streaming to an entertainment area from Home Assistant's own connection.",
+      "fields": {
+        "area": {
+          "name": "Area",
+          "description": "The area (id or name)."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Start or stop."
+        }
+      }
+    },
+    "create_automation": {
+      "name": "Create automation",
+      "description": "Creates a Hue automation on the bridge from a template (see automation_templates in get_resources).",
+      "fields": {
+        "template": {
+          "name": "Template",
+          "description": "The template (id or name)."
+        },
+        "name": {
+          "name": "Name",
+          "description": "The automation's name."
+        },
+        "configuration": {
+          "name": "Configuration",
+          "description": "Its configuration, as the template's schema describes."
+        },
+        "enabled": {
+          "name": "Enabled",
+          "description": "Whether it is on."
+        }
+      }
+    },
+    "update_automation": {
+      "name": "Update automation",
+      "description": "Changes a Hue automation: name, configuration or whether it is on.",
+      "fields": {
+        "automation": {
+          "name": "Automation",
+          "description": "The automation (id or name)."
+        },
+        "name": {
+          "name": "Name",
+          "description": "A new name."
+        },
+        "configuration": {
+          "name": "Configuration",
+          "description": "A new configuration."
+        },
+        "enabled": {
+          "name": "Enabled",
+          "description": "Turn it on or off."
+        }
+      }
+    },
+    "delete_automation": {
+      "name": "Delete automation",
+      "description": "Deletes a Hue automation from the bridge.",
+      "fields": {
+        "automation": {
+          "name": "Automation",
+          "description": "The automation (id or name)."
+        },
+        "confirm": {
+          "name": "Confirm",
+          "description": "Must be true: this cannot be undone."
+        }
+      }
+    },
+    "revoke_app": {
+      "name": "Revoke app",
+      "description": "Takes an authorized app's key away so it can no longer use the bridge. Find the id in the apps of get_resources. Home Assistant's own key cannot be revoked here.",
+      "fields": {
+        "app": {
+          "name": "App",
+          "description": "The app's id from get_resources."
+        },
+        "confirm": {
+          "name": "Confirm",
+          "description": "Must be true: this cannot be undone."
+        }
+      }
+    },
+    "configure_bridge": {
+      "name": "Configure bridge",
+      "description": "Changes the bridge's name or time zone.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "A new name."
+        },
+        "time_zone": {
+          "name": "Time zone",
+          "description": "A time zone such as Europe/Istanbul."
+        }
+      }
+    },
+    "set_auto_update": {
+      "name": "Set auto update",
+      "description": "Sets whether the bridge installs updates by itself, and at what time of day.",
+      "fields": {
+        "enabled": {
+          "name": "Enabled",
+          "description": "Install updates automatically."
+        },
+        "time": {
+          "name": "Time",
+          "description": "The time of day."
+        }
+      }
+    },
+    "check_for_update": {
+      "name": "Check for update",
+      "description": "Makes the bridge check for a new firmware version now.",
+      "fields": {}
+    },
+    "install_bridge_update": {
+      "name": "Install bridge update",
+      "description": "Installs a bridge firmware update that is ready. The bridge restarts, and lights stay as they are.",
+      "fields": {
+        "confirm": {
+          "name": "Confirm",
+          "description": "Must be true: this cannot be undone."
+        }
+      }
+    },
+    "set_zigbee_channel": {
+      "name": "Set zigbee channel",
+      "description": "Changes the Zigbee channel of the bridge. Every light and accessory has to find the bridge again, and some may not.",
+      "fields": {
+        "channel": {
+          "name": "Channel",
+          "description": "A channel from 11 to 26 (11, 15, 20 and 25 are the ones that avoid Wi-Fi)."
+        },
+        "confirm": {
+          "name": "Confirm",
+          "description": "Must be true: this cannot be undone."
+        }
+      }
+    },
+    "press_link_button": {
+      "name": "Press link button",
+      "description": "Opens the bridge for new apps for about 30 seconds, as pressing its button does.",
+      "fields": {
+        "confirm": {
+          "name": "Confirm",
+          "description": "Must be true: this cannot be undone."
+        }
+      }
+    },
+    "search_for_devices": {
+      "name": "Search for devices",
+      "description": "Makes the bridge search for new lights and accessories for about 40 seconds.",
+      "fields": {
+        "allow_default_link_key": {
+          "name": "Allow default link key",
+          "description": "Also accept devices that use the default Zigbee key (older lights)."
+        }
+      }
+    },
+    "remove_device": {
+      "name": "Remove device",
+      "description": "Removes a light or accessory from the bridge. It has to be reset before it can be added again.",
+      "fields": {
+        "device": {
+          "name": "Device",
+          "description": "The device (id or name)."
+        },
+        "confirm": {
+          "name": "Confirm",
+          "description": "Must be true: this cannot be undone."
+        }
+      }
+    },
+    "create_routine": {
+      "name": "Create routine",
+      "description": "Makes a routine for a room or zone from the bridge's own template. Wake-up fades the lights up, go-to-sleep fades them out and turns them off, a timer recalls a scene after a while, a schedule recalls a scene at a time, coming home recalls a scene when you arrive (optionally only between two times; needs Home and Away), leaving home turns the lights off when everyone leaves, the smoke alarm template lights the room when a smoke alarm sounds.",
+      "fields": {
+        "routine": {
+          "name": "Routine",
+          "description": "The kind of routine."
+        },
+        "name": {
+          "name": "Name",
+          "description": "The routine's name."
+        },
+        "group": {
+          "name": "Group",
+          "description": "The room or zone (id or name)."
+        },
+        "group_type": {
+          "name": "Group type",
+          "description": "Room or zone."
+        },
+        "time": {
+          "name": "Time",
+          "description": "The time of day (wake-up, go-to-sleep and schedule), or the time coming home starts."
+        },
+        "until": {
+          "name": "Until",
+          "description": "Coming home: the time it stops (give both or neither)."
+        },
+        "days": {
+          "name": "Days",
+          "description": "The days. Every day when empty."
+        },
+        "minutes": {
+          "name": "Minutes",
+          "description": "How long the fade or the timer takes, in minutes (a fade: 15 for wake-up and 30 for go-to-sleep when empty)."
+        },
+        "end_brightness": {
+          "name": "End brightness",
+          "description": "Wake-up: the brightness it ends on, 1 to 100."
+        },
+        "scene": {
+          "name": "Scene",
+          "description": "Timer, schedule and coming home: the scene to recall (id or name)."
+        },
+        "enabled": {
+          "name": "Enabled",
+          "description": "Whether it runs."
+        }
+      }
+    },
+    "configure_button": {
+      "name": "Configure button",
+      "description": "Sets what one press of one button of a dimmer, smart button or tap switch does. The button must already have an action set up in the Hue app.",
+      "fields": {
+        "accessory": {
+          "name": "Accessory",
+          "description": "The accessory (id or name)."
+        },
+        "button": {
+          "name": "Button",
+          "description": "The button's number on the accessory."
+        },
+        "press": {
+          "name": "Press",
+          "description": "Which press."
+        },
+        "action": {
+          "name": "Action",
+          "description": "What it does."
+        },
+        "scene": {
+          "name": "Scene",
+          "description": "For scene: the scene to recall (id or name)."
+        },
+        "with_off": {
+          "name": "With off",
+          "description": "For scene: a second press turns the lights off."
+        }
+      }
+    },
+    "create_daily_smart_scene": {
+      "name": "Create daily smart scene",
+      "description": "Makes a smart scene that changes through the day, for example a bright scene in the morning and a warm one in the evening, the same on the days you choose. Not yet tried on a real bridge.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "The smart scene's name."
+        },
+        "group": {
+          "name": "Group",
+          "description": "The room or zone (id or name)."
+        },
+        "group_type": {
+          "name": "Group type",
+          "description": "Room or zone."
+        },
+        "slots": {
+          "name": "Slots",
+          "description": "The times and scenes, for example [{\"time\": \"07:00\", \"scene\": \"Energize\"}, {\"time\": \"21:00\", \"scene\": \"Nightlight\"}]."
+        },
+        "days": {
+          "name": "Days",
+          "description": "The days. Every day when empty."
+        }
+      }
+    },
+    "light_step": {
+      "name": "Light step",
+      "description": "Makes lights brighter or dimmer, warmer or cooler, by a step from where they are now. The bridge does the arithmetic, so it is smooth and several presses in a row add up.",
+      "fields": {
+        "lights": {
+          "name": "Lights",
+          "description": "The lights (ids, names or entities)."
+        },
+        "brightness_step": {
+          "name": "Brightness step",
+          "description": "Percent brighter (positive) or dimmer (negative), from -100 to 100."
+        },
+        "mirek_step": {
+          "name": "Mirek step",
+          "description": "Warmer (positive) or cooler (negative) in mirek, up to 347 (the whole range). A higher mirek is a warmer white."
+        }
+      }
+    },
+    "configure_sensor": {
+      "name": "Configure sensor",
+      "description": "Turns a motion sensor on or off and sets how sensitive it is. Experimental: not tried on a real sensor.",
+      "fields": {
+        "sensor": {
+          "name": "Sensor",
+          "description": "The motion sensor (id or the name of its device)."
+        },
+        "enabled": {
+          "name": "Enabled",
+          "description": "On or off."
+        },
+        "sensitivity": {
+          "name": "Sensitivity",
+          "description": "How sensitive, from 0 up to the sensor's maximum."
+        }
+      }
+    },
+    "remove_matter_fabric": {
+      "name": "Remove matter fabric",
+      "description": "Disconnects a Matter ecosystem (see matter_fabrics in get_resources).",
+      "fields": {
+        "fabric": {
+          "name": "Fabric",
+          "description": "The fabric (id or label)."
+        },
+        "confirm": {
+          "name": "Confirm",
+          "description": "Must be true: this cannot be undone."
+        }
+      }
+    },
+    "raw_request": {
+      "name": "Raw request",
+      "description": "A request to the bridge's v2 API as it is, for what has no service of its own. Anything but GET needs confirm.",
+      "fields": {
+        "resource": {
+          "name": "Resource",
+          "description": "The resource."
+        },
+        "id": {
+          "name": "Id",
+          "description": "The resource's id."
+        },
+        "method": {
+          "name": "Method",
+          "description": "The method."
+        },
+        "body": {
+          "name": "Body",
+          "description": "The request body."
+        },
+        "confirm": {
+          "name": "Confirm",
+          "description": "Must be true for anything but GET."
+        }
+      }
+    },
+    "set_style": {
+      "name": "Set style",
+      "description": "Sets the style of a gradient light (the Hue app's Linear, Mirrored, Scattered and Segmented) and/or turns its zones around. The colours are kept as far as the new style has room for them.",
+      "fields": {
+        "light": {
+          "name": "Light",
+          "description": "The gradient light: its Hue id, or the entity of its zones light."
+        },
+        "style": {
+          "name": "Style",
+          "description": "The style."
+        },
+        "flip": {
+          "name": "Flip",
+          "description": "Turn the zones around (the first zone becomes the last)."
+        }
+      }
+    },
+    "set_effect": {
+      "name": "Set effect",
+      "description": "Starts one of the lights' own effects with a colour and speed of your choice, as the Hue app does when you run the underwater effect in yellow.",
+      "fields": {
+        "lights": {
+          "name": "Lights",
+          "description": "The lights (Hue ids or light entities)."
+        },
+        "effect": {
+          "name": "Effect",
+          "description": "The effect, for example candle, fireplace, prism, sparkle or no_effect."
+        },
+        "hs_color": {
+          "name": "Hs color",
+          "description": "A colour as [hue, saturation]. Not together with kelvin."
+        },
+        "kelvin": {
+          "name": "Kelvin",
+          "description": "A white temperature in kelvin. Not together with hs_color."
+        },
+        "speed": {
+          "name": "Speed",
+          "description": "How fast the effect moves, from 0 to 1."
+        }
+      }
+    },
+    "set_gradient": {
+      "name": "Set gradient",
+      "description": "Writes the colour points of a gradient light. The points it had before are saved to a file in the configuration folder first, so the change can be put back.",
+      "fields": {
+        "light": {
+          "name": "Light",
+          "description": "The gradient light: its Hue id, or the entity of its zones light."
+        },
+        "points": {
+          "name": "Points",
+          "description": "The points as [x, y] colours, from the start of the light to its end."
+        },
+        "mode": {
+          "name": "Mode",
+          "description": "The gradient mode, one of those the light offers."
+        }
+      }
+    },
+    "scene_start": {
+      "name": "Scene start",
+      "description": "Starts a live scene: a palette that moves across the lights of an area. What is not given comes from the saved scene with this id, then from its preset.",
+      "fields": {
+        "scene_id": {
+          "name": "Scene id",
+          "description": "The scene's id: 1 to 48 of a-z, 0-9, _ or -. The id of a saved scene starts that scene."
+        },
+        "preset": {
+          "name": "Preset",
+          "description": "A shipped palette to start from."
+        },
+        "area": {
+          "name": "Area",
+          "description": "The id of a saved area; its lights play the scene."
+        },
+        "lights": {
+          "name": "Lights",
+          "description": "The lights: [{\"entity_id\": \"light.x\", \"x\": 0, \"y\": 0, \"z\": 0}], with x, y, z from -1 to 1 saying where each stands."
+        },
+        "palette": {
+          "name": "Palette",
+          "description": "The colours, 1 to 16, each {\"hs\": [hue, saturation]}, {\"xy\": [x, y]} or {\"k\": kelvin}, and an optional \"b\" (brightness, 1 to 100)."
+        },
+        "speed": {
+          "name": "Speed",
+          "description": "How fast the palette moves, from 1 (slow, two minutes a loop) to 12 (fast, eight seconds a loop)."
+        },
+        "range": {
+          "name": "Range",
+          "description": "How much of the palette is on show across the lights at once, in percent."
+        },
+        "brightness": {
+          "name": "Brightness",
+          "description": "The brightness the palette's brightest colour reaches, from 1 to 255."
+        },
+        "spread": {
+          "name": "Spread",
+          "description": "Which way the palette is spread over the lights: along x, y or z, or outward from the middle (radial)."
+        },
+        "colour_source": {
+          "name": "Colour source",
+          "description": "Where the colours come from: the moving palette, or a rainbow (the hue goes once round the colour wheel per loop)."
+        },
+        "effects": {
+          "name": "Effects",
+          "description": "Brightness effects, up to 4: [{\"type\": \"pulse\"|\"flicker\"|\"sparkle\"|\"lightning\", \"speed\": 1-12, \"strength\": 1-100}]. They work on any colour source."
+        },
+        "looks": {
+          "name": "Looks",
+          "description": "What single lights do differently, by light: {\"light.x\": {\"palette\": [...], \"brightness\": 1-255, \"effects\": [...], \"native\": \"underwater\"}}. A light with no look follows the scene. native is one of the light's own effects (Hue lights only, experimental); it plays with the look's palette colours."
+        },
+        "actions": {
+          "name": "Actions",
+          "description": "Devices to switch when the scene starts: [{\"entity_id\": \"media_player.tv\", \"do\": \"off\"}]. On or off only, for lights, switches, fans, media players, climate, humidifiers, input_booleans and covers."
+        },
+        "fps": {
+          "name": "Fps",
+          "description": "For lights that cannot fade by themselves: updates per second, from 1 to 4."
+        },
+        "wake": {
+          "name": "Wake",
+          "description": "Turn on the lights that are off when the scene starts."
+        }
+      }
+    },
+    "scene_update": {
+      "name": "Scene update",
+      "description": "Changes the speed, range or brightness of a running scene at once.",
+      "fields": {
+        "scene_id": {
+          "name": "Scene id",
+          "description": "The scene's id: 1 to 48 of a-z, 0-9, _ or -. The id of a saved scene starts that scene."
+        },
+        "speed": {
+          "name": "Speed",
+          "description": "How fast the palette moves, from 1 (slow, two minutes a loop) to 12 (fast, eight seconds a loop)."
+        },
+        "range": {
+          "name": "Range",
+          "description": "How much of the palette is on show across the lights at once, in percent."
+        },
+        "brightness": {
+          "name": "Brightness",
+          "description": "The brightness the palette's brightest colour reaches, from 1 to 255."
+        }
+      }
+    },
+    "scene_freeze": {
+      "name": "Scene freeze",
+      "description": "Holds a running scene where it is.",
+      "fields": {
+        "scene_id": {
+          "name": "Scene id",
+          "description": "The scene's id: 1 to 48 of a-z, 0-9, _ or -. The id of a saved scene starts that scene."
+        }
+      }
+    },
+    "scene_play": {
+      "name": "Scene play",
+      "description": "Lets a frozen scene move again.",
+      "fields": {
+        "scene_id": {
+          "name": "Scene id",
+          "description": "The scene's id: 1 to 48 of a-z, 0-9, _ or -. The id of a saved scene starts that scene."
+        }
+      }
+    },
+    "scene_stop": {
+      "name": "Scene stop",
+      "description": "Ends a scene. The lights stay as they are.",
+      "fields": {
+        "scene_id": {
+          "name": "Scene id",
+          "description": "The scene's id: 1 to 48 of a-z, 0-9, _ or -. The id of a saved scene starts that scene."
+        }
+      }
+    },
+    "scene_save": {
+      "name": "Scene save",
+      "description": "Saves a scene so it can be started by its id. Give a preset to start from a shipped palette.",
+      "fields": {
+        "id": {
+          "name": "Id",
+          "description": "The scene's id: 1 to 48 of a-z, 0-9, _ or -."
+        },
+        "name": {
+          "name": "Name",
+          "description": "The scene's name."
+        },
+        "preset": {
+          "name": "Preset",
+          "description": "A shipped palette to start from."
+        },
+        "palette": {
+          "name": "Palette",
+          "description": "The colours, 1 to 16, each {\"hs\": [hue, saturation]}, {\"xy\": [x, y]} or {\"k\": kelvin}, and an optional \"b\" (brightness, 1 to 100)."
+        },
+        "speed": {
+          "name": "Speed",
+          "description": "How fast the palette moves, from 1 (slow, two minutes a loop) to 12 (fast, eight seconds a loop)."
+        },
+        "range": {
+          "name": "Range",
+          "description": "How much of the palette is on show across the lights at once, in percent."
+        },
+        "brightness": {
+          "name": "Brightness",
+          "description": "The brightness the palette's brightest colour reaches, from 1 to 255."
+        },
+        "spread": {
+          "name": "Spread",
+          "description": "Which way the palette is spread over the lights: along x, y or z, or outward from the middle (radial)."
+        },
+        "colour_source": {
+          "name": "Colour source",
+          "description": "Where the colours come from: the moving palette, or a rainbow (the hue goes once round the colour wheel per loop)."
+        },
+        "effects": {
+          "name": "Effects",
+          "description": "Brightness effects, up to 4: [{\"type\": \"pulse\"|\"flicker\"|\"sparkle\"|\"lightning\", \"speed\": 1-12, \"strength\": 1-100}]. They work on any colour source."
+        },
+        "looks": {
+          "name": "Looks",
+          "description": "What single lights do differently, by light: {\"light.x\": {\"palette\": [...], \"brightness\": 1-255, \"effects\": [...], \"native\": \"underwater\"}}. A light with no look follows the scene. native is one of the light's own effects (Hue lights only, experimental); it plays with the look's palette colours."
+        },
+        "actions": {
+          "name": "Actions",
+          "description": "Devices to switch when the scene starts: [{\"entity_id\": \"media_player.tv\", \"do\": \"off\"}]. On or off only, for lights, switches, fans, media players, climate, humidifiers, input_booleans and covers."
+        },
+        "area": {
+          "name": "Area",
+          "description": "The id of a saved area it plays on."
+        },
+        "lights": {
+          "name": "Lights",
+          "description": "The lights: [{\"entity_id\": \"light.x\", \"x\": 0, \"y\": 0, \"z\": 0}], with x, y, z from -1 to 1 saying where each stands."
+        },
+        "ui": {
+          "name": "Ui",
+          "description": "Data a screen keeps next to this (icons, drawings). Stored as it is, up to 16 KB."
+        }
+      }
+    },
+    "scene_delete": {
+      "name": "Scene delete",
+      "description": "Deletes a saved scene (a running one keeps playing until it is stopped).",
+      "fields": {
+        "id": {
+          "name": "Id",
+          "description": "The scene's id."
+        }
+      }
+    },
+    "area_save": {
+      "name": "Area save",
+      "description": "Saves an area: the lights of a room or part of it and where each stands, which decides how a palette spreads across them.",
+      "fields": {
+        "id": {
+          "name": "Id",
+          "description": "The area's id: 1 to 48 of a-z, 0-9, _ or -."
+        },
+        "name": {
+          "name": "Name",
+          "description": "The area's name."
+        },
+        "lights": {
+          "name": "Lights",
+          "description": "The lights: [{\"entity_id\": \"light.x\", \"x\": 0, \"y\": 0, \"z\": 0}], with x, y, z from -1 to 1 saying where each stands."
+        },
+        "ui": {
+          "name": "Ui",
+          "description": "Data a screen keeps next to this (icons, drawings). Stored as it is, up to 16 KB."
+        }
+      }
+    },
+    "area_delete": {
+      "name": "Area delete",
+      "description": "Deletes a saved area. Scenes that played on it stay saved but need another area before they can start.",
+      "fields": {
+        "id": {
+          "name": "Id",
+          "description": "The area's id."
+        }
+      }
+    },
+    "locate_light": {
+      "name": "Locate light",
+      "description": "Shows which light is which: it turns red (or dims, when it has no colour) until you turn this off, or for 30 seconds, and is then put back.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity id",
+          "description": "The light entity."
+        },
+        "active": {
+          "name": "Active",
+          "description": "Start or stop."
+        }
+      }
+    },
+    "import_hue_scene": {
+      "name": "Import hue scene",
+      "description": "Reads the palette, speed and lights of a Hue scene so it can be saved as a live scene. Reads only; nothing is written to the bridge.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity id",
+          "description": "The Hue scene entity."
+        }
+      }
+    },
+    "get_library": {
+      "name": "Get library",
+      "description": "Returns the saved scenes and areas and the shipped presets.",
+      "fields": {}
+    },
+    "stream_colors": {
+      "name": "Stream colors",
+      "description": "Experimental. Streams colours straight to the lights of an entertainment area (no scene, no delay), for a number of seconds. Needs the streaming module and a registration with the bridge. The area cannot be used by another sync at the same time.",
+      "fields": {
+        "area": {
+          "name": "Area",
+          "description": "The entertainment area (id or name)."
+        },
+        "colors": {
+          "name": "Colors",
+          "description": "One [red, green, blue] colour for every light of the area, or one per light in the order of the area's channels."
+        },
+        "duration": {
+          "name": "Duration",
+          "description": "How long, in seconds (up to 3600)."
+        }
+      }
+    },
+    "stop_streaming": {
+      "name": "Stop streaming",
+      "description": "Experimental. Stops the stream to an entertainment area, or to all of them.",
+      "fields": {
+        "area": {
+          "name": "Area",
+          "description": "The entertainment area (id or name). All when empty."
+        }
+      }
+    }
+  }
+}

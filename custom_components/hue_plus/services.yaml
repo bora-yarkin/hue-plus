@@ -1,0 +1,1050 @@
+get_resources:
+  fields:
+    "kinds":
+      selector:
+        select:
+          options: ["apps", "automations", "automation_templates", "rooms", "zones", "scenes", "smart_scenes", "entertainment_areas", "matter_fabrics", "accessories", "home_and_away", "motion_sensors", "motion_areas", "supported_resources", "devices", "firmware", "bridge"]
+          multiple: true
+
+timed_effect:
+  fields:
+    "light":
+      required: true
+      example: "Floor Light L"
+      selector:
+        text: {}
+    "effect":
+      required: true
+      selector:
+        select:
+          options: ["sunrise", "sunset", "no_effect"]
+    "duration":
+      example: 900
+      selector:
+        number:
+          mode: "box"
+          step: "any"
+
+signal:
+  fields:
+    "light":
+      required: true
+      example: "Floor Light L"
+      selector:
+        text: {}
+    "signal":
+      required: true
+      selector:
+        select:
+          options: ["on_off", "on_off_color", "alternating", "no_signal"]
+    "duration":
+      default: 5
+      selector:
+        number:
+          mode: "box"
+          step: "any"
+    "colors_xy":
+      example: "[[0.7, 0.3], [0.2, 0.2]]"
+      selector:
+        object: {}
+
+set_power_on:
+  fields:
+    "light":
+      required: true
+      example: "Floor Light L"
+      selector:
+        text: {}
+    "preset":
+      required: true
+      selector:
+        select:
+          options: ["safety", "powerfail", "last_on_state", "custom"]
+    "on":
+      selector:
+        select:
+          options: ["on", "toggle", "previous"]
+    "brightness":
+      selector:
+        number:
+          mode: "box"
+          step: "any"
+    "color_temperature_kelvin":
+      selector:
+        number:
+          mode: "box"
+          step: "any"
+    "color_xy":
+      selector:
+        object: {}
+
+set_motion_area:
+  fields:
+    "area":
+      required: true
+      selector:
+        text: {}
+    "enabled":
+      selector:
+        boolean: {}
+    "name":
+      selector:
+        text: {}
+
+create_motion_area:
+  fields:
+    "name":
+      required: true
+      selector:
+        text: {}
+    "zone":
+      required: true
+      selector:
+        text: {}
+    "lights":
+      required: true
+      selector:
+        object: {}
+
+delete_motion_area:
+  fields:
+    "area":
+      required: true
+      selector:
+        text: {}
+    "confirm":
+      required: true
+      selector:
+        boolean: {}
+
+set_streaming_end_state:
+  fields:
+    "area":
+      required: true
+      selector:
+        text: {}
+    "end_state":
+      required: true
+      selector:
+        select:
+          options: ["last_state", "off", "pause", "scene"]
+    "scene":
+      selector:
+        text: {}
+
+configure_light:
+  fields:
+    "light":
+      required: true
+      example: "Floor Light L"
+      selector:
+        text: {}
+    "function":
+      selector:
+        select:
+          options: ["decorative", "functional", "mixed"]
+    "gradient_orientation":
+      selector:
+        select:
+          options: ["horizontal", "vertical"]
+    "gradient_order":
+      selector:
+        select:
+          options: ["forward", "reversed"]
+
+identify:
+  fields:
+    "light":
+      required: true
+      example: "Floor Light L"
+      selector:
+        text: {}
+
+set_name:
+  fields:
+    "resource":
+      required: true
+      selector:
+        select:
+          options: ["light", "device", "room", "zone", "scene", "entertainment_area", "automation"]
+    "id":
+      required: true
+      selector:
+        text: {}
+    "name":
+      selector:
+        text: {}
+    "archetype":
+      selector:
+        text: {}
+
+create_scene:
+  fields:
+    "name":
+      required: true
+      selector:
+        text: {}
+    "group":
+      required: true
+      selector:
+        text: {}
+    "group_type":
+      default: "room"
+      selector:
+        select:
+          options: ["room", "zone"]
+    "lights":
+      selector:
+        object: {}
+    "actions":
+      selector:
+        object: {}
+    "speed":
+      selector:
+        number:
+          mode: "box"
+          step: "any"
+    "auto_dynamic":
+      selector:
+        boolean: {}
+
+update_scene:
+  fields:
+    "scene":
+      required: true
+      selector:
+        text: {}
+    "name":
+      selector:
+        text: {}
+    "speed":
+      selector:
+        number:
+          mode: "box"
+          step: "any"
+    "auto_dynamic":
+      selector:
+        boolean: {}
+    "actions":
+      selector:
+        object: {}
+
+delete_scene:
+  fields:
+    "scene":
+      required: true
+      selector:
+        text: {}
+    "confirm":
+      required: true
+      selector:
+        boolean: {}
+
+set_smart_scene:
+  fields:
+    "smart_scene":
+      required: true
+      selector:
+        text: {}
+    "action":
+      required: true
+      selector:
+        select:
+          options: ["activate", "deactivate"]
+
+create_smart_scene:
+  fields:
+    "name":
+      required: true
+      selector:
+        text: {}
+    "group":
+      required: true
+      selector:
+        text: {}
+    "group_type":
+      default: "room"
+      selector:
+        select:
+          options: ["room", "zone"]
+    "week_timeslots":
+      required: true
+      selector:
+        object: {}
+
+delete_smart_scene:
+  fields:
+    "smart_scene":
+      required: true
+      selector:
+        text: {}
+    "confirm":
+      required: true
+      selector:
+        boolean: {}
+
+create_room:
+  fields:
+    "name":
+      required: true
+      selector:
+        text: {}
+    "archetype":
+      selector:
+        text: {}
+    "members":
+      selector:
+        object: {}
+
+update_room:
+  fields:
+    "room":
+      required: true
+      selector:
+        text: {}
+    "name":
+      selector:
+        text: {}
+    "archetype":
+      selector:
+        text: {}
+    "members":
+      selector:
+        object: {}
+
+delete_room:
+  fields:
+    "room":
+      required: true
+      selector:
+        text: {}
+    "confirm":
+      required: true
+      selector:
+        boolean: {}
+
+create_zone:
+  fields:
+    "name":
+      required: true
+      selector:
+        text: {}
+    "archetype":
+      selector:
+        text: {}
+    "members":
+      selector:
+        object: {}
+
+update_zone:
+  fields:
+    "zone":
+      required: true
+      selector:
+        text: {}
+    "name":
+      selector:
+        text: {}
+    "archetype":
+      selector:
+        text: {}
+    "members":
+      selector:
+        object: {}
+
+delete_zone:
+  fields:
+    "zone":
+      required: true
+      selector:
+        text: {}
+    "confirm":
+      required: true
+      selector:
+        boolean: {}
+
+create_entertainment_area:
+  fields:
+    "name":
+      required: true
+      selector:
+        text: {}
+    "area_type":
+      required: true
+      selector:
+        select:
+          options: ["music", "screen", "monitor", "3dspace", "other"]
+    "lights":
+      required: true
+      example: "[{light: Bed Light, x: 0, y: 1, z: 0}]"
+      selector:
+        object: {}
+
+update_entertainment_area:
+  fields:
+    "area":
+      required: true
+      selector:
+        text: {}
+    "name":
+      selector:
+        text: {}
+    "area_type":
+      selector:
+        select:
+          options: ["music", "screen", "monitor", "3dspace", "other"]
+    "lights":
+      selector:
+        object: {}
+
+delete_entertainment_area:
+  fields:
+    "area":
+      required: true
+      selector:
+        text: {}
+    "confirm":
+      required: true
+      selector:
+        boolean: {}
+
+control_entertainment_area:
+  fields:
+    "area":
+      required: true
+      selector:
+        text: {}
+    "action":
+      required: true
+      selector:
+        select:
+          options: ["start", "stop"]
+
+create_automation:
+  fields:
+    "template":
+      required: true
+      selector:
+        text: {}
+    "name":
+      required: true
+      selector:
+        text: {}
+    "configuration":
+      required: true
+      selector:
+        object: {}
+    "enabled":
+      default: true
+      selector:
+        boolean: {}
+
+update_automation:
+  fields:
+    "automation":
+      required: true
+      selector:
+        text: {}
+    "name":
+      selector:
+        text: {}
+    "configuration":
+      selector:
+        object: {}
+    "enabled":
+      selector:
+        boolean: {}
+
+delete_automation:
+  fields:
+    "automation":
+      required: true
+      selector:
+        text: {}
+    "confirm":
+      required: true
+      selector:
+        boolean: {}
+
+revoke_app:
+  fields:
+    "app":
+      required: true
+      selector:
+        text: {}
+    "confirm":
+      required: true
+      selector:
+        boolean: {}
+
+configure_bridge:
+  fields:
+    "name":
+      selector:
+        text: {}
+    "time_zone":
+      selector:
+        text: {}
+
+set_auto_update:
+  fields:
+    "enabled":
+      selector:
+        boolean: {}
+    "time":
+      selector:
+        time: {}
+
+check_for_update:
+
+install_bridge_update:
+  fields:
+    "confirm":
+      required: true
+      selector:
+        boolean: {}
+
+set_zigbee_channel:
+  fields:
+    "channel":
+      required: true
+      selector:
+        number:
+          mode: "box"
+          min: 0
+          max: 100
+          step: 1
+    "confirm":
+      required: true
+      selector:
+        boolean: {}
+
+press_link_button:
+  fields:
+    "confirm":
+      required: true
+      selector:
+        boolean: {}
+
+search_for_devices:
+  fields:
+    "allow_default_link_key":
+      selector:
+        boolean: {}
+
+remove_device:
+  fields:
+    "device":
+      required: true
+      selector:
+        text: {}
+    "confirm":
+      required: true
+      selector:
+        boolean: {}
+
+create_routine:
+  fields:
+    "routine":
+      required: true
+      selector:
+        select:
+          options: ["wake_up", "go_to_sleep", "timer", "schedule", "coming_home", "leaving_home", "smoke_alarm"]
+    "name":
+      required: true
+      selector:
+        text: {}
+    "group":
+      required: true
+      selector:
+        text: {}
+    "group_type":
+      default: "room"
+      selector:
+        select:
+          options: ["room", "zone"]
+    "time":
+      selector:
+        time: {}
+    "until":
+      selector:
+        time: {}
+    "days":
+      selector:
+        select:
+          options: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+          multiple: true
+    "minutes":
+      selector:
+        number:
+          mode: "box"
+          step: "any"
+    "end_brightness":
+      default: 100
+      selector:
+        number:
+          mode: "box"
+          step: "any"
+    "scene":
+      selector:
+        text: {}
+    "enabled":
+      default: true
+      selector:
+        boolean: {}
+
+configure_button:
+  fields:
+    "accessory":
+      required: true
+      example: "Hue dimmer switch 1"
+      selector:
+        text: {}
+    "button":
+      required: true
+      selector:
+        number:
+          mode: "box"
+          min: 1
+          max: 8
+          step: 1
+    "press":
+      required: true
+      selector:
+        select:
+          options: ["short", "long", "repeat"]
+    "action":
+      required: true
+      selector:
+        select:
+          options: ["dim_up", "dim_down", "all_off", "scene"]
+    "scene":
+      selector:
+        text: {}
+    "with_off":
+      default: false
+      selector:
+        boolean: {}
+
+create_daily_smart_scene:
+  fields:
+    "name":
+      required: true
+      selector:
+        text: {}
+    "group":
+      required: true
+      selector:
+        text: {}
+    "group_type":
+      default: "room"
+      selector:
+        select:
+          options: ["room", "zone"]
+    "slots":
+      required: true
+      selector:
+        object: {}
+    "days":
+      selector:
+        select:
+          options: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+          multiple: true
+
+light_step:
+  fields:
+    "lights":
+      required: true
+      selector:
+        object: {}
+    "brightness_step":
+      selector:
+        number:
+          mode: "box"
+          step: "any"
+    "mirek_step":
+      selector:
+        number:
+          mode: "box"
+          min: -347
+          max: 347
+          step: 1
+
+configure_sensor:
+  fields:
+    "sensor":
+      required: true
+      selector:
+        text: {}
+    "enabled":
+      selector:
+        boolean: {}
+    "sensitivity":
+      selector:
+        number:
+          mode: "box"
+          min: 0
+          max: 10
+          step: 1
+
+remove_matter_fabric:
+  fields:
+    "fabric":
+      required: true
+      selector:
+        text: {}
+    "confirm":
+      required: true
+      selector:
+        boolean: {}
+
+raw_request:
+  fields:
+    "resource":
+      required: true
+      selector:
+        select:
+          options: ["light", "grouped_light", "scene", "smart_scene", "room", "zone", "device", "behavior_instance", "entertainment_configuration", "matter", "matter_fabric", "bridge", "button", "relative_rotary", "motion", "geofence_client", "geolocation", "motion_area_candidate", "motion_area_configuration", "clip", "sonos", "device_power", "light_level", "temperature", "contact", "tamper"]
+    "id":
+      selector:
+        text: {}
+    "method":
+      default: "GET"
+      selector:
+        select:
+          options: ["GET", "PUT", "POST", "DELETE"]
+    "body":
+      selector:
+        object: {}
+    "confirm":
+      selector:
+        boolean: {}
+
+set_style:
+  fields:
+    "light":
+      required: true
+      example: "light.bed_light_zones"
+      selector:
+        text: {}
+    "style":
+      selector:
+        select:
+          options: ["linear", "mirrored", "scattered", "segmented"]
+    "flip":
+      default: false
+      selector:
+        boolean: {}
+
+set_effect:
+  fields:
+    "lights":
+      required: true
+      selector:
+        object: {}
+    "effect":
+      required: true
+      selector:
+        text: {}
+    "hs_color":
+      example: "[30, 80]"
+      selector:
+        object: {}
+    "kelvin":
+      selector:
+        number:
+          mode: "box"
+          step: "any"
+    "speed":
+      selector:
+        number:
+          mode: "box"
+          step: "any"
+
+set_gradient:
+  fields:
+    "light":
+      required: true
+      example: "light.bed_light_zones"
+      selector:
+        text: {}
+    "points":
+      required: true
+      example: "[[0.7, 0.3], [0.2, 0.2]]"
+      selector:
+        object: {}
+    "mode":
+      selector:
+        text: {}
+
+scene_start:
+  fields:
+    "scene_id":
+      required: true
+      example: "evening"
+      selector:
+        text: {}
+    "preset":
+      selector:
+        select:
+          options: ["aurora", "candle", "fireplace", "sunset_glow", "twilight", "prism", "galaxy", "lava", "sunrise", "ocean", "forest", "blossom", "ember", "relax"]
+    "area":
+      selector:
+        text: {}
+    "lights":
+      selector:
+        object: {}
+    "palette":
+      example: "[{\"hs\": [20, 90]}, {\"k\": 2200, \"b\": 60}]"
+      selector:
+        object: {}
+    "speed":
+      selector:
+        number:
+          mode: "box"
+          min: 1
+          max: 12
+          step: 1
+    "range":
+      selector:
+        number:
+          mode: "box"
+          min: 0
+          max: 100
+          step: 1
+    "brightness":
+      selector:
+        number:
+          mode: "box"
+          min: 1
+          max: 255
+          step: 1
+    "spread":
+      selector:
+        select:
+          options: ["x", "y", "z", "radial"]
+    "colour_source":
+      selector:
+        select:
+          options: ["palette", "rainbow"]
+    "effects":
+      example: "[{\"type\": \"pulse\", \"speed\": 4, \"strength\": 60}]"
+      selector:
+        object: {}
+    "looks":
+      selector:
+        object: {}
+    "actions":
+      example: "[{\"entity_id\": \"media_player.tv\", \"do\": \"off\"}]"
+      selector:
+        object: {}
+    "fps":
+      selector:
+        number:
+          mode: "box"
+          min: 1
+          max: 4
+          step: 1
+    "wake":
+      selector:
+        boolean: {}
+
+scene_update:
+  fields:
+    "scene_id":
+      required: true
+      example: "evening"
+      selector:
+        text: {}
+    "speed":
+      selector:
+        number:
+          mode: "box"
+          min: 1
+          max: 12
+          step: 1
+    "range":
+      selector:
+        number:
+          mode: "box"
+          min: 0
+          max: 100
+          step: 1
+    "brightness":
+      selector:
+        number:
+          mode: "box"
+          min: 1
+          max: 255
+          step: 1
+
+scene_freeze:
+  fields:
+    "scene_id":
+      required: true
+      example: "evening"
+      selector:
+        text: {}
+
+scene_play:
+  fields:
+    "scene_id":
+      required: true
+      example: "evening"
+      selector:
+        text: {}
+
+scene_stop:
+  fields:
+    "scene_id":
+      required: true
+      example: "evening"
+      selector:
+        text: {}
+
+scene_save:
+  fields:
+    "id":
+      required: true
+      selector:
+        text: {}
+    "name":
+      required: true
+      selector:
+        text: {}
+    "preset":
+      selector:
+        select:
+          options: ["aurora", "candle", "fireplace", "sunset_glow", "twilight", "prism", "galaxy", "lava", "sunrise", "ocean", "forest", "blossom", "ember", "relax"]
+    "palette":
+      example: "[{\"hs\": [20, 90]}, {\"k\": 2200, \"b\": 60}]"
+      selector:
+        object: {}
+    "speed":
+      selector:
+        number:
+          mode: "box"
+          min: 1
+          max: 12
+          step: 1
+    "range":
+      selector:
+        number:
+          mode: "box"
+          min: 0
+          max: 100
+          step: 1
+    "brightness":
+      selector:
+        number:
+          mode: "box"
+          min: 1
+          max: 255
+          step: 1
+    "spread":
+      selector:
+        select:
+          options: ["x", "y", "z", "radial"]
+    "colour_source":
+      selector:
+        select:
+          options: ["palette", "rainbow"]
+    "effects":
+      example: "[{\"type\": \"pulse\", \"speed\": 4, \"strength\": 60}]"
+      selector:
+        object: {}
+    "looks":
+      selector:
+        object: {}
+    "actions":
+      example: "[{\"entity_id\": \"media_player.tv\", \"do\": \"off\"}]"
+      selector:
+        object: {}
+    "area":
+      selector:
+        text: {}
+    "lights":
+      selector:
+        object: {}
+    "ui":
+      selector:
+        object: {}
+
+scene_delete:
+  fields:
+    "id":
+      required: true
+      selector:
+        text: {}
+
+area_save:
+  fields:
+    "id":
+      required: true
+      selector:
+        text: {}
+    "name":
+      required: true
+      selector:
+        text: {}
+    "lights":
+      required: true
+      selector:
+        object: {}
+    "ui":
+      selector:
+        object: {}
+
+area_delete:
+  fields:
+    "id":
+      required: true
+      selector:
+        text: {}
+
+locate_light:
+  fields:
+    "entity_id":
+      required: true
+      example: "light.floor_light_l"
+      selector:
+        text: {}
+    "active":
+      required: true
+      selector:
+        boolean: {}
+
+import_hue_scene:
+  fields:
+    "entity_id":
+      required: true
+      example: "scene.bedroom_arctic_aurora"
+      selector:
+        text: {}
+
+get_library:
+
+stream_colors:
+  fields:
+    "area":
+      required: true
+      example: "TV"
+      selector:
+        text: {}
+    "colors":
+      required: true
+      example: "[[255, 0, 0], [0, 0, 255]]"
+      selector:
+        object: {}
+    "duration":
+      default: 10
+      selector:
+        number:
+          mode: "box"
+          step: "any"
+
+stop_streaming:
+  fields:
+    "area":
+      selector:
+        text: {}
