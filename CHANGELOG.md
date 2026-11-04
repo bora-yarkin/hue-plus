@@ -5,7 +5,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 ## [Unreleased]
 
 ### Changed
-- Cleanup, no change in behaviour: removed code nothing used (`ROOM_TYPES`, `scenes_using`, the sync box `summary`, two attributes), and the failures that were swallowed silently in the zones module are now logged at debug level.
+- Cleanup, no change in behaviour: removed code nothing used (`ROOM_TYPES`, `scenes_using`, the sync box `summary`, two attributes), the failures that were swallowed silently in the zones module are now logged at debug level, and the longest functions (scene validation, the scene engine's step, effect and zone writes, routine configurations, following the Hue integration) are split into named steps.
 
 ## [0.4.0]
 

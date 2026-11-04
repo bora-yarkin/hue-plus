@@ -96,16 +96,53 @@ class Session:
             return True
         return not brightness_moves and info.brightness is not None and abs(info.brightness - target[2]) > CHANGED_BRIGHTNESS
 
+    def _advance(self, now: float) -> None:
+        """Moves the scene's clock on to ``now``; a frozen scene keeps its place."""
+        elapsed = max(0.0, now - self.last)
+        self.last = now
+        if self.frozen:
+            return
+        loops = elapsed / cycle_seconds(self.definition.speed)
+        self.phase = (self.phase + loops) % 1.0
+        self.progress += loops
+        self.seconds += elapsed
+
+    def _left_the_scene(self, entity_id: str, light: _Light, info: LightInfo, now: float) -> bool:
+        """Whether something else has taken the light from the scene (a frozen scene is still watched for this)."""
+        if light.native and info.state == "off":
+            return True  # someone switched it off while it played its own effect
+        return (
+            light.target is not None
+            and now >= light.reach_at - 0.25
+            and self._changed(info, light.target, brightness_moves=self._look.moves_brightness(entity_id))
+        )
+
+    def _command(self, entity_id: str, light: _Light, info: LightInfo, now: float) -> dict[str, Any]:
+        """What to send a light that is due: its own effect with the scene's colour, or the colour and brightness for this moment."""
+        native = self._look.native(entity_id)
+        if native is not None and native in info.effects and info.can_colour:
+            return self._native_command(entity_id, native, light, now)
+        interval = self._interval(entity_id, info)
+        ahead = interval if info.can_transition else 0.0
+        ahead_loops = ahead / cycle_seconds(self.definition.speed)
+        x, y, bri = self._target(entity_id, self.phase + ahead_loops, self.progress + ahead_loops, self.seconds + ahead)
+        data: dict[str, Any] = {"brightness": bri}
+        if info.can_colour:
+            data["xy_color"] = [round(x, 4), round(y, 4)]
+        elif info.can_white:
+            data["color_temp_kelvin"] = nearest_kelvin((x, y))
+        if info.can_transition:
+            data["transition"] = round(interval, 1)
+        light.target = (x, y, bri)
+        light.reach_at = now + ahead
+        light.next_due = now + interval
+        light.driven = True
+        return data
+
     def step(self, now: float, driver: Driver, held: set[str]) -> StepResult:
         """What to do at this moment: the commands that are due, and the lights that left the scene."""
         result = StepResult()
-        elapsed = max(0.0, now - self.last)
-        self.last = now
-        if not self.frozen:
-            loops = elapsed / cycle_seconds(self.definition.speed)
-            self.phase = (self.phase + loops) % 1.0
-            self.progress += loops
-            self.seconds += elapsed
+        self._advance(now)
         for entity_id, light in self.lights.items():
             if entity_id in held:
                 continue
@@ -114,39 +151,10 @@ class Session:
                 continue
             if info.state == "off" and not light.driven:
                 continue  # never turned on by a scene
-            if light.native and info.state == "off":
-                result.dropped.append(entity_id)  # someone switched it off while it played its own effect
-                continue
-            # A frozen scene is still watched: lights that something else has changed leave it.
-            if (
-                light.target is not None
-                and now >= light.reach_at - 0.25
-                and self._changed(info, light.target, brightness_moves=self._look.moves_brightness(entity_id))
-            ):
+            if self._left_the_scene(entity_id, light, info, now):
                 result.dropped.append(entity_id)
-                continue
-            if self.frozen or now < light.next_due:
-                continue
-            native = self._look.native(entity_id)
-            if native is not None and native in info.effects and info.can_colour:
-                result.commands.append((entity_id, self._native_command(entity_id, native, light, now)))
-                continue
-            interval = self._interval(entity_id, info)
-            ahead = interval if info.can_transition else 0.0
-            ahead_loops = ahead / cycle_seconds(self.definition.speed)
-            x, y, bri = self._target(entity_id, self.phase + ahead_loops, self.progress + ahead_loops, self.seconds + ahead)
-            data: dict[str, Any] = {"brightness": bri}
-            if info.can_colour:
-                data["xy_color"] = [round(x, 4), round(y, 4)]
-            elif info.can_white:
-                data["color_temp_kelvin"] = nearest_kelvin((x, y))
-            if info.can_transition:
-                data["transition"] = round(interval, 1)
-            light.target = (x, y, bri)
-            light.reach_at = now + (interval if info.can_transition else 0.0)
-            light.next_due = now + interval
-            light.driven = True
-            result.commands.append((entity_id, data))
+            elif not self.frozen and now >= light.next_due:
+                result.commands.append((entity_id, self._command(entity_id, light, info, now)))
         return result
 
     def _native_command(self, entity_id: str, native: str, light: _Light, now: float) -> dict[str, Any]:
