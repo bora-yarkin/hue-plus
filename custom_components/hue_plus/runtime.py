@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING
 
 from homeassistant.config_entries import ConfigEntry
 
+from .link import BridgeLink
+
 if TYPE_CHECKING:
     from .coordinator import BridgeCoordinator
     from .scenes.setup import ScenesRuntime
@@ -19,11 +21,11 @@ if TYPE_CHECKING:
 
 @dataclass
 class Runtime:
-    """One Hue bridge, and the modules switched on for it."""
+    """One Hue bridge, how Hue Plus reaches it, and the modules switched on for it."""
 
-    hue_entry: ConfigEntry
+    link: BridgeLink
     modules: frozenset[str]
-    # What the unique ids of this bridge's entities start with: the Hue integration's own id of the bridge.
+    # What the unique ids of this bridge's entities start with: the bridge's id.
     uid: str
     bridge_name: str
     # The device registry's id of the bridge's device; the devices of lights and accessories are behind it.

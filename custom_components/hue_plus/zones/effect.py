@@ -14,7 +14,7 @@ from typing import Any
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
 
-from ..connection import api_of, bridge_of, hue_entries, read
+from ..connection import bridge_apis, read
 from .colors import clamp_to_gamut, gamut_of, hs_to_xy
 
 
@@ -31,11 +31,7 @@ async def set_effect(
         raise ServiceValidationError("Give a colour or a white temperature, not both")
     wanted = set(light_ids)
     done: set[str] = set()
-    for entry in hue_entries(hass):
-        bridge = bridge_of(hass, entry)
-        api = api_of(bridge) if bridge is not None else None
-        if api is None:
-            continue
+    for api in bridge_apis(hass):
         for light in await read(api, "clip/v2/resource/light"):
             if light.get("id") not in wanted:
                 continue

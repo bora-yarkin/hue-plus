@@ -4,6 +4,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+### Added
+- Hue Plus can connect to a bridge itself, without the Hue integration (*A Hue bridge, connected directly*): registration with the link button, the bridge's certificate pinned, reconfigure for a new address, re-registration when the bridge refuses Hue Plus or shows another certificate, and the registration is removed from the bridge with the entry. Lights, devices, the bridge module, zones, scenes, the Spotify sync and streaming all work over it. Streaming needs no second registration on such a bridge.
+
 ### Removed
 - The Spotify sync no longer reads a `hue_plus_spotify_token.json` file from the configuration folder. The token and UUID are entered on the configuration screen only.
 

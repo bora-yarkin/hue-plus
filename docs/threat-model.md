@@ -1,12 +1,17 @@
 # Threat model
 
 **Assets.** The bridge (can switch lights, remove devices, change who may use it), the Hue application key (held by the Hue
-integration, never by Hue Plus), the Spotify sync token (in the config entry).
+integration; for a bridge Hue Plus connects to itself, by Hue Plus in the config entry, as is the pinned certificate fingerprint), the Spotify sync token (in the config entry).
 
 **Actors.** Home Assistant administrators; other Home Assistant users; anything that can call a service (automations, other
 integrations); the bridge and the Signify sync service (trusted to answer, not to be well-formed).
 
 **Controls.**
+- A direct connection (D-23) only talks to a server showing the certificate pinned when Hue Plus registered, on every request and on the event
+  stream (`direct.py`, tested against a real TLS server). The pin is learned at registration, which needs a person at the bridge's link button; a
+  look-alike answering that very moment is the one gap (an attacker on the local network at the moment of setup). The Hue integration and aiohue
+  do not check the certificate at all, so riding on their connection is the weaker of the two. A changed certificate asks for the link button
+  again instead of being accepted. Removing the entry asks the bridge to forget the registration.
 - Bridge services are administrator-only; a call with no user (an automation an administrator wrote) is allowed.
 - Twelve destructive actions need `confirm: true`; revoking the key Hue Plus itself uses is refused.
 - `raw_request` is limited to a list of resources; anything but GET needs `confirm`.

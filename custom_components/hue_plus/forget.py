@@ -21,7 +21,7 @@ from .runtime import HuePlusConfigEntry
 @callback
 def async_forget_removed_devices(hass: HomeAssistant, entry: HuePlusConfigEntry) -> None:
     runtime = entry.runtime_data
-    api = runtime.hue_entry.runtime_data.api
+    api = runtime.link.api
     registry = dr.async_get(hass)
 
     # The bridge is always one of its own devices. If it lists none, its data has not loaded, and every device would look removed.

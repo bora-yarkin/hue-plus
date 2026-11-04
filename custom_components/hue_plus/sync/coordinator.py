@@ -65,15 +65,15 @@ class SyncCoordinator(DataUpdateCoordinator[SyncState]):
     def _rejected(self) -> None:
         """The seven-day token expired: the user is asked for a new one (a reauthentication)."""
         _LOGGER.error("The Hue sync service no longer accepts the stored token; asking for a new one")
-        self.config_entry.async_start_reauth(self.hass)
+        self.config_entry.async_start_reauth(self.hass, context={"reauth_for": "sync"})
 
     async def _async_load_areas(self, bridge_id: str) -> None:
         """Asks the bridge, over the Hue integration's connection, which music areas exist."""
-        hue_entry = self.runtime.hue_entry
-        if not same_bridge(bridge_id, hue_entry.unique_id):
+        link = self.runtime.link
+        if not same_bridge(bridge_id, link.uid):
             _LOGGER.warning("The sync service is tied to bridge %s, which is not the bridge this entry is for", bridge_id)
         try:
-            areas = await read(hue_entry.runtime_data.api, "clip/v2/resource/entertainment_configuration")
+            areas = await read(link.api, "clip/v2/resource/entertainment_configuration")
             music_areas = [area for area in areas if area.get("configuration_type") == MUSIC_AREA_TYPE]
             self.areas = {area["id"]: area["metadata"]["name"] for area in music_areas}
             self.area_lights = {area["id"]: area_light_ids(area) for area in music_areas}

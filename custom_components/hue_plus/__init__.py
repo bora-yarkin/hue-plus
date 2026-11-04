@@ -3,8 +3,8 @@
 
 Four modules, each switched on or off per bridge: ``bridge`` (firmware, apps, automations, scenes, rooms, zones,
 entertainment areas, Matter, settings, effects), ``zones`` (per-zone control of gradient lights), ``scenes`` (live scenes
-that move a palette across the lights of an area) and ``sync`` (Hue's cloud Spotify sync). It uses the connection the
-Hue integration already has to the bridge, so there is no second login.
+that move a palette across the lights of an area) and ``sync`` (Hue's cloud Spotify sync). It rides on the connection the
+Hue integration already has to the bridge, so there is no second login, or connects to the bridge itself (``direct.py``).
 
 Unofficial; not affiliated with or endorsed by Signify.
 """
@@ -13,7 +13,8 @@ from __future__ import annotations
 
 import logging
 
-from homeassistant.config_entries import ConfigEntry, ConfigEntryState
+import aiohttp
+from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
@@ -23,8 +24,12 @@ from homeassistant.helpers.typing import ConfigType
 
 from . import follow, forget, services, websocket
 from .bridge.api import BridgeApi
-from .connection import hue_transport
+from .bridge.connect import pin
+from .connection import link_transport
 from .const import (
+    CONF_APP_KEY,
+    CONF_CERT_SHA256,
+    CONF_HOST,
     CONF_HUE_ENTRY,
     CONF_MODULES,
     CONF_STREAM_APP_ID,
@@ -40,12 +45,15 @@ from .const import (
     MODULE_SCENES,
     MODULE_STREAMING,
     MODULE_SYNC,
+    connects_directly,
     replaces_hue,
 )
 from .coordinator import BridgeCoordinator
+from .direct import DirectBridge
 from .entity import bridge_device
 from .lights import adopt
 from .lights.alongside import async_follow_hue_settings
+from .link import BridgeLink
 from .runtime import HuePlusConfigEntry, Runtime, SyncBoxRuntime
 from .scenes import setup as scenes_setup
 from .streaming.manager import StreamingManager
@@ -90,27 +98,23 @@ async def _async_setup_syncbox(hass: HomeAssistant, entry: HuePlusConfigEntry) -
 async def async_setup_entry(hass: HomeAssistant, entry: HuePlusConfigEntry) -> bool:
     if CONF_SYNCBOX_HOST in entry.data:
         return await _async_setup_syncbox(hass, entry)
-    hue_entry = hass.config_entries.async_get_entry(entry.data[CONF_HUE_ENTRY])
-    if hue_entry is None:
-        raise ConfigEntryError("The Hue integration entry this was set up for no longer exists")
-    if hue_entry.state is not ConfigEntryState.LOADED:
-        raise ConfigEntryNotReady("The Hue integration is not loaded yet")
+    link = await (_async_direct_link(hass, entry) if connects_directly(entry) else _async_hue_link(hass, entry))
     runtime = Runtime(
-        hue_entry=hue_entry,
+        link=link,
         modules=frozenset(entry.options.get(CONF_MODULES, DEFAULT_MODULES)),
-        uid=hue_entry.unique_id or hue_entry.entry_id,
-        bridge_name=_bridge_name(hass, hue_entry),
+        uid=link.uid,
+        bridge_name=_bridge_name(hass, link),
     )
     entry.runtime_data = runtime
     if replaces_hue(entry):
         if MODULE_LIGHTS not in runtime.modules:
             # The lights module is off: the Hue integration's lights are given back (this is also how switching it off works).
-            adopt.async_release(hass, hue_entry.entry_id, adopt.LIGHT_DOMAINS, entry.entry_id)
+            adopt.async_release(hass, link.hue_entry_id, adopt.LIGHT_DOMAINS, entry.entry_id)
         if MODULE_DEVICES not in runtime.modules:
-            adopt.async_release(hass, hue_entry.entry_id, adopt.DEVICE_DOMAINS, entry.entry_id)
+            adopt.async_release(hass, link.hue_entry_id, adopt.DEVICE_DOMAINS, entry.entry_id)
     runtime.bridge_device_id = dr.async_get(hass).async_get_or_create(config_entry_id=entry.entry_id, **bridge_device(runtime)).id
     if MODULE_BRIDGE in runtime.modules:
-        api = BridgeApi(hue_transport(hue_entry), lambda: hue_entry.data["api_key"])
+        api = BridgeApi(link_transport(link), lambda: link.app_key)
         runtime.coordinator = BridgeCoordinator(hass, entry, api, runtime)
         await runtime.coordinator.async_config_entry_first_refresh()
     if MODULE_SCENES in runtime.modules:
@@ -118,7 +122,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: HuePlusConfigEntry) -> b
     if MODULE_SYNC in runtime.modules:
         runtime.sync = sync_setup.create(hass, entry)
     if MODULE_STREAMING in runtime.modules:
-        runtime.streaming = _streaming(hass, entry, hue_entry)
+        runtime.streaming = _streaming(hass, entry, link)
         entry.async_on_unload(runtime.streaming.stop)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     forget.async_forget_removed_devices(hass, entry)
@@ -130,13 +134,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: HuePlusConfigEntry) -> b
     return True
 
 
-def _streaming(hass: HomeAssistant, entry: HuePlusConfigEntry, hue_entry: ConfigEntry) -> StreamingManager:
+def _streaming(hass: HomeAssistant, entry: HuePlusConfigEntry, link: BridgeLink) -> StreamingManager:
     """Local streaming with Hue Plus's own registration (the Hue integration's key cannot stream)."""
     if not all(entry.data.get(key) for key in (CONF_STREAM_APP_KEY, CONF_STREAM_CLIENT_KEY, CONF_STREAM_APP_ID)):
         raise ConfigEntryError("Streaming is switched on but has no registration with the bridge; add it in the options")
-    host = hue_entry.data["host"]
+    host = link.host
     api = BridgeApi(
-        stream_transport(async_get_clientsession(hass), host, entry.data[CONF_STREAM_APP_KEY]), lambda: entry.data[CONF_STREAM_APP_KEY]
+        stream_transport(async_get_clientsession(hass), host, entry.data[CONF_STREAM_APP_KEY], link.tls),
+        lambda: entry.data[CONF_STREAM_APP_KEY],
     )
     return StreamingManager(
         api,
@@ -147,11 +152,41 @@ def _streaming(hass: HomeAssistant, entry: HuePlusConfigEntry, hue_entry: Config
     )
 
 
-def _bridge_name(hass: HomeAssistant, hue_entry: ConfigEntry) -> str:
-    """What the Hue integration calls the bridge's device (for example "Hue Bridge Pro"), so entity ids read well."""
-    devices = dr.async_entries_for_config_entry(dr.async_get(hass), hue_entry.entry_id)
+async def _async_hue_link(hass: HomeAssistant, entry: HuePlusConfigEntry) -> BridgeLink:
+    """Rides on the Hue integration's connection, which has to be there."""
+    hue_entry = hass.config_entries.async_get_entry(entry.data[CONF_HUE_ENTRY])
+    if hue_entry is None:
+        raise ConfigEntryError("The Hue integration entry this was set up for no longer exists")
+    if hue_entry.state is not ConfigEntryState.LOADED:
+        raise ConfigEntryNotReady("The Hue integration is not loaded yet")
+    return BridgeLink.of_hue_entry(hue_entry)
+
+
+async def _async_direct_link(hass: HomeAssistant, entry: HuePlusConfigEntry) -> BridgeLink:
+    """Connects to the bridge with Hue Plus's own registration; the connection is closed when the entry unloads."""
+    bridge = DirectBridge(hass, entry)
+    await bridge.async_initialize()
+    entry.async_on_unload(bridge.async_close)
+    return BridgeLink(
+        uid=entry.unique_id or entry.entry_id,
+        title=entry.title,
+        host=lambda: entry.data[CONF_HOST],
+        app_key=lambda: entry.data[CONF_APP_KEY],
+        bridge=lambda: bridge,
+        hue_entry=None,
+        tls=lambda: pin(entry.data[CONF_CERT_SHA256]),
+    )
+
+
+def _bridge_name(hass: HomeAssistant, link: BridgeLink) -> str:
+    """What the bridge's device is called (for example "Hue Bridge Pro"), so entity ids read well."""
+    if link.hue_entry is None:
+        device = getattr(link.api.config, "bridge_device", None)
+        name = getattr(getattr(device, "product_data", None), "product_name", None)
+        return name or link.title
+    devices = dr.async_entries_for_config_entry(dr.async_get(hass), link.hue_entry.entry_id)
     bridge = next((d for d in devices if d.via_device_id is None), None)
-    return (bridge.name_by_user or bridge.name) if bridge and (bridge.name_by_user or bridge.name) else hue_entry.title
+    return (bridge.name_by_user or bridge.name) if bridge and (bridge.name_by_user or bridge.name) else link.title
 
 
 async def _reload(hass: HomeAssistant, entry: HuePlusConfigEntry) -> None:
@@ -184,6 +219,24 @@ async def async_remove_entry(hass: HomeAssistant, entry: HuePlusConfigEntry) -> 
         except SyncBoxError as err:
             _LOGGER.warning("The sync box could not be told to forget Hue Plus (%s); remove it in the Hue app if you want to", err)
         return
-    hue_entry_id = entry.data.get(CONF_HUE_ENTRY)
-    if hue_entry_id and replaces_hue(entry):
-        adopt.async_release(hass, hue_entry_id, adopt.LIGHT_DOMAINS + adopt.DEVICE_DOMAINS)
+    if connects_directly(entry):
+        await _async_revoke_registration(hass, entry)
+        return
+    if replaces_hue(entry):
+        adopt.async_release(hass, entry.data[CONF_HUE_ENTRY], adopt.LIGHT_DOMAINS + adopt.DEVICE_DOMAINS)
+
+
+async def _async_revoke_registration(hass: HomeAssistant, entry: HuePlusConfigEntry) -> None:
+    """The bridge forgets Hue Plus's registration (best effort: a bridge that cannot be reached keeps it until removed in the Hue app)."""
+    key = entry.data[CONF_APP_KEY]
+    try:
+        async with async_get_clientsession(hass).delete(
+            f"https://{entry.data[CONF_HOST]}/api/{key}/config/whitelist/{key}",
+            ssl=pin(entry.data[CONF_CERT_SHA256]),
+            timeout=aiohttp.ClientTimeout(total=10),
+        ):
+            pass
+    except (aiohttp.ClientError, TimeoutError) as err:
+        _LOGGER.warning(
+            "The bridge could not be told to forget Hue Plus (%s); remove it under Apps in the Hue app if you want to", type(err).__name__
+        )

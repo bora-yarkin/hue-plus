@@ -32,7 +32,7 @@ def native_writer(hass: HomeAssistant, entry: HuePlusConfigEntry):
                 "light", "turn_on", {"entity_id": entity_id, "brightness": data["brightness"], "xy_color": spec["xy"]}, blocking=False
             )
             return
-        api = entry.runtime_data.hue_entry.runtime_data.api
+        api = entry.runtime_data.link.api
         await api.lights.set_state(
             light_id,
             on=True,

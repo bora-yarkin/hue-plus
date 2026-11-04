@@ -47,8 +47,10 @@ tried on a real box by the author.
 
 With the Marketplace (Home Assistant 2026.11 and later; this repository is not in its default list, so add it yourself): *Settings → Marketplace*,
 three-dot menu or *Add from link*, enter `https://github.com/bora-yarkin/hue-plus`, then download *Philips Hue Plus* and restart Home Assistant. Older versions: HACS, *Custom repositories*, category *Integration*.
-Then *Settings → Devices & services → Add integration → Philips Hue Plus → A Hue bridge*, and choose what happens to the Hue integration's
-entities (see above; the default changes nothing).
+Then *Settings → Devices & services → Add integration → Philips Hue Plus*. **A Hue bridge the Hue integration already has** rides on its connection; choose what
+happens to the Hue integration's entities (see above; the default changes nothing). **A Hue bridge, connected directly** needs no Hue integration: enter the
+bridge's address, press the round button on the bridge, and Hue Plus registers itself and remembers the certificate the bridge showed (a bridge showing another
+one is refused). If the Hue integration already has that bridge, Hue Plus uses its connection. If the bridge's address changes, use *Reconfigure*.
 
 Without the Marketplace, copy `custom_components/hue_plus` into your configuration folder and restart.
 

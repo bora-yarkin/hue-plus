@@ -29,17 +29,22 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class _Entry:
-    """The config entry a platform of the Hue integration is given: Hue's connection and settings, Hue Plus's lifetime."""
+    """The config entry a platform of the Hue integration is given: the bridge connection, Hue's settings, Hue Plus's lifetime."""
 
     def __init__(self, ours: HuePlusConfigEntry) -> None:
         self._ours = ours
-        self._hue = ours.runtime_data.hue_entry
+        # Riding on the Hue integration: its settings. With a connection of Hue Plus's own there are none, so Hue Plus's entry answers.
+        self._settings = ours.runtime_data.link.hue_entry or ours
+
+    @property
+    def runtime_data(self) -> Any:
+        return self._ours.runtime_data.link.bridge
 
     def async_on_unload(self, func: Any) -> Any:
         return self._ours.async_on_unload(func)
 
     def __getattr__(self, name: str) -> Any:
-        return getattr(self._hue, name)
+        return getattr(self._settings, name)
 
 
 def rehome(runtime: Runtime, bridge: Any, entity: Entity) -> None:
@@ -72,9 +77,9 @@ def rehome(runtime: Runtime, bridge: Any, entity: Entity) -> None:
 async def run_platform(hass: HomeAssistant, entry: HuePlusConfigEntry, platform: str, add: AddEntitiesCallback) -> None:
     """Sets up one platform of the Hue integration on Hue Plus's devices, and takes over that platform's entities first."""
     runtime = entry.runtime_data
-    bridge = runtime.hue_entry.runtime_data
+    bridge = runtime.link.bridge
     if replaces_hue(entry):
-        taken = adopt.async_adopt(hass, runtime.hue_entry.entry_id, (platform,))
+        taken = adopt.async_adopt(hass, runtime.link.hue_entry_id, (platform,))
         if taken:
             _LOGGER.info("Took over %s %s entities of the Hue integration", taken, platform)
     add = beside_hue(hass, entry, platform, add)

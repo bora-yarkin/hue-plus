@@ -6,7 +6,10 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+import aiohttp
 import voluptuous as vol
+from aiohue.discovery import discover_bridge
+from aiohue.util import normalize_bridge_id
 from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -19,8 +22,12 @@ from homeassistant.helpers.selector import (
 )
 
 from .bridge.api import BridgeError
+from .bridge.connect import peer_fingerprint, pin
 from .const import (
+    CONF_APP_KEY,
     CONF_AUTH,
+    CONF_CERT_SHA256,
+    CONF_HOST,
     CONF_HUE_ENTRY,
     CONF_MODULES,
     CONF_STREAM_APP_ID,
@@ -40,8 +47,9 @@ from .const import (
     SYNC_URL,
     TAKEOVER_ALONGSIDE,
     TAKEOVER_REPLACE,
+    connects_directly,
 )
-from .streaming.register import LinkButtonNotPressed, register
+from .streaming.register import LinkButtonNotPressed, Registration, register
 from .sync.client import GenesisRejected, GenesisUnavailable, async_probe
 from .syncbox.client import SyncBox, SyncBoxError, SyncBoxRegistrationPending, valid_host
 
@@ -70,22 +78,33 @@ class _CredentialsMixin:
 SYNCBOX_SCHEMA = vol.Schema({vol.Required(CONF_SYNCBOX_HOST): TextSelector()})
 
 
+HOST_SCHEMA = vol.Schema({vol.Required(CONF_HOST): TextSelector()})
+
+
 class HuePlusConfigFlow(_CredentialsMixin, ConfigFlow, domain=DOMAIN):
     VERSION = 3
 
     def __init__(self) -> None:
+        self._host = ""
+        self._fingerprint = ""
         self._box_host = ""
         self._box_unique_id = ""
         self._box_name = ""
         self._bridge: ConfigEntry | None = None
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
-        """A Hue bridge (through the Hue integration) or a Hue Play HDMI Sync Box."""
-        return self.async_show_menu(step_id="user", menu_options=["bridge", "syncbox"])
+        """A Hue bridge (through the Hue integration, when it has one, or directly) or a Hue Play HDMI Sync Box."""
+        options = ["bridge_direct", "syncbox"]
+        if self._hue_bridges():
+            options.insert(0, "bridge")
+        return self.async_show_menu(step_id="user", menu_options=options)
+
+    def _hue_bridges(self) -> dict[str, ConfigEntry]:
+        # Only bridges the Hue integration talks to over the v2 API can be used.
+        return {e.entry_id: e for e in self.hass.config_entries.async_entries(HUE_DOMAIN) if e.data.get("api_version") == 2}
 
     async def async_step_bridge(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
-        # Only bridges the Hue integration talks to over the v2 API can be used.
-        bridges = {e.entry_id: e for e in self.hass.config_entries.async_entries(HUE_DOMAIN) if e.data.get("api_version") == 2}
+        bridges = self._hue_bridges()
         if not bridges:
             return self.async_abort(reason="no_hue_bridge")
         if user_input is None and len(bridges) > 1:
@@ -113,6 +132,119 @@ class HuePlusConfigFlow(_CredentialsMixin, ConfigFlow, domain=DOMAIN):
             }
         )
         return self.async_show_form(step_id="takeover", data_schema=schema)
+
+    async def async_step_bridge_direct(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """The bridge's address. The bridge says who it is; its certificate is read now and pinned for every later connection."""
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            host = user_input[CONF_HOST].strip()
+            try:
+                found = await discover_bridge(host, async_get_clientsession(self.hass))
+                fingerprint = await peer_fingerprint(host)
+            except aiohttp.ClientError, TimeoutError, BridgeError:
+                errors["base"] = "cannot_connect"
+            else:
+                bridge_id = normalize_bridge_id(found.id)
+                if not found.supports_v2:
+                    errors["base"] = "not_v2"
+                elif any(e.unique_id == bridge_id for e in self._hue_bridges().values()):
+                    # The Hue integration has this bridge: Hue Plus rides on its connection, as it always did.
+                    return self.async_abort(reason="use_hue_integration")
+                else:
+                    await self.async_set_unique_id(bridge_id)
+                    self._abort_if_unique_id_configured(updates={CONF_HOST: host})
+                    self._host, self._fingerprint = host, fingerprint.hex()
+                    return await self.async_step_bridge_link()
+        return self.async_show_form(step_id="bridge_direct", data_schema=HOST_SCHEMA, errors=errors)
+
+    async def _register(self) -> Registration | str:
+        """Hue Plus's registration with the bridge, checked against the pinned certificate; or the error key."""
+        try:
+            return await register(async_get_clientsession(self.hass), self._host, pin(self._fingerprint))
+        except LinkButtonNotPressed:
+            return "link_button_not_pressed"
+        except BridgeError, aiohttp.ClientError, TimeoutError:
+            return "cannot_connect"
+
+    async def async_step_bridge_link(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """The bridge only registers a new app while its link button is pressed, so this waits for the person."""
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            result = await self._register()
+            if isinstance(result, str):
+                errors["base"] = result
+            else:
+                return self.async_create_entry(
+                    title="Hue Bridge Plus",
+                    data={
+                        CONF_HOST: self._host,
+                        CONF_APP_KEY: result.app_key,
+                        CONF_CERT_SHA256: self._fingerprint,
+                        # The registration also made the keys that local streaming needs.
+                        CONF_STREAM_APP_KEY: result.app_key,
+                        CONF_STREAM_CLIENT_KEY: result.client_key,
+                        CONF_STREAM_APP_ID: result.application_id,
+                    },
+                    options={CONF_MODULES: list(DEFAULT_MODULES)},
+                )
+        return self.async_show_form(step_id="bridge_link", data_schema=vol.Schema({}), errors=errors)
+
+    async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """A bridge that moved to another address. It must be the same bridge, showing the same certificate."""
+        entry = self._get_reconfigure_entry()
+        if CONF_HOST not in entry.data or not connects_directly(entry):
+            return self.async_abort(reason="no_reconfigure")
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            host = user_input[CONF_HOST].strip()
+            try:
+                found = await discover_bridge(host, async_get_clientsession(self.hass))
+                fingerprint = await peer_fingerprint(host)
+            except aiohttp.ClientError, TimeoutError, BridgeError:
+                errors["base"] = "cannot_connect"
+            else:
+                if normalize_bridge_id(found.id) != entry.unique_id:
+                    errors["base"] = "wrong_bridge"
+                elif fingerprint.hex() != entry.data[CONF_CERT_SHA256]:
+                    errors["base"] = "certificate_changed"
+                else:
+                    return self.async_update_reload_and_abort(entry, data_updates={CONF_HOST: host})
+        schema = self.add_suggested_values_to_schema(HOST_SCHEMA, {CONF_HOST: entry.data[CONF_HOST]})
+        return self.async_show_form(step_id="reconfigure", data_schema=schema, errors=errors)
+
+    async def async_step_bridge_reauth(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """The bridge no longer accepts Hue Plus (removed under Apps in the Hue app, or the bridge was reset), or it shows another certificate.
+
+        Registering again needs the link button, which also makes this the moment the certificate is learned anew.
+        """
+        entry = self._get_reauth_entry()
+        errors: dict[str, str] = {}
+        self._host = entry.data[CONF_HOST]
+        if user_input is not None:
+            try:
+                found = await discover_bridge(self._host, async_get_clientsession(self.hass))
+                self._fingerprint = (await peer_fingerprint(self._host)).hex()
+            except aiohttp.ClientError, TimeoutError, BridgeError:
+                errors["base"] = "cannot_connect"
+            else:
+                if normalize_bridge_id(found.id) != entry.unique_id:
+                    errors["base"] = "wrong_bridge"
+                else:
+                    result = await self._register()
+                    if isinstance(result, str):
+                        errors["base"] = result
+                    else:
+                        return self.async_update_reload_and_abort(
+                            entry,
+                            data_updates={
+                                CONF_APP_KEY: result.app_key,
+                                CONF_CERT_SHA256: self._fingerprint,
+                                CONF_STREAM_APP_KEY: result.app_key,
+                                CONF_STREAM_CLIENT_KEY: result.client_key,
+                                CONF_STREAM_APP_ID: result.application_id,
+                            },
+                        )
+        return self.async_show_form(step_id="bridge_reauth", data_schema=vol.Schema({}), errors=errors)
 
     async def async_step_syncbox(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """The box's address; the box says who it is, and that is what makes it the same box next time."""
@@ -176,6 +308,9 @@ class HuePlusConfigFlow(_CredentialsMixin, ConfigFlow, domain=DOMAIN):
     async def async_step_reauth(self, entry_data: Mapping[str, Any]) -> ConfigFlowResult:
         if CONF_SYNCBOX_HOST in entry_data:
             return await self.async_step_syncbox_reauth()
+        # The Spotify sync asks for its token with the context below; a bridge of Hue Plus's own that refuses it asks for the link button.
+        if self.context.get("reauth_for") != "sync" and connects_directly(self._get_reauth_entry()):
+            return await self.async_step_bridge_reauth()
         return await self.async_step_reauth_confirm()
 
     async def async_step_reauth_confirm(self, user_input: dict[str, str] | None = None) -> ConfigFlowResult:
@@ -244,9 +379,16 @@ class HuePlusOptionsFlow(_CredentialsMixin, OptionsFlow):
         """Local streaming needs its own registration with the bridge, which only works while the bridge's link button is pressed."""
         errors: dict[str, str] = {}
         if user_input is not None:
-            host = self.hass.config_entries.async_get_entry(self.config_entry.data[CONF_HUE_ENTRY]).data["host"]
+            direct = connects_directly(self.config_entry)
+            host = (
+                self.config_entry.data[CONF_HOST]
+                if direct
+                else self.hass.config_entries.async_get_entry(self.config_entry.data[CONF_HUE_ENTRY]).data["host"]
+            )
             try:
-                registration = await register(async_get_clientsession(self.hass), host)
+                registration = await register(
+                    async_get_clientsession(self.hass), host, pin(self.config_entry.data[CONF_CERT_SHA256]) if direct else False
+                )
             except LinkButtonNotPressed:
                 errors["base"] = "link_button_not_pressed"
             except BridgeError:

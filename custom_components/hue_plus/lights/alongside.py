@@ -18,7 +18,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from ..const import CONF_HUE_ENTRY, DOMAIN, HUE_DOMAIN, replaces_hue
+from ..const import CONF_HUE_ENTRY, DOMAIN, HUE_DOMAIN, connects_directly, replaces_hue
 from ..runtime import HuePlusConfigEntry
 
 SUFFIX = "_plus"
@@ -84,8 +84,8 @@ def async_follow_hue_settings(hass: HomeAssistant, entry: HuePlusConfigEntry) ->
 
     A setting changed on a Hue Plus entity itself is put back the next time the Hue entity or device changes or Home Assistant starts.
     """
-    if replaces_hue(entry):
-        return
+    if replaces_hue(entry) or connects_directly(entry):
+        return  # nothing to follow: Hue Plus replaces the Hue entities, or there are none
     registry = er.async_get(hass)
     devices = dr.async_get(hass)
 
