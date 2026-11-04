@@ -16,7 +16,7 @@ from typing import Any
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
 
-from ..connection import api_of, bridge_of, hue_entries, read
+from ..connection import bridge_apis, read
 
 
 def _save_backup(path: str, data: dict[str, Any]) -> None:
@@ -43,11 +43,7 @@ async def set_points(
     mode: str | None,
 ) -> dict[str, Any]:
     """Writes the gradient points of one light. Returns what was there before and after."""
-    for entry in hue_entries(hass):
-        bridge = bridge_of(hass, entry)
-        api = api_of(bridge) if bridge is not None else None
-        if api is None:
-            continue
+    for api in bridge_apis(hass):
         lights = await read(api, "clip/v2/resource/light")
         light = next((item for item in lights if item.get("id") == light_id and "gradient" in item), None)
         if light is None:

@@ -4,7 +4,8 @@
       "user": {
         "title": "Philips Hue Plus",
         "menu_options": {
-          "bridge": "A Hue bridge (through the Hue integration)",
+          "bridge": "A Hue bridge the Hue integration already has",
+          "bridge_direct": "A Hue bridge, connected directly",
           "syncbox": "A Hue Play HDMI Sync Box"
         }
       },
@@ -21,6 +22,28 @@
         "data": {
           "takeover": "Hue integration's entities"
         }
+      },
+      "bridge_direct": {
+        "title": "Connect to a Hue bridge",
+        "description": "Enter the address of the bridge. Hue Plus connects to it itself, without the Hue integration, and remembers the certificate the bridge shows now.",
+        "data": {
+          "host": "Address"
+        }
+      },
+      "bridge_link": {
+        "title": "Press the link button",
+        "description": "Press the round button on top of the bridge, then submit this form within thirty seconds."
+      },
+      "reconfigure": {
+        "title": "The bridge's address",
+        "description": "Enter the new address of the same bridge. It has to show the same certificate as when Hue Plus registered with it.",
+        "data": {
+          "host": "Address"
+        }
+      },
+      "bridge_reauth": {
+        "title": "Register with the bridge again",
+        "description": "The bridge no longer accepts Hue Plus, or shows another certificate. Press the round button on top of the bridge, then submit this form within thirty seconds."
       },
       "syncbox": {
         "title": "Hue Play HDMI Sync Box",
@@ -43,7 +66,7 @@
       },
       "reauth_credentials": {
         "title": "Hue Spotify sync credentials",
-        "description": "Enter the new token and UUID, or put a file named hue_plus_spotify_token.json with auth and uuid in the Home Assistant configuration folder and submit this form.",
+        "description": "Enter the new token and UUID.",
         "data": {
           "auth": "Token",
           "uuid": "UUID"
@@ -52,13 +75,20 @@
     },
     "error": {
       "invalid_auth": "The sync service does not accept this token. Check the token and the UUID.",
-      "cannot_connect": "The sync service could not be reached.",
+      "cannot_connect": "Could not connect. Check the address and the network.",
       "wrong_account": "This token belongs to a different Hue account than the stored one.",
       "invalid_host": "That is not a name or an address.",
+      "not_v2": "This bridge is too old: Hue Plus needs a bridge with the v2 API.",
+      "link_button_not_pressed": "The bridge did not register Hue Plus. Press its round button, then submit again.",
+      "wrong_bridge": "This is a different bridge than the one Hue Plus was set up for.",
+      "certificate_changed": "The bridge shows another certificate than when Hue Plus registered with it. Register again instead (re-authentication).",
       "registration_pending": "The box did not register Hue Plus. Hold its button until the light turns green, then submit again."
     },
     "abort": {
       "no_hue_bridge": "Set up the Hue integration first (it has to use the bridge's v2 API).",
+      "use_hue_integration": "The Hue integration already has this bridge. Add it from the first choice, which uses the Hue integration's connection.",
+      "no_reconfigure": "Only a bridge that Hue Plus connects to itself has an address to change.",
+      "reconfigure_successful": "The new address is stored.",
       "already_configured": "Hue Plus is already set up for this bridge.",
       "reauth_successful": "The new credentials are stored.",
       "no_options": "A sync box has no options."
@@ -87,7 +117,7 @@
       },
       "credentials": {
         "title": "Hue Spotify sync credentials",
-        "description": "Enter the token and UUID of the Hue app's Spotify sync, or put a file named hue_plus_spotify_token.json with auth and uuid in the Home Assistant configuration folder and submit this form. The file is deleted once the credentials are stored.",
+        "description": "Enter the token and UUID of the Hue app's Spotify sync.",
         "data": {
           "auth": "Token",
           "uuid": "UUID"
@@ -96,7 +126,7 @@
     },
     "error": {
       "invalid_auth": "The sync service does not accept this token. Check the token and the UUID.",
-      "cannot_connect": "The sync service could not be reached.",
+      "cannot_connect": "Could not connect. Check the address and the network.",
       "link_button_not_pressed": "The bridge did not register Hue Plus. Press its link button, then submit again."
     },
     "abort": {

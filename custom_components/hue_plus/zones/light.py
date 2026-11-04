@@ -28,7 +28,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.util import color as color_util
 
-from ..connection import api_of, bridge_of, read
+from ..connection import api_or_none, read
 from ..entity import accessory_device
 from ..runtime import HuePlusConfigEntry, Runtime
 from .colors import MAX_KELVIN, MIN_KELVIN, kelvin_to_xy, xy_to_kelvin
@@ -41,10 +41,9 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass: HomeAssistant, entry: HuePlusConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
     """Adds the entities of every gradient light of the bridge, now and when more appear."""
     runtime = entry.runtime_data
-    bridge = bridge_of(hass, runtime.hue_entry)
-    api = api_of(bridge) if bridge is not None else None
+    api = api_or_none(runtime.link)
     if api is None:
-        _LOGGER.warning("The Hue integration is not ready, so the gradient lights are not set up")
+        _LOGGER.warning("The connection to the bridge is not up, so the gradient lights are not set up")
         return
 
     async def scan(_now: Any = None) -> None:
