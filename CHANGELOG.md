@@ -4,6 +4,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.4.0]
+
 ### Added
 - Hue Plus can connect to a bridge itself, without the Hue integration (*A Hue bridge, connected directly*): registration with the link button, the bridge's certificate pinned, reconfigure for a new address, re-registration when the bridge refuses Hue Plus or shows another certificate, and the registration is removed from the bridge with the entry. Lights, devices, the bridge module, zones, scenes, the Spotify sync and streaming all work over it. Streaming needs no second registration on such a bridge.
 
