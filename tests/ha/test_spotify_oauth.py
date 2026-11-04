@@ -11,6 +11,7 @@ from urllib.parse import parse_qs, urlsplit
 import pytest
 from aiohttp import web
 from homeassistant.components.application_credentials import ClientCredential, async_import_client_credential
+from homeassistant.config_entries import FlowType
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.exceptions import OAuth2TokenRequestConnectionError
 from homeassistant.helpers.config_entry_oauth2_flow import MY_AUTH_CALLBACK_PATH, _decode_jwt, _encode_jwt
@@ -22,6 +23,8 @@ from custom_components.hue_plus.const import (
     CONF_MODULES,
     CONF_OAUTH_TOKEN,
     CONF_SYNC_APP_ID,
+    CONF_SYNC_CLIENT_ID,
+    CONF_SYNC_CLIENT_SECRET,
     CONF_UUID,
     DOMAIN,
 )
@@ -36,14 +39,24 @@ TOKENS = {"access_token": "test-access", "refresh_token": "test-refresh", "expir
 
 async def authorize(hass, entry):
     hass.config.components.add("my")
-    await async_import_client_credential(hass, DOMAIN, ClientCredential("developer-id", "developer-secret"), APP_DOMAIN)
-    result = await entry.start_reconfigure_flow(hass)
+    options = hass.config_entries.options
+    result = await options.async_init(entry.entry_id)
+    flow_id = result["flow_id"]
+    result = await options.async_configure(flow_id, {"next_step_id": "credentials"})
+    assert result["step_id"] == "credentials"
+    assert CONF_SYNC_CLIENT_SECRET not in result["data_schema"].schema
+    result = await options.async_configure(flow_id, {"use_developer_credentials": True})
+    assert result["type"] is FlowResultType.ABORT
+    flow_type, flow_id = result["next_flow"]
+    assert flow_type is FlowType.CONFIG_FLOW
     configure = hass.config_entries.flow.async_configure
-    result = await configure(result["flow_id"], {"next_step_id": "sync_developer"})
+    result = await configure(flow_id)
+    assert result["step_id"] == "sync_developer"
     assert result["description_placeholders"]["redirect"] == MY_AUTH_CALLBACK_PATH
-    result = await configure(result["flow_id"], {CONF_SYNC_APP_ID: APP, CONF_UUID: UUID})
-    if result["type"] is FlowResultType.FORM:
-        result = await configure(result["flow_id"], {"implementation": APP_DOMAIN})
+    result = await configure(
+        flow_id,
+        {CONF_SYNC_APP_ID: APP, CONF_UUID: UUID, CONF_SYNC_CLIENT_ID: "developer-id", CONF_SYNC_CLIENT_SECRET: "developer-secret"},
+    )
     assert result["type"] is FlowResultType.EXTERNAL_STEP
     params = parse_qs(urlsplit(result["url"]).query)
     assert params["client_id"] == ["developer-id"]
@@ -78,7 +91,9 @@ async def test_developer_oauth_updates_existing_entry_then_manual_can_replace_it
     )
     assert probe.await_args.args[2:] == ("test-access", UUID)
     assert CONF_AUTH not in entry.data
-    assert entry.data[CONF_AUTH_IMPLEMENTATION] == APP_DOMAIN
+    assert entry.data[CONF_AUTH_IMPLEMENTATION] == DOMAIN
+    assert entry.data[CONF_SYNC_CLIENT_ID] == "developer-id"
+    assert entry.data[CONF_SYNC_CLIENT_SECRET] == "developer-secret"
     assert entry.data[CONF_OAUTH_TOKEN]["refresh_token"] == "test-refresh"
     assert "sync" in entry.options[CONF_MODULES]
     assert entry.runtime_data.sync.oauth is not None
@@ -91,7 +106,9 @@ async def test_developer_oauth_updates_existing_entry_then_manual_can_replace_it
         await configure(result["flow_id"], {CONF_AUTH: "new-manual", CONF_UUID: UUID})
         await hass.async_block_till_done()
     assert entry.data[CONF_AUTH] == "new-manual"
-    assert CONF_OAUTH_TOKEN not in entry.data and CONF_AUTH_IMPLEMENTATION not in entry.data and CONF_SYNC_APP_ID not in entry.data
+    assert (
+        not {CONF_OAUTH_TOKEN, CONF_AUTH_IMPLEMENTATION, CONF_SYNC_APP_ID, CONF_SYNC_CLIENT_ID, CONF_SYNC_CLIENT_SECRET} & entry.data.keys()
+    )
 
 
 async def test_refused_oauth_uuid_leaves_previous_credentials_in_place(hass, make_entry):
@@ -104,25 +121,34 @@ async def test_refused_oauth_uuid_leaves_previous_credentials_in_place(hass, mak
         result = await complete(hass, flow_id, state)
     assert result["reason"] == "invalid_auth"
     assert entry.data[CONF_AUTH] == "manual" and CONF_OAUTH_TOKEN not in entry.data
+    assert CONF_SYNC_CLIENT_SECRET not in entry.data
 
 
-async def test_expired_token_rotates_without_reloading_bridge_and_is_reused_after_reload(hass, make_entry):
+@pytest.mark.parametrize("inline", [False, True])
+async def test_expired_token_rotates_without_reloading_bridge_and_is_reused_after_reload(hass, make_entry, inline):
+    credentials = {CONF_SYNC_CLIENT_ID: "developer-id", CONF_SYNC_CLIENT_SECRET: "developer-secret"} if inline else {}
     with patch("custom_components.hue_plus.sync.setup.start"):
         entry = await make_entry(
             ["bridge", "sync"],
             **{
                 CONF_UUID: UUID,
                 CONF_SYNC_APP_ID: APP,
-                CONF_AUTH_IMPLEMENTATION: APP_DOMAIN,
+                CONF_AUTH_IMPLEMENTATION: DOMAIN if inline else APP_DOMAIN,
+                **credentials,
                 CONF_OAUTH_TOKEN: {**TOKENS, "expires_at": time.time() - 1},
             },
         )
         runtime = entry.runtime_data
         new = {**TOKENS, "access_token": "renewed", "refresh_token": "rotated", "expires_at": time.time() + 600}
         implementation = Mock(async_refresh_token=AsyncMock(return_value=new))
-        with patch("custom_components.hue_plus.sync.oauth.async_get_config_entry_implementation", return_value=implementation):
+        with (
+            patch("custom_components.hue_plus.sync.oauth.async_get_config_entry_implementation", return_value=implementation) as lookup,
+            patch.object(HueDeveloperOAuth, "async_refresh_token", AsyncMock(return_value=new)) as refresh,
+        ):
             assert (await runtime.sync.oauth.access())[0] == "renewed"
             await hass.async_block_till_done()
+        assert lookup.await_count == int(not inline)
+        assert refresh.await_count == int(inline)
         assert entry.runtime_data is runtime
         assert entry.data[CONF_OAUTH_TOKEN]["refresh_token"] == "rotated"
         assert await hass.config_entries.async_reload(entry.entry_id)
@@ -153,18 +179,22 @@ async def test_token_endpoint_sends_basic_and_bounds_the_result(hass):
     }
 
 
-async def test_developer_reauth_prompts_before_opening_the_browser(hass, make_entry):
+@pytest.mark.parametrize("inline", [False, True])
+async def test_developer_reauth_prompts_before_opening_the_browser(hass, make_entry, inline):
+    credentials = {CONF_SYNC_CLIENT_ID: "developer-id", CONF_SYNC_CLIENT_SECRET: "developer-secret"} if inline else {}
     entry = await make_entry(
         ["bridge"],
         **{
             CONF_UUID: UUID,
             CONF_SYNC_APP_ID: APP,
-            CONF_AUTH_IMPLEMENTATION: APP_DOMAIN,
+            CONF_AUTH_IMPLEMENTATION: DOMAIN if inline else APP_DOMAIN,
+            **credentials,
             CONF_OAUTH_TOKEN: {**TOKENS, "expires_at": time.time() - 1},
         },
     )
     hass.config.components.add("my")
-    await async_import_client_credential(hass, DOMAIN, ClientCredential("developer-id", "developer-secret"), APP_DOMAIN)
+    if not inline:
+        await async_import_client_credential(hass, DOMAIN, ClientCredential("developer-id", "developer-secret"), APP_DOMAIN)
     result = await entry.start_reauth_flow(hass, context={"reauth_for": "sync"})
     assert result["step_id"] == "sync_developer_reauth"
     configure = hass.config_entries.flow.async_configure

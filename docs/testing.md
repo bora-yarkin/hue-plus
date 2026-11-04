@@ -53,12 +53,14 @@ Starting Matter pairing was removed: the bridge refused the guessed request and 
 
 ## Spotify developer OAuth acceptance (HP-9)
 
-The full local suite passed 434 tests on Home Assistant 2026.10.4. OAuth tests use Home Assistant's HTTP callback,
-signed state, and app credential storage with simulated token responses and a local WebSocket service. They cover switching from OAuth to manual, rejected UUIDs, malformed callbacks, saved rotation
-across reload, renewal without a bridge reload, WebSocket reconnect and Start/Stop after renewal, and redirect rejection.
+The OAuth tests on Home Assistant 2026.10.4 exercise the options handoff, direct developer credential entry, the
+Home Assistant HTTP callback, and renewal and reauthentication for both credential storage paths. Simulated token
+responses and a local WebSocket service cover rejected UUIDs, malformed callbacks, rotation across reload, renewal
+without a bridge reload, Start/Stop after reconnect, the manual fallback, and redirect rejection.
 
-After owner deployment, use the UUID handoff and your own Hue Remote API app. Register the exact callback shown in the
-Reconfigure flow, complete browser sign-in, and verify Spotify Sync state and Start/Stop. Restart Home Assistant to
-check that the OAuth session reconnects. At renewal, verify the Sync connection returns and the bridge stays loaded.
+After owner deployment, use the UUID handoff and your own Hue Remote API app. Register the exact callback shown under
+**Configure → Spotify Sync token → Enter developer credentials**, complete browser sign-in, and verify Spotify Sync
+state and Start/Stop. Restart Home Assistant to check that the OAuth session reconnects. At renewal, verify the Sync
+connection returns and the bridge stays loaded.
 Check the manual token option separately. Before rolling back to a version without developer OAuth, switch the entry
 to manual credentials or turn off its Sync module.

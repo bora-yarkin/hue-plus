@@ -30,10 +30,11 @@ integrations); the bridge and the Signify sync service (trusted to answer, not t
   every 3 seconds at most; a light that does not offer the effect is driven normally.
 
 **Spotify Sync credentials.** An administrator enters a manual token and UUID or authorizes their own Hue developer
-app. Home Assistant Application credentials holds the developer client secret. OAuth uses Home Assistant's signed
-callback state and a fixed Hue authorization and token origin. The entry changes only after Spotify Sync accepts the
-token and UUID. The OAuth token pair is private config-entry data. Rotation saves the returned pair before reconnecting
-and does not reload bridge modules. An in-flight refresh cannot overwrite a newer config-entry update. Sync and token
+app. OAuth uses Home Assistant's signed callback state and fixed Hue authorization and token endpoints. The new form
+masks the client secret and does not prefill it. Hue Plus stores it with the token pair in private config-entry data
+only after Spotify Sync accepts the token and UUID. Treat Home Assistant backups containing this entry as credentials.
+Earlier beta entries can still use secrets held by Home Assistant Application Credentials. Rotation saves the returned
+pair before reconnecting and does not reload bridge modules. An in-flight refresh cannot overwrite a newer config-entry update. Sync and token
 requests reject redirects, and logs report status or error classes without upstream bodies or credential values.
 
 **Accepted risk.** Spotify Sync uses a private Hue service and is off by default. Existing manual tokens remain valid

@@ -156,8 +156,13 @@ CONFIG = {
         },
         "sync_developer": {
             "title": "Spotify Sync with a Hue developer app",
-            "description": "Register {redirect} as the callback URL in your Hue developer app. Add its Client ID and Client Secret in Home Assistant under Application credentials, then enter the App ID and the Spotify Sync UUID from your extractor's UUID handoff.",
-            "data": {"sync_app_id": "Hue developer App ID", "uuid": "Spotify Sync UUID"},
+            "description": "Register {redirect} as the callback URL in your Hue developer app. Enter its App ID, Client ID and Client Secret, plus the Spotify Sync UUID from your extractor's UUID handoff.",
+            "data": {
+                "sync_app_id": "Hue developer App ID",
+                "sync_client_id": "Hue developer Client ID",
+                "sync_client_secret": "Hue developer Client Secret",
+                "uuid": "Spotify Sync UUID",
+            },
         },
         "pick_implementation": {
             "title": "Choose your Hue developer app",
@@ -197,6 +202,7 @@ CONFIG = {
     },
     "error": {
         **SYNC_ERRORS,
+        "invalid_client_credentials": "Enter the Client ID or Client Secret from your Hue developer app.",
         "invalid_app_id": "Enter the App ID from your Hue developer app.",
         "invalid_uuid": "Enter the Spotify Sync UUID from the extractor handoff.",
         "wrong_account": "This token belongs to a different Hue account than the stored one.",
@@ -228,7 +234,7 @@ OPTIONS = {
             "title": "Philips Hue Plus",
             "menu_options": {
                 "modules": "Choose the modules",
-                "credentials": "Spotify sync token (by hand)",
+                "credentials": "Spotify Sync token",
                 "streaming": "Local streaming registration",
             },
         },
@@ -243,15 +249,16 @@ OPTIONS = {
         },
         "credentials": {
             "title": "Hue Spotify sync credentials",
-            "description": "Paste the auth token and UUID from the extractor token export. For automatic renewal with a Hue developer app, use Reconfigure instead.",
-            "data": {"auth": "Token", "uuid": "UUID"},
+            "description": "Paste the token and UUID from the extractor, or turn on Enter developer credentials and submit to set up automatic renewal.",
+            "data": {"use_developer_credentials": "Enter developer credentials", "auth": "Token", "uuid": "UUID"},
         },
     },
     "error": {
         **SYNC_ERRORS,
+        "required": "Enter a value for this field.",
         "link_button_not_pressed": "The bridge did not register Hue Plus. Press its link button, then submit again.",
     },
-    "abort": {"no_options": "A sync box has no options."},
+    "abort": {"no_options": "A sync box has no options.", "continue_developer_setup": "Continue with Hue developer setup."},
 }
 
 SELECTOR_TEXTS = {

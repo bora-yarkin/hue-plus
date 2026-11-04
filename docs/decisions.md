@@ -64,7 +64,8 @@ Confirmed by the owner on 2026-10-28.
   the ones Hue Plus runs for lights and devices (D-14, D-16); copying them out, to drop the dependency, is not done.
 - D-22 (owner's decision, 2026-11-03) The Hue integration's entities are hidden and renamed only when the user chooses so on the setup screen. The default is to leave them alone: Hue Plus's entities then end in `_plus` and follow the Hue entity they copy (matched by unique id) one way, for good: area, name, icon, labels, hidden by the user, and the device's area and name (`lights/alongside.py`, `async_follow_hue_settings`). An entry made before the choice existed has none stored and keeps hiding and renaming. In the leave-alone mode live scenes, areas and locating a light accept Hue lights only (`scenes/hue_only.py`). Consequences: both sets of entities exist; a dashboard that wants one set filters by platform and unique id.
 - D-24 (owner's decision, 2026-11-05) Hue Plus supports OAuth only with a user's own registered Remote Hue API app.
-  Home Assistant Application credentials owns the developer client ID and secret. The bridge entry stores the linked
-  Spotify Sync UUID and the issued token pair. The Sync connection renews before expiry and reconnects with the new
-  access token. A manual token can still be entered in options. The private APK helper supplies a one-time UUID or
+  The Spotify Sync options dialog hands off to the native OAuth config flow. The bridge entry stores the entered
+  developer Client ID and Client Secret, linked Spotify Sync UUID, and issued token pair after verification. Entries
+  linked through Application Credentials in the first beta continue to use those credentials. The Sync connection renews before
+  expiry and reconnects with the new access token. A manual token can still be entered in options. The private APK helper supplies a one-time UUID or
   manual token export. The integration uses neither the official app's credentials nor its login implementation.

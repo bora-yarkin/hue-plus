@@ -4,8 +4,10 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Mapping
 
 import aiohttp
+from homeassistant.components.application_credentials import ClientCredential
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_CLOSE
 from homeassistant.core import HomeAssistant, callback
@@ -18,7 +20,8 @@ from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.config_entry_oauth2_flow import async_get_config_entry_implementation
 from homeassistant.util.hass_dict import HassKey
 
-from ..const import CONF_OAUTH_TOKEN
+from ..application_credentials import SERVER, HueDeveloperOAuth
+from ..const import CONF_OAUTH_TOKEN, CONF_SYNC_CLIENT_ID, CONF_SYNC_CLIENT_SECRET, DOMAIN
 from .client import GenesisRejected, GenesisUnavailable
 
 RENEW_EARLY_S = 30
@@ -46,6 +49,13 @@ def sync_session(hass: HomeAssistant) -> aiohttp.ClientSession:
     return hass.data[DATA_SYNC_SESSION]
 
 
+def inline_oauth(hass: HomeAssistant, data: Mapping) -> HueDeveloperOAuth | None:
+    """Build an OAuth implementation from the credentials owned by this bridge entry."""
+    if (client_id := data.get(CONF_SYNC_CLIENT_ID)) and (secret := data.get(CONF_SYNC_CLIENT_SECRET)):
+        return HueDeveloperOAuth(hass, DOMAIN, ClientCredential(client_id, secret), SERVER)
+    return None
+
+
 class SyncOAuth:
     """One consumer renews and saves the token before using it for a new connection."""
 
@@ -59,7 +69,7 @@ class SyncOAuth:
         token = data[CONF_OAUTH_TOKEN]
         if self._renew_at(token) <= time.time():
             try:
-                implementation = await async_get_config_entry_implementation(self.hass, self.entry)
+                implementation = inline_oauth(self.hass, data) or await async_get_config_entry_implementation(self.hass, self.entry)
                 token = await implementation.async_refresh_token(token)
             except UnknownImplementationError, OAuth2TokenRequestReauthError:
                 raise GenesisRejected("Hue developer sign-in needs to be renewed") from None

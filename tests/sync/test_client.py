@@ -216,7 +216,7 @@ class ClientTests(unittest.IsolatedAsyncioTestCase):
         connection = self.make(url, oauth_access=oauth_access)
         task = asyncio.create_task(connection.run())
         try:
-            await self.until(lambda: service.connections >= 2)
+            await self.until(lambda: service.connections >= 2 and connection.connected)
             self.assertEqual([headers["auth"] for headers in service.headers_seen], [AUTH, "renewed-access"])
             self.assertEqual(self.events["rejected"], 0)
             await connection.async_set_sync(True)

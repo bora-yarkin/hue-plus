@@ -61,8 +61,8 @@ light or accessory it has an entity for), named like the Hue ones and linked to 
 
 Link Spotify to your Hue account in the Hue app first. Use the separate token extractor to obtain either the token export or the UUID-only handoff.
 
-- **Manual token.** Open the Hue Plus entry's options and choose **Spotify sync token (by hand)**. Paste the `auth` and `uuid` values from the token export. When Hue rejects the token, renew it in the extractor and enter the replacement in Home Assistant.
-- **Developer OAuth.** Open the bridge entry's **Reconfigure** menu and choose **Spotify Sync with a Hue developer app**. Register the callback URL displayed on that form in your Remote Hue API app. In Home Assistant, open **Settings → Devices & services → Application credentials** from the menu and add your app's Client ID and Client Secret for **Philips Hue Plus**. Enter the App ID and the extractor's UUID in the reconfigure form, then sign in to Hue in the browser. Hue Plus checks the Sync connection before saving the setup and renews its token automatically. If Hue revokes access, use the Home Assistant reauthentication prompt.
+- **Manual token.** Open the Hue Plus entry's options and choose **Spotify Sync token**. Paste the `auth` and `uuid` values from the token export. When Hue rejects the token, renew it in the extractor and enter the replacement in Home Assistant.
+- **Developer OAuth.** Open the bridge's **Configure → Spotify Sync token**, turn on **Enter developer credentials**, and submit. Register the callback URL displayed on the next screen in your Remote Hue API app. Enter the App ID, Client ID, Client Secret, and the extractor's UUID there, then sign in to Hue in the browser. Hue Plus checks the Sync connection before saving the setup and renews its token automatically. If Hue revokes access, use the Home Assistant reauthentication prompt.
 
 The bridge entry and its Spotify entities are shared between these methods. To switch back to manual renewal, enter a manual token in options.
 
