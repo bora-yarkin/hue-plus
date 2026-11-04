@@ -1,11 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Setup, options (which modules are on, and the Spotify sync's credentials) and re-authentication."""
+"""Setup, options (which modules are on, and the Spotify sync's token and UUID) and re-authentication."""
 
 from __future__ import annotations
 
-import json
-import logging
-import os
 from collections.abc import Mapping
 from typing import Any
 
@@ -34,7 +31,6 @@ from .const import (
     CONF_SYNCBOX_TOKEN,
     CONF_TAKEOVER,
     CONF_UUID,
-    CREDENTIALS_FILE,
     DEFAULT_MODULES,
     DOMAIN,
     HUE_DOMAIN,
@@ -49,8 +45,6 @@ from .streaming.register import LinkButtonNotPressed, register
 from .sync.client import GenesisRejected, GenesisUnavailable, async_probe
 from .syncbox.client import SyncBox, SyncBoxError, SyncBoxRegistrationPending, valid_host
 
-_LOGGER = logging.getLogger(__name__)
-
 CREDENTIALS_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_AUTH): TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD)),
@@ -59,34 +53,8 @@ CREDENTIALS_SCHEMA = vol.Schema(
 )
 
 
-def _read_credentials_file(path: str) -> dict[str, str] | None:
-    """The credentials in the file, or None when there is no usable file."""
-    try:
-        with open(path, encoding="utf-8") as handle:
-            data = json.load(handle)
-    except OSError, ValueError:
-        return None
-    if isinstance(data, dict) and all(isinstance(data.get(key), str) and data[key] for key in (CONF_AUTH, CONF_UUID)):
-        return {CONF_AUTH: data[CONF_AUTH], CONF_UUID: data[CONF_UUID]}
-    return None
-
-
-def _delete_file(path: str) -> None:
-    try:
-        os.remove(path)
-    except OSError:
-        _LOGGER.warning("Could not delete %s; delete it by hand, it holds a token", path)
-
-
 class _CredentialsMixin:
-    """Reading and checking the sync credentials, for the options flow and for re-authentication."""
-
-    async def _credentials(self, user_input: dict[str, str] | None) -> tuple[dict[str, str] | None, bool]:
-        """The credentials to try, and whether they came from the file."""
-        if user_input is not None:
-            return user_input, False
-        creds = await self.hass.async_add_executor_job(_read_credentials_file, self.hass.config.path(CREDENTIALS_FILE))
-        return creds, creds is not None
+    """Checking the sync credentials the user typed, for the options flow and for re-authentication."""
 
     async def _check(self, creds: dict[str, str]) -> str | None:
         """None when the service accepts the credentials, otherwise the error key."""
@@ -97,10 +65,6 @@ class _CredentialsMixin:
         except GenesisUnavailable:
             return "cannot_connect"
         return None
-
-    async def _forget_file(self, from_file: bool) -> None:
-        if from_file:
-            await self.hass.async_add_executor_job(_delete_file, self.hass.config.path(CREDENTIALS_FILE))
 
 
 SYNCBOX_SCHEMA = vol.Schema({vol.Required(CONF_SYNCBOX_HOST): TextSelector()})
@@ -219,12 +183,10 @@ class HuePlusConfigFlow(_CredentialsMixin, ConfigFlow, domain=DOMAIN):
 
     async def async_step_reauth_credentials(self, user_input: dict[str, str] | None = None) -> ConfigFlowResult:
         errors: dict[str, str] = {}
-        creds, from_file = await self._credentials(user_input)
-        if creds is not None:
+        if (creds := user_input) is not None:
             if error := await self._check(creds) or self._wrong_account(creds):
                 errors["base"] = error
             else:
-                await self._forget_file(from_file)
                 return self._finish_reauth(creds)
         return self.async_show_form(step_id="reauth_credentials", data_schema=CREDENTIALS_SCHEMA, errors=errors)
 
@@ -271,12 +233,10 @@ class HuePlusOptionsFlow(_CredentialsMixin, OptionsFlow):
 
     async def async_step_credentials(self, user_input: dict[str, str] | None = None) -> ConfigFlowResult:
         errors: dict[str, str] = {}
-        creds, from_file = await self._credentials(user_input)
-        if creds is not None:
+        if (creds := user_input) is not None:
             if error := await self._check(creds):
                 errors["base"] = error
             else:
-                await self._forget_file(from_file)
                 return self._store_sync_account(creds)
         return self.async_show_form(step_id="credentials", data_schema=CREDENTIALS_SCHEMA, errors=errors)
 

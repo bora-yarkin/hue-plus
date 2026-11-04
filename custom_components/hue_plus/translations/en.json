@@ -43,7 +43,7 @@
       },
       "reauth_credentials": {
         "title": "Hue Spotify sync credentials",
-        "description": "Enter the new token and UUID, or put a file named hue_plus_spotify_token.json with auth and uuid in the Home Assistant configuration folder and submit this form.",
+        "description": "Enter the new token and UUID.",
         "data": {
           "auth": "Token",
           "uuid": "UUID"
@@ -87,7 +87,7 @@
       },
       "credentials": {
         "title": "Hue Spotify sync credentials",
-        "description": "Enter the token and UUID of the Hue app's Spotify sync, or put a file named hue_plus_spotify_token.json with auth and uuid in the Home Assistant configuration folder and submit this form. The file is deleted once the credentials are stored.",
+        "description": "Enter the token and UUID of the Hue app's Spotify sync.",
         "data": {
           "auth": "Token",
           "uuid": "UUID"

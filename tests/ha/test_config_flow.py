@@ -96,16 +96,15 @@ async def test_switching_the_sync_on_asks_for_credentials_and_checks_them(hass, 
     assert entry.runtime_data.sync is not None
 
 
-async def test_the_credentials_file_is_used_once_and_deleted(hass, make_entry, tmp_path):
+async def test_a_credentials_file_in_the_configuration_folder_is_ignored(hass, make_entry, tmp_path):
     entry = await make_entry(["bridge"])
-    (tmp_path / "hue_plus_spotify_token.json").write_text('{"auth": "' + "b" * 27 + '", "uuid": "u-1"}')
+    token_file = tmp_path / "hue_plus_spotify_token.json"
+    token_file.write_text('{"auth": "' + "b" * 27 + '", "uuid": "u-1"}')
     hass.config.config_dir = str(tmp_path)
     result = await hass.config_entries.options.async_init(entry.entry_id)
-    with patch("custom_components.hue_plus.config_flow.async_probe"), patch("custom_components.hue_plus.sync.setup.start"):
-        result = await hass.config_entries.options.async_configure(result["flow_id"], {"next_step_id": "credentials"})
-        assert result["type"] is FlowResultType.CREATE_ENTRY
-        await hass.async_block_till_done()
-    assert entry.data[CONF_AUTH] == "b" * 27 and not (tmp_path / "hue_plus_spotify_token.json").exists()
+    result = await hass.config_entries.options.async_configure(result["flow_id"], {"next_step_id": "credentials"})
+    assert result["type"] is FlowResultType.FORM and result["step_id"] == "credentials"
+    assert CONF_AUTH not in entry.data and token_file.exists()
 
 
 async def test_re_authentication_asks_for_a_new_token_and_replaces_it(hass, make_entry):

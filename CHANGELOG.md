@@ -4,6 +4,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+### Removed
+- The Spotify sync no longer reads a `hue_plus_spotify_token.json` file from the configuration folder. The token and UUID are entered on the configuration screen only.
+
 ## [0.3.1]
 
 - Installation notes now describe the Marketplace that replaces HACS in Home Assistant 2026.11. No change in behaviour.

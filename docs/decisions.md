@@ -36,7 +36,7 @@ Confirmed by the owner on 2026-10-28.
 - D-16 The `devices` module reuses the Hue integration's platforms through a proxy entry instead of copying them: less code, every feature, and the same
   long-term aim as D-14 (copy them out when Hue Plus has its own connection).
 - D-17 (owner's decision, 2026-11-03) Hue Plus does not sign in to Hue on the user's behalf. The Spotify sync takes a token and
-  UUID the user enters (or a file `hue_plus_spotify_token.json` in the configuration folder); when the service refuses the token,
+  UUID the user enters on the configuration screen (no file is read); when the service refuses the token,
   Home Assistant asks for a new one (reauthentication). Reusing the Hue app's own identifiers is not part of this repository.
 - D-18 (2026-10-29, owner's choice) A Hue Play HDMI Sync Box is a second kind of config entry of this integration, not a separate
   integration. It is told apart by `syncbox_host` in the entry's data, has no modules, and its `Runtime` is a `SyncBoxRuntime` whose

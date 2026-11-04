@@ -39,9 +39,6 @@ DEFAULT_MODULES = (MODULE_BRIDGE, MODULE_LIGHTS, MODULE_DEVICES, MODULE_ZONES, M
 # Seconds between two reads of the bridge by the bridge module (about 17 requests; the bridge allows three at a time).
 UPDATE_INTERVAL_S = 60
 
-# A file in the Home Assistant configuration folder holding {"auth": ..., "uuid": ...}. The options flow reads it once,
-# stores the values in the config entry and deletes the file, so the token never has to be typed or pasted into a form.
-CREDENTIALS_FILE = "hue_plus_spotify_token.json"
 SYNC_URL = "wss://genesis-ws.meethue.com/"
 
 MANUFACTURER = "Signify"
