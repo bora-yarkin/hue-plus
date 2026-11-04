@@ -198,9 +198,6 @@ class Library:
         """Removes an area. Scenes that play on it are kept, but they need another area before they can start."""
         return self.areas.pop(area_id, None) is not None
 
-    def scenes_using(self, area_id: str) -> list[str]:
-        return [s["id"] for s in self.scenes.values() if s.get("area") == area_id]
-
     def request(self, data: Mapping[str, Any]) -> dict[str, Any]:
         """The start request for ``parse_definition``, from the shipped defaults, a preset, a saved scene of this id and what the
         call gives, in that order (later ones win). The lights come from the call, else the area it names, else the saved scene's."""

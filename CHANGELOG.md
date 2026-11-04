@@ -4,6 +4,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+### Changed
+- Cleanup, no change in behaviour: removed code nothing used (`ROOM_TYPES`, `scenes_using`, the sync box `summary`, two attributes), and the failures that were swallowed silently in the zones module are now logged at debug level.
+
 ## [0.4.0]
 
 ### Added

@@ -10,7 +10,6 @@ from ..fieldspec import f
 from . import actions as _actions
 
 LIGHT = f("text", "The light: its Hue id, the name of its device, or its Home Assistant entity.", True, example="Floor Light L")
-ROOM_TYPES = "bedroom, living_room, kitchen, ..."
 
 SPEC: dict[str, dict[str, Any]] = {
     "get_resources": {

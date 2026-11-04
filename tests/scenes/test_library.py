@@ -78,10 +78,9 @@ class SaveTests(unittest.TestCase):
         self.assertEqual(again.as_json(), self.library.as_json())
         self.assertEqual(problems, [])
 
-    def test_delete_reports_whether_anything_was_deleted_and_names_scenes_left_without_area(self):
+    def test_delete_reports_whether_anything_was_deleted(self):
         self.library.save_area({"id": "room", "name": "Room", "lights": LIGHTS})
         self.library.save_scene({"id": "s", "name": "S", "preset": "ocean", "area": "room"})
-        self.assertEqual(self.library.scenes_using("room"), ["s"])
         self.assertTrue(self.library.delete_area("room"))
         self.assertFalse(self.library.delete_area("room"))
         self.assertTrue(self.library.delete_scene("s"))

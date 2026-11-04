@@ -88,7 +88,6 @@ class HuePlusConfigFlow(_CredentialsMixin, ConfigFlow, domain=DOMAIN):
         self._host = ""
         self._fingerprint = ""
         self._box_host = ""
-        self._box_unique_id = ""
         self._box_name = ""
         self._bridge: ConfigEntry | None = None
 

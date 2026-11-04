@@ -83,7 +83,6 @@ class GradientLight:
         self.api = api
         self.light_id: str = resource["id"]
         self.name: str = resource.get("metadata", {}).get("name", "Gradient light")
-        self.model_archetype: str = resource.get("metadata", {}).get("archetype", "")
         self.owner_id: str | None = (resource.get("owner") or {}).get("rid")
         self.data: dict[str, Any] = resource
         self.available = True
@@ -241,7 +240,8 @@ class GradientLight:
                 if (item.get("owner") or {}).get("rid") == self.owner_id:
                     self._unreachable = item.get("status") not in (None, "connected")
                     return
-        except Exception:
+        except Exception as err:
+            _LOGGER.debug("Could not check whether %s is reachable: %s", self.name, err)
             return
 
     async def async_refresh(self, check_reachable: bool = False) -> None:
