@@ -4,6 +4,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.5.0-beta.2]
+
+### Changed
+- Beta: the developer app's client ID and secret are entered together with the app ID and UUID (from the Spotify sync options or Reconfigure) and kept in the bridge entry, so no separate Application credentials step is needed.
+
 ## [0.5.0-beta.1]
 
 ### Added
