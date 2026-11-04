@@ -28,19 +28,23 @@ CREDENTIALS = {CONF_AUTH: "a" * 27, CONF_UUID: "12345678-1234-1234-1234-12345678
 async def start_bridge_flow(hass):
     """The first screen is a choice between a bridge and a sync box; this takes the bridge."""
     result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": config_entries.SOURCE_USER})
-    assert result["type"] is FlowResultType.MENU and result["menu_options"] == ["bridge", "syncbox"]
+    assert result["type"] is FlowResultType.MENU and result["menu_options"] == ["bridge", "bridge_direct", "syncbox"]
     return await hass.config_entries.flow.async_configure(result["flow_id"], {"next_step_id": "bridge"})
 
 
-async def test_without_the_hue_integration_there_is_nothing_to_set_up(hass):
-    result = await start_bridge_flow(hass)
-    assert result["type"] is FlowResultType.ABORT and result["reason"] == "no_hue_bridge"
+async def _menu(hass):
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": config_entries.SOURCE_USER})
+    assert result["type"] is FlowResultType.MENU
+    return result
+
+
+async def test_without_the_hue_integration_only_a_direct_connection_or_a_sync_box_is_offered(hass):
+    assert (await _menu(hass))["menu_options"] == ["bridge_direct", "syncbox"]
 
 
 async def test_a_hue_bridge_using_the_old_api_cannot_be_used(hass):
     MockConfigEntry(domain="hue", unique_id="old", data={"host": "x", "api_version": 1}).add_to_hass(hass)
-    result = await start_bridge_flow(hass)
-    assert result["reason"] == "no_hue_bridge"
+    assert (await _menu(hass))["menu_options"] == ["bridge_direct", "syncbox"]
 
 
 async def test_a_bridge_is_added_after_one_question_that_defaults_to_leaving_the_hue_entities_alone(hass, hue_entry):

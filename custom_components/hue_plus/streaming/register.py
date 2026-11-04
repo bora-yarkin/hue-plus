@@ -36,10 +36,11 @@ class Registration:
         return "Registration(<redacted>)"
 
 
-async def register(session: aiohttp.ClientSession, host: str) -> Registration:
+async def register(session: aiohttp.ClientSession, host: str, tls: bool | aiohttp.Fingerprint = False) -> Registration:
+    """Registers with the bridge. ``tls`` is aiohttp's ``ssl`` argument: ``False`` (not checked, the Hue integration's way) or a pinned fingerprint."""
     try:
         async with session.post(
-            f"https://{host}/api", json={"devicetype": DEVICE_TYPE, "generateclientkey": True}, ssl=False, timeout=TIMEOUT
+            f"https://{host}/api", json={"devicetype": DEVICE_TYPE, "generateclientkey": True}, ssl=tls, timeout=TIMEOUT
         ) as response:
             answer: Any = await response.json(content_type=None)
         item = answer[0] if isinstance(answer, list) and answer and isinstance(answer[0], dict) else {}
@@ -51,7 +52,7 @@ async def register(session: aiohttp.ClientSession, host: str) -> Registration:
         app_key, client_key = success.get("username"), success.get("clientkey")
         if not (isinstance(app_key, str) and isinstance(client_key, str) and app_key and client_key):
             raise BridgeError("The bridge sent no client key")
-        async with session.get(f"https://{host}/auth/v1", headers={"hue-application-key": app_key}, ssl=False, timeout=TIMEOUT) as response:
+        async with session.get(f"https://{host}/auth/v1", headers={"hue-application-key": app_key}, ssl=tls, timeout=TIMEOUT) as response:
             application_id = response.headers.get("hue-application-id")
         if not application_id:
             raise BridgeError("The bridge sent no application id")
@@ -60,13 +61,13 @@ async def register(session: aiohttp.ClientSession, host: str) -> Registration:
     return Registration(app_key, client_key, application_id)
 
 
-def transport(session: aiohttp.ClientSession, host: str, app_key: str):
-    """A ``bridge.api`` transport that sends requests with Hue Plus's own key."""
+def transport(session: aiohttp.ClientSession, host: str, app_key: str, tls: bool | aiohttp.Fingerprint = False):
+    """A ``bridge.api`` transport that sends requests with Hue Plus's own key (``tls`` as in ``register``)."""
 
     async def request(method: str, path: str, body: Any) -> tuple[int, Any]:
         try:
             async with session.request(
-                method, f"https://{host}/{path}", json=body, headers={"hue-application-key": app_key}, ssl=False, timeout=TIMEOUT
+                method, f"https://{host}/{path}", json=body, headers={"hue-application-key": app_key}, ssl=tls, timeout=TIMEOUT
             ) as response:
                 text = await response.text()
                 return response.status, (json.loads(text) if text else {})

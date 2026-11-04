@@ -41,6 +41,12 @@ Backlog proposal (not scheduled, needs approval and a new dependency): local Ent
   (handshake, a wrong key failing, frames arriving); NOT tried on a real bridge (the Spotify sync was running; an area cannot do both).
 - GF-5 blocked on hardware: Hue Secure (cameras, contact sensors, alarm).
 
+## HP-11 Own connection (2026-11-05, owner's decision D-23)
+
+- HP-11.1 complete (tested against a fake and real aiohue objects; not tried on a real bridge): direct connection with a pinned certificate, setup, reconfigure, re-registration, removal.
+- HP-11.2 planned: the owner decides ("to be determined") whether to copy the Hue integration's platforms into Hue Plus and drop the `hue` dependency.
+- HP-11.3 planned: bridge facts the code does not use yet (read-only), then the writable ones as experimental (see the 2026-11-05 list in the chat; each write is tried live only with the owner's approval).
+
 ## HP-10 Live scenes v2: combined scenes (planned, direction chosen by the owner 2026-10-30; built here, not in `scene-engine`, D-20)
 
 Goal: a live scene is made of parts the owner mixes in the dashboard's one "New scene" creator, and can also switch other devices. Order matters.

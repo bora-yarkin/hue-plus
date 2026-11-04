@@ -4,7 +4,7 @@
 - Source of truth for order and status: `docs/roadmap.md`. Decisions: `docs/decisions.md`.
 - Layering: HA-free core (API client, models, payload builders, engine) in plain Python with stdlib tests; a thin Home
   Assistant layer on top (coordinator, entities, config flow, services); see `docs/architecture.md`. Keep the core free of `homeassistant` imports.
-- Reuses the core Hue integration's connection (`hue` config entry); never stores bridge keys itself.
+- A bridge is reached through the Hue integration's connection (its `hue` config entry; Hue Plus then stores no bridge key), or through Hue Plus's own registration with the certificate pinned (`direct.py`, D-23).
 - Admin-only and destructive actions need `confirm: true`; keys and tokens never appear in logs or error messages.
 - A live Home Assistant restart is done only when the owner says so. Test against the real bridge with read-only calls
   unless the owner approved the exact visible action.

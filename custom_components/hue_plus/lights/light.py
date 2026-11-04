@@ -40,11 +40,11 @@ DESCRIPTION = LightEntityDescription(key="hue_plus_light", has_entity_name=True,
 
 async def async_setup_entry(hass: HomeAssistant, entry: HuePlusConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
     runtime = entry.runtime_data
-    bridge = runtime.hue_entry.runtime_data
+    bridge = runtime.link.bridge
     api = bridge.api
     # Taking over comes first: the entities below must find their entity ids free.
     if replaces_hue(entry):
-        taken = adopt.async_adopt(hass, runtime.hue_entry.entry_id)
+        taken = adopt.async_adopt(hass, runtime.link.hue_entry_id)
         if taken:
             _LOGGER.info("Took over %s light entities of the Hue integration (hidden, and renamed with %s)", taken, adopt.SUFFIX)
     async_add_entities = beside_hue(hass, entry, "light", async_add_entities)

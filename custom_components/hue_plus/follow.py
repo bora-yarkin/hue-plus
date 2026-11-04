@@ -31,7 +31,7 @@ ADOPT_DELAY_SECONDS = 5.0
 @callback
 def async_follow_hue(hass: HomeAssistant, entry: HuePlusConfigEntry) -> None:
     runtime = entry.runtime_data
-    api = runtime.hue_entry.runtime_data.api
+    api = runtime.link.api
     devices = dr.async_get(hass)
 
     @callback
@@ -50,7 +50,7 @@ def async_follow_hue(hass: HomeAssistant, entry: HuePlusConfigEntry) -> None:
     )
     if not domains or not replaces_hue(entry):
         return  # next to the Hue integration, nothing is taken over, so a new accessory needs nothing
-    hue_entry_id = runtime.hue_entry.entry_id
+    hue_entry_id = runtime.link.hue_entry_id
     entities = er.async_get(hass)
     pending: CALLBACK_TYPE | None = None
 

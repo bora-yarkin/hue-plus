@@ -5,6 +5,12 @@ DOMAIN = "hue_plus"
 HUE_DOMAIN = "hue"
 
 CONF_HUE_ENTRY = "hue_entry_id"
+# An entry that has no ``CONF_HUE_ENTRY`` talks to its bridge itself: it has registered with the bridge (link button), and keeps the
+# bridge's address, its own app key and the SHA-256 fingerprint of the certificate the bridge showed while registering (every
+# later connection must show the same one; the bridge's certificate is signed by Signify's private authority, so it has no public chain).
+CONF_HOST = "host"
+CONF_APP_KEY = "app_key"
+CONF_CERT_SHA256 = "certificate_sha256"
 CONF_MODULES = "modules"
 # What Hue Plus does with the Hue integration's own entities. "replace" hides each one and gives its entity id to Hue Plus's
 # entity (the Hue one becomes ``<id>_hue``); "alongside" leaves the Hue integration exactly as it was, and Hue Plus's entities
@@ -44,6 +50,14 @@ SYNC_URL = "wss://genesis-ws.meethue.com/"
 MANUFACTURER = "Signify"
 
 
+def connects_directly(entry) -> bool:
+    """Whether this bridge entry has its own connection to the bridge instead of using the Hue integration's."""
+    return CONF_HUE_ENTRY not in entry.data
+
+
 def replaces_hue(entry) -> bool:
-    """Whether this Hue Plus entry hides and renames the Hue integration's entities (see ``CONF_TAKEOVER``)."""
-    return entry.data.get(CONF_TAKEOVER, TAKEOVER_REPLACE) == TAKEOVER_REPLACE
+    """Whether this Hue Plus entry hides and renames the Hue integration's entities (see ``CONF_TAKEOVER``).
+
+    An entry with its own connection has no Hue entities of that bridge to hide, so it never does.
+    """
+    return not connects_directly(entry) and entry.data.get(CONF_TAKEOVER, TAKEOVER_REPLACE) == TAKEOVER_REPLACE

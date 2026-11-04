@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
 from .bridge import models
-from .connection import api_of, bridge_of, read
+from .connection import api_or_none, read
 from .const import DOMAIN, HUE_DOMAIN
 from .runtime import HuePlusConfigEntry, Runtime
 from .scenes import websocket as scenes_websocket
@@ -20,8 +20,7 @@ from .spec import MODULE_OF
 
 async def _bridge_lights(hass: HomeAssistant, entry: HuePlusConfigEntry) -> dict[str, dict[str, Any]]:
     """What each light of the bridge can do, by the Home Assistant entity of the light. The bridge is asked now (one request)."""
-    bridge = bridge_of(hass, entry.runtime_data.hue_entry)
-    api = api_of(bridge) if bridge is not None else None
+    api = api_or_none(entry.runtime_data.link)
     if api is None:
         return {}
     registry = er.async_get(hass)
