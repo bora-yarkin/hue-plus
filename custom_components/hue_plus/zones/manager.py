@@ -83,7 +83,6 @@ class GradientLight:
         self.api = api
         self.light_id: str = resource["id"]
         self.name: str = resource.get("metadata", {}).get("name", "Gradient light")
-        self.model_archetype: str = resource.get("metadata", {}).get("archetype", "")
         self.owner_id: str | None = (resource.get("owner") or {}).get("rid")
         self.data: dict[str, Any] = resource
         self.available = True
@@ -241,7 +240,8 @@ class GradientLight:
                 if (item.get("owner") or {}).get("rid") == self.owner_id:
                     self._unreachable = item.get("status") not in (None, "connected")
                     return
-        except Exception:
+        except Exception as err:
+            _LOGGER.debug("Could not check whether %s is reachable: %s", self.name, err)
             return
 
     async def async_refresh(self, check_reachable: bool = False) -> None:
@@ -273,6 +273,27 @@ class GradientLight:
 
     # --- writing -----------------------------------------------------------
 
+    def _write_body(self, on: bool | None, brightness: int | None, zones: dict[int, XY] | None, transition: float | None) -> dict[str, Any]:
+        """The write for a change. Picking zone colours also keeps them (``self._pins``) so the next change starts from them."""
+        body: dict[str, Any] = {}
+        if on is not None:
+            body["on"] = {"on": on}
+        if brightness is not None:
+            body["dimming"] = {"brightness": max(1.0, round(brightness / 255 * 100, 1))}
+            body.setdefault("on", {"on": True})
+        if zones:
+            pins = list(self.pins)
+            gamut = gamut_of(self.data)
+            for number, xy in zones.items():
+                if 0 <= number < len(pins):
+                    pins[number] = clamp_to_gamut((float(xy[0]), float(xy[1])), gamut)
+            body["gradient"] = self._gradient_body(pins, self.mode)
+            body.setdefault("on", {"on": True})
+            self._pins = pins
+        if transition is not None:
+            body["dynamics"] = {"duration": int(transition * 1000)}
+        return body
+
     async def async_apply(
         self,
         *,
@@ -283,23 +304,7 @@ class GradientLight:
     ) -> None:
         """Changes the light. 'zones' maps a zone number to a colour; brightness is 1 to 255."""
         async with self._lock:
-            body: dict[str, Any] = {}
-            if on is not None:
-                body["on"] = {"on": on}
-            if brightness is not None:
-                body["dimming"] = {"brightness": max(1.0, round(brightness / 255 * 100, 1))}
-                body.setdefault("on", {"on": True})
-            if zones:
-                pins = list(self.pins)
-                gamut = gamut_of(self.data)
-                for number, xy in zones.items():
-                    if 0 <= number < len(pins):
-                        pins[number] = clamp_to_gamut((float(xy[0]), float(xy[1])), gamut)
-                body["gradient"] = self._gradient_body(pins, self.mode)
-                body.setdefault("on", {"on": True})
-                self._pins = pins
-            if transition is not None:
-                body["dynamics"] = {"duration": int(transition * 1000)}
+            body = self._write_body(on, brightness, zones, transition)
             if not body:
                 return
             self._generation += 1

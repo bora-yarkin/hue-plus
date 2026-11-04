@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 from homeassistant.config_entries import ConfigEntry
 
+from .const import MODULE_SYNCBOX
 from .link import BridgeLink
 
 if TYPE_CHECKING:
@@ -43,7 +44,7 @@ class SyncBoxRuntime:
 
     uid: str
     coordinator: SyncBoxCoordinator
-    modules: frozenset[str] = frozenset({"syncbox"})
+    modules: frozenset[str] = frozenset({MODULE_SYNCBOX})
 
 
 type HuePlusConfigEntry = ConfigEntry[Runtime | SyncBoxRuntime]

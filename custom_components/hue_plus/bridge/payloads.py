@@ -355,6 +355,50 @@ def _when(at: time, days: list[str] | None) -> dict[str, Any]:
     return {"time_point": {"type": "time", "time": {"hour": at.hour, "minute": at.minute}}, "recurrence_days": _days(days)}
 
 
+def _recall(where: list[dict[str, Any]], scene_id: str | None) -> list[dict[str, Any]]:
+    """What a routine does when it fires: recall a scene on the routine's group."""
+    if not scene_id:
+        raise ValueError("Give the scene to recall")
+    return [{"group": where[0]["group"], "recall": {"rid": scene_id, "rtype": "scene"}}]
+
+
+def _schedule_routine(where: list[dict[str, Any]], scene_id: str | None, at: time | None, days: list[str] | None) -> dict[str, Any]:
+    what = _recall(where, scene_id)
+    if at is None:
+        raise ValueError("Give the time of day")
+    start = {"time_point": {"type": "time", "time": {"hour": at.hour, "minute": at.minute}}}
+    return {"when_extended": {"start_at": start, "recurrence_days": _days(days)}, "what": what, "where": where}
+
+
+def _coming_home_routine(where: list[dict[str, Any]], scene_id: str | None, at: time | None, until: time | None) -> dict[str, Any]:
+    what = _recall(where, scene_id)
+    if (at is None) != (until is None):
+        raise ValueError("Give both the time it starts and the time it ends, or neither")
+    when = (
+        {"type": "always"}
+        if at is None
+        else {"type": "between", "start": {"hour": at.hour, "minute": at.minute}, "end": {"hour": until.hour, "minute": until.minute}}
+    )
+    return {"when_constrained": when, "what": what, "where": where}
+
+
+def _timer_routine(where: list[dict[str, Any]], scene_id: str | None, minutes: float | None) -> dict[str, Any]:
+    if not minutes or minutes < 1 or not scene_id:
+        raise ValueError("A timer needs a duration of at least one minute and a scene to recall when it ends")
+    return {"duration": {"minutes": int(minutes)}, "what": _recall(where, scene_id), "where": where}
+
+
+def _wake_up_routine(
+    where: list[dict[str, Any]], at: time, days: list[str] | None, minutes: float | None, end_brightness: float | None
+) -> dict[str, Any]:
+    brightness = 100.0 if end_brightness is None else _percent(end_brightness, "end_brightness")
+    return {"fade_in_duration": {"seconds": _seconds(minutes, 15)}, "end_brightness": brightness, "when": _when(at, days), "where": where}
+
+
+def _go_to_sleep_routine(where: list[dict[str, Any]], at: time, days: list[str] | None, minutes: float | None) -> dict[str, Any]:
+    return {"fade_out_duration": {"seconds": _seconds(minutes, 30)}, "end_state": "turn_off", "when": _when(at, days), "where": where}
+
+
 def routine_configuration(
     kind: str,
     *,
@@ -376,48 +420,17 @@ def routine_configuration(
     where = [{"group": {"rid": group_id, "rtype": group_type}}]
     if kind in ("leaving_home", "smoke_alarm"):
         return {"where": where}
-    if kind in ("schedule", "coming_home"):
-        if not scene_id:
-            raise ValueError("Give the scene to recall")
-        what = [{"group": where[0]["group"], "recall": {"rid": scene_id, "rtype": "scene"}}]
-        if kind == "schedule":
-            if at is None:
-                raise ValueError("Give the time of day")
-            return {
-                "when_extended": {
-                    "start_at": {"time_point": {"type": "time", "time": {"hour": at.hour, "minute": at.minute}}},
-                    "recurrence_days": _days(days),
-                },
-                "what": what,
-                "where": where,
-            }
-        if (at is None) != (until is None):
-            raise ValueError("Give both the time it starts and the time it ends, or neither")
-        when = (
-            {"type": "always"}
-            if at is None
-            else {"type": "between", "start": {"hour": at.hour, "minute": at.minute}, "end": {"hour": until.hour, "minute": until.minute}}
-        )
-        return {"when_constrained": when, "what": what, "where": where}
+    if kind == "schedule":
+        return _schedule_routine(where, scene_id, at, days)
+    if kind == "coming_home":
+        return _coming_home_routine(where, scene_id, at, until)
     if kind == "timer":
-        if not minutes or minutes < 1 or not scene_id:
-            raise ValueError("A timer needs a duration of at least one minute and a scene to recall when it ends")
-        return {
-            "duration": {"minutes": int(minutes)},
-            "what": [{"group": where[0]["group"], "recall": {"rid": scene_id, "rtype": "scene"}}],
-            "where": where,
-        }
+        return _timer_routine(where, scene_id, minutes)
     if at is None:
         raise ValueError("Give the time of day")
     if kind == "wake_up":
-        brightness = 100.0 if end_brightness is None else _percent(end_brightness, "end_brightness")
-        return {
-            "fade_in_duration": {"seconds": _seconds(minutes, 15)},
-            "end_brightness": brightness,
-            "when": _when(at, days),
-            "where": where,
-        }
-    return {"fade_out_duration": {"seconds": _seconds(minutes, 30)}, "end_state": "turn_off", "when": _when(at, days), "where": where}
+        return _wake_up_routine(where, at, days, minutes, end_brightness)
+    return _go_to_sleep_routine(where, at, days, minutes)
 
 
 def _seconds(minutes: float | None, default: float) -> int:

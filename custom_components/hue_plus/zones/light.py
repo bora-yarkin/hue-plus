@@ -79,7 +79,9 @@ def _keep_fresh(hass: HomeAssistant, api: Any, manager: GradientLight) -> Callab
     stop_events: Callable[[], None] | None = None
     try:
         stop_events = api.lights.subscribe(lambda *_args: hass.async_create_task(manager.async_refresh()), id_filter=manager.light_id)
-    except Exception:
+    except Exception as err:
+        # Without the push events the timer above still keeps the light current.
+        _LOGGER.debug("Could not subscribe to %s: %s", manager.name, err)
         stop_events = None
 
     def stop() -> None:

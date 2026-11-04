@@ -18,6 +18,32 @@ from ..connection import bridge_apis, read
 from .colors import clamp_to_gamut, gamut_of, hs_to_xy
 
 
+def _effect_body(
+    light: dict[str, Any], effect: str, hs_color: list[float] | None, speed: float | None, kelvin: float | None
+) -> dict[str, Any]:
+    """The write that starts ``effect`` on one light; raises when the light does not offer it."""
+    offered = ((light.get("effects_v2") or {}).get("action") or {}).get("effect_values") or []
+    if effect not in offered:
+        raise ServiceValidationError(f"{(light.get('metadata') or {}).get('name', light['id'])} does not offer the effect {effect}")
+    parameters: dict[str, Any] = {}
+    if hs_color is not None:
+        x, y = clamp_to_gamut(hs_to_xy(float(hs_color[0]), float(hs_color[1])), gamut_of(light))
+        parameters["color"] = {"xy": {"x": round(x, 4), "y": round(y, 4)}}
+    if kelvin is not None:
+        schema = (light.get("color_temperature") or {}).get("mirek_schema") or {}
+        low, high = schema.get("mirek_minimum", 153), schema.get("mirek_maximum", 500)
+        parameters["color_temperature"] = {"mirek": max(low, min(high, round(1_000_000 / float(kelvin))))}
+    if speed is not None:
+        parameters["speed"] = float(speed)
+    action: dict[str, Any] = {"effect": effect}
+    if parameters and effect != "no_effect":
+        action["parameters"] = parameters
+    body: dict[str, Any] = {"effects_v2": {"action": action}}
+    if effect != "no_effect":
+        body["on"] = {"on": True}
+    return body
+
+
 async def set_effect(
     hass: HomeAssistant,
     light_ids: list[str],
@@ -35,26 +61,7 @@ async def set_effect(
         for light in await read(api, "clip/v2/resource/light"):
             if light.get("id") not in wanted:
                 continue
-            offered = ((light.get("effects_v2") or {}).get("action") or {}).get("effect_values") or []
-            if effect not in offered:
-                raise ServiceValidationError(f"{(light.get('metadata') or {}).get('name', light['id'])} does not offer the effect {effect}")
-            action: dict[str, Any] = {"effect": effect}
-            parameters: dict[str, Any] = {}
-            if hs_color is not None:
-                x, y = clamp_to_gamut(hs_to_xy(float(hs_color[0]), float(hs_color[1])), gamut_of(light))
-                parameters["color"] = {"xy": {"x": round(x, 4), "y": round(y, 4)}}
-            if kelvin is not None:
-                schema = (light.get("color_temperature") or {}).get("mirek_schema") or {}
-                low, high = schema.get("mirek_minimum", 153), schema.get("mirek_maximum", 500)
-                mirek = max(low, min(high, round(1_000_000 / float(kelvin))))
-                parameters["color_temperature"] = {"mirek": mirek}
-            if speed is not None:
-                parameters["speed"] = float(speed)
-            if parameters and effect != "no_effect":
-                action["parameters"] = parameters
-            body: dict[str, Any] = {"effects_v2": {"action": action}}
-            if effect != "no_effect":
-                body["on"] = {"on": True}
+            body = _effect_body(light, effect, hs_color, speed, kelvin)
             await api.request("put", f"clip/v2/resource/light/{light['id']}", json=body)
             done.add(light["id"])
     missing = wanted - done

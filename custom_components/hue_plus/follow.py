@@ -31,7 +31,18 @@ ADOPT_DELAY_SECONDS = 5.0
 @callback
 def async_follow_hue(hass: HomeAssistant, entry: HuePlusConfigEntry) -> None:
     runtime = entry.runtime_data
-    api = runtime.link.api
+    _follow_renames(hass, entry)
+    domains = (adopt.LIGHT_DOMAINS if MODULE_LIGHTS in runtime.modules else ()) + (
+        adopt.DEVICE_DOMAINS if MODULE_DEVICES in runtime.modules else ()
+    )
+    if domains and replaces_hue(entry):  # next to the Hue integration nothing is taken over, so a new accessory needs nothing
+        _take_over_new_entities(hass, entry, runtime.link.hue_entry_id, domains)
+
+
+@callback
+def _follow_renames(hass: HomeAssistant, entry: HuePlusConfigEntry) -> None:
+    """A device or room renamed on the bridge is renamed on its Hue Plus device."""
+    api = entry.runtime_data.link.api
     devices = dr.async_get(hass)
 
     @callback
@@ -45,12 +56,10 @@ def async_follow_hue(hass: HomeAssistant, entry: HuePlusConfigEntry) -> None:
         for controller in (api.devices, api.groups.room, api.groups.zone, api.config.service_group):
             entry.async_on_unload(controller.subscribe(rename, event_filter=EventType.RESOURCE_UPDATED))
 
-    domains = (adopt.LIGHT_DOMAINS if MODULE_LIGHTS in runtime.modules else ()) + (
-        adopt.DEVICE_DOMAINS if MODULE_DEVICES in runtime.modules else ()
-    )
-    if not domains or not replaces_hue(entry):
-        return  # next to the Hue integration, nothing is taken over, so a new accessory needs nothing
-    hue_entry_id = runtime.link.hue_entry_id
+
+@callback
+def _take_over_new_entities(hass: HomeAssistant, entry: HuePlusConfigEntry, hue_entry_id: str, domains: tuple[str, ...]) -> None:
+    """Hides the Hue integration's entities of an accessory added while running, a few moments after they appear."""
     entities = er.async_get(hass)
     pending: CALLBACK_TYPE | None = None
 

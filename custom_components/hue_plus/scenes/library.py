@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import json
 import re
-from collections.abc import Mapping
+from collections.abc import Callable, Iterable, Mapping
 from typing import Any
 
 from .const import COLOUR_SOURCES, MAX_LIGHTS, MAX_PALETTE, SPREADS
@@ -86,50 +86,67 @@ def _looks_json(raw: Any) -> dict[str, dict[str, Any]]:
 
 def clean_area(raw: Mapping[str, Any]) -> dict[str, Any]:
     """A validated area: id, name, lights and the screen's own data."""
-    lights = parse_lights(raw.get("lights"))
-    return {
-        "id": _id(raw.get("id"), "id"),
-        "name": _text(raw.get("name"), "name", 80),
-        "lights": [{"entity_id": light.entity_id, "x": light.x, "y": light.y, "z": light.z} for light in lights],
-        "ui": _ui(raw.get("ui")),
-    }
+    lights = _clean_lights(raw.get("lights"))
+    return {"id": _id(raw.get("id"), "id"), "name": _text(raw.get("name"), "name", 80), "lights": lights, "ui": _ui(raw.get("ui"))}
+
+
+def _clean_palette(palette: Any) -> list[dict[str, Any]]:
+    if not isinstance(palette, (list, tuple)) or not 1 <= len(palette) <= MAX_PALETTE:
+        raise DefinitionError(f"palette must be a list of 1 to {MAX_PALETTE} colours")
+    for colour in palette:
+        parse_colour(colour)
+    return [dict(c) for c in palette]
+
+
+def _one_of(name: str, allowed: Iterable[str]):
+    """A cleaner for a field that must be one of a fixed set of words."""
+    allowed = tuple(allowed)
+
+    def clean(value: Any) -> Any:
+        if value not in allowed:
+            raise DefinitionError(f"{name} must be one of {', '.join(allowed)}")
+        return value
+
+    return clean
+
+
+def _clean_actions(raw: Any) -> list[dict[str, Any]]:
+    return [{"entity_id": a.entity_id, "do": a.do} for a in parse_actions(raw)]
+
+
+def _clean_lights(raw: Any) -> list[dict[str, Any]]:
+    return [{"entity_id": light.entity_id, "x": light.x, "y": light.y, "z": light.z} for light in parse_lights(raw)]
+
+
+def _clean_preset(value: Any) -> str:
+    if value not in presets():
+        raise DefinitionError(f"unknown preset {value!r}")
+    return value
+
+
+# The optional fields of a scene, in the order they are stored: each says how to validate and normalise what was given.
+SCENE_FIELDS: dict[str, Callable[[Any], Any]] = {
+    "palette": _clean_palette,
+    "speed": parse_speed,
+    "range": parse_range,
+    "brightness": parse_brightness,
+    "spread": _one_of("spread", SPREADS),
+    "effects": _effects_json,
+    "looks": _looks_json,
+    "actions": _clean_actions,
+    "colour_source": _one_of("colour_source", COLOUR_SOURCES),
+    "area": lambda value: _id(value, "area"),
+    "lights": _clean_lights,
+    "preset": _clean_preset,
+}
 
 
 def clean_scene(raw: Mapping[str, Any]) -> dict[str, Any]:
     """A validated scene. Fields left out are left out of the stored scene, so a preset or default fills them at start."""
     out: dict[str, Any] = {"id": _id(raw.get("id"), "id"), "name": _text(raw.get("name"), "name", 80), "ui": _ui(raw.get("ui"))}
-    if "palette" in raw:
-        palette = raw["palette"]
-        if not isinstance(palette, (list, tuple)) or not 1 <= len(palette) <= MAX_PALETTE:
-            raise DefinitionError(f"palette must be a list of 1 to {MAX_PALETTE} colours")
-        for colour in palette:
-            parse_colour(colour)
-        out["palette"] = [dict(c) for c in palette]
-    for key, parse in (("speed", parse_speed), ("range", parse_range), ("brightness", parse_brightness)):
+    for key, clean in SCENE_FIELDS.items():
         if key in raw:
-            out[key] = parse(raw[key])
-    if "spread" in raw:
-        if raw["spread"] not in SPREADS:
-            raise DefinitionError(f"spread must be one of {', '.join(SPREADS)}")
-        out["spread"] = raw["spread"]
-    if "effects" in raw:
-        out["effects"] = _effects_json(raw["effects"])
-    if "looks" in raw:
-        out["looks"] = _looks_json(raw["looks"])
-    if "actions" in raw:
-        out["actions"] = [{"entity_id": a.entity_id, "do": a.do} for a in parse_actions(raw["actions"])]
-    if "colour_source" in raw:
-        if raw["colour_source"] not in COLOUR_SOURCES:
-            raise DefinitionError(f"colour_source must be one of {', '.join(COLOUR_SOURCES)}")
-        out["colour_source"] = raw["colour_source"]
-    if "area" in raw:
-        out["area"] = _id(raw["area"], "area")
-    if "lights" in raw:
-        out["lights"] = [{"entity_id": light.entity_id, "x": light.x, "y": light.y, "z": light.z} for light in parse_lights(raw["lights"])]
-    if "preset" in raw:
-        if raw["preset"] not in presets():
-            raise DefinitionError(f"unknown preset {raw['preset']!r}")
-        out["preset"] = raw["preset"]
+            out[key] = clean(raw[key])
     return out
 
 
@@ -197,9 +214,6 @@ class Library:
     def delete_area(self, area_id: str) -> bool:
         """Removes an area. Scenes that play on it are kept, but they need another area before they can start."""
         return self.areas.pop(area_id, None) is not None
-
-    def scenes_using(self, area_id: str) -> list[str]:
-        return [s["id"] for s in self.scenes.values() if s.get("area") == area_id]
 
     def request(self, data: Mapping[str, Any]) -> dict[str, Any]:
         """The start request for ``parse_definition``, from the shipped defaults, a preset, a saved scene of this id and what the

@@ -12,7 +12,6 @@ Home Assistant.
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping
 from typing import Any
 
 import aiohttp
@@ -115,19 +114,3 @@ class SyncBox:
         if source not in ("input1", "input2", "input3", "input4"):
             raise ValueError("The source is input1 to input4")
         await self._request("PUT", "/execution", {"hdmiSource": source})
-
-
-def summary(state: Mapping[str, Any]) -> dict[str, Any]:
-    """The few things a screen shows: whether it syncs, in what mode, the source, brightness and the inputs' names."""
-    execution = state.get("execution") or {}
-    hdmi = state.get("hdmi") or {}
-    mode = execution.get("mode")
-    return {
-        "syncing": bool(execution.get("syncActive")),
-        "hdmi_active": bool(execution.get("hdmiActive")),
-        "mode": mode,
-        "source": execution.get("hdmiSource"),
-        "brightness": execution.get("brightness"),
-        "intensity": (execution.get(mode) or {}).get("intensity") if mode in ("video", "game", "music") else None,
-        "inputs": {key: value.get("name") for key, value in hdmi.items() if key.startswith("input") and isinstance(value, dict)},
-    }

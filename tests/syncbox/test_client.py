@@ -123,20 +123,6 @@ class SyncBoxTests(unittest.IsolatedAsyncioTestCase):
                 await call()
         self.assertEqual(len(self.box.seen), 3)
 
-    async def test_the_summary_is_what_a_screen_shows(self):
-        self.assertEqual(
-            client.summary(await self.make().state()),
-            {
-                "syncing": True,
-                "hdmi_active": True,
-                "mode": "video",
-                "source": "input2",
-                "brightness": 150,
-                "intensity": "high",
-                "inputs": {"input1": "Console", "input2": "TV box"},
-            },
-        )
-
     async def test_an_unreachable_box_is_an_error_not_a_crash(self):
         box = client.SyncBox(self.session, "127.0.0.1", "secret")
         box._base = "http://127.0.0.1:1/api/v1"

@@ -79,6 +79,35 @@ def async_mirror_all(hass: HomeAssistant, entry: HuePlusConfigEntry) -> None:
 
 
 @callback
+def _entity_changed(registry: er.EntityRegistry, entry: HuePlusConfigEntry, event: Event) -> None:
+    """A Hue entity changed: its Hue Plus twin takes the change."""
+    if event.data["action"] != "update":
+        return
+    row = registry.async_get(event.data["entity_id"])
+    if row is None or row.platform != HUE_DOMAIN:
+        return
+    plus_id = registry.async_get_entity_id(row.domain, DOMAIN, row.unique_id)
+    plus = registry.async_get(plus_id) if plus_id else None
+    if plus is not None and plus.config_entry_id == entry.entry_id:
+        _mirror_entity(registry, plus)
+
+
+@callback
+def _device_changed(devices: dr.DeviceRegistry, entry: HuePlusConfigEntry, hue_entry_id: str, event: Event) -> None:
+    """A Hue device changed: its Hue Plus twin takes the change."""
+    if event.data["action"] != "update":
+        return
+    hue = devices.async_get(event.data["device_id"])
+    if hue is None:
+        return
+    for domain, ident in hue.identifiers:
+        if domain == HUE_DOMAIN:
+            plus = devices.async_get_device_by_identifier((DOMAIN, ident), entry.entry_id)
+            if plus is not None:
+                _mirror_device(devices, plus, hue_entry_id)
+
+
+@callback
 def async_follow_hue_settings(hass: HomeAssistant, entry: HuePlusConfigEntry) -> None:
     """Keeps Hue Plus's entities and devices in step with the Hue integration's, one way (Hue to Hue Plus), for as long as the entry runs.
 
@@ -88,31 +117,15 @@ def async_follow_hue_settings(hass: HomeAssistant, entry: HuePlusConfigEntry) ->
         return  # nothing to follow: Hue Plus replaces the Hue entities, or there are none
     registry = er.async_get(hass)
     devices = dr.async_get(hass)
+    hue_entry_id = entry.data[CONF_HUE_ENTRY]
 
     @callback
     def entity_changed(event: Event) -> None:
-        if event.data["action"] != "update":
-            return
-        row = registry.async_get(event.data["entity_id"])
-        if row is None or row.platform != HUE_DOMAIN:
-            return
-        plus_id = registry.async_get_entity_id(row.domain, DOMAIN, row.unique_id)
-        plus = registry.async_get(plus_id) if plus_id else None
-        if plus is not None and plus.config_entry_id == entry.entry_id:
-            _mirror_entity(registry, plus)
+        _entity_changed(registry, entry, event)
 
     @callback
     def device_changed(event: Event) -> None:
-        if event.data["action"] != "update":
-            return
-        hue = devices.async_get(event.data["device_id"])
-        if hue is None:
-            return
-        for domain, ident in hue.identifiers:
-            if domain == HUE_DOMAIN:
-                plus = devices.async_get_device_by_identifier((DOMAIN, ident), entry.entry_id)
-                if plus is not None:
-                    _mirror_device(devices, plus, entry.data[CONF_HUE_ENTRY])
+        _device_changed(devices, entry, hue_entry_id, event)
 
     entry.async_on_unload(hass.bus.async_listen(er.EVENT_ENTITY_REGISTRY_UPDATED, entity_changed))
     entry.async_on_unload(hass.bus.async_listen(dr.EVENT_DEVICE_REGISTRY_UPDATED, device_changed))

@@ -45,7 +45,7 @@ def psk_callback(identity: bytes, key: bytes):
             ctypes.memmove(key_out, key, len(key))
             return len(key)
         except Exception:
-            return 0
+            return 0  # an exception must not cross into OpenSSL; 0 tells it there is no key, and the handshake fails
 
     return _PSK_CALLBACK(provide)
 
