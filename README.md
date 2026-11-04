@@ -45,12 +45,12 @@ tried on a real box by the author.
 
 ## Install
 
-With HACS (this repository is not in the default list, so add it yourself): in HACS open the three-dot menu, *Custom repositories*,
-enter `https://github.com/bora-yarkin/hue-plus` with the category *Integration*, then download *Philips Hue Plus* and restart Home Assistant.
+With the Marketplace (Home Assistant 2026.11 and later; this repository is not in its default list, so add it yourself): *Settings → Marketplace*,
+three-dot menu or *Add from link*, enter `https://github.com/bora-yarkin/hue-plus`, then download *Philips Hue Plus* and restart Home Assistant. Older versions: HACS, *Custom repositories*, category *Integration*.
 Then *Settings → Devices & services → Add integration → Philips Hue Plus → A Hue bridge*, and choose what happens to the Hue integration's
 entities (see above; the default changes nothing).
 
-Without HACS, copy `custom_components/hue_plus` into your configuration folder and restart.
+Without the Marketplace, copy `custom_components/hue_plus` into your configuration folder and restart.
 
 Devices: Home Assistant gives a device to one integration only, so Hue Plus makes its own devices (the bridge, and each
 light or accessory it has an entity for), named like the Hue ones and linked to the bridge.

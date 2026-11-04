@@ -4,6 +4,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.3.1]
+
+- Installation notes now describe the Marketplace that replaces HACS in Home Assistant 2026.11. No change in behaviour.
+
 ## [0.3.0]
 
 ### Added
