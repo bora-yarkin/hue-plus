@@ -4,6 +4,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.5.0-beta.1]
+
+### Added
+- Beta: the Spotify sync can sign in with the user's own Hue developer app (OAuth through Home Assistant's application credentials) instead of a pasted token. The token and UUID form is still there. Not tried on a real account yet.
+
 ## [0.4.1]
 
 ### Changed
