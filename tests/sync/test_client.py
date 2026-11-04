@@ -4,6 +4,7 @@
 import asyncio
 import json
 import logging
+import time
 import unittest
 
 import aiohttp
@@ -68,12 +69,13 @@ class FakeService:
         self.connections = 0
         self.handshake_status = handshake_status
         self.sockets = []
+        self.accepted_auth = AUTH
 
     async def handler(self, request):
         self.headers_seen.append(dict(request.headers))
         if self.handshake_status:
             return web.Response(status=self.handshake_status)
-        if request.headers.get("auth") != AUTH or request.headers.get("x-genesis-uuid") != UUID:
+        if request.headers.get("auth") != self.accepted_auth or request.headers.get("x-genesis-uuid") != UUID:
             return web.Response(status=401)
         ws = web.WebSocketResponse()
         await ws.prepare(request)
@@ -198,6 +200,42 @@ class ClientTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((state.intensities, state.palettes, state.styles), (("auto",), (("ok", ((1, 1, 1),)),), ("Classic",)))
 
     # --- client against the fake service
+    async def test_oauth_renews_an_open_websocket_at_its_deadline(self):
+        service = FakeService()
+        url = await self.serve(service)
+        first = True
+
+        async def oauth_access():
+            nonlocal first
+            if first:
+                first = False
+                return AUTH, time.time() + 0.25
+            service.accepted_auth = "renewed-access"
+            return service.accepted_auth, time.time() + 30
+
+        connection = self.make(url, oauth_access=oauth_access)
+        task = asyncio.create_task(connection.run())
+        try:
+            await self.until(lambda: service.connections >= 2)
+            self.assertEqual([headers["auth"] for headers in service.headers_seen], [AUTH, "renewed-access"])
+            self.assertEqual(self.events["rejected"], 0)
+            await connection.async_set_sync(True)
+            await self.until(lambda: connection.state.sync_status == "start")
+            await connection.async_set_sync(False)
+            await self.until(lambda: connection.state.sync_status == "stop")
+        finally:
+            task.cancel()
+            with self.assertRaises(asyncio.CancelledError):
+                await task
+
+    async def test_revoked_oauth_ends_the_loop_and_reports_rejection_once(self):
+        async def oauth_access():
+            raise client.GenesisRejected
+
+        connection = self.make("http://127.0.0.1:1", oauth_access=oauth_access)
+        await asyncio.wait_for(connection.run(), 1)
+        self.assertEqual(self.events["rejected"], 1)
+
     async def test_connects_with_the_two_headers_mirrors_state_and_sends_start_and_stop(self):
         service = FakeService()
         c = self.make(await self.serve(service))

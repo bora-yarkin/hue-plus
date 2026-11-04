@@ -22,6 +22,9 @@ CONF_STREAM_APP_KEY = "stream_app_key"
 CONF_STREAM_CLIENT_KEY = "stream_client_key"
 CONF_STREAM_APP_ID = "stream_application_id"
 CONF_AUTH = "auth"
+CONF_SYNC_APP_ID = "sync_app_id"
+CONF_AUTH_IMPLEMENTATION = "auth_implementation"
+CONF_OAUTH_TOKEN = "token"
 CONF_UUID = "uuid"
 
 # A Hue Play HDMI Sync Box is a second kind of entry: it has no bridge and no modules to choose. Its entry has these keys.

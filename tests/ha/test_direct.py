@@ -287,6 +287,7 @@ async def _reconfigure(hass, entry, host, found, fingerprint):
         patch("custom_components.hue_plus.async_setup_entry", return_value=True),
     ):
         result = await entry.start_reconfigure_flow(hass)
+        result = await hass.config_entries.flow.async_configure(result["flow_id"], {"next_step_id": "bridge_address"})
         return await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_HOST: host})
 
 

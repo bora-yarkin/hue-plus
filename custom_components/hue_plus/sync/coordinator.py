@@ -15,6 +15,7 @@ from ..const import DOMAIN
 from ..runtime import Runtime
 from .client import GenesisClient, SyncState
 from .helpers import area_light_ids, same_bridge
+from .oauth import SyncOAuth
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,10 +29,19 @@ class SyncCoordinator(DataUpdateCoordinator[SyncState]):
     config_entry: ConfigEntry
 
     def __init__(
-        self, hass: HomeAssistant, entry: ConfigEntry, runtime: Runtime, session: aiohttp.ClientSession, url: str, auth: str, uuid: str
+        self,
+        hass: HomeAssistant,
+        entry: ConfigEntry,
+        runtime: Runtime,
+        session: aiohttp.ClientSession,
+        url: str,
+        auth: str,
+        uuid: str,
+        oauth: SyncOAuth | None = None,
     ) -> None:
         super().__init__(hass, _LOGGER, name=f"{DOMAIN} sync", config_entry=entry)
         self.runtime = runtime
+        self.oauth = oauth
         self.uuid = uuid
         self.connected = False
         # Entertainment area id -> name, for the music areas of the bridge the service is tied to.
@@ -47,6 +57,7 @@ class SyncCoordinator(DataUpdateCoordinator[SyncState]):
             on_state=self._state_changed,
             on_connection=self._connection_changed,
             on_rejected=self._rejected,
+            oauth_access=oauth.access if oauth else None,
         )
         self.data = self.client.state
 

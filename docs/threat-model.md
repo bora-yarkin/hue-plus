@@ -29,10 +29,17 @@ integrations); the bridge and the Signify sync service (trusted to answer, not t
   through the Hue integration's connection, limited to a fixed list of effect names, the light's own id and one write per light
   every 3 seconds at most; a light that does not offer the effect is driven normally.
 
-**Spotify sync token.** The token and UUID are entered by the user (or read once from a file that is then deleted) and stored in the config entry like any credentials. They are checked against the sync service before being stored, never logged or put in errors (tests check this), and a refused token starts a reauthentication; nothing is renewed automatically.
+**Spotify Sync credentials.** An administrator enters a manual token and UUID or authorizes their own Hue developer
+app. Home Assistant Application credentials holds the developer client secret. OAuth uses Home Assistant's signed
+callback state and a fixed Hue authorization and token origin. The entry changes only after Spotify Sync accepts the
+token and UUID. The OAuth token pair is private config-entry data. Rotation saves the returned pair before reconnecting
+and does not reload bridge modules. An in-flight refresh cannot overwrite a newer config-entry update. Sync and token
+requests reject redirects, and logs report status or error classes without upstream bodies or credential values.
 
-**Accepted risk.** The Spotify sync depends on a private cloud interface and a token the user obtains themselves; it is
-experimental and off by default. Its token is stored in the config entry like any integration's credentials.
+**Accepted risk.** Spotify Sync uses a private Hue service and is off by default. Existing manual tokens remain valid
+until Hue expires or rejects them. A revoked developer grant or a crash between a remote rotation and durable
+Home Assistant storage may require browser reauthentication. The developer path depends on an already-known UUID.
+The private APK helper is outside this integration.
 
 **Local streaming (experimental, off by default).** New secrets in the config entry: Hue Plus's own app key, the client key (the
 pre-shared key of the DTLS connection) and the application id. They are never logged or shown (`Registration` hides them in its

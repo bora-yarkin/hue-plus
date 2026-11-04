@@ -29,7 +29,7 @@ Each module is switched on or off per bridge in the integration's options.
 | **Zones** | A light for each colour zone of a gradient light (the gradient light itself is the main light, named like the device, with its zones listed in its attributes). Styles (linear, mirrored, scattered, segmented), flip, colour effects with a colour and speed of your choice, raw gradient points. |
 | **Scenes** | Live scenes: a palette that moves across the lights of an area, using bridge-side fades. Fourteen presets ship with it. Scenes and areas are saved inside the integration; a websocket call (`hue_plus/library`) lets a screen read them. Import a Hue scene as a live scene. |
 | **Streaming** | **Experimental.** `stream_colors` sends colours straight to the lights of an entertainment area for a while, and `stop_streaming` ends it. Needs its own registration with the bridge (press the link button when asked). Off by default. |
-| **Spotify sync** | Start and stop Hue's cloud Spotify sync and set its brightness, delay, intensity, palette, style and area. **Experimental**: it uses a private Signify service that can change without notice, and needs a token and UUID from your Hue account, which you obtain yourself and enter in the options. Off by default. |
+| **Spotify sync** | Start and stop Hue's cloud Spotify sync and set its brightness, delay, intensity, palette, style and area. **Experimental**: it uses a private Signify service that can change without notice, and requires a linked Spotify Sync UUID. You can enter a manual token or connect your own Hue developer app for automatic renewal. Off by default. |
 
 ## Experimental parts
 
@@ -56,6 +56,15 @@ Without the Marketplace, copy `custom_components/hue_plus` into your configurati
 
 Devices: Home Assistant gives a device to one integration only, so Hue Plus makes its own devices (the bridge, and each
 light or accessory it has an entity for), named like the Hue ones and linked to the bridge.
+
+## Spotify Sync credentials
+
+Link Spotify to your Hue account in the Hue app first. Use the separate token extractor to obtain either the token export or the UUID-only handoff.
+
+- **Manual token.** Open the Hue Plus entry's options and choose **Spotify sync token (by hand)**. Paste the `auth` and `uuid` values from the token export. When Hue rejects the token, renew it in the extractor and enter the replacement in Home Assistant.
+- **Developer OAuth.** Open the bridge entry's **Reconfigure** menu and choose **Spotify Sync with a Hue developer app**. Register the callback URL displayed on that form in your Remote Hue API app. In Home Assistant, open **Settings → Devices & services → Application credentials** from the menu and add your app's Client ID and Client Secret for **Philips Hue Plus**. Enter the App ID and the extractor's UUID in the reconfigure form, then sign in to Hue in the browser. Hue Plus checks the Sync connection before saving the setup and renews its token automatically. If Hue revokes access, use the Home Assistant reauthentication prompt.
+
+The bridge entry and its Spotify entities are shared between these methods. To switch back to manual renewal, enter a manual token in options.
 
 ## Services
 

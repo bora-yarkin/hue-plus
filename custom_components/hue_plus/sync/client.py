@@ -14,7 +14,8 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from collections.abc import Callable
+import time
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, replace
 from typing import Any
 
@@ -178,6 +179,7 @@ class GenesisClient:
         on_state: Callable[[SyncState], None],
         on_connection: Callable[[bool], None],
         on_rejected: Callable[[], None],
+        oauth_access: Callable[[], Awaitable[tuple[str, float]]] | None = None,
         reconnect_min_s: float = RECONNECT_MIN_S,
         reconnect_max_s: float = RECONNECT_MAX_S,
         settings_timeout_s: float = SETTINGS_TIMEOUT_S,
@@ -185,6 +187,7 @@ class GenesisClient:
         self._session = session
         self._url = url
         self._headers = _headers(auth, uuid)
+        self._oauth_access = oauth_access
         self._on_state = on_state
         self._on_connection = on_connection
         self._on_rejected = on_rejected
@@ -210,6 +213,9 @@ class GenesisClient:
             try:
                 await self._serve()
                 repeated_500s = 0
+            except GenesisRejected:
+                self._on_rejected()
+                return
             except aiohttp.WSServerHandshakeError as err:
                 if err.status in REJECTED_AT_ONCE:
                     self._on_rejected()
@@ -222,7 +228,7 @@ class GenesisClient:
                 else:
                     repeated_500s = 0
                 _LOGGER.warning("The Hue sync service answered %s; retrying in %.0f s", err.status, delay)
-            except (aiohttp.ClientError, TimeoutError) as err:
+            except (GenesisUnavailable, aiohttp.ClientError, TimeoutError) as err:
                 _LOGGER.warning("The Hue sync service connection failed (%s); retrying in %.0f s", type(err).__name__, delay)
             else:
                 _LOGGER.info("The Hue sync service closed the connection; reconnecting in %.0f s", delay)
@@ -231,18 +237,28 @@ class GenesisClient:
             delay = self._reconnect_min_s if healthy else min(delay * 2, self._reconnect_max_s)
 
     async def _serve(self) -> None:
-        async with self._session.ws_connect(self._url, headers=self._headers, heartbeat=HEARTBEAT_S) as ws:
+        headers = self._headers
+        renew_at = None
+        if self._oauth_access is not None:
+            access, renew_at = await self._oauth_access()
+            headers = {**headers, "auth": access}
+        async with self._session.ws_connect(self._url, headers=headers, heartbeat=HEARTBEAT_S) as ws:
             self._ws = ws
             self._seen = set()
             _LOGGER.debug("Connected to the Hue sync service")
             self._on_connection(True)
             watchdog = asyncio.create_task(self._close_if_incomplete(ws))
+            renewal = asyncio.timeout(None if renew_at is None else max(0, renew_at - time.time()))
             try:
-                async for msg in ws:
-                    if msg.type is aiohttp.WSMsgType.TEXT:
-                        self._handle(msg.data)
-                    elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.ERROR):
-                        break
+                async with renewal:
+                    async for msg in ws:
+                        if msg.type is aiohttp.WSMsgType.TEXT:
+                            self._handle(msg.data)
+                        elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.ERROR):
+                            break
+            except TimeoutError:
+                if not renewal.expired():
+                    raise
             finally:
                 watchdog.cancel()
                 self._ws = None

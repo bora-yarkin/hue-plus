@@ -7,21 +7,22 @@ import logging
 
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryError
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from ..const import CONF_AUTH, CONF_UUID, SYNC_URL
+from ..const import CONF_AUTH, CONF_OAUTH_TOKEN, CONF_UUID, SYNC_URL
 from ..runtime import HuePlusConfigEntry
 from .coordinator import SyncCoordinator
+from .oauth import SyncOAuth, sync_session
 
 _LOGGER = logging.getLogger(__name__)
 
 
 def create(hass: HomeAssistant, entry: HuePlusConfigEntry) -> SyncCoordinator:
     """The coordinator for the stored credentials. Nothing connects until ``start``."""
-    if not (entry.data.get(CONF_AUTH) and entry.data.get(CONF_UUID)):
+    oauth = SyncOAuth(hass, entry) if entry.data.get(CONF_OAUTH_TOKEN) else None
+    if not (entry.data.get(CONF_UUID) and (oauth or entry.data.get(CONF_AUTH))):
         raise ConfigEntryError("The Spotify sync is switched on but has no credentials; add them in the options")
     return SyncCoordinator(
-        hass, entry, entry.runtime_data, async_get_clientsession(hass), SYNC_URL, entry.data[CONF_AUTH], entry.data[CONF_UUID]
+        hass, entry, entry.runtime_data, sync_session(hass), SYNC_URL, entry.data.get(CONF_AUTH, ""), entry.data[CONF_UUID], oauth
     )
 
 

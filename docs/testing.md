@@ -49,3 +49,16 @@ Starting Matter pairing was removed: the bridge refused the guessed request and 
 2026-10-30 (HP-10.2 to HP-10.4, HP-10.6, HP-10.7 backend): 383 tests pass. Colour sources, the four brightness effects (bounds, repeatability, strength, per-light courses, the flash timing of lightning), per-light looks, actions (allowed domains, the starting user's context, one failure not stopping the rest, only at the start) and native effects (the bridge call with colour, brightness scale and speed; fall back when the light has no bridge id or does not offer the effect; leave when switched off; no more than one write per light every 3 s) are tested against fake lights, a fake bridge and a test Home Assistant. Eighteen deliberate breakages of them are each caught. Not tested: any of it on a real light. The effects' look (how smooth flicker, sparkle and lightning are on Matter bulbs over Thread, how the bridge reacts to a colour change during a native effect) can only be judged on the real lights.
 
 2026-10-31 (first run on real lights, the owner's bedroom, Hue lights): plain palette, rainbow, pulse, flicker, per-light looks (own colours and brightness, no effects), a device action (a light switched off) and a native effect (underwater) with rotating colours all worked. Found and fixed: sparkle and lightning made the engine take the lights for ones a person had changed (the brightness swings further than the limit), so lights left the scene and it went still; a light with brightness effects now leaves only when switched off or given another colour. Not yet judged: how smooth the effects look to the eye, and flicker/sparkle/lightning on the Matter bulbs.
+
+
+## Spotify developer OAuth acceptance (HP-9)
+
+The full local suite passed 434 tests on Home Assistant 2026.10.4. OAuth tests use Home Assistant's HTTP callback,
+signed state, and app credential storage with simulated token responses and a local WebSocket service. They cover switching from OAuth to manual, rejected UUIDs, malformed callbacks, saved rotation
+across reload, renewal without a bridge reload, WebSocket reconnect and Start/Stop after renewal, and redirect rejection.
+
+After owner deployment, use the UUID handoff and your own Hue Remote API app. Register the exact callback shown in the
+Reconfigure flow, complete browser sign-in, and verify Spotify Sync state and Start/Stop. Restart Home Assistant to
+check that the OAuth session reconnects. At renewal, verify the Sync connection returns and the bridge stays loaded.
+Check the manual token option separately. Before rolling back to a version without developer OAuth, switch the entry
+to manual credentials or turn off its Sync module.
