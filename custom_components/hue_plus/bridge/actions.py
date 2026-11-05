@@ -94,6 +94,7 @@ def _placements(snap: models.Snapshot, lights: list[dict[str, Any]]) -> list[pay
                 float(entry.get("x", 0)),
                 float(entry.get("y", 0)),
                 float(entry.get("z", 0)),
+                float(entry["balance"]) if entry.get("balance") is not None else None,
             )
         )
     return out
@@ -419,8 +420,15 @@ async def create_entertainment_area(api, snap, data):
 async def update_entertainment_area(api, snap, data):
     area = resolve(snap.entertainment_configuration, data["area"], "entertainment area")
     placements = _placements(snap, data["lights"]) if data.get("lights") is not None else None
+    performance = None
+    if data.get("performance") is not None:
+        streamer = _entertainment_service(snap, _light(snap, str(data["performance_light"]))) if data.get("performance_light") else None
+        performance = (data["performance"], streamer)
+    existing = (area.get("locations") or {}).get("service_locations") or []
     await api.put(
-        "entertainment_configuration", area["id"], payloads.entertainment_put(data.get("name"), data.get("area_type"), placements)
+        "entertainment_configuration",
+        area["id"],
+        payloads.entertainment_put(data.get("name"), data.get("area_type"), placements, existing, performance),
     )
 
 

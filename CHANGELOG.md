@@ -4,6 +4,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.5.1]
+
+### Fixed
+- `update_entertainment_area` no longer resets every light's brightness balance to 1 and drops the other positions of a light with segments when it writes the lights' places: what the bridge holds for a light that stays is kept.
+
+### Added
+- Entertainment areas report each light's `balance` (the Hue app's brightness balancer) and the area's `performance` (auto, or manual with the light that streams). `update_entertainment_area` takes `balance` for a light and `performance` / `performance_light` for the area. Experimental: the ranges and the manual mode are written from the bridge's own fields and have not been tried on a real bridge.
+
 ## [0.5.0]
 
 ### Added

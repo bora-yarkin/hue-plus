@@ -49,6 +49,7 @@ Backlog proposal (not scheduled, needs approval and a new dependency): local Ent
 
 - HP-11.1 complete (tested against a fake and real aiohue objects; not tried on a real bridge): direct connection with a pinned certificate, setup, reconfigure, re-registration, removal.
 - HP-11.2 planned: the owner decides ("to be determined") whether to copy the Hue integration's platforms into Hue Plus and drop the `hue` dependency.
+- HP-11.4 complete, 2026-11-05 (tested with fakes; the writes experimental): entertainment areas keep each light's brightness balance and segment positions when positions are written (an earlier version reset them), report and set the balance and the performance mode.
 - HP-11.3 planned: bridge facts the code does not use yet (read-only), then the writable ones as experimental (see the 2026-11-05 list in the chat; each write is tried live only with the owner's approval).
 
 ## HP-10 Live scenes v2: combined scenes (planned, direction chosen by the owner 2026-10-30; built here, not in `scene-engine`, D-20)

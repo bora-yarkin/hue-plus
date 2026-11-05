@@ -112,21 +112,61 @@ def group_put(kind: str, name: str | None, archetype: str | None, children: list
 
 # ---- entertainment areas ----
 
-Placement = tuple[str, float, float, float]  # (entertainment service id, x, y, z), each position from -1 to 1
+# (entertainment service id, x, y, z, brightness balance or None), each position from -1 to 1. ``None`` keeps the balance the light has in the area.
+Placement = tuple[str, float, float, float, float | None]
+
+PERFORMANCE_MODES = ("auto", "manual")
 
 
-def _locations(placements: list[Placement]) -> dict[str, Any]:
+def _location_of(existing: list[dict[str, Any]], service_id: str) -> dict[str, Any]:
+    return next((loc for loc in existing if (loc.get("service") or {}).get("rid") == service_id), {})
+
+
+def _positions(old: list[dict[str, Any]], x: float, y: float, z: float) -> list[dict[str, float]]:
+    """The positions of a light after it moved to (x, y, z): its first position is the new one, and the others (the segments of a
+    light that has several) keep their place relative to it. A light that is new, or has one position, gets just the new one."""
+    first = old[0] if old else None
+    out = [{"x": x, "y": y, "z": z}]
+    if first is None:
+        return out
+    delta = (x - first.get("x", x), y - first.get("y", y), z - first.get("z", z))
+    for other in old[1:]:
+        out.append({axis: max(-1.0, min(1.0, other.get(axis, 0) + d)) for axis, d in zip("xyz", delta, strict=True)})
+    return out
+
+
+def _locations(placements: list[Placement], existing: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    """The area's lights with their places. What the bridge already holds for a light that stays (its brightness balance, the other
+    positions of a light with segments) is kept, so moving a light never resets the rest."""
     if not placements:
         raise ValueError("An entertainment area needs at least one light")
     service_locations = []
-    for service_id, x, y, z in placements:
+    for service_id, x, y, z, balance in placements:
         for axis, value in (("x", x), ("y", y), ("z", z)):
             if not -1 <= value <= 1:
                 raise ValueError(f"The {axis} position must be between -1 and 1")
+        if balance is not None and not balance > 0:
+            raise ValueError("The brightness balance must be more than 0")
+        old = _location_of(existing or [], service_id)
         service_locations.append(
-            {"service": _ref(service_id, "entertainment"), "positions": [{"x": x, "y": y, "z": z}], "equalization_factor": 1}
+            {
+                "service": _ref(service_id, "entertainment"),
+                "positions": _positions(old.get("positions") or [], x, y, z),
+                "equalization_factor": balance if balance is not None else old.get("equalization_factor", 1),
+            }
         )
     return {"service_locations": service_locations}
+
+
+def _stream_proxy(mode: str, service_id: str | None) -> dict[str, Any]:
+    """Which part of the area streams: the bridge picks (auto), or one light does (manual)."""
+    if mode not in PERFORMANCE_MODES:
+        raise ValueError(f"The performance is one of {', '.join(PERFORMANCE_MODES)}")
+    if mode == "auto":
+        return {"mode": "auto"}
+    if not service_id:
+        raise ValueError("Manual performance needs the light that streams")
+    return {"mode": "manual", "node": _ref(service_id, "entertainment")}
 
 
 def entertainment_post(name: str, area_type: str, placements: list[Placement]) -> dict[str, Any]:
@@ -140,7 +180,13 @@ def entertainment_post(name: str, area_type: str, placements: list[Placement]) -
     }
 
 
-def entertainment_put(name: str | None, area_type: str | None, placements: list[Placement] | None) -> dict[str, Any]:
+def entertainment_put(
+    name: str | None,
+    area_type: str | None,
+    placements: list[Placement] | None,
+    existing: list[dict[str, Any]] | None = None,
+    performance: tuple[str, str | None] | None = None,
+) -> dict[str, Any]:
     body: dict[str, Any] = {}
     if name is not None:
         body["metadata"] = {"name": name}
@@ -149,7 +195,9 @@ def entertainment_put(name: str | None, area_type: str | None, placements: list[
             raise ValueError(f"The type is one of {', '.join(ENTERTAINMENT_TYPES)}")
         body["configuration_type"] = area_type
     if placements is not None:
-        body["locations"] = _locations(placements)
+        body["locations"] = _locations(placements, existing)
+    if performance is not None:
+        body["stream_proxy"] = _stream_proxy(*performance)
     if not body:
         raise ValueError("Nothing to change")
     return body

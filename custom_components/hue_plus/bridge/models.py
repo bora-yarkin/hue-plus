@@ -277,6 +277,13 @@ def streaming_end_instance(snap: Snapshot, area_id: str) -> dict[str, Any] | Non
     return None
 
 
+def _streaming_light(area: dict[str, Any], services: dict[str, dict[str, Any]], lights_by_owner: dict[Any, dict[str, Any]]) -> str | None:
+    """The light that streams for a manual area (the one whose entertainment service is the area's stream proxy node)."""
+    node = (area.get("stream_proxy") or {}).get("node") or {}
+    owner = (services.get(node.get("rid")) or {}).get("owner", {}).get("rid")
+    return (lights_by_owner.get(owner) or {}).get("id")
+
+
 def entertainment_areas(snap: Snapshot) -> list[dict[str, Any]]:
     """Each entertainment area with the lights in it and where they stand (x, y, z from -1 to 1)."""
     lights_by_owner = {item.get("owner", {}).get("rid"): item for item in snap.light}
@@ -297,6 +304,7 @@ def entertainment_areas(snap: Snapshot) -> list[dict[str, Any]]:
                     "max_segments": segments.get("max_segments"),
                     "light_id": (light or {}).get("id"),
                     "name": names.get(owner),
+                    "balance": loc.get("equalization_factor"),
                     "x": position.get("x"),
                     "y": position.get("y"),
                     "z": position.get("z"),
@@ -314,6 +322,8 @@ def entertainment_areas(snap: Snapshot) -> list[dict[str, Any]]:
                 "id": area["id"],
                 "end_state": ((ending or {}).get("configuration") or {}).get("end_state"),
                 "channels": len(area.get("channels") or []),
+                "performance": (area.get("stream_proxy") or {}).get("mode"),
+                "performance_light": _streaming_light(area, services, lights_by_owner),
                 "max_streams": min((n for n in streams if isinstance(n, int)), default=None),
                 "name": _name(area),
                 "type": area.get("configuration_type"),

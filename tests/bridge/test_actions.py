@@ -292,6 +292,41 @@ class ActionTests(unittest.IsolatedAsyncioTestCase):
         calls, _ = await self.go("control_entertainment_area", {"area": "Music", "action": "stop"})
         self.assertEqual(calls[0][3], {"action": "stop"})
 
+    async def test_updating_an_area_keeps_what_the_bridge_holds_for_the_lights_that_stay(self):
+        snap = world()
+        snap.entertainment_configuration = [
+            {
+                "id": "ec1",
+                "metadata": {"name": "Music"},
+                "locations": {
+                    "service_locations": [
+                        {
+                            "service": {"rid": "e1", "rtype": "entertainment"},
+                            "positions": [{"x": 0, "y": 0, "z": 0}],
+                            "equalization_factor": 3,
+                        }
+                    ]
+                },
+            }
+        ]
+        calls, _ = await self.go(
+            "update_entertainment_area", {"area": "Music", "lights": [{"light": "Floor Light", "x": 0.4, "y": -0.4, "z": 0}]}, snap
+        )
+        loc = calls[0][3]["locations"]["service_locations"][0]
+        self.assertEqual((loc["equalization_factor"], loc["positions"]), (3, [{"x": 0.4, "y": -0.4, "z": 0}]))
+        calls, _ = await self.go(
+            "update_entertainment_area",
+            {
+                "area": "Music",
+                "lights": [{"light": "Floor Light", "balance": 0.5}],
+                "performance": "manual",
+                "performance_light": "Bed Light",
+            },
+            snap,
+        )
+        self.assertEqual(calls[0][3]["locations"]["service_locations"][0]["equalization_factor"], 0.5)
+        self.assertEqual(calls[0][3]["stream_proxy"], {"mode": "manual", "node": {"rid": "e2", "rtype": "entertainment"}})
+
     async def test_a_light_without_an_entertainment_service_cannot_join_an_area(self):
         snap = world()
         snap.entertainment = []

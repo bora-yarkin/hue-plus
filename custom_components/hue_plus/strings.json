@@ -770,7 +770,15 @@
         },
         "lights": {
           "name": "Lights",
-          "description": "The lights with their positions, as a list of items with light, x, y and z."
+          "description": "The lights with their positions, as a list of items with light, x, y and z (and balance, the brightness balance, more than 0; it stays as it is when left out). A light that stays keeps its balance and the other positions of its segments."
+        },
+        "performance": {
+          "name": "Performance",
+          "description": "Who streams: the bridge picks (auto) or one light does (manual). Experimental."
+        },
+        "performance_light": {
+          "name": "Performance light",
+          "description": "The light that streams, for manual performance."
         }
       }
     },

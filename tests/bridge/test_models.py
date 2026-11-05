@@ -167,6 +167,7 @@ class ModelTests(unittest.TestCase):
                     "max_segments": None,
                     "light_id": "l1",
                     "name": "Floor Light L",
+                    "balance": None,
                     "x": 0.5,
                     "y": -1,
                     "z": 0,
@@ -289,3 +290,30 @@ class ModelTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+    def test_an_area_reports_each_lights_brightness_balance_and_who_streams(self):
+        s = snap(
+            device=[LAMP],
+            light=[{"id": "l1", "owner": {"rid": "d1"}}],
+            entertainment=[{"id": "e1", "owner": {"rid": "d1"}}],
+            entertainment_configuration=[
+                {
+                    "id": "ec",
+                    "metadata": {"name": "Bedroom"},
+                    "stream_proxy": {"mode": "manual", "node": {"rid": "e1", "rtype": "entertainment"}},
+                    "locations": {
+                        "service_locations": [
+                            {"service": {"rid": "e1"}, "positions": [{"x": 0, "y": 0, "z": 0}], "equalization_factor": 1.5}
+                        ]
+                    },
+                }
+            ],
+        )
+        area = models.entertainment_areas(s)[0]
+        self.assertEqual((area["performance"], area["performance_light"], area["lights"][0]["balance"]), ("manual", "l1", 1.5))
+        auto = snap(
+            entertainment_configuration=[{"id": "ec", "stream_proxy": {"mode": "auto", "node": {"rid": "gone", "rtype": "entertainment"}}}]
+        )
+        self.assertEqual(
+            (models.entertainment_areas(auto)[0]["performance"], models.entertainment_areas(auto)[0]["performance_light"]), ("auto", None)
+        )
