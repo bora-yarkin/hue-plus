@@ -197,7 +197,15 @@ SPEC: dict[str, dict[str, Any]] = {
             "area": f("text", "The area (id or name).", True),
             "name": f("text", "A new name."),
             "area_type": f("select", "A new type.", options=["music", "screen", "monitor", "3dspace", "other"]),
-            "lights": f("lights", "The lights with their positions, as a list of items with light, x, y and z."),
+            "lights": f(
+                "lights",
+                "The lights with their positions, as a list of items with light, x, y and z (and balance, the brightness balance, more than 0; "
+                "it stays as it is when left out). A light that stays keeps its balance and the other positions of its segments.",
+            ),
+            "performance": f(
+                "select", "Who streams: the bridge picks (auto) or one light does (manual). Experimental.", options=["auto", "manual"]
+            ),
+            "performance_light": f("text", "The light that streams, for manual performance."),
         },
     },
     "delete_entertainment_area": {

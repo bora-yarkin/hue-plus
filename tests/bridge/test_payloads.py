@@ -59,19 +59,51 @@ class PayloadTests(unittest.TestCase):
         self.assertEqual(p.group_put("room", "A", None, [])["children"], [])
 
     def test_entertainment_bodies_check_type_positions_and_need_a_light(self):
-        body = p.entertainment_post("Music", "music", [("e1", 0.5, -1, 0)])
+        body = p.entertainment_post("Music", "music", [("e1", 0.5, -1, 0, None)])
         self.assertEqual(body["configuration_type"], "music")
         self.assertEqual(body["locations"]["service_locations"][0]["positions"], [{"x": 0.5, "y": -1, "z": 0}])
         for bad in (
-            lambda: p.entertainment_post("x", "party", [("e", 0, 0, 0)]),
+            lambda: p.entertainment_post("x", "party", [("e", 0, 0, 0, None)]),
             lambda: p.entertainment_post("x", "music", []),
-            lambda: p.entertainment_post("x", "music", [("e", 2, 0, 0)]),
+            lambda: p.entertainment_post("x", "music", [("e", 2, 0, 0, None)]),
             lambda: p.entertainment_action("pause"),
             lambda: p.entertainment_put(None, None, None),
         ):
             with self.assertRaises(ValueError):
                 bad()
         self.assertEqual(p.entertainment_action("stop"), {"action": "stop"})
+
+    def test_moving_a_light_keeps_its_brightness_balance_and_the_other_positions_of_its_segments(self):
+        existing = [
+            {
+                "service": {"rid": "e1", "rtype": "entertainment"},
+                "positions": [{"x": 0.0, "y": 0.0, "z": 0.0}, {"x": 0.2, "y": 0.0, "z": 0.0}],
+                "equalization_factor": 2.5,
+            }
+        ]
+        body = p.entertainment_put(None, None, [("e1", 0.5, 0.5, 0.0, None), ("e2", -1, 0, 0, None)], existing)
+        moved, added = body["locations"]["service_locations"]
+        self.assertEqual(moved["equalization_factor"], 2.5)
+        self.assertEqual(moved["positions"], [{"x": 0.5, "y": 0.5, "z": 0.0}, {"x": 0.7, "y": 0.5, "z": 0.0}])
+        self.assertEqual((added["equalization_factor"], len(added["positions"])), (1, 1))  # a new light starts at 1, with one position
+        # the segments never leave the room
+        far = p.entertainment_put(None, None, [("e1", 0.95, 0, 0, None)], existing)
+        self.assertEqual(far["locations"]["service_locations"][0]["positions"][1]["x"], 1.0)
+        # a balance that is given replaces the old one, and must be more than 0
+        given = p.entertainment_put(None, None, [("e1", 0, 0, 0, 0.5)], existing)
+        self.assertEqual(given["locations"]["service_locations"][0]["equalization_factor"], 0.5)
+        with self.assertRaises(ValueError):
+            p.entertainment_put(None, None, [("e1", 0, 0, 0, 0)], existing)
+
+    def test_performance_is_auto_or_one_light_that_streams(self):
+        self.assertEqual(p.entertainment_put(None, None, None, None, ("auto", None)), {"stream_proxy": {"mode": "auto"}})
+        self.assertEqual(
+            p.entertainment_put(None, None, None, None, ("manual", "e1")),
+            {"stream_proxy": {"mode": "manual", "node": {"rid": "e1", "rtype": "entertainment"}}},
+        )
+        for bad in (("manual", None), ("fast", None)):
+            with self.assertRaises(ValueError):
+                p.entertainment_put(None, None, None, None, bad)
 
     def test_timed_effects_send_milliseconds_and_no_effect_needs_no_duration(self):
         self.assertEqual(p.timed_effect_put("sunrise", 900), {"timed_effects": {"effect": "sunrise", "duration": 900000}})
