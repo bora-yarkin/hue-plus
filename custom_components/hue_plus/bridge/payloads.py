@@ -507,14 +507,31 @@ def routine_post(script_id: str, name: str, configuration: dict[str, Any], enabl
 # ---- accessories: what a button does ----
 
 BUTTON_PRESSES = {"short": "on_short_release", "long": "on_long_press", "repeat": "on_repeat"}
-BUTTON_ACTIONS = ("dim_up", "dim_down", "all_off", "do_nothing", "scene", "scene_cycle")
+BUTTON_ACTIONS = ("dim_up", "dim_down", "all_off", "home_off", "do_nothing", "scene", "scene_cycle", "time_based")
 # What the Hue app lets a button cycle through: the bridge held seven scenes on a real dimmer. The smallest cycle is two, since one is a single scene.
 CYCLE_SCENES = (2, 10)
 CYCLE_TIMEOUT_S = (1, 10)
 
 
+def _timeout(seconds: float) -> float:
+    if not CYCLE_TIMEOUT_S[0] <= seconds <= CYCLE_TIMEOUT_S[1]:
+        raise ValueError(f"The time between presses is {CYCLE_TIMEOUT_S[0]} to {CYCLE_TIMEOUT_S[1]} seconds")
+    return seconds
+
+
 def _scene_slot(scene_id: str) -> dict[str, Any]:
     return {"action": {"recall": {"rid": scene_id, "rtype": "scene"}}}
+
+
+TIME_SLOTS = (2, 10)
+# The schedule the Hue app starts a Time-based light with, read from a real bridge: the scenes of the button's room, by name.
+DEFAULT_TIME_SLOTS = (
+    (time(7, 0), "Energize"),
+    (time(10, 0), "Concentrate"),
+    (time(17, 0), "Read"),
+    (time(20, 0), "Relax"),
+    (time(23, 0), "Nightlight"),
+)
 
 
 def button_action(
@@ -523,6 +540,7 @@ def button_action(
     with_off: bool,
     cycle_ids: list[str] | None = None,
     repeat_timeout: float | None = None,
+    time_slots: list[tuple[time, str]] | None = None,
 ) -> dict[str, Any]:
     """What a press does, in the shapes the Hue app writes (all read from a real bridge): a plain ``action``, a single scene
     (``recall_single_extended``), or a cycle through scenes (``scene_cycle_extended``), with or without the second press that turns the lights off."""
@@ -532,13 +550,25 @@ def button_action(
         if not scene_id:
             raise ValueError("Give the scene to recall")
         return {"recall_single_extended": {"actions": [_scene_slot(scene_id)], "with_off": {"enabled": with_off}}}
+    if action == "time_based":
+        low, high = TIME_SLOTS
+        if not time_slots or not low <= len(time_slots) <= high:
+            raise ValueError(f"A time-based light has {low} to {high} times, each with a scene")
+        ordered = sorted(time_slots, key=lambda slot: (slot[0].hour, slot[0].minute))
+        if len({(t.hour, t.minute) for t, _ in ordered}) != len(ordered):
+            raise ValueError("Two times of a time-based light cannot be the same")
+        return {
+            "time_based_extended": {
+                "repeat_timeout": {"seconds": int(3 if repeat_timeout is None else _timeout(repeat_timeout))},
+                "slots": [{"actions": [_scene_slot(scene)], "start_time": {"hour": t.hour, "minute": t.minute}} for t, scene in ordered],
+                "with_off": {"enabled": with_off},
+            }
+        }
     if action == "scene_cycle":
         low, high = CYCLE_SCENES
         if not cycle_ids or not low <= len(cycle_ids) <= high:
             raise ValueError(f"A cycle goes through {low} to {high} scenes")
-        seconds = 3 if repeat_timeout is None else repeat_timeout
-        if not CYCLE_TIMEOUT_S[0] <= seconds <= CYCLE_TIMEOUT_S[1]:
-            raise ValueError(f"The time between presses is {CYCLE_TIMEOUT_S[0]} to {CYCLE_TIMEOUT_S[1]} seconds")
+        seconds = 3 if repeat_timeout is None else _timeout(repeat_timeout)
         return {
             "scene_cycle_extended": {
                 "repeat_timeout": {"seconds": int(seconds)},

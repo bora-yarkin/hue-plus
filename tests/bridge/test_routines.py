@@ -269,6 +269,66 @@ class ButtonTests(unittest.IsolatedAsyncioTestCase):
         # the other press of the button, and the button's target room, stay
         self.assertEqual(call[3]["configuration"]["buttons"]["b1"]["where"], [ROOM_GROUP])
 
+    async def test_entire_home_off_and_a_time_based_light_are_written_the_way_the_hue_app_writes_them(self):
+        # both shapes were read from a real bridge: the Door dimmer's long press, and the Desk dimmer's time-based light
+        (call,) = await self.go({"accessory": "Dimmer", "button": 1, "press": "long", "action": "home_off"})
+        self.assertEqual(call[3]["configuration"]["buttons"]["b1"]["on_long_press"], {"action": "home_off"})
+        (call,) = await self.go(
+            {
+                "accessory": "Dimmer",
+                "button": 1,
+                "press": "long",
+                "action": "time_based",
+                "slots": [{"time": "20:00", "scene": "Dusk"}, {"time": "07:00", "scene": "Soho"}],
+            }
+        )
+        self.assertEqual(
+            call[3]["configuration"]["buttons"]["b1"]["on_long_press"],
+            {
+                "time_based_extended": {
+                    "repeat_timeout": {"seconds": 3},
+                    "slots": [
+                        {"actions": [{"action": {"recall": {"rid": "s1", "rtype": "scene"}}}], "start_time": {"hour": 7, "minute": 0}},
+                        {"actions": [{"action": {"recall": {"rid": "s2", "rtype": "scene"}}}], "start_time": {"hour": 20, "minute": 0}},
+                    ],
+                    "with_off": {"enabled": False},
+                }
+            },
+        )
+
+    async def test_a_time_based_light_without_times_uses_the_hue_apps_schedule_from_the_scenes_of_the_buttons_room(self):
+        rec = Recorder()
+        snap = snapshot()
+        room = {"rid": "r1", "rtype": "room"}
+        snap.scene = [
+            {"id": name.lower(), "metadata": {"name": name}, "group": room}
+            for name in ("Energize", "Concentrate", "Read", "Relax", "Nightlight")
+        ]
+        snap.scene.append(
+            {"id": "other", "metadata": {"name": "Read"}, "group": {"rid": "elsewhere", "rtype": "room"}}
+        )  # another room's scene is not used
+        await actions.run("configure_button", rec, snap, {"accessory": "Dimmer", "button": 1, "press": "long", "action": "time_based"})
+        slots = rec.calls[0][3]["configuration"]["buttons"]["b1"]["on_long_press"]["time_based_extended"]["slots"]
+        self.assertEqual(
+            [s["actions"][0]["action"]["recall"]["rid"] for s in slots], ["energize", "concentrate", "read", "relax", "nightlight"]
+        )
+        self.assertEqual([s["start_time"]["hour"] for s in slots], [7, 10, 17, 20, 23])
+        self.assertNotIn("other", str(slots))
+        snap.scene = snap.scene[:2]
+        with self.assertRaisesRegex(ValueError, "no scene called"):
+            await actions.run("configure_button", rec, snap, {"accessory": "Dimmer", "button": 1, "press": "long", "action": "time_based"})
+
+    async def test_a_time_based_light_needs_times_that_differ_and_scenes_that_exist(self):
+        base = {"accessory": "Dimmer", "button": 1, "press": "short", "action": "time_based"}
+        for slots, words in (
+            ([{"time": "07:00", "scene": "Soho"}], "2 to 10 times"),
+            ([{"time": "07:00", "scene": "Soho"}, {"time": "07:00", "scene": "Dusk"}], "cannot be the same"),
+            ([{"time": "07:00", "scene": "Soho"}, {"time": "20:00", "scene": "Nowhere"}], "No scene called"),
+            ([{"time": "07:00"}, {"time": "20:00", "scene": "Soho"}], "scene"),
+        ):
+            with self.assertRaisesRegex(ValueError, words):
+                await self.go({**base, "slots": slots})
+
     async def test_a_cycle_needs_scenes_that_exist_and_a_sensible_length_and_time(self):
         base = {"accessory": "Dimmer", "button": 1, "press": "short", "action": "scene_cycle"}
         for extra, words in (

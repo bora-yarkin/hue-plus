@@ -309,17 +309,24 @@ SPEC: dict[str, dict[str, Any]] = {
             "press": f("select", "Which press.", True, options=["short", "long", "repeat"]),
             "action": f(
                 "select",
-                "What it does: dim up or down, turn everything off, do nothing, recall one scene, or cycle through several scenes.",
+                "What it does: dim up or down, turn the lights off (all_off) or the entire home off (home_off), do nothing, recall one scene, cycle through several scenes, or a time-based light.",
                 True,
-                options=["dim_up", "dim_down", "all_off", "do_nothing", "scene", "scene_cycle"],
+                options=["dim_up", "dim_down", "all_off", "home_off", "do_nothing", "scene", "scene_cycle", "time_based"],
             ),
             "scene": f("text", "For scene: the scene to recall (id or name)."),
             "scenes": f("object", "For scene_cycle: the scenes in the order of the presses, as a list of ids or names (2 to 10)."),
+            "slots": f(
+                "object",
+                'For time_based: the times and scenes, as a list of items with "time" (for example 07:00) and "scene". Left out: the Hue app\'s own schedule '
+                "(07:00 Energize, 10:00 Concentrate, 17:00 Read, 20:00 Relax, 23:00 Nightlight) from the scenes of the button's room.",
+            ),
             "repeat_timeout": f(
-                "int", "For scene_cycle: seconds after which the next press starts the cycle again (1 to 10).", min=1, max=10
+                "int", "For scene_cycle and time_based: seconds after which the next press starts again (1 to 10).", min=1, max=10
             ),
             "with_off": f(
-                "bool", "For scene and scene_cycle: smart on/off, the next press after the last turns the lights off.", default=False
+                "bool",
+                "For scene, scene_cycle and time_based: smart on/off, the next press after the last turns the lights off.",
+                default=False,
             ),
         },
     },

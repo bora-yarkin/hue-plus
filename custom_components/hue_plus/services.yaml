@@ -624,11 +624,14 @@ configure_button:
       required: true
       selector:
         select:
-          options: ["dim_up", "dim_down", "all_off", "do_nothing", "scene", "scene_cycle"]
+          options: ["dim_up", "dim_down", "all_off", "home_off", "do_nothing", "scene", "scene_cycle", "time_based"]
     "scene":
       selector:
         text: {}
     "scenes":
+      selector:
+        object: {}
+    "slots":
       selector:
         object: {}
     "repeat_timeout":
