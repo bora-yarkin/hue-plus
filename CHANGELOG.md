@@ -4,6 +4,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+### Added
+- `configure_button` can set a press to do nothing or to cycle through 2 to 10 scenes (`scene_cycle`, with `scenes`, `repeat_timeout` and the smart on/off `with_off`), written the way the Hue app writes it. Accessories also report the room or zone each button acts on (`targets`). Experimental: not tried on a real dimmer.
+
 ## [0.5.1]
 
 ### Fixed

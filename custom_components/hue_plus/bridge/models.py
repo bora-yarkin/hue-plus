@@ -409,6 +409,11 @@ def accessories(snap: Snapshot) -> list[dict[str, Any]]:
                     bid: {press: spec for press, spec in config.items() if press.startswith("on_")}
                     for bid, config in ((automation or {}).get("configuration") or {}).get("buttons", {}).items()
                 },
+                # The room, zone or home each button acts on (what the Hue app calls its selected lights).
+                "targets": {
+                    bid: [(w.get("group") or {}).get("rid") for w in config.get("where") or [] if (w.get("group") or {}).get("rid")]
+                    for bid, config in ((automation or {}).get("configuration") or {}).get("buttons", {}).items()
+                },
             }
         )
     return out

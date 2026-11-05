@@ -507,23 +507,46 @@ def routine_post(script_id: str, name: str, configuration: dict[str, Any], enabl
 # ---- accessories: what a button does ----
 
 BUTTON_PRESSES = {"short": "on_short_release", "long": "on_long_press", "repeat": "on_repeat"}
-BUTTON_ACTIONS = ("dim_up", "dim_down", "all_off", "scene")
+BUTTON_ACTIONS = ("dim_up", "dim_down", "all_off", "do_nothing", "scene", "scene_cycle")
+# What the Hue app lets a button cycle through: the bridge held seven scenes on a real dimmer. The smallest cycle is two, since one is a single scene.
+CYCLE_SCENES = (2, 10)
+CYCLE_TIMEOUT_S = (1, 10)
 
 
-def button_action(action: str, scene_id: str | None, with_off: bool) -> dict[str, Any]:
-    """What a press does. A scene is recalled the way the Hue app sets it up (``recall_single_extended``)."""
+def _scene_slot(scene_id: str) -> dict[str, Any]:
+    return {"action": {"recall": {"rid": scene_id, "rtype": "scene"}}}
+
+
+def button_action(
+    action: str,
+    scene_id: str | None,
+    with_off: bool,
+    cycle_ids: list[str] | None = None,
+    repeat_timeout: float | None = None,
+) -> dict[str, Any]:
+    """What a press does, in the shapes the Hue app writes (all read from a real bridge): a plain ``action``, a single scene
+    (``recall_single_extended``), or a cycle through scenes (``scene_cycle_extended``), with or without the second press that turns the lights off."""
     if action not in BUTTON_ACTIONS:
         raise ValueError(f"The action is one of {', '.join(BUTTON_ACTIONS)}")
-    if action != "scene":
-        return {"action": action}
-    if not scene_id:
-        raise ValueError("Give the scene to recall")
-    return {
-        "recall_single_extended": {
-            "actions": [{"action": {"recall": {"rid": scene_id, "rtype": "scene"}}}],
-            "with_off": {"enabled": with_off},
+    if action == "scene":
+        if not scene_id:
+            raise ValueError("Give the scene to recall")
+        return {"recall_single_extended": {"actions": [_scene_slot(scene_id)], "with_off": {"enabled": with_off}}}
+    if action == "scene_cycle":
+        low, high = CYCLE_SCENES
+        if not cycle_ids or not low <= len(cycle_ids) <= high:
+            raise ValueError(f"A cycle goes through {low} to {high} scenes")
+        seconds = 3 if repeat_timeout is None else repeat_timeout
+        if not CYCLE_TIMEOUT_S[0] <= seconds <= CYCLE_TIMEOUT_S[1]:
+            raise ValueError(f"The time between presses is {CYCLE_TIMEOUT_S[0]} to {CYCLE_TIMEOUT_S[1]} seconds")
+        return {
+            "scene_cycle_extended": {
+                "repeat_timeout": {"seconds": int(seconds)},
+                "slots": [[_scene_slot(scene)] for scene in cycle_ids],
+                "with_off": {"enabled": with_off},
+            }
         }
-    }
+    return {"action": action}
 
 
 def button_configuration(configuration: dict[str, Any], button_id: str, press: str, what: dict[str, Any]) -> dict[str, Any]:

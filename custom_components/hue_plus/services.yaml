@@ -624,10 +624,20 @@ configure_button:
       required: true
       selector:
         select:
-          options: ["dim_up", "dim_down", "all_off", "scene"]
+          options: ["dim_up", "dim_down", "all_off", "do_nothing", "scene", "scene_cycle"]
     "scene":
       selector:
         text: {}
+    "scenes":
+      selector:
+        object: {}
+    "repeat_timeout":
+      selector:
+        number:
+          mode: "box"
+          min: 1
+          max: 10
+          step: 1
     "with_off":
       default: false
       selector:

@@ -630,7 +630,8 @@ async def configure_button(api, snap, data):
         raise ValueError(f"{accessory['name']} has no automation yet: set it up in the Hue app first")
     instance = next(a for a in snap.behavior_instance if a["id"] == accessory["automation_id"])
     scene = resolve(snap.scene, data["scene"], "scene")["id"] if data.get("scene") else None
-    what = payloads.button_action(data["action"], scene, data.get("with_off", False))
+    cycle = [resolve(snap.scene, str(ref), "scene")["id"] for ref in data.get("scenes") or []]
+    what = payloads.button_action(data["action"], scene, data.get("with_off", False), cycle, data.get("repeat_timeout"))
     configuration = payloads.button_configuration(instance["configuration"], button["id"], data["press"], what)
     await api.put("behavior_instance", instance["id"], {"configuration": configuration})
 

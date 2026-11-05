@@ -214,7 +214,9 @@ class ListTests(unittest.IsolatedAsyncioTestCase):
 class ButtonTests(unittest.IsolatedAsyncioTestCase):
     async def go(self, data):
         rec = Recorder()
-        await actions.run("configure_button", rec, snapshot(), data)
+        snap = snapshot()
+        snap.scene = [*snap.scene, {"id": "s2", "metadata": {"name": "Dusk"}}]
+        await actions.run("configure_button", rec, snap, data)
         return rec.calls
 
     async def test_one_press_changes_and_everything_else_stays_as_it_was(self):
@@ -236,6 +238,49 @@ class ButtonTests(unittest.IsolatedAsyncioTestCase):
             },
         )
 
+    async def test_a_scene_cycle_is_written_the_way_the_hue_app_writes_it(self):
+        # the shape was read from a real bridge's dimmer: seven scenes, three seconds, smart on/off
+        (call,) = await self.go(
+            {
+                "accessory": "Dimmer",
+                "button": 1,
+                "press": "short",
+                "action": "scene_cycle",
+                "scenes": ["Soho", "Dusk"],
+                "with_off": True,
+                "repeat_timeout": 3,
+            }
+        )
+        self.assertEqual(
+            call[3]["configuration"]["buttons"]["b1"]["on_short_release"],
+            {
+                "scene_cycle_extended": {
+                    "repeat_timeout": {"seconds": 3},
+                    "slots": [
+                        [{"action": {"recall": {"rid": "s1", "rtype": "scene"}}}],
+                        [{"action": {"recall": {"rid": "s2", "rtype": "scene"}}}],
+                    ],
+                    "with_off": {"enabled": True},
+                }
+            },
+        )
+        (call,) = await self.go({"accessory": "Dimmer", "button": 1, "press": "long", "action": "do_nothing"})
+        self.assertEqual(call[3]["configuration"]["buttons"]["b1"]["on_long_press"], {"action": "do_nothing"})
+        # the other press of the button, and the button's target room, stay
+        self.assertEqual(call[3]["configuration"]["buttons"]["b1"]["where"], [ROOM_GROUP])
+
+    async def test_a_cycle_needs_scenes_that_exist_and_a_sensible_length_and_time(self):
+        base = {"accessory": "Dimmer", "button": 1, "press": "short", "action": "scene_cycle"}
+        for extra, words in (
+            ({"scenes": ["Soho"]}, "2 to 10 scenes"),
+            ({"scenes": ["Soho"] * 11}, "2 to 10 scenes"),
+            ({}, "2 to 10 scenes"),
+            ({"scenes": ["Soho", "Nowhere"]}, "No scene called"),
+            ({"scenes": ["Soho", "Dusk"], "repeat_timeout": 60}, "1 to 10 seconds"),
+        ):
+            with self.assertRaisesRegex(ValueError, words):
+                await self.go({**base, **extra})
+
     async def test_what_cannot_be_set_is_refused(self):
         for data, words in (
             ({"accessory": "Dimmer", "button": 9, "press": "short", "action": "dim_up"}, "has buttons 1, 2"),
@@ -251,6 +296,7 @@ class ButtonTests(unittest.IsolatedAsyncioTestCase):
         (dimmer,) = models.accessories(snapshot())
         self.assertEqual((dimmer["name"], dimmer["automation_id"], [b["number"] for b in dimmer["buttons"]]), ("Dimmer", "acc", [1, 2]))
         self.assertEqual(dimmer["actions"]["b1"]["on_short_release"], {"action": "all_off"})
+        self.assertEqual(dimmer["targets"]["b1"], ["r1"])  # the room the button acts on
 
 
 class OtherTests(unittest.IsolatedAsyncioTestCase):

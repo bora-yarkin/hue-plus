@@ -1041,15 +1041,23 @@
         },
         "action": {
           "name": "Action",
-          "description": "What it does."
+          "description": "What it does: dim up or down, turn everything off, do nothing, recall one scene, or cycle through several scenes."
         },
         "scene": {
           "name": "Scene",
           "description": "For scene: the scene to recall (id or name)."
         },
+        "scenes": {
+          "name": "Scenes",
+          "description": "For scene_cycle: the scenes in the order of the presses, as a list of ids or names (2 to 10)."
+        },
+        "repeat_timeout": {
+          "name": "Repeat timeout",
+          "description": "For scene_cycle: seconds after which the next press starts the cycle again (1 to 10)."
+        },
         "with_off": {
           "name": "With off",
-          "description": "For scene: a second press turns the lights off."
+          "description": "For scene and scene_cycle: smart on/off, the next press after the last turns the lights off."
         }
       }
     },
