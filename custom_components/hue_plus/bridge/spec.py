@@ -307,9 +307,27 @@ SPEC: dict[str, dict[str, Any]] = {
             "accessory": f("text", "The accessory (id or name).", True, example="Hue dimmer switch 1"),
             "button": f("int", "The button's number on the accessory.", True, min=1, max=8),
             "press": f("select", "Which press.", True, options=["short", "long", "repeat"]),
-            "action": f("select", "What it does.", True, options=["dim_up", "dim_down", "all_off", "scene"]),
+            "action": f(
+                "select",
+                "What it does: dim up or down, turn the lights off (all_off) or the entire home off (home_off), do nothing, recall one scene, cycle through several scenes, or a time-based light.",
+                True,
+                options=["dim_up", "dim_down", "all_off", "home_off", "do_nothing", "scene", "scene_cycle", "time_based"],
+            ),
             "scene": f("text", "For scene: the scene to recall (id or name)."),
-            "with_off": f("bool", "For scene: a second press turns the lights off.", default=False),
+            "scenes": f("object", "For scene_cycle: the scenes in the order of the presses, as a list of ids or names (2 to 10)."),
+            "slots": f(
+                "object",
+                'For time_based: the times and scenes, as a list of items with "time" (for example 07:00) and "scene". Left out: the Hue app\'s own schedule '
+                "(07:00 Energize, 10:00 Concentrate, 17:00 Read, 20:00 Relax, 23:00 Nightlight) from the scenes of the button's room.",
+            ),
+            "repeat_timeout": f(
+                "int", "For scene_cycle and time_based: seconds after which the next press starts again (1 to 10).", min=1, max=10
+            ),
+            "with_off": f(
+                "bool",
+                "For scene, scene_cycle and time_based: smart on/off, the next press after the last turns the lights off.",
+                default=False,
+            ),
         },
     },
     "create_daily_smart_scene": {

@@ -618,6 +618,25 @@ async def create_routine(api, snap, data):
     return {"id": await api.post("behavior_instance", body)}
 
 
+def _time_slots(snap: models.Snapshot, given: Any, groups: list[str]) -> list[tuple[time, str]]:
+    """The times of a time-based light with their scenes: what was given ({time, scene} items), or the Hue app's own schedule made of
+    the scenes of the room the button acts on."""
+    if given is not None:
+        out = []
+        for slot in _json(given, "slots"):
+            if not isinstance(slot, dict) or "time" not in slot or "scene" not in slot:
+                raise ValueError('Each time is {"time": "07:00", "scene": "<scene name or id>"}')
+            out.append((time.fromisoformat(str(slot["time"])), resolve(snap.scene, str(slot["scene"]), "scene")["id"]))
+        return out
+    wanted = {name.casefold(): at for at, name in payloads.DEFAULT_TIME_SLOTS}
+    here = [s for s in snap.scene if not groups or (s.get("group") or {}).get("rid") in groups]
+    found = {models._name(s).casefold(): s["id"] for s in here}
+    missing = [name for _at, name in payloads.DEFAULT_TIME_SLOTS if name.casefold() not in found]
+    if missing:
+        raise ValueError(f"The room has no scene called {', '.join(missing)}, so give the times and scenes yourself")
+    return [(wanted[name], found[name]) for name in wanted]
+
+
 @action("configure_button")
 async def configure_button(api, snap, data):
     """Sets what one press of one button of an accessory does. The button must already have an action from the Hue app."""
@@ -630,7 +649,9 @@ async def configure_button(api, snap, data):
         raise ValueError(f"{accessory['name']} has no automation yet: set it up in the Hue app first")
     instance = next(a for a in snap.behavior_instance if a["id"] == accessory["automation_id"])
     scene = resolve(snap.scene, data["scene"], "scene")["id"] if data.get("scene") else None
-    what = payloads.button_action(data["action"], scene, data.get("with_off", False))
+    cycle = [resolve(snap.scene, str(ref), "scene")["id"] for ref in data.get("scenes") or []]
+    slots = _time_slots(snap, data.get("slots"), accessory["targets"].get(button["id"], [])) if data["action"] == "time_based" else None
+    what = payloads.button_action(data["action"], scene, data.get("with_off", False), cycle, data.get("repeat_timeout"), slots)
     configuration = payloads.button_configuration(instance["configuration"], button["id"], data["press"], what)
     await api.put("behavior_instance", instance["id"], {"configuration": configuration})
 
