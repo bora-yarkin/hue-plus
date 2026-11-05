@@ -4,6 +4,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.5.1]
+
 ### Fixed
 - `update_entertainment_area` no longer resets every light's brightness balance to 1 and drops the other positions of a light with segments when it writes the lights' places: what the bridge holds for a light that stays is kept.
 
