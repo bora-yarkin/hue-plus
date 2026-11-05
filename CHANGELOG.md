@@ -4,15 +4,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
-## [0.5.0-beta.2]
-
-### Changed
-- Beta: the developer app's client ID and secret are entered together with the app ID and UUID (from the Spotify sync options or Reconfigure) and kept in the bridge entry, so no separate Application credentials step is needed.
-
-## [0.5.0-beta.1]
+## [0.5.0]
 
 ### Added
-- Beta: the Spotify sync can sign in with the user's own Hue developer app (OAuth through Home Assistant's application credentials) instead of a pasted token. The token and UUID form is still there. Not tried on a real account yet.
+- The Spotify sync can sign in with the user's own Hue developer app (OAuth through Home Assistant): the app ID, client ID, client secret and UUID are entered in one form, from the Spotify sync options or Reconfigure, and kept in the bridge entry. The token and UUID form is still there.
 
 ## [0.4.1]
 
