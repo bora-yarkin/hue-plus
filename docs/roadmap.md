@@ -18,7 +18,11 @@ Status values: planned, in_progress, blocked, complete. The first incomplete ite
   pushed into the integration. Not yet tried live: starting a scene on the real lights, identify, timed effects, device
   search, Matter commissioning, firmware install and the write actions (they need the owner's approval).
 - HP-8 planned: scene engine v2 for non-Hue devices, delegating Hue lights to `hue_plus` (separate repository).
-- HP-9 dropped (2026-11-03, owner's decision D-17): signing in to Hue for the Spotify sync is not part of this repository; the sync keeps the entered token.
+- HP-9 in_progress (D-24): Spotify Sync developer OAuth alongside manual token and UUID entry. The developer app
+  uses credentials entered in Spotify Sync options and the UUID from the private helper. Acceptance covers browser linking
+  to the existing bridge, renewed token persistence, Sync reconnection, reauthentication, and the manual fallback.
+  - HP-9.1 complete: config flow, refresh, expiry reconnect, and manual fallback verified in local tests on Home Assistant 2026.10.4.
+  - HP-9.2 blocked on owner deployment: verify browser sign-in, clean restart, renewal, and Start/Stop on the box.
 
 Backlog proposal (not scheduled, needs approval and a new dependency): local Entertainment streaming over DTLS.
 

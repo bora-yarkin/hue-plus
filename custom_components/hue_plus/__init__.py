@@ -190,7 +190,12 @@ def _bridge_name(hass: HomeAssistant, link: BridgeLink) -> str:
 
 
 async def _reload(hass: HomeAssistant, entry: HuePlusConfigEntry) -> None:
-    """The modules or the credentials changed."""
+    """Reload configuration changes, while a token rotation only reconnects Sync."""
+    runtime = getattr(entry, "runtime_data", None)
+    if isinstance(runtime, Runtime) and runtime.sync is not None:
+        oauth = runtime.sync.oauth
+        if oauth is not None and oauth.consume_refresh_update():
+            return
     await hass.config_entries.async_reload(entry.entry_id)
 
 

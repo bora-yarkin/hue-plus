@@ -40,3 +40,11 @@ presets, a saved scene and the call (later wins); `setup.py` stores the library 
 
 **Delegating to other brands.** A later separate integration (`scene-engine`, non-Hue devices) can call `hue_plus.scene_start`
 for the Hue part of a combined scene.
+
+
+## Spotify Sync authentication
+
+The bridge config entry holds a manual access token or a reference to Home Assistant Application credentials and the
+developer OAuth token pair. Both modes supply the same UUID and access token to the Home-Assistant-free Sync client.
+The OAuth provider renews before a connection opens. An open socket gets a renewal deadline and reconnects when it is
+reached. Only the Sync connection changes on rotation. Bridge and Sync Box registrations follow their own flows.

@@ -146,9 +146,32 @@ CONFIG = {
             "description": "Press the round button on top of the bridge, then submit this form within thirty seconds.",
         },
         "reconfigure": {
+            "title": "Reconfigure Philips Hue Plus",
+            "menu_options": {"bridge_address": "Bridge address", "sync_developer": "Spotify Sync with a Hue developer app"},
+        },
+        "bridge_address": {
             "title": "The bridge's address",
             "description": "Enter the new address of the same bridge. It has to show the same certificate as when Hue Plus registered with it.",
             "data": {"host": "Address"},
+        },
+        "sync_developer": {
+            "title": "Spotify Sync with a Hue developer app",
+            "description": "Register {redirect} as the callback URL in your Hue developer app. Enter its App ID, Client ID and Client Secret, plus the Spotify Sync UUID from your extractor's UUID handoff.",
+            "data": {
+                "sync_app_id": "Hue developer App ID",
+                "sync_client_id": "Hue developer Client ID",
+                "sync_client_secret": "Hue developer Client Secret",
+                "uuid": "Spotify Sync UUID",
+            },
+        },
+        "pick_implementation": {
+            "title": "Choose your Hue developer app",
+            "data": {"implementation": "Application credentials"},
+        },
+        "auth": {"title": "Sign in to Philips Hue"},
+        "sync_developer_reauth": {
+            "title": "Sign in to Philips Hue again",
+            "description": "Continue to renew the Hue developer connection for the linked Spotify Sync account.",
         },
         "bridge_reauth": {
             "title": "Register with the bridge again",
@@ -179,6 +202,9 @@ CONFIG = {
     },
     "error": {
         **SYNC_ERRORS,
+        "invalid_client_credentials": "Enter the Client ID or Client Secret from your Hue developer app.",
+        "invalid_app_id": "Enter the App ID from your Hue developer app.",
+        "invalid_uuid": "Enter the Spotify Sync UUID from the extractor handoff.",
         "wrong_account": "This token belongs to a different Hue account than the stored one.",
         "invalid_host": "That is not a name or an address.",
         "not_v2": "This bridge is too old: Hue Plus needs a bridge with the v2 API.",
@@ -190,7 +216,11 @@ CONFIG = {
     "abort": {
         "no_hue_bridge": "Set up the Hue integration first (it has to use the bridge's v2 API).",
         "use_hue_integration": "The Hue integration already has this bridge. Add it from the first choice, which uses the Hue integration's connection.",
-        "no_reconfigure": "Only a bridge that Hue Plus connects to itself has an address to change.",
+        "no_reconfigure": "This entry has no bridge settings to change.",
+        "sync_developer_successful": "Hue developer sign-in is configured for Spotify Sync.",
+        "invalid_auth": "Hue Sync did not accept this account and UUID.",
+        "cannot_connect": "Could not verify Spotify Sync. Try again later.",
+        "missing_configuration": "Add your Hue developer Client ID and Client Secret in Home Assistant Application credentials, then try again.",
         "reconfigure_successful": "The new address is stored.",
         "already_configured": "Hue Plus is already set up for this bridge.",
         "reauth_successful": "The new credentials are stored.",
@@ -204,7 +234,7 @@ OPTIONS = {
             "title": "Philips Hue Plus",
             "menu_options": {
                 "modules": "Choose the modules",
-                "credentials": "Spotify sync token (by hand)",
+                "credentials": "Spotify Sync token",
                 "streaming": "Local streaming registration",
             },
         },
@@ -219,15 +249,16 @@ OPTIONS = {
         },
         "credentials": {
             "title": "Hue Spotify sync credentials",
-            "description": "Enter the token and UUID of the Hue app's Spotify sync.",
-            "data": {"auth": "Token", "uuid": "UUID"},
+            "description": "Paste the token and UUID from the extractor, or turn on Enter developer credentials and submit to set up automatic renewal.",
+            "data": {"use_developer_credentials": "Enter developer credentials", "auth": "Token", "uuid": "UUID"},
         },
     },
     "error": {
         **SYNC_ERRORS,
+        "required": "Enter a value for this field.",
         "link_button_not_pressed": "The bridge did not register Hue Plus. Press its link button, then submit again.",
     },
-    "abort": {"no_options": "A sync box has no options."},
+    "abort": {"no_options": "A sync box has no options.", "continue_developer_setup": "Continue with Hue developer setup."},
 }
 
 SELECTOR_TEXTS = {

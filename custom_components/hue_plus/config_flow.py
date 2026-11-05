@@ -3,17 +3,23 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Mapping
 from typing import Any
+from urllib.parse import parse_qs, urlsplit
+from uuid import UUID
 
 import aiohttp
 import voluptuous as vol
 from aiohue.discovery import discover_bridge
 from aiohue.util import normalize_bridge_id
-from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
+from homeassistant.config_entries import SOURCE_REAUTH, SOURCE_RECONFIGURE, ConfigEntry, ConfigFlowResult, FlowType, OptionsFlow
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.config_entry_oauth2_flow import AbstractOAuth2FlowHandler, async_get_redirect_uri
+from homeassistant.helpers.network import NoURLAvailableError
 from homeassistant.helpers.selector import (
+    BooleanSelector,
     SelectSelector,
     SelectSelectorConfig,
     TextSelector,
@@ -26,13 +32,18 @@ from .bridge.connect import peer_fingerprint, pin
 from .const import (
     CONF_APP_KEY,
     CONF_AUTH,
+    CONF_AUTH_IMPLEMENTATION,
     CONF_CERT_SHA256,
     CONF_HOST,
     CONF_HUE_ENTRY,
     CONF_MODULES,
+    CONF_OAUTH_TOKEN,
     CONF_STREAM_APP_ID,
     CONF_STREAM_APP_KEY,
     CONF_STREAM_CLIENT_KEY,
+    CONF_SYNC_APP_ID,
+    CONF_SYNC_CLIENT_ID,
+    CONF_SYNC_CLIENT_SECRET,
     CONF_SYNCBOX_HOST,
     CONF_SYNCBOX_REGISTRATION,
     CONF_SYNCBOX_TOKEN,
@@ -51,7 +62,20 @@ from .const import (
 )
 from .streaming.register import LinkButtonNotPressed, Registration, register
 from .sync.client import GenesisRejected, GenesisUnavailable, async_probe
+from .sync.oauth import inline_oauth, sync_session
 from .syncbox.client import SyncBox, SyncBoxError, SyncBoxRegistrationPending, valid_host
+
+_LOGGER = logging.getLogger(__name__)
+OAUTH_KEYS = (CONF_SYNC_APP_ID, CONF_SYNC_CLIENT_ID, CONF_SYNC_CLIENT_SECRET, CONF_AUTH_IMPLEMENTATION, CONF_OAUTH_TOKEN)
+DEVELOPER_MODE = "use_developer_credentials"
+
+
+class _SpotifyOptionsHandoff:
+    """Carry the pending module selection between Home Assistant's two flows."""
+
+    def __init__(self, modules: list[str]) -> None:
+        self.modules = modules
+
 
 CREDENTIALS_SCHEMA = vol.Schema(
     {
@@ -67,7 +91,7 @@ class _CredentialsMixin:
     async def _check(self, creds: dict[str, str]) -> str | None:
         """None when the service accepts the credentials, otherwise the error key."""
         try:
-            await async_probe(async_get_clientsession(self.hass), SYNC_URL, creds[CONF_AUTH], creds[CONF_UUID])
+            await async_probe(sync_session(self.hass), SYNC_URL, creds[CONF_AUTH], creds[CONF_UUID])
         except GenesisRejected:
             return "invalid_auth"
         except GenesisUnavailable:
@@ -81,10 +105,24 @@ SYNCBOX_SCHEMA = vol.Schema({vol.Required(CONF_SYNCBOX_HOST): TextSelector()})
 HOST_SCHEMA = vol.Schema({vol.Required(CONF_HOST): TextSelector()})
 
 
-class HuePlusConfigFlow(_CredentialsMixin, ConfigFlow, domain=DOMAIN):
+class HuePlusConfigFlow(_CredentialsMixin, AbstractOAuth2FlowHandler, domain=DOMAIN):
+    DOMAIN = DOMAIN
     VERSION = 3
 
+    @property
+    def logger(self) -> logging.Logger:
+        return _LOGGER
+
+    @property
+    def extra_authorize_data(self) -> dict[str, str]:
+        return {"appid": self._sync_app_id}
+
     def __init__(self) -> None:
+        super().__init__()
+        self._sync_app_id = ""
+        self._sync_uuid = ""
+        self._oauth_redirect = ""
+        self._developer_credentials: dict[str, str] = {}
         self._host = ""
         self._fingerprint = ""
         self._box_host = ""
@@ -189,10 +227,19 @@ class HuePlusConfigFlow(_CredentialsMixin, ConfigFlow, domain=DOMAIN):
         return self.async_show_form(step_id="bridge_link", data_schema=vol.Schema({}), errors=errors)
 
     async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        entry = self._get_reconfigure_entry()
+        if CONF_SYNCBOX_HOST in entry.data:
+            return self.async_abort(reason="no_reconfigure")
+        if isinstance(user_input, _SpotifyOptionsHandoff):
+            return await self.async_step_sync_developer()
+        menu = ["sync_developer"]
+        if CONF_HOST in entry.data and connects_directly(entry):
+            menu.insert(0, "bridge_address")
+        return self.async_show_menu(step_id="reconfigure", menu_options=menu)
+
+    async def async_step_bridge_address(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """A bridge that moved to another address. It must be the same bridge, showing the same certificate."""
         entry = self._get_reconfigure_entry()
-        if CONF_HOST not in entry.data or not connects_directly(entry):
-            return self.async_abort(reason="no_reconfigure")
         errors: dict[str, str] = {}
         if user_input is not None:
             host = user_input[CONF_HOST].strip()
@@ -209,7 +256,7 @@ class HuePlusConfigFlow(_CredentialsMixin, ConfigFlow, domain=DOMAIN):
                 else:
                     return self.async_update_reload_and_abort(entry, data_updates={CONF_HOST: host})
         schema = self.add_suggested_values_to_schema(HOST_SCHEMA, {CONF_HOST: entry.data[CONF_HOST]})
-        return self.async_show_form(step_id="reconfigure", data_schema=schema, errors=errors)
+        return self.async_show_form(step_id="bridge_address", data_schema=schema, errors=errors)
 
     async def async_step_bridge_reauth(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """The bridge no longer accepts Hue Plus (removed under Apps in the Hue app, or the bridge was reset), or it shows another certificate.
@@ -304,13 +351,128 @@ class HuePlusConfigFlow(_CredentialsMixin, ConfigFlow, domain=DOMAIN):
                 )
         return self.async_show_form(step_id="syncbox_reauth", data_schema=vol.Schema({}), errors=errors)
 
+    def _spotify_entry(self) -> ConfigEntry:
+        return self._get_reauth_entry() if self.source == SOURCE_REAUTH else self._get_reconfigure_entry()
+
+    async def async_step_sync_developer(self, user_input: dict[str, str] | None = None) -> ConfigFlowResult:
+        """Pair a developer app with a known linked Spotify Sync UUID."""
+        errors: dict[str, str] = {}
+        try:
+            redirect = async_get_redirect_uri(self.hass)
+        except RuntimeError:
+            redirect = "/auth/external/callback"
+        if user_input is not None:
+            app_id = user_input[CONF_SYNC_APP_ID].strip()
+            try:
+                uuid = str(UUID(user_input[CONF_UUID].strip()))
+            except ValueError:
+                errors[CONF_UUID] = "invalid_uuid"
+            if not app_id or len(app_id) > 256:
+                errors[CONF_SYNC_APP_ID] = "invalid_app_id"
+            client_id = user_input[CONF_SYNC_CLIENT_ID].strip()
+            client_secret = user_input[CONF_SYNC_CLIENT_SECRET]
+            for key, value in ((CONF_SYNC_CLIENT_ID, client_id), (CONF_SYNC_CLIENT_SECRET, client_secret)):
+                if not 0 < len(value) <= 1024 or not all("!" <= char <= "~" for char in value):
+                    errors[key] = "invalid_client_credentials"
+            if ":" in client_id:
+                errors[CONF_SYNC_CLIENT_ID] = "invalid_client_credentials"
+            if not errors:
+                self._developer_credentials = {CONF_SYNC_CLIENT_ID: client_id, CONF_SYNC_CLIENT_SECRET: client_secret}
+                self._sync_app_id = app_id
+                self._sync_uuid = uuid
+                self.flow_impl = inline_oauth(self.hass, self._developer_credentials)
+                return await self.async_step_auth()
+        entry = self._spotify_entry()
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_SYNC_APP_ID): TextSelector(),
+                vol.Required(CONF_SYNC_CLIENT_ID): TextSelector(),
+                vol.Required(CONF_SYNC_CLIENT_SECRET): TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD)),
+                vol.Required(CONF_UUID): TextSelector(),
+            }
+        )
+        schema = self.add_suggested_values_to_schema(
+            schema,
+            {key: entry.data[key] for key in (CONF_SYNC_APP_ID, CONF_SYNC_CLIENT_ID, CONF_UUID) if key in entry.data},
+        )
+        return self.async_show_form(
+            step_id="sync_developer",
+            data_schema=schema,
+            errors=errors,
+            description_placeholders={"redirect": redirect},
+        )
+
+    async def async_generate_authorize_url(self) -> str:
+        try:
+            url = await super().async_generate_authorize_url()
+        except RuntimeError:
+            raise NoURLAvailableError from None
+        self._oauth_redirect = parse_qs(urlsplit(url).query)["redirect_uri"][0]
+        return url
+
+    async def async_step_auth(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        if user_input is not None:
+            state = user_input.get("state")
+            if (
+                not isinstance(state, dict)
+                or state.get("flow_id") != self.flow_id
+                or state.get("redirect_uri") != self._oauth_redirect
+                or not self._oauth_redirect
+            ):
+                return self.async_external_step_done(next_step_id="sync_oauth_failed")
+            if "error" in user_input:
+                return self.async_external_step_done(next_step_id="sync_oauth_failed")
+            if not isinstance(user_input.get("code"), str) or not 0 < len(user_input["code"]) <= 2048:
+                return self.async_external_step_done(next_step_id="sync_oauth_failed")
+        return await super().async_step_auth(user_input)
+
+    async def async_step_sync_oauth_failed(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        return self.async_abort(reason="oauth_failed")
+
+    async def async_oauth_create_entry(self, data: dict) -> ConfigFlowResult:
+        """Verify Sync access before changing the existing bridge entry."""
+        creds = {CONF_AUTH: data[CONF_OAUTH_TOKEN]["access_token"], CONF_UUID: self._sync_uuid}
+        if error := await self._check(creds):
+            return self.async_abort(reason=error)
+        entry = self._spotify_entry()
+        updated = {key: value for key, value in entry.data.items() if key != CONF_AUTH}
+        updated.update(data)
+        updated.update(self._developer_credentials)
+        updated.update({CONF_SYNC_APP_ID: self._sync_app_id, CONF_UUID: self._sync_uuid})
+        modules = list(entry.options.get(CONF_MODULES, DEFAULT_MODULES))
+        if isinstance(self.init_data, _SpotifyOptionsHandoff) and self.init_data.modules:
+            modules = self.init_data.modules.copy()
+        if self.source != SOURCE_REAUTH and MODULE_SYNC not in modules:
+            modules.append(MODULE_SYNC)
+        changed = self.hass.config_entries.async_update_entry(
+            entry,
+            data=updated,
+            options={**entry.options, CONF_MODULES: modules},
+        )
+        if not changed or not entry.update_listeners:
+            self.hass.config_entries.async_schedule_reload(entry.entry_id)
+        return self.async_abort(reason="sync_developer_successful")
+
     async def async_step_reauth(self, entry_data: Mapping[str, Any]) -> ConfigFlowResult:
         if CONF_SYNCBOX_HOST in entry_data:
             return await self.async_step_syncbox_reauth()
         # The Spotify sync asks for its token with the context below; a bridge of Hue Plus's own that refuses it asks for the link button.
         if self.context.get("reauth_for") != "sync" and connects_directly(self._get_reauth_entry()):
             return await self.async_step_bridge_reauth()
+        if CONF_SYNC_APP_ID in entry_data and CONF_OAUTH_TOKEN in entry_data:
+            return await self.async_step_sync_developer_reauth()
         return await self.async_step_reauth_confirm()
+
+    async def async_step_sync_developer_reauth(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        if user_input is None:
+            return self.async_show_form(step_id="sync_developer_reauth", data_schema=vol.Schema({}))
+        data = self._get_reauth_entry().data
+        self._sync_app_id = data[CONF_SYNC_APP_ID]
+        self._sync_uuid = data[CONF_UUID]
+        if implementation := inline_oauth(self.hass, data):
+            self.flow_impl = implementation
+            return await self.async_step_auth()
+        return await self.async_step_pick_implementation({"implementation": data[CONF_AUTH_IMPLEMENTATION]})
 
     async def async_step_reauth_confirm(self, user_input: dict[str, str] | None = None) -> ConfigFlowResult:
         return await self.async_step_reauth_credentials()
@@ -350,7 +512,7 @@ class HuePlusOptionsFlow(_CredentialsMixin, OptionsFlow):
     async def async_step_modules(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         if user_input is not None:
             self._modules = list(user_input[CONF_MODULES])
-            if MODULE_SYNC in self._modules and not self.config_entry.data.get(CONF_AUTH):
+            if MODULE_SYNC in self._modules and not (self.config_entry.data.get(CONF_AUTH) or self.config_entry.data.get(CONF_OAUTH_TOKEN)):
                 return await self.async_step_credentials()
             if MODULE_STREAMING in self._modules and not self.config_entry.data.get(CONF_STREAM_CLIENT_KEY):
                 return await self.async_step_streaming()
@@ -365,14 +527,33 @@ class HuePlusOptionsFlow(_CredentialsMixin, OptionsFlow):
         )
         return self.async_show_form(step_id="modules", data_schema=schema)
 
-    async def async_step_credentials(self, user_input: dict[str, str] | None = None) -> ConfigFlowResult:
+    async def async_step_credentials(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         errors: dict[str, str] = {}
-        if (creds := user_input) is not None:
-            if error := await self._check(creds):
-                errors["base"] = error
-            else:
-                return self._store_sync_account(creds)
-        return self.async_show_form(step_id="credentials", data_schema=CREDENTIALS_SCHEMA, errors=errors)
+        if user_input is not None:
+            if user_input.get(DEVELOPER_MODE):
+                flow = await self.hass.config_entries.flow.async_init(
+                    DOMAIN,
+                    context={"source": SOURCE_RECONFIGURE, "entry_id": self.config_entry.entry_id},
+                    data=_SpotifyOptionsHandoff(self._modules.copy()),
+                )
+                result = self.async_abort(reason="continue_developer_setup")
+                result["next_flow"] = (FlowType.CONFIG_FLOW, flow["flow_id"])
+                return result
+            creds = {key: user_input.get(key, "").strip() for key in (CONF_AUTH, CONF_UUID)}
+            errors = {key: "required" for key, value in creds.items() if not value}
+            if not errors:
+                if error := await self._check(creds):
+                    errors["base"] = error
+                else:
+                    return self._store_sync_account(creds)
+        schema = vol.Schema(
+            {
+                vol.Optional(DEVELOPER_MODE, default=False): BooleanSelector(),
+                vol.Optional(CONF_AUTH): TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD)),
+                vol.Optional(CONF_UUID): TextSelector(),
+            }
+        )
+        return self.async_show_form(step_id="credentials", data_schema=schema, errors=errors)
 
     async def async_step_streaming(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Local streaming needs its own registration with the bridge, which only works while the bridge's link button is pressed."""
@@ -416,6 +597,8 @@ class HuePlusOptionsFlow(_CredentialsMixin, OptionsFlow):
         # One update for both: two would reload the entry twice, and the second change could land while the first
         # reload is unloading, when nothing is listening.
         self.hass.config_entries.async_update_entry(
-            self.config_entry, data={**self.config_entry.data, **creds}, options={CONF_MODULES: modules}
+            self.config_entry,
+            data={**{key: value for key, value in self.config_entry.data.items() if key not in OAUTH_KEYS}, **creds},
+            options={CONF_MODULES: modules},
         )
         return self.async_create_entry(data={CONF_MODULES: modules})

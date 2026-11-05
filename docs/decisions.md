@@ -14,7 +14,8 @@ Confirmed by the owner on 2026-10-28.
   devices and delegates Hue lights to `hue_plus` through a service that applies a batch of light states to the bridge in
   one request with bridge-side transitions. `hue_plus` also works alone.
 - D-6 The Spotify sync uses Hue's private cloud WebSocket and is experimental. It works with a token the user
-  obtains and enters by hand; Hue Plus does not sign in to Hue for them (D-17). Capture tooling is never published.
+  obtains and enters by hand, or with an OAuth token for the user's registered Hue developer app (D-24).
+  The APK helper is a separate private project.
 - D-7 HomeKit is out of scope for now.
 - D-8 Tests: stdlib tests for the HA-free core, `pytest-homeassistant-custom-component` in a local virtual environment for
   the Home Assistant layer. Licence and repository name are decided at HP-6.
@@ -35,7 +36,7 @@ Confirmed by the owner on 2026-10-28.
   "Zones" light is removed.
 - D-16 The `devices` module reuses the Hue integration's platforms through a proxy entry instead of copying them: less code, every feature, and the same
   long-term aim as D-14 (copy them out when Hue Plus has its own connection).
-- D-17 (owner's decision, 2026-11-03) Hue Plus does not sign in to Hue on the user's behalf. The Spotify sync takes a token and
+- D-17 (owner's decision, 2026-11-03; developer sign-in superseded by D-24) Hue Plus does not sign in to Hue on the user's behalf. The Spotify sync takes a token and
   UUID the user enters on the configuration screen (no file is read); when the service refuses the token,
   Home Assistant asks for a new one (reauthentication). Reusing the Hue app's own identifiers is not part of this repository.
 - D-18 (2026-10-29, owner's choice) A Hue Play HDMI Sync Box is a second kind of config entry of this integration, not a separate
@@ -62,3 +63,9 @@ Confirmed by the owner on 2026-10-28.
   dependency already brings aiohue at the version Home Assistant runs, and a pin of Hue Plus's own could clash with it. The Hue integration's platforms are still
   the ones Hue Plus runs for lights and devices (D-14, D-16); copying them out, to drop the dependency, is not done.
 - D-22 (owner's decision, 2026-11-03) The Hue integration's entities are hidden and renamed only when the user chooses so on the setup screen. The default is to leave them alone: Hue Plus's entities then end in `_plus` and follow the Hue entity they copy (matched by unique id) one way, for good: area, name, icon, labels, hidden by the user, and the device's area and name (`lights/alongside.py`, `async_follow_hue_settings`). An entry made before the choice existed has none stored and keeps hiding and renaming. In the leave-alone mode live scenes, areas and locating a light accept Hue lights only (`scenes/hue_only.py`). Consequences: both sets of entities exist; a dashboard that wants one set filters by platform and unique id.
+- D-24 (owner's decision, 2026-11-05) Hue Plus supports OAuth only with a user's own registered Remote Hue API app.
+  The Spotify Sync options dialog hands off to the native OAuth config flow. The bridge entry stores the entered
+  developer Client ID and Client Secret, linked Spotify Sync UUID, and issued token pair after verification. Entries
+  linked through Application Credentials in the first beta continue to use those credentials. The Sync connection renews before
+  expiry and reconnects with the new access token. A manual token can still be entered in options. The private APK helper supplies a one-time UUID or
+  manual token export. The integration uses neither the official app's credentials nor its login implementation.
