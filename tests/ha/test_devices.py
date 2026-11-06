@@ -7,13 +7,16 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
+import pytest
 from aiohue.v2.controllers.events import EventType
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.entity_platform import EntityPlatform
 from pytest_homeassistant_custom_component.common import async_fire_time_changed
 
-from custom_components.hue_plus import follow
+from custom_components.hue_plus import follow, spec
 from custom_components.hue_plus.const import CONF_MODULES, DOMAIN
+from custom_components.hue_plus.devices.scene import ACTIVATE_SCENE_SCHEMA
 from custom_components.hue_plus.lights import adopt
 
 from .test_lights import BRIDGE_ID, DATA, _custom_integrations, home, plus  # noqa: F401 - fixtures
@@ -63,6 +66,61 @@ async def test_a_scene_can_be_activated_from_hue_plus(hass, home):  # noqa: F811
         "dynamic_palette",
         "static",
     )
+
+
+def _hue_platform_without_the_service(self, name, *args, **kwargs):
+    """The Hue integration of Home Assistant 2026.11 registers ``activate_scene`` itself, for its own entities, not from its scene platform."""
+    if name == "activate_scene":
+        return None
+    return _REGISTER(self, name, *args, **kwargs)
+
+
+_REGISTER = EntityPlatform.async_register_entity_service
+
+
+@pytest.mark.parametrize("hue_registers_it", [True, False], ids=["hue_platform_registers_it", "hue_platform_does_not"])
+async def test_activate_scene_is_offered_for_the_scenes_of_hue_plus(hass, home, hue_registers_it):  # noqa: F811
+    # The dashboard starts a Hue scene live with this action (speed, brightness); it has to exist whichever way the Hue integration offers it.
+    if hue_registers_it:
+        await plus(hass, home, ["devices"])
+    else:
+        with patch.object(EntityPlatform, "async_register_entity_service", _hue_platform_without_the_service):
+            await plus(hass, home, ["devices"])
+    assert hass.services.has_service(DOMAIN, "activate_scene")
+    scene = by_domain(hass)["scene"][0]
+    await hass.services.async_call(
+        DOMAIN, "activate_scene", {"entity_id": scene.entity_id, "dynamic": True, "speed": 50, "brightness": 128}, blocking=True
+    )
+    writes = [w for w in home.runtime_data.writes if w[1].split("/")[-2] == "scene"]
+    assert writes[-2][2] == {"speed": 0.5}, "the speed goes first"
+    recall = writes[-1][2]["recall"]
+    assert recall["action"] == "dynamic_palette" and round(recall["dimming"]["brightness"]) == 50
+
+
+def test_the_options_of_activate_scene_are_the_ones_it_is_described_with():
+    described = spec.ENTITY_SERVICES["activate_scene"]["fields"]
+    assert set(ACTIVATE_SCENE_SCHEMA) == set(described)
+    assert {name for name, d in described.items() if d["required"]} == set(), "every option is optional, as the Hue integration has them"
+
+
+async def test_activate_scene_refuses_values_the_bridge_cannot_take(hass, home):  # noqa: F811
+    with patch.object(EntityPlatform, "async_register_entity_service", _hue_platform_without_the_service):
+        await plus(hass, home, ["devices"])
+    scene = by_domain(hass)["scene"][0]
+    before = len(home.runtime_data.writes)
+    for bad, field in (
+        ({"speed": 101}, "speed"),
+        ({"speed": -1}, "speed"),
+        ({"speed": "fast"}, "speed"),
+        ({"brightness": 0}, "brightness"),
+        ({"brightness": 256}, "brightness"),
+        ({"transition": 4000}, "transition"),
+        ({"dynamic": "maybe"}, "dynamic"),
+        ({"colour": 1}, "colour"),
+    ):
+        with pytest.raises(Exception, match=f"at '{field}'"):
+            await hass.services.async_call(DOMAIN, "activate_scene", {"entity_id": scene.entity_id, **bad}, blocking=True)
+    assert len(home.runtime_data.writes) == before, "nothing reached the bridge"
 
 
 async def test_switching_the_devices_module_off_gives_the_entities_back(hass, home):  # noqa: F811

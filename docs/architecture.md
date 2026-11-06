@@ -33,7 +33,10 @@ dependency on its connection.
 **Devices.** `devices/core.py` runs the Hue integration's own platform setups (`binary_sensor`, `event`, `scene`, `select`,
 `sensor`, `switch`) with Hue Plus's config entry (a small proxy gives them Hue's connection and Hue Plus's lifetime) and moves
 each entity onto the matching Hue Plus device (`rehome`). Nothing of those platforms is copied, so every feature comes along;
-the entities of the Hue integration are hidden and renamed first (`adopt`), as for the lights.
+the entities of the Hue integration are hidden and renamed first (`adopt`), as for the lights. One thing does not come along by itself:
+the Hue integration's scene action `activate_scene` (live, with a speed, a brightness and a fade) is registered for the `hue` platform's
+own entities since Home Assistant 2026.11 (before, its scene platform registered it for whatever platform ran it), so `devices/scene.py`
+registers `hue_plus.activate_scene` with the same options when the platform has not. The dashboard starts a Hue scene with it.
 
 **Scenes.** `Engine` plays sessions from a `Definition`; a `ColourSource` (`scenes/effects.py`) says what colour each light shows at a moment, so a scene can get its colours from something other than a moving palette; `Library` holds saved scenes and areas and builds a start request from
 presets, a saved scene and the call (later wins); `setup.py` stores the library with `Store` (one file per bridge).

@@ -1068,3 +1068,33 @@ stop_streaming:
     "area":
       selector:
         text: {}
+
+activate_scene:
+  target:
+    entity:
+      integration: "hue_plus"
+      domain: "scene"
+  fields:
+    "dynamic":
+      default: false
+      selector:
+        boolean: {}
+    "speed":
+      selector:
+        number:
+          mode: "box"
+          min: 0
+          max: 100
+          step: 1
+    "brightness":
+      selector:
+        number:
+          mode: "box"
+          min: 1
+          max: 255
+          step: 1
+    "transition":
+      selector:
+        number:
+          mode: "box"
+          step: "any"
