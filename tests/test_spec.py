@@ -65,7 +65,7 @@ class GeneratedFilesTests(unittest.TestCase):
     def test_strings_and_translations_are_the_same_and_valid_json(self):
         strings = json.loads((FOLDER / "strings.json").read_text())
         self.assertEqual(strings, json.loads((FOLDER / "translations" / "en.json").read_text()))
-        self.assertEqual(set(strings["services"]), set(spec.SPEC))
+        self.assertEqual(set(strings["services"]), set(spec.SPEC) | set(spec.ENTITY_SERVICES))
 
 
 if __name__ == "__main__":

@@ -1511,6 +1511,28 @@
           "description": "The entertainment area (id or name). All when empty."
         }
       }
+    },
+    "activate_scene": {
+      "name": "Activate scene",
+      "description": "Starts a Hue scene with the options the scene's turn on action does not have: live (dynamic) at a speed, a brightness and a fade time. These are the options of the Hue integration's action of the same name.",
+      "fields": {
+        "dynamic": {
+          "name": "Dynamic",
+          "description": "Play the scene live, its colours keep moving, instead of showing it as a still picture."
+        },
+        "speed": {
+          "name": "Speed",
+          "description": "How fast a live scene moves, from 0 to 100 percent."
+        },
+        "brightness": {
+          "name": "Brightness",
+          "description": "The brightness the scene starts with, from 1 to 255."
+        },
+        "transition": {
+          "name": "Transition",
+          "description": "The fade time in seconds, from 0 to 3600."
+        }
+      }
     }
   }
 }

@@ -285,12 +285,19 @@ SELECTOR_TEXTS = {
 def yaml_services() -> tuple[str, dict]:
     lines: list[str] = []
     strings: dict = {}
-    for name in spec.SPEC:
-        fields = spec.fields_of(name)
+    described = [(name, spec.SPEC[name]["description"], spec.fields_of(name), None) for name in spec.SPEC]
+    described += [(name, d["description"], d["fields"], d["target"]) for name, d in spec.ENTITY_SERVICES.items()]
+    for name, description, fields, target in described:
         lines.append(f"{name}:")
+        if target:
+            lines.append("  target:")
+            for kind, selector in target.items():
+                lines.append(f"    {kind}:")
+                for key, value in selector.items():
+                    lines.append(f"      {key}: {json.dumps(value)}")
         if fields:
             lines.append("  fields:")
-        strings[name] = {"name": name.replace("_", " ").capitalize(), "description": spec.SPEC[name]["description"], "fields": {}}
+        strings[name] = {"name": name.replace("_", " ").capitalize(), "description": description, "fields": {}}
         for field, d in fields.items():
             # Field names are quoted: YAML reads a bare `on` as true, which Home Assistant rejects.
             lines.append(f'    "{field}":')
@@ -324,4 +331,4 @@ if __name__ == "__main__":
     for target, content in render().items():
         (FOLDER / target).parent.mkdir(exist_ok=True)
         (FOLDER / target).write_text(content, encoding="utf-8")
-    print("services:", len(spec.SPEC))
+    print("services:", len(spec.SPEC) + len(spec.ENTITY_SERVICES))
