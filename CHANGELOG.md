@@ -4,6 +4,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.6.1]
+
 ### Fixed
 - `hue_plus.activate_scene` exists again on Home Assistant 2026.11 and later. The dashboard starts a Hue scene live with it (speed, brightness, fade) and answered "Action hue_plus.activate_scene not found" there: the Hue integration now registers its action of that name for its own scene entities only, and no longer from the scene platform that Hue Plus runs. Hue Plus now registers it for its own scenes, with the same options (`dynamic`, `speed`, `transition`, `brightness`); where the Hue integration still registers it from the platform, nothing changes.
 
