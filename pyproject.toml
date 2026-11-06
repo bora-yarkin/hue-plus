@@ -1,6 +1,6 @@
 [project]
 name = "hue-plus"
-version = "0.6.1"
+version = "0.6.2"
 description = "Philips Hue Plus: an unofficial Home Assistant integration for everything the Hue bridge can do that the Hue integration does not show."
 license = "GPL-3.0-or-later"
 requires-python = ">=3.14"
