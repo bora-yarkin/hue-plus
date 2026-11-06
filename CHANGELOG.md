@@ -4,6 +4,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+### Fixed
+- `hue_plus.import_hue_scene` accepts the scenes the dashboard lists. Hue Plus runs the Hue integration's scenes again as its own entities, and the dashboard's "Import as a live scene" sent one of those; the action refused it ("is not a Hue scene") and the dashboard answered "Couldn't read that scene from the Hue bridge". A Hue Plus scene is now read through the Hue integration's scene it copies.
+
 ## [0.6.1]
 
 ### Fixed

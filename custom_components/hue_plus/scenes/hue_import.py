@@ -14,6 +14,7 @@ from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import entity_registry as er
 
 HUE_DOMAIN = "hue"
+HUE_PLUS_DOMAIN = "hue_plus"
 
 
 def _api_for(hass: HomeAssistant, config_entry_id: str | None) -> Any:
@@ -86,11 +87,26 @@ def _palette(scene: dict[str, Any]) -> tuple[list[dict[str, Any]], bool]:
     return out, False
 
 
-async def read_scene(hass: HomeAssistant, entity_id: str) -> dict[str, Any]:
-    """The palette, speed and lights of the Hue scene behind a Home Assistant scene entity."""
-    entry = er.async_get(hass).async_get(entity_id)
+def _hue_scene_entry(hass: HomeAssistant, entity_id: str) -> er.RegistryEntry:
+    """The registry entry of the Hue integration's scene behind `entity_id`.
+
+    Hue Plus runs the Hue integration's scenes again as its own entities, with the same unique id, and the dashboard lists those; the connection to the bridge belongs to
+    the Hue integration's entity of that scene."""
+    registry = er.async_get(hass)
+    entry = registry.async_get(entity_id)
+    if entry is not None and entry.domain == "scene" and entry.platform == HUE_PLUS_DOMAIN:
+        entry = next(
+            (e for e in registry.entities.values() if e.platform == HUE_DOMAIN and e.domain == "scene" and e.unique_id == entry.unique_id),
+            None,
+        )
     if entry is None or entry.platform != HUE_DOMAIN or entry.domain != "scene":
         raise ServiceValidationError(f"{entity_id} is not a Hue scene")
+    return entry
+
+
+async def read_scene(hass: HomeAssistant, entity_id: str) -> dict[str, Any]:
+    """The palette, speed and lights of the Hue scene behind a Home Assistant scene entity."""
+    entry = _hue_scene_entry(hass, entity_id)
     api = _api_for(hass, entry.config_entry_id)
     found = await _read(api, f"clip/v2/resource/scene/{entry.unique_id}")
     if not found:
