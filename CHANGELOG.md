@@ -5,6 +5,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 ## [Unreleased]
 
 ### Added
+- The Hue Plus menu in the dashboard's Settings (the bridge, lights, switches, MotionAware areas, entertainment areas, updates, routines and more), its entertainment areas in the area editor and its texts are Hue Plus's own now, not Home Control's (decision D-25). Hue Plus serves one script, `/hue_plus_static/menu.js` (built by `scripts/build_menu.py` from `frontend/src`, named under `menu` in `home_control.json`), which Home Control loads for administrators; it uses the dashboard only through Home Control's plugin API (`window.HomeControl`, version 1). Hue Plus now depends on `http` for that. The JavaScript tests of the menu moved here and run in CI.
+
+### Added
 - The effects Hue lights play, their groups (Flames, Sparkly, Wavy, ...), labels, pictures, default brightness and speed, the calibration of the speed (which part of the bridge's speed scale each effect's slider covers) and colour variants are now Hue Plus's: they are in `home_control.json` as a catalogue in the syntax of Home Control's `docs/effects-file.md`, and Home Control shows them (it had its own copy). `set_effect` names the action the effects page calls to start an effect with a colour and a speed.
 
 ## [0.8.0]
