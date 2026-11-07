@@ -41,8 +41,10 @@ registers `hue_plus.activate_scene` with the same options when the platform has 
 **Scenes.** `Engine` plays sessions from a `Definition`; a `ColourSource` (`scenes/effects.py`) says what colour each light shows at a moment, so a scene can get its colours from something other than a moving palette; `Library` holds saved scenes and areas and builds a start request from
 presets, a saved scene and the call (later wins); `setup.py` stores the library with `Store` (one file per bridge).
 
-**Delegating to other brands.** A later separate integration (`scene-engine`, non-Hue devices) can call `hue_plus.scene_start`
-for the Hue part of a combined scene.
+**Home Control (decision D-25).** Live scenes and areas are played by Home Control, for any light. Hue Plus is the expansion pack for Hue lights: `home_control.json`
+declares the Hue lights it owns (their entity platforms, the bridge's command rate) and the native effects it can play, and `hue_plus.play_effect` (an action on
+Hue Plus's light entities, `lights/light.py`) plays one of a light's own effects with a colour through the bridge. Nothing is imported in either direction. The
+scenes package below stays until Home Control has taken the scenes over (HP-12.3).
 
 
 ## Spotify Sync authentication

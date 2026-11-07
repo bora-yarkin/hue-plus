@@ -66,3 +66,7 @@ def replaces_hue(entry) -> bool:
     An entry with its own connection has no Hue entities of that bridge to hide, so it never does.
     """
     return not connects_directly(entry) and entry.data.get(CONF_TAKEOVER, TAKEOVER_REPLACE) == TAKEOVER_REPLACE
+
+
+# The Hue lights' own effects that can be played with a colour (``home_control.json`` declares the same list to the dashboard).
+PLAY_EFFECTS = ("candle", "fire", "sparkle", "glisten", "opal", "prism", "underwater", "cosmos", "sunbeam", "enchant")

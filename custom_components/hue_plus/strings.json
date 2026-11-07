@@ -1533,6 +1533,28 @@
           "description": "The fade time in seconds, from 0 to 3600."
         }
       }
+    },
+    "play_effect": {
+      "name": "Play effect",
+      "description": "Plays one of a Hue light's own effects with a chosen colour, which the light's turn on action cannot (it clears the colour when it is given an effect). The dashboard plays live scenes through it. Experimental.",
+      "fields": {
+        "effect": {
+          "name": "Effect",
+          "description": "The effect."
+        },
+        "xy": {
+          "name": "Xy",
+          "description": "The colour as [x, y], each from 0 to 1."
+        },
+        "brightness": {
+          "name": "Brightness",
+          "description": "The brightness, from 1 to 255."
+        },
+        "speed": {
+          "name": "Speed",
+          "description": "How fast the effect runs, from 0 (slow) to 1 (fast)."
+        }
+      }
     }
   }
 }

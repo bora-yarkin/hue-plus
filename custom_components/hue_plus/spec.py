@@ -11,7 +11,7 @@ from typing import Any
 
 from .bridge import actions as bridge_actions
 from .bridge import spec as bridge_spec
-from .const import DOMAIN, MODULE_BRIDGE, MODULE_SCENES, MODULE_STREAMING, MODULE_ZONES
+from .const import DOMAIN, MODULE_BRIDGE, MODULE_SCENES, MODULE_STREAMING, MODULE_ZONES, PLAY_EFFECTS
 from .fieldspec import f
 from .scenes import spec as scenes_spec
 from .streaming import spec as streaming_spec
@@ -39,6 +39,16 @@ ENTITY_SERVICES: dict[str, dict[str, Any]] = {
             "speed": f("int", "How fast a live scene moves, from 0 to 100 percent.", min=0, max=100),
             "brightness": f("int", "The brightness the scene starts with, from 1 to 255.", min=1, max=255),
             "transition": f("number", "The fade time in seconds, from 0 to 3600."),
+        },
+    },
+    "play_effect": {
+        "description": "Plays one of a Hue light's own effects with a chosen colour, which the light's turn on action cannot (it clears the colour when it is given an effect). The dashboard plays live scenes through it. Experimental.",
+        "target": {"entity": {"integration": DOMAIN, "domain": "light"}},
+        "fields": {
+            "effect": f("select", "The effect.", True, options=list(PLAY_EFFECTS)),
+            "xy": f("xy_one", "The colour as [x, y], each from 0 to 1.", True, example="[0.35, 0.3]"),
+            "brightness": f("int", "The brightness, from 1 to 255.", True, min=1, max=255),
+            "speed": f("number", "How fast the effect runs, from 0 (slow) to 1 (fast).", True),
         },
     },
 }

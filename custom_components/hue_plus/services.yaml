@@ -1098,3 +1098,34 @@ activate_scene:
         number:
           mode: "box"
           step: "any"
+
+play_effect:
+  target:
+    entity:
+      integration: "hue_plus"
+      domain: "light"
+  fields:
+    "effect":
+      required: true
+      selector:
+        select:
+          options: ["candle", "fire", "sparkle", "glisten", "opal", "prism", "underwater", "cosmos", "sunbeam", "enchant"]
+    "xy":
+      required: true
+      example: "[0.35, 0.3]"
+      selector:
+        object: {}
+    "brightness":
+      required: true
+      selector:
+        number:
+          mode: "box"
+          min: 1
+          max: 255
+          step: 1
+    "speed":
+      required: true
+      selector:
+        number:
+          mode: "box"
+          step: "any"

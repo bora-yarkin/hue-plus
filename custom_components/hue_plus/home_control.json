@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "name": "Hue Plus",
+  "lights": {
+    "hue_plus": {
+      "group": "hue:plus",
+      "rate": 8.0,
+      "effects": true
+    },
+    "hue": {
+      "rate": 8.0
+    }
+  },
+  "effects": [
+    "candle",
+    "fire",
+    "sparkle",
+    "glisten",
+    "opal",
+    "prism",
+    "underwater",
+    "cosmos",
+    "sunbeam",
+    "enchant"
+  ],
+  "play_effect": "play_effect"
+}
