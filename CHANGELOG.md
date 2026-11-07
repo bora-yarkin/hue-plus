@@ -4,6 +4,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+### Added
+- The effects Hue lights play, their groups (Flames, Sparkly, Wavy, ...), labels, pictures, default brightness and speed, the calibration of the speed (which part of the bridge's speed scale each effect's slider covers) and colour variants are now Hue Plus's: they are in `home_control.json` as a catalogue in the syntax of Home Control's `docs/effects-file.md`, and Home Control shows them (it had its own copy). `set_effect` names the action the effects page calls to start an effect with a colour and a speed.
+
 ## [0.8.0]
 
 ### Removed

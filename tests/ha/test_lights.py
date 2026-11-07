@@ -289,3 +289,22 @@ async def test_a_zone_light_has_the_unique_id_the_declaration_cuts_to_get_its_li
     assert zones, "the gradient light of the fixture has zones"
     ids = {light.id for light in home.runtime_data.api.lights}
     assert all(re.sub(declared, "", z.unique_id) in ids for z in zones)
+
+
+def test_the_catalogue_in_the_declaration_is_complete_and_its_pictures_are_plain_drawings():
+    """Home Control draws these (decision D-15) and checks them again; this keeps them to what it accepts."""
+    import re
+
+    declaration = json.loads((Path(__file__).parents[2] / "custom_components" / "hue_plus" / "home_control.json").read_text())
+    catalogue = declaration["catalogue"]
+    groups = {g["id"] for g in catalogue["groups"]}
+    effects = {e["id"]: e for e in catalogue["effects"]}
+    assert set(PLAY_EFFECTS) <= set(effects), "every effect that can be played with a colour has an entry"
+    assert declaration["set_effect"] == "set_effect"
+    for effect in effects.values():
+        assert effect["group"] in groups and effect["label"] and effect["palette"], effect["id"]
+        art = effect["art"]
+        assert len(art) <= 4000 and art.startswith("<svg") and art.endswith("</svg>"), effect["id"]
+        tags = set(re.findall(r"<([a-zA-Z]+)", art))
+        assert tags <= {"svg", "defs", "linearGradient", "radialGradient", "stop", "rect", "circle", "path"}, (effect["id"], tags)
+        assert not re.search(r"href|script|on[a-z]+=|style|javascript", art, re.IGNORECASE), effect["id"]
