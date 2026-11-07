@@ -273,5 +273,19 @@ def test_the_declaration_for_the_dashboard_matches_the_code():
     declaration = json.loads((Path(__file__).parents[2] / "custom_components" / "hue_plus" / "home_control.json").read_text())
     assert declaration["schema"] == 1 and declaration["play_effect"] == "play_effect"
     assert tuple(declaration["effects"]) == PLAY_EFFECTS
-    assert declaration["lights"]["hue_plus"] == {"group": "hue:plus", "rate": 8.0, "effects": True}
+    assert declaration["lights"]["hue_plus"] == {"group": "hue:plus", "rate": 8.0, "effects": True, "parent": "_zone_[0-9]+$"}
     assert declaration["lights"]["hue"] == {"rate": 8.0}
+
+
+async def test_a_zone_light_has_the_unique_id_the_declaration_cuts_to_get_its_light(hass, home):
+    import re
+
+    await plus(hass, home, ["lights", "zones"])
+    registry = er.async_get(hass)
+    declared = json.loads((Path(__file__).parents[2] / "custom_components" / "hue_plus" / "home_control.json").read_text())["lights"][
+        "hue_plus"
+    ]["parent"]
+    zones = [e for e in registry.entities.values() if e.platform == DOMAIN and e.domain == "light" and "_zone_" in e.unique_id]
+    assert zones, "the gradient light of the fixture has zones"
+    ids = {light.id for light in home.runtime_data.api.lights}
+    assert all(re.sub(declared, "", z.unique_id) in ids for z in zones)
