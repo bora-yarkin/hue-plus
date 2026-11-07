@@ -29,6 +29,21 @@ async def test_set_style_accepts_the_light_by_entity_and_changes_the_mode(hass, 
     assert bridge.writes[-1][2]["gradient"]["mode"] == "segmented_palette"
 
 
+async def test_the_call_the_dashboard_makes_to_separate_the_zones_is_one_that_works_and_gives_every_zone(hass, make_entry, bridge):
+    """home_control.json says how a scene makes every zone of a strip a light of its own: the service, the field for a zone and the data."""
+    import json
+    from pathlib import Path
+
+    how = json.loads((Path(__file__).parents[2] / "custom_components" / "hue_plus" / "home_control.json").read_text())["separate_zones"]
+    await make_entry(["zones"])
+    registry = er.async_get(hass)
+    zone = registry.async_get_entity_id("light", DOMAIN, f"{TUBE}_zone_1")
+    await call(hass, how["service"], {how["field"]: zone, **how["data"]})
+    assert bridge.writes[-1][2]["gradient"]["mode"] == "segmented_palette"
+    states = [hass.states.get(registry.async_get_entity_id("light", DOMAIN, f"{TUBE}_zone_{i}")) for i in range(1, 6)]
+    assert all(state is not None and state.state != "unavailable" for state in states)  # all five zones are lights of their own
+
+
 async def test_set_style_needs_a_style_or_flip(hass, make_entry):
     await make_entry(["zones"])
     with pytest.raises(ServiceValidationError, match="style"):

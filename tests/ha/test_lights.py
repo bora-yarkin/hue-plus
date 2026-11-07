@@ -285,6 +285,7 @@ def test_the_declaration_for_the_dashboard_matches_the_code():
     assert declaration["schema"] == 1 and declaration["play_effect"] == "play_effect"
     assert tuple(declaration["effects"]) == PLAY_EFFECTS
     assert declaration["replaces"] == ["hue"]
+    assert declaration["separate_zones"] == {"service": "set_style", "field": "light", "data": {"style": "segmented"}}
     assert declaration["lights"]["hue_plus"] == {"group": "hue:plus", "rate": 8.0, "effects": True, "parent": "_zone_[0-9]+$"}
     assert declaration["lights"]["hue"] == {"rate": 8.0}
 

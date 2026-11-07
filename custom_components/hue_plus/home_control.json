@@ -442,6 +442,7 @@
       }
     ]
   },
+  "separate_zones": {"service": "set_style", "field": "light", "data": {"style": "segmented"}},
   "replaces": ["hue"],
   "menu": {
     "url": "/hue_plus_static/menu.js"
