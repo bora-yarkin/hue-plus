@@ -5,7 +5,7 @@ import pytest
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import entity_registry as er
 
-from .fake_hue import SCENE
+from .fake_hue import LAMP, SCENE, TUBE
 from .helpers import call
 
 PALETTE = {
@@ -53,3 +53,45 @@ async def test_an_entity_that_is_not_a_scene_of_the_bridge_is_refused(hass, scen
     other = er.async_get(hass).async_get_or_create("scene", "homeassistant", "mine", suggested_object_id="mine")
     with pytest.raises(ServiceValidationError, match="not a Hue scene"):
         await call(hass, "import_hue_scene", {"entity_id": other.entity_id}, response=True)
+
+
+async def test_what_a_static_scene_sets_each_light_to_is_read(hass, scene_entities, hue_entry, bridge):
+    """A static scene is imported as the settings of its lights: off, a colour with its brightness, a white, a gradient's middle colour."""
+    registry = er.async_get(hass)
+    lamp = registry.async_get_or_create("light", "hue", LAMP, config_entry=hue_entry, suggested_object_id="lamp").entity_id
+    tube = registry.async_get_or_create("light", "hue", TUBE, config_entry=hue_entry, suggested_object_id="tube").entity_id
+    off = registry.async_get_or_create("light", "hue", "off-lamp", config_entry=hue_entry, suggested_object_id="off_lamp").entity_id
+    white = registry.async_get_or_create("light", "hue", "white-lamp", config_entry=hue_entry, suggested_object_id="white_lamp").entity_id
+    bridge.resources["scene"][0]["actions"] = [
+        {
+            "target": {"rid": LAMP, "rtype": "light"},
+            "action": {"on": {"on": True}, "dimming": {"brightness": 40.0}, "color": {"xy": {"x": 0.5, "y": 0.4}}},
+        },
+        {
+            "target": {"rid": TUBE, "rtype": "light"},
+            "action": {
+                "on": {"on": True},
+                "gradient": {
+                    "points": [
+                        {"color": {"xy": {"x": 0.1, "y": 0.1}}},
+                        {"color": {"xy": {"x": 0.2, "y": 0.3}}},
+                        {"color": {"xy": {"x": 0.6, "y": 0.3}}},
+                    ]
+                },
+            },
+        },
+        {"target": {"rid": "off-lamp", "rtype": "light"}, "action": {"on": {"on": False}}},
+        {
+            "target": {"rid": "white-lamp", "rtype": "light"},
+            "action": {"on": {"on": True}, "dimming": {"brightness": 100.0}, "color_temperature": {"mirek": 400}},
+        },
+        {"target": {"rid": "x", "rtype": "room"}, "action": {}},
+    ]
+    hue, _ = scene_entities
+    scene = await call(hass, "import_hue_scene", {"entity_id": hue}, response=True)
+    assert scene["states"] == [
+        {"entity_id": lamp, "on": True, "brightness": 102, "xy": [0.5, 0.4]},
+        {"entity_id": tube, "on": True, "xy": [0.2, 0.3]},
+        {"entity_id": off, "on": False},
+        {"entity_id": white, "on": True, "brightness": 255, "k": 2500},
+    ]

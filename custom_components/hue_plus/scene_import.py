@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Reads a Hue scene from the bridge, through the connection the core Hue integration already has.
 
-Used to import a Hue live scene: its palette, speed and lights. Reading only; nothing is
+Used to import a Hue live scene (its palette, speed and lights) or a static one (what it sets each of its lights to). Reading only; nothing is
 written to the bridge.
 """
 
@@ -106,6 +106,37 @@ def _hue_scene_entry(hass: HomeAssistant, entity_id: str) -> er.RegistryEntry:
     return entry
 
 
+def _static_states(hass: HomeAssistant, scene: dict[str, Any]) -> list[dict[str, Any]]:
+    """What the scene sets each of its lights to: [{"entity_id", "on", "brightness" (1 to 255), "xy": [x, y] or "k": kelvin}].
+
+    A light the scene switches off has no colour or brightness. A gradient light is given the colour in the middle of its gradient."""
+    out: list[dict[str, Any]] = []
+    for action in scene.get("actions") or []:
+        target = action.get("target") or {}
+        if target.get("rtype") != "light":
+            continue
+        entity = _light_entity(hass, target.get("rid", ""))
+        if not entity or any(item["entity_id"] == entity for item in out):
+            continue
+        body = action.get("action") or {}
+        if not (body.get("on") or {}).get("on", True):
+            out.append({"entity_id": entity, "on": False})
+            continue
+        state: dict[str, Any] = {"entity_id": entity, "on": True}
+        brightness = (body.get("dimming") or {}).get("brightness")
+        if isinstance(brightness, (int, float)):
+            state["brightness"] = max(1, min(255, round(brightness * 2.55)))
+        points = (body.get("gradient") or {}).get("points") or []
+        xy = ((points[len(points) // 2].get("color") or {}).get("xy") if points else None) or (body.get("color") or {}).get("xy") or {}
+        mirek = (body.get("color_temperature") or {}).get("mirek")
+        if "x" in xy and "y" in xy:
+            state["xy"] = [round(xy["x"], 4), round(xy["y"], 4)]
+        elif mirek:
+            state["k"] = round(1_000_000 / mirek)
+        out.append(state)
+    return out
+
+
 async def read_scene(hass: HomeAssistant, entity_id: str) -> dict[str, Any]:
     """The palette, speed and lights of the Hue scene behind a Home Assistant scene entity."""
     entry = _hue_scene_entry(hass, entity_id)
@@ -134,12 +165,13 @@ async def read_scene(hass: HomeAssistant, entity_id: str) -> dict[str, Any]:
         "brightness": max(1, min(255, round(peak * 2.55))),
         "palette": [{**c, "b": round(c["b"] / peak * 100, 1)} for c in colours],
         "lights": lights,
+        "states": _static_states(hass, scene),
     }
 
 
 SPEC: dict[str, dict[str, Any]] = {
     "import_hue_scene": {
-        "description": "Reads the palette, speed and lights of a Hue scene so that it can be saved as a live scene. Reads only; nothing is written to the bridge.",
+        "description": "Reads the palette, speed and lights of a Hue scene so that it can be saved as a live scene, and what it sets each light to so that it can be saved as a classic one. Reads only; nothing is written to the bridge.",
         "fields": {"entity_id": f("text", "The Hue scene entity.", True, example="scene.bedroom_arctic_aurora")},
     }
 }

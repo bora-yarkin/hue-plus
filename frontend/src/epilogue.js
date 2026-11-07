@@ -105,6 +105,28 @@
     },
   });
 
+  /* Importing a static scene: a classic scene with what the bridge sets each of its lights to, as "save the lights as they are" makes from the lights now. */
+  HC.registerSceneImport({
+    id: "hue-classic",
+    classic: true,
+    title: "import_a_classic_scene_from_hue",
+    sub: "copies_what_it_sets_each_light_to",
+    unavailable: "importing_a_hue_scene_needs_hue_plus",
+    empty: "no_static_hue_scenes_found",
+    failed: "couldn_t_read_that_scene_from_the_hue_bridge",
+    available: hueImportable,
+    list: function () {
+      return hueStaticScenes().map(function (id) {
+        return { id: id, name: A(id).name || id, group: A(id).group_name || "" };
+      });
+    },
+    read: function (id) {
+      return serviceResponse("hue_plus", "import_hue_scene", { entity_id: id }).then(function (r) {
+        return { name: r.name, lights: r.states };
+      });
+    },
+  });
+
   /* The styles of a Hue light made of zones. */
   HC.registerLightStyle({
     applies: hueStyleApplies,
