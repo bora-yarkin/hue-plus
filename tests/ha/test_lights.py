@@ -269,6 +269,17 @@ async def test_an_effect_that_does_not_exist_or_a_value_out_of_range_reaches_not
     assert len(home.runtime_data.writes) == before
 
 
+@pytest.mark.parametrize("missing", ["effect", "xy", "brightness", "speed"])
+async def test_a_field_left_out_is_refused_before_anything_is_written(hass, home, missing):
+    _light, entity = await effect_light(hass, home)
+    before = len(home.runtime_data.writes)
+    data = {"entity_id": entity, "effect": "candle", "xy": [0.4, 0.4], "brightness": 100, "speed": 0.5}
+    del data[missing]
+    with pytest.raises(vol.Invalid):
+        await hass.services.async_call(DOMAIN, "play_effect", data, blocking=True)
+    assert len(home.runtime_data.writes) == before
+
+
 def test_the_declaration_for_the_dashboard_matches_the_code():
     declaration = json.loads((Path(__file__).parents[2] / "custom_components" / "hue_plus" / "home_control.json").read_text())
     assert declaration["schema"] == 1 and declaration["play_effect"] == "play_effect"
