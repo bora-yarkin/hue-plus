@@ -58,7 +58,7 @@ def make_entry(hass: HomeAssistant, hue_entry: MockConfigEntry):
             unique_id=BRIDGE_ID,
             title="Hue Bridge Pro Plus",
             data={CONF_HUE_ENTRY: hue_entry.entry_id, **data},
-            options={CONF_MODULES: modules if modules is not None else ["bridge", "zones", "scenes"]},
+            options={CONF_MODULES: modules if modules is not None else ["bridge", "zones"]},
         )
         entry.add_to_hass(hass)
         with patch("homeassistant.components.hue.async_setup_entry", return_value=True):

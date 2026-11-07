@@ -2,7 +2,6 @@
 """The integration loads against a bridge, makes its own devices and entities, and unloads cleanly."""
 
 from homeassistant.config_entries import ConfigEntryState
-from homeassistant.const import STATE_UNAVAILABLE
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 
@@ -54,16 +53,8 @@ async def test_the_zones_module_adds_a_light_for_each_zone_on_the_lights_own_dev
 
 
 async def test_a_module_that_is_off_adds_nothing(hass, make_entry):
-    await make_entry(["scenes"])
-    kinds = {e.entity_id.split(".")[0] for e in er.async_get(hass).entities.values() if e.platform == DOMAIN}
-    assert kinds == {"sensor"}
-
-
-async def test_the_scenes_sensor_starts_at_zero(hass, make_entry):
-    await make_entry(["scenes"])
-    state = hass.states.get("sensor.hue_bridge_pro_live_scenes")
-    assert state is not None and state.state == "0" and state.state != STATE_UNAVAILABLE
-    assert state.attributes["saved_scenes"] == 0
+    await make_entry([])
+    assert [e for e in er.async_get(hass).entities.values() if e.platform == DOMAIN] == []
 
 
 async def test_the_sensor_of_an_area_deleted_on_the_bridge_is_removed(hass, make_entry, bridge):
@@ -82,3 +73,29 @@ async def test_the_bridge_says_whether_home_and_away_is_set_up_and_who_is_tracke
     await make_entry(["bridge"])
     away = hass.states.get(er.async_get(hass).async_get_entity_id("sensor", DOMAIN, f"{BRIDGE_ID}_home_and_away"))
     assert away.state == "not configured" and away.attributes["clients"] == ["phone"]
+
+
+async def test_an_entry_from_before_live_scenes_moved_to_home_control_loses_the_module_and_its_sensor(hass, hue_entry):
+    """Version 4 (decision D-25): the scenes module is gone; so is the sensor that listed running scenes, which has no integration now."""
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    from custom_components.hue_plus.const import CONF_HUE_ENTRY, CONF_MODULES
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        version=3,
+        unique_id=BRIDGE_ID,
+        data={CONF_HUE_ENTRY: hue_entry.entry_id},
+        options={CONF_MODULES: ["bridge", "zones", "scenes"]},
+    )
+    entry.add_to_hass(hass)
+    registry = er.async_get(hass)
+    sensor = registry.async_get_or_create(
+        "sensor", DOMAIN, f"{BRIDGE_ID}_live_scenes", config_entry=entry, suggested_object_id="live_scenes"
+    )
+    other = registry.async_get_or_create("sensor", DOMAIN, f"{BRIDGE_ID}_firmware", config_entry=entry, suggested_object_id="firmware")
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert entry.version == 4 and entry.options[CONF_MODULES] == ["bridge", "zones"]
+    assert registry.async_get(sensor.entity_id) is None, "the sensor of live scenes is removed"
+    assert registry.async_get(other.entity_id) is not None, "other sensors are left alone"

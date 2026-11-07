@@ -64,3 +64,5 @@ state and Start/Stop. Restart Home Assistant to check that the OAuth session rec
 connection returns and the bridge stays loaded.
 Check the manual token option separately. Before rolling back to a version without developer OAuth, switch the entry
 to manual credentials or turn off its Sync module.
+
+2026-11-07 (HP-12.3): the tests of the scene engine (`tests/scenes/`, `tests/ha/test_scenes.py`) moved to Home Control (`tests/live/`, `tests/test_live.py`) with the engine; the golden palette recording moved with them. What stays here: the reading of a Hue scene (`tests/ha/test_hue_import.py`), `hue_plus.play_effect` and the declaration for Home Control (`tests/ha/test_lights.py`), and the version 4 migration (`tests/ha/test_setup.py`).

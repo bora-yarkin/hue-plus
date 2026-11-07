@@ -9,9 +9,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import entity_registry as er
+
+from .fieldspec import f
 
 HUE_DOMAIN = "hue"
 HUE_PLUS_DOMAIN = "hue_plus"
@@ -133,3 +135,19 @@ async def read_scene(hass: HomeAssistant, entity_id: str) -> dict[str, Any]:
         "palette": [{**c, "b": round(c["b"] / peak * 100, 1)} for c in colours],
         "lights": lights,
     }
+
+
+SPEC: dict[str, dict[str, Any]] = {
+    "import_hue_scene": {
+        "description": "Reads the palette, speed and lights of a Hue scene so that it can be saved as a live scene. Reads only; nothing is written to the bridge.",
+        "fields": {"entity_id": f("text", "The Hue scene entity.", True, example="scene.bedroom_arctic_aurora")},
+    }
+}
+
+
+async def import_hue_scene(hass: HomeAssistant, call: ServiceCall) -> dict[str, Any]:
+    return await read_scene(hass, call.data["entity_id"])
+
+
+HANDLERS = {"import_hue_scene": import_hue_scene}
+RESPONDING = {"import_hue_scene"}

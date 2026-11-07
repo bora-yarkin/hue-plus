@@ -7,7 +7,7 @@ entities, services and two websocket commands.
 
 Each light or accessory it has an entity for gets its own device, named like the Hue one and linked to the bridge's
 device. The bridge device holds the diagnostics (firmware, Zigbee channel, authorized apps, update state), the update
-switch and time, the bridge's automations as switches, and the `Live scenes` sensor.
+switch and time, and the bridge's automations as switches.
 
 Gradient lights get a light named `<name> zones` (the whole tube) and `<name> zone 1..n`. Its attributes include
 `hue_light_id`, `gradient_mode` and `gradient_modes`.
@@ -25,10 +25,7 @@ await hass.connection.sendMessagePromise({ type: "hue_plus/capabilities" });
 // -> { version: 1, bridges: [{ config_entry_id, name, modules: ["bridge","zones","scenes","sync"], services: [...],
 //      lights: { "light.floor_light": { effects: ["candle", ...], timed_effects: [...], signals: [...],
 //                gradient: null | { points_capable, modes, mode }, colour, white, zones_entity_id? } },
-//      sync_entity, scenes_sensor }] }
-
-// Saved live scenes, areas, the shipped presets and what is running.
-await hass.connection.sendMessagePromise({ type: "hue_plus/library" });
+//      sync_entity }] }
 ```
 
 Show a control only when the capabilities say it exists: an effect picker from `effects`, a style picker from
@@ -43,20 +40,15 @@ entities:
   - light.bed_light_zone_1
   - select.floor_light_power_on_behavior
   - button.floor_light_identify
-  - sensor.hue_bridge_pro_live_scenes
 tap_action: {action: more-info}
 ```
 
 ```yaml
 type: button
-name: Candle on the floor lights
+name: Underwater on the desk light
 tap_action:
   action: perform-action
-  perform_action: hue_plus.scene_start
-  data:
-    scene_id: candle
-    preset: candle
-    lights:
-      - {entity_id: light.floor_light_l, x: -1}
-      - {entity_id: light.floor_light_r, x: 1}
+  perform_action: hue_plus.play_effect
+  target: {entity_id: light.desk_light}
+  data: {effect: underwater, xy: [0.2, 0.3], brightness: 200, speed: 0.4}
 ```

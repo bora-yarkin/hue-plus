@@ -73,11 +73,11 @@ async def test_modules_can_be_changed_and_the_integration_reloads(hass, make_ent
     entry = await make_entry(["bridge"])
     result = await hass.config_entries.options.async_init(entry.entry_id)
     result = await hass.config_entries.options.async_configure(result["flow_id"], {"next_step_id": "modules"})
-    result = await hass.config_entries.options.async_configure(result["flow_id"], {CONF_MODULES: ["bridge", "scenes"]})
+    result = await hass.config_entries.options.async_configure(result["flow_id"], {CONF_MODULES: ["bridge", "zones"]})
     assert result["type"] is FlowResultType.CREATE_ENTRY
     await hass.async_block_till_done()
-    assert entry.options[CONF_MODULES] == ["bridge", "scenes"]
-    assert entry.runtime_data.scenes is not None
+    assert entry.options[CONF_MODULES] == ["bridge", "zones"]
+    assert "zones" in entry.runtime_data.modules
 
 
 async def test_switching_the_sync_on_asks_for_credentials_and_checks_them(hass, make_entry):

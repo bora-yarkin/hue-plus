@@ -107,7 +107,7 @@ HOST_SCHEMA = vol.Schema({vol.Required(CONF_HOST): TextSelector()})
 
 class HuePlusConfigFlow(_CredentialsMixin, AbstractOAuth2FlowHandler, domain=DOMAIN):
     DOMAIN = DOMAIN
-    VERSION = 3
+    VERSION = 4
 
     @property
     def logger(self) -> logging.Logger:

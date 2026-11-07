@@ -129,7 +129,7 @@ async def test_switching_the_devices_module_off_gives_the_entities_back(hass, ho
     registry.async_get_or_create("scene", "hue", scene["id"], config_entry=home, suggested_object_id="room_1_scene_1")
     entry = await plus(hass, home, ["devices"])
     assert registry.async_get("scene.room_1_scene_1_hue") is not None
-    hass.config_entries.async_update_entry(entry, options={CONF_MODULES: ["scenes"]})
+    hass.config_entries.async_update_entry(entry, options={CONF_MODULES: ["zones"]})
     with patch("homeassistant.components.hue.async_setup_entry", return_value=True):
         await hass.async_block_till_done()
     back = registry.async_get("scene.room_1_scene_1")

@@ -11,7 +11,6 @@ When you add Hue Plus, the setup screen asks what to do with the Hue integration
 
 - **Leave them alone** (the default). Nothing is hidden, renamed or removed: your dashboards, automations and groups keep working as they are.
   Hue Plus's entity for each Hue entity has the same name ending in `_plus` (`light.floor_light` and `light.floor_light_plus`), and it follows the Hue entity: its area, name, icon, labels and whether you hid it, and its device's area and name, are copied from the Hue entity and Hue device whenever they change and when Home Assistant starts. The copying goes one way (Hue to Hue Plus), so a setting changed on a `_plus` entity itself is put back.
-  In this mode live scenes, areas and locating a light only work on Hue lights; Hue Plus never touches your other lights.
 - **Hide and rename them.** The Hue integration's entities are hidden and renamed (`light.floor_light` becomes `light.floor_light_hue`) and Hue Plus's take their names, so existing dashboards and automations use Hue Plus. Removing Hue Plus gives the names back.
 
 The choice is made once, when Hue Plus is added. To change it, remove Hue Plus and add it again.
@@ -27,7 +26,7 @@ Each module is switched on or off per bridge in the integration's options.
 | **Lights** | Hue Plus's own light entities, next to or in place of the Hue integration's (see above): every light, room and zone, with brightness, colour, white, transitions, flash and each light's effects. In *hide and rename* mode the Hue integration's entities are hidden and renamed (`light.floor_light` becomes `light.floor_light_hue`) and Hue Plus's take the name they had, so automations and dashboards keep working. Switching the module off, or removing Hue Plus, gives them back. For now Hue Plus still uses the Hue integration's connection to the bridge. |
 | **Devices** | The Hue integration's other entities, on Hue Plus's devices: motion, temperature, light-level and contact sensors, batteries, buttons and dials (as event entities), the bridge's scenes and smart scenes, motion-aware switches and selects. Like the lights, in *hide and rename* mode the Hue integration's own are hidden and renamed and Hue Plus's take their names. The bridge's automations show as switches here, so the bridge module does not add its own. |
 | **Zones** | A light for each colour zone of a gradient light (the gradient light itself is the main light, named like the device, with its zones listed in its attributes). Styles (linear, mirrored, scattered, segmented), flip, colour effects with a colour and speed of your choice, raw gradient points. |
-| **Scenes** | Live scenes: a palette that moves across the lights of an area, using bridge-side fades. Fourteen presets ship with it. Scenes and areas are saved inside the integration; a websocket call (`hue_plus/library`) lets a screen read them. Import a Hue scene as a live scene. |
+| **Live scenes** | Not here any more: live scenes and areas are played by [Home Control](https://github.com/bora-yarkin/home-control), for any light, and Hue Plus is its expansion pack for Hue lights (`home_control.json`, the native effects through `hue_plus.play_effect`). Hue Plus keeps reading a Hue scene (`hue_plus.import_hue_scene`) so Home Control can import it as a live scene. |
 | **Streaming** | **Experimental.** `stream_colors` sends colours straight to the lights of an entertainment area for a while, and `stop_streaming` ends it. Needs its own registration with the bridge (press the link button when asked). Off by default. |
 | **Spotify sync** | Start and stop Hue's cloud Spotify sync and set its brightness, delay, intensity, palette, style and area. **Experimental**: it uses a private Signify service that can change without notice, and requires a linked Spotify Sync UUID. You can enter a manual token or connect your own Hue developer app for automatic renewal. Off by default. |
 
@@ -72,18 +71,13 @@ The full list with every field is in `custom_components/hue_plus/services.yaml` 
 Examples:
 
 ```yaml
-action: hue_plus.scene_start
-data: {scene_id: now, preset: candle, lights: [{entity_id: light.floor_light, x: -1}, {entity_id: light.bed_light_zones, x: 1}]}
-```
-
-```yaml
 action: hue_plus.delete_scene
 data: {scene: Relax, confirm: true}
 ```
 
 ## Other dashboards
 
-Hue Plus works with any dashboard: see `docs/other-dashboards.md` for the entities, services and the two websocket commands (`hue_plus/capabilities`, `hue_plus/library`) a screen can use.
+Hue Plus works with any dashboard: see `docs/other-dashboards.md` for the entities, services and the websocket command (`hue_plus/capabilities`) a screen can use.
 
 ## Licence
 

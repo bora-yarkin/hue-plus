@@ -204,7 +204,7 @@ async def test_switching_the_lights_module_off_gives_them_back_too(hass, home):
     registry = er.async_get(hass)
     entry = await plus(hass, home, ["lights"])
     assert any(e.entity_id.endswith("_hue") for e in registry.entities.values())
-    hass.config_entries.async_update_entry(entry, options={CONF_MODULES: ["scenes"]})
+    hass.config_entries.async_update_entry(entry, options={CONF_MODULES: ["zones"]})
     with patch("homeassistant.components.hue.async_setup_entry", return_value=True):
         await hass.async_block_till_done()
     assert not any(e.entity_id.endswith("_hue") for e in registry.entities.values() if e.platform == "hue")
@@ -224,13 +224,13 @@ async def test_something_else_using_a_name_is_left_alone_when_giving_back(hass, 
 
 async def test_an_entry_from_before_the_lights_module_gets_it(hass, home):
     entry = MockConfigEntry(
-        domain=DOMAIN, version=1, unique_id=BRIDGE_ID, data={CONF_HUE_ENTRY: home.entry_id}, options={CONF_MODULES: ["scenes"]}
+        domain=DOMAIN, version=1, unique_id=BRIDGE_ID, data={CONF_HUE_ENTRY: home.entry_id}, options={CONF_MODULES: ["zones"]}
     )
     entry.add_to_hass(hass)
     with patch("homeassistant.components.hue.async_setup_entry", return_value=True):
         await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
-    assert entry.version == 3 and {"lights", "devices"} <= set(entry.options[CONF_MODULES])
+    assert entry.version == 4 and {"lights", "devices"} <= set(entry.options[CONF_MODULES])
 
 
 # --- playing a light's own effect with a colour: what Home Control's live scenes use (decision D-25) -------------------------------

@@ -18,4 +18,4 @@ async def test_a_screen_learns_the_modules_the_lights_and_their_abilities(hass, 
     assert isinstance(lamp["setup"], dict)
     tube = bridge["lights"][TUBE]
     assert tube["gradient"]["points_capable"] == 5 and "segmented_palette" in tube["gradient"]["modes"]
-    assert bridge["scenes_sensor"] is None and bridge["sync_entity"] is None
+    assert "scenes_sensor" not in bridge and bridge["sync_entity"] is None

@@ -20,7 +20,7 @@ PALETTE = {
 async def scene_entities(hass, make_entry, hue_entry, bridge):
     """The scene of the bridge as Home Assistant has it twice: the Hue integration's entity and Hue Plus's copy of it (same bridge scene, same unique id)."""
     bridge.resources["scene"][0]["palette"] = PALETTE
-    plus = await make_entry(["scenes"])
+    plus = await make_entry(["zones"])
     registry = er.async_get(hass)
     hue = registry.async_get_or_create("scene", "hue", SCENE, config_entry=hue_entry, suggested_object_id="relax_hue")
     mirror = registry.async_get_or_create("scene", "hue_plus", SCENE, config_entry=plus, suggested_object_id="relax")
