@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Philips Hue Plus: everything the Hue bridge can do that the Hue integration does not show.
 
-Four modules, each switched on or off per bridge: ``bridge`` (firmware, apps, automations, scenes, rooms, zones,
-entertainment areas, Matter, settings, effects), ``zones`` (per-zone control of gradient lights), ``scenes`` (live scenes
-that move a palette across the lights of an area) and ``sync`` (Hue's cloud Spotify sync). It rides on the connection the
-Hue integration already has to the bridge, so there is no second login, or connects to the bridge itself (``direct.py``).
+Modules, each switched on or off per bridge: ``bridge`` (firmware, apps, automations, scenes, rooms, zones,
+entertainment areas, Matter, settings, effects), ``lights``, ``devices``, ``zones`` (per-zone control of gradient lights),
+``sync`` (Hue's cloud Spotify sync) and ``streaming``. Live scenes and areas are played by Home Control, for any light; Hue Plus
+is its expansion pack for Hue lights (``home_control.json``). It rides on the connection the Hue integration already has to the
+bridge, so there is no second login, or connects to the bridge itself (``direct.py``).
 
 Unofficial; not affiliated with or endorsed by Signify.
 """
@@ -19,6 +20,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.typing import ConfigType
 
@@ -42,7 +44,6 @@ from .const import (
     MODULE_BRIDGE,
     MODULE_DEVICES,
     MODULE_LIGHTS,
-    MODULE_SCENES,
     MODULE_STREAMING,
     MODULE_SYNC,
     connects_directly,
@@ -55,7 +56,6 @@ from .lights import adopt
 from .lights.alongside import async_follow_hue_settings
 from .link import BridgeLink
 from .runtime import HuePlusConfigEntry, Runtime, SyncBoxRuntime
-from .scenes import setup as scenes_setup
 from .streaming.manager import StreamingManager
 from .streaming.register import transport as stream_transport
 from .sync import setup as sync_setup
@@ -117,8 +117,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: HuePlusConfigEntry) -> b
         api = BridgeApi(link_transport(link), lambda: link.app_key)
         runtime.coordinator = BridgeCoordinator(hass, entry, api, runtime)
         await runtime.coordinator.async_config_entry_first_refresh()
-    if MODULE_SCENES in runtime.modules:
-        runtime.scenes = await scenes_setup.async_setup(hass, entry)
     if MODULE_SYNC in runtime.modules:
         runtime.sync = sync_setup.create(hass, entry)
     if MODULE_STREAMING in runtime.modules:
@@ -203,15 +201,26 @@ async def async_unload_entry(hass: HomeAssistant, entry: HuePlusConfigEntry) -> 
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
+# The scenes module, which moved to Home Control (decision D-25); only a migration still names it.
+_LEGACY_SCENES_MODULE = "scenes"
+
+
 async def async_migrate_entry(hass: HomeAssistant, entry: HuePlusConfigEntry) -> bool:
-    """Version 2 added the lights module and version 3 the devices module; an older entry gets them, as new entries do."""
+    """Version 2 added the lights module and version 3 the devices module; an older entry gets them, as new entries do. Version 4
+    took the scenes module away: live scenes and areas are played by Home Control, so the module is dropped from an entry and the sensor
+    that listed running scenes, which has no integration any more, is removed. What the module had saved stays in its storage file."""
     modules = list(entry.options.get(CONF_MODULES, DEFAULT_MODULES))
     if entry.version < 2 and MODULE_LIGHTS not in modules:
         modules.append(MODULE_LIGHTS)
     if entry.version < 3 and MODULE_DEVICES not in modules:
         modules.append(MODULE_DEVICES)
-    if entry.version < 3:
-        hass.config_entries.async_update_entry(entry, options={**entry.options, CONF_MODULES: modules}, version=3)
+    if entry.version < 4:
+        modules = [m for m in modules if m != _LEGACY_SCENES_MODULE]
+        registry = er.async_get(hass)
+        for row in er.async_entries_for_config_entry(registry, entry.entry_id):
+            if row.domain == "sensor" and row.unique_id.endswith("_live_scenes"):
+                registry.async_remove(row.entity_id)
+        hass.config_entries.async_update_entry(entry, options={**entry.options, CONF_MODULES: modules}, version=4)
     return True
 
 

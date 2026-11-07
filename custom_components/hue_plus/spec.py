@@ -11,16 +11,19 @@ from typing import Any
 
 from .bridge import actions as bridge_actions
 from .bridge import spec as bridge_spec
-from .const import DOMAIN, MODULE_BRIDGE, MODULE_SCENES, MODULE_STREAMING, MODULE_ZONES, PLAY_EFFECTS
+from .const import DOMAIN, MODULE_BRIDGE, MODULE_STREAMING, MODULE_ZONES, PLAY_EFFECTS
 from .fieldspec import f
-from .scenes import spec as scenes_spec
+from .scene_import import SPEC as scene_import_spec
 from .streaming import spec as streaming_spec
 from .zones import spec as zones_spec
+
+# The reading of a Hue scene belongs to no module: it needs only the Hue integration's connection, so it is always there.
+SCENE_IMPORT = "scene_import"
 
 SPECS: dict[str, dict[str, dict[str, Any]]] = {
     MODULE_BRIDGE: bridge_spec.SPEC,
     MODULE_ZONES: zones_spec.SPEC,
-    MODULE_SCENES: scenes_spec.SPEC,
+    SCENE_IMPORT: scene_import_spec,
     MODULE_STREAMING: streaming_spec.SPEC,
 }
 

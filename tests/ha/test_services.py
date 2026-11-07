@@ -57,7 +57,7 @@ async def test_the_bridge_refusing_a_request_is_reported_in_its_words(hass, make
 
 
 async def test_a_service_of_a_module_that_is_off_says_so(hass, make_entry):
-    await make_entry(["scenes"])
+    await make_entry(["zones"])
     with pytest.raises(ServiceValidationError, match="bridge module"):
         await call(hass, "get_resources", response=True)
 

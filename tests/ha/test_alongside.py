@@ -67,7 +67,7 @@ async def test_removing_hue_plus_or_switching_the_lights_off_does_not_touch_the_
     )
     before = hue_rows(registry)
     entry = await plus_alongside(hass, home, ["lights"])
-    hass.config_entries.async_update_entry(entry, options={CONF_MODULES: ["scenes"]})
+    hass.config_entries.async_update_entry(entry, options={CONF_MODULES: ["zones"]})
     with patch("homeassistant.components.hue.async_setup_entry", return_value=True):
         await hass.async_block_till_done()
         assert hue_rows(registry) == before

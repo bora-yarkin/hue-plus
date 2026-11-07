@@ -4,6 +4,16 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.8.0]
+
+### Removed
+- **Breaking:** the scenes module. Live scenes and areas are played by Home Control, for any light (decision D-25), and the services `scene_start`, `scene_update`, `scene_freeze`, `scene_play`, `scene_stop`, `scene_save`, `scene_delete`, `area_save`, `area_delete`, `locate_light` and `get_library`, the websocket command `hue_plus/library`, the `Live scenes` sensor and the `scenes_sensor` entry of `hue_plus/capabilities` are gone. Use Home Control 0.5.0 or later (`home_control.scene_start` and the others). Nothing else calls them in a stock setup.
+- The Hue-only rule for scenes and areas (`hue_only`): Hue Plus no longer plays scenes at all.
+
+### Changed
+- Config entries move to version 4: the `scenes` module is dropped from an entry's modules and the `Live scenes` sensor is removed from the entity registry. What the module had saved stays in `.storage/hue_plus.scenes.<bridge>`, which Hue Plus no longer reads or writes; Home Control took its scenes and areas over once (it is safe to delete that file when Home Control has them).
+- `import_hue_scene` no longer needs a module: it is always there (it reads the bridge's scenes for Home Control's import).
+
 ## [0.7.0]
 
 ### Added

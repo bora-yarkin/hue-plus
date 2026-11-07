@@ -13,7 +13,6 @@ from .link import BridgeLink
 
 if TYPE_CHECKING:
     from .coordinator import BridgeCoordinator
-    from .scenes.setup import ScenesRuntime
     from .streaming.manager import StreamingManager
     from .sync.coordinator import SyncCoordinator
     from .syncbox.coordinator import SyncBoxCoordinator
@@ -33,7 +32,6 @@ class Runtime:
     bridge_device_id: str | None = None
     coordinator: BridgeCoordinator | None = None
     zones: dict[str, GradientLight] = field(default_factory=dict)
-    scenes: ScenesRuntime | None = None
     sync: SyncCoordinator | None = None
     streaming: StreamingManager | None = None
 

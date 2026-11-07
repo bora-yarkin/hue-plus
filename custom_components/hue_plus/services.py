@@ -6,16 +6,16 @@ from __future__ import annotations
 
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
 
+from . import scene_import
 from .bridge import services as bridge_services
 from .const import DOMAIN
-from .scenes import services as scenes_services
 from .services_base import schema_for
 from .spec import SPEC, fields_of
 from .streaming import services as streaming_services
 from .zones import services as zones_services
 
-HANDLERS = {**bridge_services.HANDLERS, **zones_services.HANDLERS, **scenes_services.HANDLERS, **streaming_services.HANDLERS}
-RESPONDING = bridge_services.RESPONDING | scenes_services.RESPONDING | set(zones_services.RESPONDING)
+HANDLERS = {**bridge_services.HANDLERS, **zones_services.HANDLERS, **scene_import.HANDLERS, **streaming_services.HANDLERS}
+RESPONDING = bridge_services.RESPONDING | scene_import.RESPONDING | set(zones_services.RESPONDING)
 assert set(HANDLERS) == set(SPEC), "every service needs a handler and every handler a spec"
 
 

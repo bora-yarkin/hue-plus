@@ -14,7 +14,6 @@ from .bridge import models
 from .connection import api_or_none, read
 from .const import DOMAIN, HUE_DOMAIN
 from .runtime import HuePlusConfigEntry, Runtime
-from .scenes import websocket as scenes_websocket
 from .spec import MODULE_OF
 
 
@@ -61,14 +60,6 @@ async def capabilities(hass: HomeAssistant, connection: websocket_api.ActiveConn
                     ),
                     None,
                 ),
-                "scenes_sensor": next(
-                    (
-                        e.entity_id
-                        for e in er.async_entries_for_config_entry(er.async_get(hass), entry.entry_id)
-                        if e.unique_id == f"{runtime.uid}_live_scenes"
-                    ),
-                    None,
-                ),
             }
         )
     connection.send_result(msg["id"], {"version": 1, "bridges": bridges})
@@ -76,4 +67,3 @@ async def capabilities(hass: HomeAssistant, connection: websocket_api.ActiveConn
 
 def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, capabilities)
-    scenes_websocket.async_register(hass)
