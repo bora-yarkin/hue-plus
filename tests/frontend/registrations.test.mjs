@@ -37,7 +37,7 @@ function load(hass) {
     t: (key) => key,
     editing: () => false,
     room: () => null,
-    serviceResponse: async (domain, service, data) => ({ domain, service, data }),
+    serviceResponse: async (domain, service, data) => ({ domain, service, data, name: "Read", states: [{ entity_id: "light.plain", on: true }] }),
     ui,
     areas: new Proxy({}, { get: () => noop }),
     scenes: { hidden: () => false, setHidden: noop, importFrom: noop },
@@ -118,9 +118,21 @@ test("only Hue's live scenes can be imported, and they are read from the bridge 
   assert.equal(source.available(), true);
   assert.deepEqual(JSON.parse(JSON.stringify(source.list())), [{ id: "scene.arctic", name: "Arctic aurora", group: "Bora" }]);
   const read = await source.read("scene.arctic");
-  assert.deepEqual(JSON.parse(JSON.stringify(read)), { domain: "hue_plus", service: "import_hue_scene", data: { entity_id: "scene.arctic" } });
+  assert.equal(read.service, "import_hue_scene");
+  assert.deepEqual(JSON.parse(JSON.stringify(read.data)), { entity_id: "scene.arctic" });
   const without = load({ ...HASS, services: {} });
   assert.equal(without.imports[0].available(), false);
+});
+
+test("Hue's static scenes are imported as classic scenes, with what the bridge sets each light to", async () => {
+  const reg = load(HASS);
+  const source = reg.imports.find((x) => x.id === "hue-classic");
+  assert.equal(source.classic, true);
+  assert.equal(source.available(), true);
+  assert.deepEqual(JSON.parse(JSON.stringify(source.list())), [{ id: "scene.static", name: "Reading", group: "Bora" }]);
+  const read = await source.read("scene.static");
+  assert.deepEqual(JSON.parse(JSON.stringify(read)), { name: "Read", lights: [{ entity_id: "light.plain", on: true }] });
+  assert.equal(load({ ...HASS, services: {} }).imports.find((x) => x.id === "hue-classic").available(), false);
 });
 
 test("a light with gradient styles has the style button, and the other lights do not", () => {

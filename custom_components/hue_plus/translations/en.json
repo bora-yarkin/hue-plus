@@ -1230,7 +1230,7 @@
     },
     "import_hue_scene": {
       "name": "Import hue scene",
-      "description": "Reads the palette, speed and lights of a Hue scene so that it can be saved as a live scene. Reads only; nothing is written to the bridge.",
+      "description": "Reads the palette, speed and lights of a Hue scene so that it can be saved as a live scene, and what it sets each light to so that it can be saved as a classic one. Reads only; nothing is written to the bridge.",
       "fields": {
         "entity_id": {
           "name": "Entity id",

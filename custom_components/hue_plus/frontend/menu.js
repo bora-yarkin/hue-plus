@@ -91,11 +91,13 @@
 
 var PLUGIN_STRINGS = {
   "a_copy_you_can_edit_and_place_on_your_lights": "A copy you can edit and place on your lights",
+  "a_copy_you_can_edit_with_the_lights_as_it_sets_them": "A copy you can edit, with the lights as the scene sets them",
   "an_entertainment_area_of_the_bridge": "An entertainment area of the bridge",
   "automatic_update_time": "Automatic update time",
   "automatic_updates": "Automatic updates",
   "check_for_an_update": "Check for an update",
   "copies_its_colours_and_speed": "Copies its colours and speed",
+  "copies_what_it_sets_each_light_to": "Copies what it sets each light to",
   "couldn_t_read_that_scene_from_the_hue_bridge": "Couldn’t read that scene from the Hue bridge",
   "couldn_t_read_the_hue_bridge": "Couldn’t read the Hue bridge",
   "delete_this_motion_area": "Delete this motion area from the bridge?",
@@ -276,7 +278,9 @@ var PLUGIN_STRINGS = {
   "hue_lights": "Hue lights",
   "hue_play_hdmi_sync_box": "Hue Play HDMI Sync Box",
   "identify": "Identify",
+  "import_a_classic_scene_from_hue": "Import a classic scene from Hue",
   "import_a_live_scene_from_hue": "Import a live scene from Hue",
+  "import_as_a_classic_scene": "Import as a classic scene",
   "import_as_a_live_scene": "Import as a live scene",
   "import_from_the_hue_bridge": "Import from the Hue bridge",
   "importing_a_hue_scene_needs_hue_plus": "Importing a Hue scene needs Hue Plus",
@@ -295,6 +299,7 @@ var PLUGIN_STRINGS = {
   "no_hue_lights_in_this_area": "No Hue lights in this area",
   "no_hue_scenes_found": "No Hue scenes found",
   "no_motion_areas": "No motion areas",
+  "no_static_hue_scenes_found": "No static Hue scenes found",
   "none_of_its_lights_are_in_this_room": "None of its lights are in this room",
   "not_set_up": "Not set up",
   "nothing_connected": "Nothing connected",
@@ -3620,6 +3625,21 @@ function hueLiveScenes() {
     });
 }
 
+/* The Hue static scenes of the home (the bridge says a scene does not play by itself): the ones that can be imported as classic scenes, by room. */
+function hueStaticScenes() {
+  var h = H();
+  return Object.keys(h.states)
+    .filter(function (id) {
+      return HUESCENES.isHue(h, id) && A(id).is_dynamic === false;
+    })
+    .sort(function (x, y) {
+      return (
+        String(A(x).group_name || "").localeCompare(String(A(y).group_name || "")) ||
+        String(A(x).name || x).localeCompare(String(A(y).name || y))
+      );
+    });
+}
+
 /* Reading a Hue scene from the bridge, to import it, is a service of Hue Plus. */
 function hueImportable() {
   var s = H().services;
@@ -3682,16 +3702,19 @@ function hueSceneFreeze(id) {
   HFROZEN[grp] = id;
 }
 
+/* A static scene is switched on as a classic scene is: it sets its lights, with no speed. */
 function hueSceneToggle(id) {
   var grp = HUESCENES.group(H(), id);
   if (HUESCENES.active(H(), id)) {
     if (grp) call("light", "turn_off", { entity_id: grp });
-  } else hueSceneStart(id);
+  } else if (A(id).is_dynamic === false) call("scene", "turn_on", { entity_id: id });
+  else hueSceneStart(id);
 }
 
-/* The popup of a Hue scene: brightness (follows the room live), speed (starts the scene again at the new speed), play (live) and freeze (a still picture). */
+/* The popup of a Hue scene. A static scene has only what a classic scene has (importing it as one, hiding it); a live one has: brightness (follows the room live), speed (starts the scene again at the new speed), play (live) and freeze (a still picture). */
 function hueScenePopup(b, id, room) {
-  var P = HUESCENES;
+  var P = HUESCENES,
+    stat = A(id).is_dynamic === false;
   function grp() {
     return P.group(H(), id);
   }
@@ -3702,87 +3725,89 @@ function hueScenePopup(b, id, room) {
     var g = grp();
     return P.active(H(), id) && !!g && V_(g) === "on";
   }
-  b.appendChild(
-    sliderRow({
-      icon: "bright",
-      name: _T("brightness"),
-      min: 1,
-      max: 100,
-      step: 1,
-      get: function () {
-        var g = grp();
-        return g && V_(g) === "on" ? Math.max(1, Math.round((A(g).brightness || 0) / 2.55)) : hueSceneSet(id).bri;
-      },
-      fmt: function (v) {
-        return v + "%";
-      },
-      on: function () {
-        return P.active(H(), id);
-      },
-      live: function (v) {
-        if (live()) callLive(grp(), "light", "turn_on", { entity_id: grp(), brightness_pct: v });
-      },
-      commit: function (v) {
-        var st = hueSceneSet(id);
-        st.bri = v;
-        hueSceneSave(id, st);
-        if (live()) call("light", "turn_on", { entity_id: grp(), brightness_pct: v });
-      },
-    })
-  );
-  b.appendChild(
-    sliderRow({
-      icon: "tune",
-      name: _T("speed"),
-      min: 1,
-      max: P.speedSteps,
-      step: 1,
-      get: function () {
-        return P.speedToStep(hueSceneSet(id).speed);
-      },
-      fmt: function (v) {
-        return v + " / " + P.speedSteps;
-      },
-      on: function () {
-        return P.active(H(), id);
-      },
-      commit: function (v) {
-        var st = hueSceneSet(id);
-        st.speed = P.stepToSpeed(v);
-        hueSceneSave(id, st);
-        if (playing()) hueSceneStart(id);
-      },
-    })
-  );
-  var g2 = mk("div", "gridl g2");
-  g2.appendChild(
-    pill("play", _T("play"), {
-      on: playing,
-      tap: function () {
-        hueSceneStart(id);
-      },
-    })
-  );
-  g2.appendChild(
-    pill("pause", _T("freeze"), {
-      on: function () {
-        var g = grp();
-        return !!g && HFROZEN[g] === id && V_(g) === "on" && !P.playing(H(), g);
-      },
-      tap: function () {
-        hueSceneFreeze(id);
-      },
-    })
-  );
-  b.appendChild(g2);
-  if (isAdmin() && hueImportable())
+  if (!stat) {
     b.appendChild(
-      pill("palette", _T("import_as_a_live_scene"), {
-        sub: function () {
-          return _T("a_copy_you_can_edit_and_place_on_your_lights");
+      sliderRow({
+        icon: "bright",
+        name: _T("brightness"),
+        min: 1,
+        max: 100,
+        step: 1,
+        get: function () {
+          var g = grp();
+          return g && V_(g) === "on" ? Math.max(1, Math.round((A(g).brightness || 0) / 2.55)) : hueSceneSet(id).bri;
+        },
+        fmt: function (v) {
+          return v + "%";
+        },
+        on: function () {
+          return P.active(H(), id);
+        },
+        live: function (v) {
+          if (live()) callLive(grp(), "light", "turn_on", { entity_id: grp(), brightness_pct: v });
+        },
+        commit: function (v) {
+          var st = hueSceneSet(id);
+          st.bri = v;
+          hueSceneSave(id, st);
+          if (live()) call("light", "turn_on", { entity_id: grp(), brightness_pct: v });
+        },
+      })
+    );
+    b.appendChild(
+      sliderRow({
+        icon: "tune",
+        name: _T("speed"),
+        min: 1,
+        max: P.speedSteps,
+        step: 1,
+        get: function () {
+          return P.speedToStep(hueSceneSet(id).speed);
+        },
+        fmt: function (v) {
+          return v + " / " + P.speedSteps;
+        },
+        on: function () {
+          return P.active(H(), id);
+        },
+        commit: function (v) {
+          var st = hueSceneSet(id);
+          st.speed = P.stepToSpeed(v);
+          hueSceneSave(id, st);
+          if (playing()) hueSceneStart(id);
+        },
+      })
+    );
+    var g2 = mk("div", "gridl g2");
+    g2.appendChild(
+      pill("play", _T("play"), {
+        on: playing,
+        tap: function () {
+          hueSceneStart(id);
+        },
+      })
+    );
+    g2.appendChild(
+      pill("pause", _T("freeze"), {
+        on: function () {
+          var g = grp();
+          return !!g && HFROZEN[g] === id && V_(g) === "on" && !P.playing(H(), g);
         },
         tap: function () {
-          importLiveScene("hue", id);
+          hueSceneFreeze(id);
+        },
+      })
+    );
+    b.appendChild(g2);
+  }
+  if (isAdmin() && hueImportable())
+    b.appendChild(
+      pill(stat ? "scene" : "palette", _T(stat ? "import_as_a_classic_scene" : "import_as_a_live_scene"), {
+        sub: function () {
+          return _T(stat ? "a_copy_you_can_edit_with_the_lights_as_it_sets_them" : "a_copy_you_can_edit_and_place_on_your_lights");
+        },
+        tap: function () {
+          importLiveScene(stat ? "hue-classic" : "hue", id);
         },
       })
     );
@@ -3976,6 +4001,28 @@ function lpStylePopup(b, id) {
     },
     read: function (id) {
       return serviceResponse("hue_plus", "import_hue_scene", { entity_id: id });
+    },
+  });
+
+  /* Importing a static scene: a classic scene with what the bridge sets each of its lights to, as "save the lights as they are" makes from the lights now. */
+  HC.registerSceneImport({
+    id: "hue-classic",
+    classic: true,
+    title: "import_a_classic_scene_from_hue",
+    sub: "copies_what_it_sets_each_light_to",
+    unavailable: "importing_a_hue_scene_needs_hue_plus",
+    empty: "no_static_hue_scenes_found",
+    failed: "couldn_t_read_that_scene_from_the_hue_bridge",
+    available: hueImportable,
+    list: function () {
+      return hueStaticScenes().map(function (id) {
+        return { id: id, name: A(id).name || id, group: A(id).group_name || "" };
+      });
+    },
+    read: function (id) {
+      return serviceResponse("hue_plus", "import_hue_scene", { entity_id: id }).then(function (r) {
+        return { name: r.name, lights: r.states };
+      });
     },
   });
 

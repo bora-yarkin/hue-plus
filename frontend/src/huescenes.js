@@ -63,6 +63,21 @@ function hueLiveScenes() {
     });
 }
 
+/* The Hue static scenes of the home (the bridge says a scene does not play by itself): the ones that can be imported as classic scenes, by room. */
+function hueStaticScenes() {
+  var h = H();
+  return Object.keys(h.states)
+    .filter(function (id) {
+      return HUESCENES.isHue(h, id) && A(id).is_dynamic === false;
+    })
+    .sort(function (x, y) {
+      return (
+        String(A(x).group_name || "").localeCompare(String(A(y).group_name || "")) ||
+        String(A(x).name || x).localeCompare(String(A(y).name || y))
+      );
+    });
+}
+
 /* Reading a Hue scene from the bridge, to import it, is a service of Hue Plus. */
 function hueImportable() {
   var s = H().services;
@@ -125,16 +140,19 @@ function hueSceneFreeze(id) {
   HFROZEN[grp] = id;
 }
 
+/* A static scene is switched on as a classic scene is: it sets its lights, with no speed. */
 function hueSceneToggle(id) {
   var grp = HUESCENES.group(H(), id);
   if (HUESCENES.active(H(), id)) {
     if (grp) call("light", "turn_off", { entity_id: grp });
-  } else hueSceneStart(id);
+  } else if (A(id).is_dynamic === false) call("scene", "turn_on", { entity_id: id });
+  else hueSceneStart(id);
 }
 
-/* The popup of a Hue scene: brightness (follows the room live), speed (starts the scene again at the new speed), play (live) and freeze (a still picture). */
+/* The popup of a Hue scene. A static scene has only what a classic scene has (importing it as one, hiding it); a live one has: brightness (follows the room live), speed (starts the scene again at the new speed), play (live) and freeze (a still picture). */
 function hueScenePopup(b, id, room) {
-  var P = HUESCENES;
+  var P = HUESCENES,
+    stat = A(id).is_dynamic === false;
   function grp() {
     return P.group(H(), id);
   }
@@ -145,87 +163,89 @@ function hueScenePopup(b, id, room) {
     var g = grp();
     return P.active(H(), id) && !!g && V_(g) === "on";
   }
-  b.appendChild(
-    sliderRow({
-      icon: "bright",
-      name: _T("brightness"),
-      min: 1,
-      max: 100,
-      step: 1,
-      get: function () {
-        var g = grp();
-        return g && V_(g) === "on" ? Math.max(1, Math.round((A(g).brightness || 0) / 2.55)) : hueSceneSet(id).bri;
-      },
-      fmt: function (v) {
-        return v + "%";
-      },
-      on: function () {
-        return P.active(H(), id);
-      },
-      live: function (v) {
-        if (live()) callLive(grp(), "light", "turn_on", { entity_id: grp(), brightness_pct: v });
-      },
-      commit: function (v) {
-        var st = hueSceneSet(id);
-        st.bri = v;
-        hueSceneSave(id, st);
-        if (live()) call("light", "turn_on", { entity_id: grp(), brightness_pct: v });
-      },
-    })
-  );
-  b.appendChild(
-    sliderRow({
-      icon: "tune",
-      name: _T("speed"),
-      min: 1,
-      max: P.speedSteps,
-      step: 1,
-      get: function () {
-        return P.speedToStep(hueSceneSet(id).speed);
-      },
-      fmt: function (v) {
-        return v + " / " + P.speedSteps;
-      },
-      on: function () {
-        return P.active(H(), id);
-      },
-      commit: function (v) {
-        var st = hueSceneSet(id);
-        st.speed = P.stepToSpeed(v);
-        hueSceneSave(id, st);
-        if (playing()) hueSceneStart(id);
-      },
-    })
-  );
-  var g2 = mk("div", "gridl g2");
-  g2.appendChild(
-    pill("play", _T("play"), {
-      on: playing,
-      tap: function () {
-        hueSceneStart(id);
-      },
-    })
-  );
-  g2.appendChild(
-    pill("pause", _T("freeze"), {
-      on: function () {
-        var g = grp();
-        return !!g && HFROZEN[g] === id && V_(g) === "on" && !P.playing(H(), g);
-      },
-      tap: function () {
-        hueSceneFreeze(id);
-      },
-    })
-  );
-  b.appendChild(g2);
-  if (isAdmin() && hueImportable())
+  if (!stat) {
     b.appendChild(
-      pill("palette", _T("import_as_a_live_scene"), {
-        sub: function () {
-          return _T("a_copy_you_can_edit_and_place_on_your_lights");
+      sliderRow({
+        icon: "bright",
+        name: _T("brightness"),
+        min: 1,
+        max: 100,
+        step: 1,
+        get: function () {
+          var g = grp();
+          return g && V_(g) === "on" ? Math.max(1, Math.round((A(g).brightness || 0) / 2.55)) : hueSceneSet(id).bri;
+        },
+        fmt: function (v) {
+          return v + "%";
+        },
+        on: function () {
+          return P.active(H(), id);
+        },
+        live: function (v) {
+          if (live()) callLive(grp(), "light", "turn_on", { entity_id: grp(), brightness_pct: v });
+        },
+        commit: function (v) {
+          var st = hueSceneSet(id);
+          st.bri = v;
+          hueSceneSave(id, st);
+          if (live()) call("light", "turn_on", { entity_id: grp(), brightness_pct: v });
+        },
+      })
+    );
+    b.appendChild(
+      sliderRow({
+        icon: "tune",
+        name: _T("speed"),
+        min: 1,
+        max: P.speedSteps,
+        step: 1,
+        get: function () {
+          return P.speedToStep(hueSceneSet(id).speed);
+        },
+        fmt: function (v) {
+          return v + " / " + P.speedSteps;
+        },
+        on: function () {
+          return P.active(H(), id);
+        },
+        commit: function (v) {
+          var st = hueSceneSet(id);
+          st.speed = P.stepToSpeed(v);
+          hueSceneSave(id, st);
+          if (playing()) hueSceneStart(id);
+        },
+      })
+    );
+    var g2 = mk("div", "gridl g2");
+    g2.appendChild(
+      pill("play", _T("play"), {
+        on: playing,
+        tap: function () {
+          hueSceneStart(id);
+        },
+      })
+    );
+    g2.appendChild(
+      pill("pause", _T("freeze"), {
+        on: function () {
+          var g = grp();
+          return !!g && HFROZEN[g] === id && V_(g) === "on" && !P.playing(H(), g);
         },
         tap: function () {
-          importLiveScene("hue", id);
+          hueSceneFreeze(id);
+        },
+      })
+    );
+    b.appendChild(g2);
+  }
+  if (isAdmin() && hueImportable())
+    b.appendChild(
+      pill(stat ? "scene" : "palette", _T(stat ? "import_as_a_classic_scene" : "import_as_a_live_scene"), {
+        sub: function () {
+          return _T(stat ? "a_copy_you_can_edit_with_the_lights_as_it_sets_them" : "a_copy_you_can_edit_and_place_on_your_lights");
+        },
+        tap: function () {
+          importLiveScene(stat ? "hue-classic" : "hue", id);
         },
       })
     );

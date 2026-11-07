@@ -4,6 +4,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-11-08
+
+### Added
+- Hue's static scenes (the bridge says they do not play by themselves, such as Desk light or Relax) are no longer treated as live scenes. Their popup has no speed, play or freeze, and they are not offered as live scenes to import. They can be imported as classic scenes: the dashboard's *Import a classic scene from Hue* copies what the bridge sets each of the scene's lights to (off, or its brightness and colour or white), not what the lights show now. `hue_plus.import_hue_scene` also returns these settings as `states`.
+
 ## [0.11.0] - 2026-11-07
 
 ### Changed
