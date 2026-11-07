@@ -4,6 +4,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-07
+
 ### Changed
 - `home_control.json` declares `separate_zones` (`set_style` with the style `segmented`, given the entity of one of a strip's zones): a live scene that plays on a gradient light's zones now plays all five of them, in order, as separate lights next to each other. In Linear and Mirrored the bridge blends two of the five zones, so the scene calls `set_style` first when some zones are unavailable; the light stays in Segmented when the scene stops. Needs Home Control 0.9.0 or later.
 
