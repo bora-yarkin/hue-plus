@@ -39,7 +39,7 @@ the Hue integration's scene action `activate_scene` (live, with a speed, a brigh
 own entities since Home Assistant 2026.11 (before, its scene platform registered it for whatever platform ran it), so `devices/scene.py`
 registers `hue_plus.activate_scene` with the same options when the platform has not. The dashboard starts a Hue scene with it.
 
-**Home Control (decision D-25).** Live scenes and areas are played by Home Control, for any light. Hue Plus is the expansion pack for Hue lights: `home_control.json`
+**Home Control (decision D-25).** The dashboard pages of Hue Plus are Hue Plus's: `frontend/src` (the Hue Plus menu, the bridge-area import and editing, the adapter that reads what Hue Plus offers, the menu's texts) is built into `custom_components/hue_plus/frontend/menu.js`, served at `/hue_plus_static/menu.js` and loaded by Home Control for administrators.  Live scenes and areas are played by Home Control, for any light. Hue Plus is the expansion pack for Hue lights: `home_control.json`
 declares the Hue lights it owns (their entity platforms, the bridge's command rate) and the native effects it can play, and `hue_plus.play_effect` (an action on
 Hue Plus's light entities, `lights/light.py`) plays one of a light's own effects with a colour through the bridge. Nothing is imported in either direction. The scenes module that
 played live scenes here was removed in 0.8.0 (HP-12.3); the scenes and areas it saved stay in its storage file, which Home Control took over once.

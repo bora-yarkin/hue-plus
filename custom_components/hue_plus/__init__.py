@@ -13,8 +13,10 @@ Unofficial; not affiliated with or endorsed by Signify.
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 import aiohttp
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
@@ -41,6 +43,7 @@ from .const import (
     CONF_SYNCBOX_REGISTRATION,
     CONF_SYNCBOX_TOKEN,
     DEFAULT_MODULES,
+    DOMAIN,
     MODULE_BRIDGE,
     MODULE_DEVICES,
     MODULE_LIGHTS,
@@ -64,6 +67,8 @@ from .syncbox.coordinator import SyncBoxCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
+STATIC_URL = f"/{DOMAIN}_static"
+
 PLATFORMS = [
     Platform.BINARY_SENSOR,
     Platform.BUTTON,
@@ -82,6 +87,10 @@ PLATFORMS = [
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     services.async_register(hass)
     websocket.async_register(hass)
+    # The script Home Control loads for administrators (its pages in the dashboard's Settings): the one file of ``frontend/``, named in home_control.json.
+    await hass.http.async_register_static_paths(
+        [StaticPathConfig(STATIC_URL, str(Path(__file__).parent / "frontend"), cache_headers=False)]
+    )
     return True
 
 
