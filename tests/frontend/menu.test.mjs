@@ -10,7 +10,7 @@ const read = (name) => readFileSync(new URL(name, SRC), "utf8");
 const menu = read("huemenu.js");
 // The plugin's own texts, and the few the dashboard has for everything (a word like "off" or "lights" is not repeated in every plugin).
 const strings = read("strings.js");
-const SHARED = new Set(["add_at_least_one_light", "all_off", "area", "auto", "automations", "button", "clock", "firmware", "give_the_area_a_name", "home", "home_and_away", "hue_plus", "in_this_room", "light", "lights", "loading", "lock", "manual", "no_effect", "none", "nothing_found", "number", "off", "on_2", "other", "pause", "power", "press", "rooms", "safety", "scene", "scenes", "switch", "time", "unavailable", "zigbee_channel"]);
+const SHARED = new Set(["brightness", "colour", "freeze", "hidden", "mode", "palette", "paused", "play", "playing", "speed", "style", "visible", "now_playing", "nothing_playing", "speaker", "tv", "note", "add_at_least_one_light", "all_off", "area", "auto", "automations", "button", "clock", "firmware", "give_the_area_a_name", "home", "home_and_away", "hue_plus", "in_this_room", "light", "lights", "loading", "lock", "manual", "no_effect", "none", "nothing_found", "number", "off", "on_2", "other", "pause", "power", "press", "rooms", "safety", "scene", "scenes", "switch", "time", "unavailable", "zigbee_channel"]);
 const pages = new Set([...(menu + read("hueplus.js")).matchAll(/HP_PAGES\["([a-z-]+)"\]\s*=|^\s*"([a-z-]+)": \[/gm)].map((m) => m[1] || m[2]));
 const hasText = (key) => SHARED.has(key) || strings.includes(`"${key}":`);
 
@@ -21,7 +21,7 @@ test("every page the menu opens is defined", () => {
 });
 
 test("every text of the menu is defined", () => {
-  const keys = new Set([...menu.matchAll(/_T\("([a-z0-9_]+)"\)/g)].map((m) => m[1]));
+  const keys = new Set([...["huemenu.js", "huesync.js", "huescenes.js", "huestyle.js"].map(read).join("\n").matchAll(/_T\("([a-z0-9_]+)"\)/g)].map((m) => m[1]));
   for (const key of keys) assert.ok(hasText(`${key}`), `${key} has no text`);
   // The texts built from a value of the bridge or of an entity: every value the menu offers has its own.
   const families = {
@@ -119,7 +119,7 @@ test("every function and variable of the menu and its drafts that is used is def
 });
 
 test("the bundle is built in the order the pages need, and uses the dashboard only through the plugin API", () => {
-  const order = ["prologue.js", "strings.js", "adapter.js", "hmdraft.js", "hueplus.js", "huemenu.js", "epilogue.js"];
+  const order = ["prologue.js", "strings.js", "huecss.js", "adapter.js", "hmdraft.js", "hueplus.js", "huemenu.js", "huesync.js", "huescenes.js", "huestyle.js", "epilogue.js"];
   const built = readFileSync(new URL("../../custom_components/hue_plus/frontend/menu.js", import.meta.url), "utf8");
   let at = -1;
   for (const name of order) {
@@ -130,6 +130,6 @@ test("the bundle is built in the order the pages need, and uses the dashboard on
   }
   assert.match(read("prologue.js"), /if \(!HC \|\| HC\.version !== 1\) return;/, "a dashboard with another version of the API is left alone");
   // Nothing in the sources reaches for a dashboard variable by name: what the dashboard keeps in variables is read through the prologue's functions.
-  for (const name of ["huemenu.js", "hueplus.js", "hmdraft.js", "adapter.js"])
-    assert.doesNotMatch(read(name).replace(/\/\*[\s\S]*?\*\//g, ""), /\b(ISADMIN|SHEET|POPGUARD|EAD|Integrations)\b/, `${name} uses a dashboard variable directly`);
+  for (const name of ["huemenu.js", "hueplus.js", "hmdraft.js", "adapter.js", "huesync.js", "huescenes.js", "huestyle.js"])
+    assert.doesNotMatch(read(name).replace(/\/\*[\s\S]*?\*\//g, ""), /\b(ISADMIN|SHEET|POPGUARD|EAD|Integrations|PAGEFILL|STORE|UIROOM)\b/, `${name} uses a dashboard variable directly`);
 });

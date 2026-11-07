@@ -29,11 +29,44 @@
     _T = HC.t,
     eaRoomLights = HC.areas.roomLights,
     eaClamp = HC.areas.clamp,
-    eaIdentifyOff = HC.areas.identifyOff;
+    eaIdentifyOff = HC.areas.identifyOff,
+    attachSlide = HC.ui.attachSlide,
+    briControl = HC.ui.briControl,
+    callLive = HC.ui.callLive,
+    cap = HC.ui.cap,
+    closeSheet = HC.ui.closeSheet,
+    cssRgb = HC.ui.cssRgb,
+    cssToRgb = HC.ui.cssToRgb,
+    deviceGet = HC.ui.deviceGet,
+    deviceSet = HC.ui.deviceSet,
+    dom = HC.ui.dom,
+    dropRow = HC.ui.dropRow,
+    ic = HC.ui.ic,
+    inkRow = HC.ui.inkRow,
+    kelvinRgb = HC.ui.kelvinRgb,
+    lightMembers = HC.ui.lightMembers,
+    liveStopOn = HC.ui.liveStopOn,
+    liveXyRgb = HC.ui.liveXyRgb,
+    pinPop = HC.ui.pinPop,
+    pop = HC.ui.pop,
+    sep = HC.ui.sep,
+    sliderRow = HC.ui.sliderRow,
+    switchPill = HC.ui.switchPill,
+    roomById = HC.room,
+    serviceResponse = HC.serviceResponse,
+    sceneEntHidden = HC.scenes.hidden,
+    sceneEntSetHidden = HC.scenes.setHidden,
+    importLiveScene = HC.scenes.importFrom;
 
   /* What the dashboard keeps in variables is read when it is needed. */
   function isAdmin() {
     return HC.isAdmin;
+  }
+  function isEditing() {
+    return HC.editing();
+  }
+  function pageFill() {
+    return HC.ui.pageFill;
   }
   function currentSheet() {
     return HC.sheet;
@@ -57,18 +90,31 @@
 /* The text of this plugin's pages (the dashboard adds it to its own table when the plugin starts). */
 
 var PLUGIN_STRINGS = {
+  "a_copy_you_can_edit_and_place_on_your_lights": "A copy you can edit and place on your lights",
   "an_entertainment_area_of_the_bridge": "An entertainment area of the bridge",
   "automatic_update_time": "Automatic update time",
   "automatic_updates": "Automatic updates",
   "check_for_an_update": "Check for an update",
+  "copies_its_colours_and_speed": "Copies its colours and speed",
+  "couldn_t_read_that_scene_from_the_hue_bridge": "Couldn’t read that scene from the Hue bridge",
   "couldn_t_read_the_hue_bridge": "Couldn’t read the Hue bridge",
   "delete_this_motion_area": "Delete this motion area from the bridge?",
   "delete_this_routine_from_the_bridge": "Delete this routine from the bridge?",
   "disconnect_this_matter_app_from_the_bridge": "Disconnect this Matter app from the bridge?",
+  "end_last_state": "Back to the last state",
+  "end_off": "Off",
+  "end_pause": "Stay as they are",
+  "end_scene": "A scene",
   "entertainment_area": "Entertainment area",
   "entertainment_areas": "Entertainment areas",
   "experimental_not_yet_tried_on_a_real_bridge": "Experimental: not yet tried on a real bridge",
   "experimental_only_the_last_state_has_been_seen_on_a_real_bridge": "Experimental: only “last state” has been seen on a real bridge",
+  "fn_decorative": "Decoration",
+  "fn_functional": "Everyday light",
+  "fn_mixed": "Both",
+  "hdmi_input": "HDMI input",
+  "hdmi_signal": "HDMI signal",
+  "hide_this_scene": "Hide this scene",
   "hm_a_cycle_needs_two_scenes": "A cycle needs at least two scenes",
   "hm_a_time_based_light_needs_two_times": "A time-based light needs at least two times",
   "hm_add_a_scene": "Add a scene",
@@ -79,6 +125,8 @@ var PLUGIN_STRINGS = {
   "hm_behavior": "Behavior",
   "hm_bridges": "Bridges",
   "hm_brighten": "Brighten",
+  "hm_brighten_sub": "Your lights will brighten incrementally each time you press the button",
+  "hm_brightness_balance": "Brightness balance",
   "hm_button": "button",
   "hm_button_label": "Button",
   "hm_buttons": "Buttons",
@@ -90,22 +138,42 @@ var PLUGIN_STRINGS = {
   "hm_dial": "dial",
   "hm_dials": "dials",
   "hm_dim": "Dim",
+  "hm_dim_sub": "Your lights will dim incrementally each time you press the button until minimum brightness is reached",
   "hm_do_nothing": "Do nothing",
+  "hm_do_nothing_sub": "The press does nothing",
   "hm_done": "Done",
   "hm_eighth": "Eighth",
   "hm_enabled": "Enabled",
+  "hm_end_last_state": "Returns to how the lights were before the sync",
+  "hm_end_off": "The lights turn off",
+  "hm_end_pause": "The last light keeps its colour",
+  "hm_end_scene": "Plays a scene you choose",
   "hm_entire_home_off": "Entire home off",
+  "hm_entire_home_off_sub": "All lights in your home turn off",
   "hm_everything_is_up_to_date": "Everything is up to date",
   "hm_experimental_buttons": "Experimental: changing a button writes to the bridge's automation of this switch and has not been tried on a real dimmer.",
   "hm_fifth": "Fifth",
   "hm_first": "First",
+  "hm_fn_decorative": "Accent and mood lighting",
+  "hm_fn_functional": "Lighting you rely on to see",
+  "hm_fn_mixed": "Both",
+  "hm_forward": "Forward",
   "hm_fourth": "Fourth",
   "hm_function": "Function",
   "hm_general": "General",
+  "hm_horizontal": "Horizontal",
   "hm_how_you_use_this_light": "How you use this light",
   "hm_id": "ID",
   "hm_in_this_home": "In this home",
   "hm_info": "Info",
+  "hm_kind_brighten": "Brighten",
+  "hm_kind_cycle": "Scene cycle",
+  "hm_kind_dim": "Dim",
+  "hm_kind_nothing": "Nothing",
+  "hm_kind_off": "Lights off",
+  "hm_kind_scene": "Single scene",
+  "hm_kind_time": "Time-based light",
+  "hm_last_press": "Last press",
   "hm_last_used": "Last used",
   "hm_light": "light",
   "hm_light_behavior_at_power_on": "Light behavior at power on",
@@ -115,6 +183,7 @@ var PLUGIN_STRINGS = {
   "hm_lights_brighten_or_dim": "Lights brighten or dim",
   "hm_lights_label": "Lights",
   "hm_lights_off": "Lights off",
+  "hm_lights_off_sub": "The lights turn off",
   "hm_lights_turn_off": "Lights turn off",
   "hm_lights_turn_on": "Lights turn on",
   "hm_linked_to_hue": "Linked to Hue",
@@ -128,19 +197,32 @@ var PLUGIN_STRINGS = {
   "hm_move_later": "Move later",
   "hm_ninth": "Ninth",
   "hm_nothing_happens": "Nothing happens",
+  "hm_nothing_set": "Nothing set",
   "hm_order": "Order",
   "hm_performance": "Performance",
   "hm_pick_a_scene": "Pick a scene",
   "hm_pick_a_time": "Pick a time",
   "hm_power_on": "Power on",
   "hm_press": "Press",
+  "hm_press_set": "press set",
   "hm_press_word": "press",
+  "hm_presses_set": "presses set",
+  "hm_pw_custom": "Custom",
+  "hm_pw_custom_sub": "Choose color and brightness",
+  "hm_pw_last_on_state": "Last on",
+  "hm_pw_last_on_state_sub": "Last-used color and brightness",
+  "hm_pw_powerfail": "Power loss recovery",
+  "hm_pw_powerfail_sub": "Stays off or turns back on",
+  "hm_pw_safety": "Default",
+  "hm_pw_safety_sub": "Warm white, full brightness",
   "hm_remove_from_the_cycle": "Remove from the cycle",
   "hm_remove_this_time": "Remove this time",
+  "hm_reversed": "Reversed",
   "hm_room": "Room",
   "hm_saved_to_the_bridge": "Saved to the bridge",
   "hm_scene": "scene",
   "hm_scene_cycle": "Scene cycle",
+  "hm_scene_cycle_sub": "Your lights will cycle through selected scenes each time you press the button",
   "hm_scenes": "scenes",
   "hm_sec": "s",
   "hm_second": "Second",
@@ -148,6 +230,7 @@ var PLUGIN_STRINGS = {
   "hm_settings": "Settings",
   "hm_seventh": "Seventh",
   "hm_single_scene": "Single scene",
+  "hm_single_scene_sub": "Your lights will always display the same scene when you press the button",
   "hm_sixth": "Sixth",
   "hm_smart_home": "Smart home",
   "hm_smart_on_off": "Smart on/off",
@@ -170,6 +253,7 @@ var PLUGIN_STRINGS = {
   "hm_this_light_streams": "This light streams for the area",
   "hm_time": "time",
   "hm_time_based_light": "Time-based light",
+  "hm_time_based_light_sub": "Your lights will mimic natural light based on the time of day or a custom schedule",
   "hm_time_based_note": "The lights show the scene of the latest time that has passed. Pressing again within the time before it restarts goes to the next one.",
   "hm_time_zone": "Time zone",
   "hm_timed_effects": "Timed effects",
@@ -179,96 +263,71 @@ var PLUGIN_STRINGS = {
   "hm_unreachable": "Not reachable",
   "hm_updates_are_installed_at_this_time": "Updates are installed automatically at this time.",
   "hm_use_the_default_schedule": "Use the default schedule",
+  "hm_vertical": "Vertical",
+  "hm_what_the_buttons_do_note": "What the buttons do is set in the Hue app. Here you see which presses have something to do.",
   "hm_when_sync_stops": "When sync stops",
   "hm_where_the_lights_are_in_the_room": "Where the lights are in the room",
+  "hp_no_effect": "Stop it",
   "hp_scene": "Scene",
+  "hp_sunrise": "Start a sunrise",
+  "hp_sunset": "Start a sunset",
   "hue_bridge": "Hue bridge",
   "hue_light": "Hue light",
   "hue_lights": "Hue lights",
+  "hue_play_hdmi_sync_box": "Hue Play HDMI Sync Box",
   "identify": "Identify",
+  "import_a_live_scene_from_hue": "Import a live scene from Hue",
+  "import_as_a_live_scene": "Import as a live scene",
   "import_from_the_hue_bridge": "Import from the Hue bridge",
+  "importing_a_hue_scene_needs_hue_plus": "Importing a Hue scene needs Hue Plus",
   "install_this_update": "Install this update?",
+  "intensity": "Intensity",
   "internet": "Internet",
+  "light_delay": "Light delay",
   "light_setup": "Light setup",
+  "linear": "Linear",
   "lowest_brightness": "Lowest brightness",
   "matter": "Matter",
+  "mirrored": "Mirrored",
   "motion_area": "Motion area",
   "motion_areas": "Motion areas",
   "mounting_direction": "Mounting direction",
   "no_hue_lights_in_this_area": "No Hue lights in this area",
+  "no_hue_scenes_found": "No Hue scenes found",
   "no_motion_areas": "No motion areas",
   "none_of_its_lights_are_in_this_room": "None of its lights are in this room",
   "not_set_up": "Not set up",
   "nothing_connected": "Nothing connected",
+  "orientation": "Orientation",
+  "playing_on": "Playing on",
   "read_from_the_hue_bridge": "Read from the Hue bridge",
   "routine": "Routine",
   "routines_and_automations": "Routines and automations",
+  "scattered": "Scattered",
   "search_for_new_devices": "Search for new devices",
   "segment_order": "Segment order",
+  "segmented": "Segmented",
   "send_to_the_hue_bridge": "Send to the Hue bridge",
   "sent_to_the_hue_bridge": "Sent to the Hue bridge",
   "set_up": "Set up",
   "show_red_for_5_seconds": "Show red for 5 seconds",
+  "show_this_scene": "Show this scene",
+  "spotify_sync": "Spotify sync",
   "stay_here": "stay here",
   "stop_streaming": "Stop streaming",
+  "sync": "Sync",
   "take_this_app_s_access_away_it_can_no_longer_use_the_bridge": "Take this app’s access away? It can no longer use the bridge.",
   "takes_the_positions_of_its_lights": "Takes the positions of its lights",
+  "turn_the_colours_around": "Turn the colours around",
   "up_to_date": "Up to date",
   "update_available": "Update available",
   "update_available_2": "update available",
   "updates_available": "updates available",
-  "zones": "zones",
-  "fn_decorative": "Decoration",
-  "fn_functional": "Everyday light",
-  "fn_mixed": "Both",
-  "end_last_state": "Back to the last state",
-  "end_off": "Off",
-  "end_pause": "Stay as they are",
-  "end_scene": "A scene",
-  "hp_sunrise": "Start a sunrise",
-  "hp_sunset": "Start a sunset",
-  "hp_no_effect": "Stop it",
-  "hm_last_press": "Last press",
-  "hm_press_set": "press set",
-  "hm_presses_set": "presses set",
-  "hm_nothing_set": "Nothing set",
-  "hm_what_the_buttons_do_note": "What the buttons do is set in the Hue app. Here you see which presses have something to do.",
-  "hm_horizontal": "Horizontal",
-  "hm_vertical": "Vertical",
-  "hm_forward": "Forward",
-  "hm_reversed": "Reversed",
-  "hm_fn_decorative": "Accent and mood lighting",
-  "hm_fn_functional": "Lighting you rely on to see",
-  "hm_fn_mixed": "Both",
-  "hm_pw_safety": "Default",
-  "hm_pw_safety_sub": "Warm white, full brightness",
-  "hm_pw_last_on_state": "Last on",
-  "hm_pw_last_on_state_sub": "Last-used color and brightness",
-  "hm_pw_powerfail": "Power loss recovery",
-  "hm_pw_powerfail_sub": "Stays off or turns back on",
-  "hm_pw_custom": "Custom",
-  "hm_pw_custom_sub": "Choose color and brightness",
-  "hm_end_last_state": "Returns to how the lights were before the sync",
-  "hm_end_off": "The lights turn off",
-  "hm_end_pause": "The last light keeps its colour",
-  "hm_end_scene": "Plays a scene you choose",
-  "hm_brightness_balance": "Brightness balance",
-  "hm_kind_brighten": "Brighten",
-  "hm_kind_dim": "Dim",
-  "hm_kind_off": "Lights off",
-  "hm_kind_nothing": "Nothing",
-  "hm_kind_scene": "Single scene",
-  "hm_kind_cycle": "Scene cycle",
-  "hm_kind_time": "Time-based light",
-  "hm_scene_cycle_sub": "Your lights will cycle through selected scenes each time you press the button",
-  "hm_single_scene_sub": "Your lights will always display the same scene when you press the button",
-  "hm_brighten_sub": "Your lights will brighten incrementally each time you press the button",
-  "hm_dim_sub": "Your lights will dim incrementally each time you press the button until minimum brightness is reached",
-  "hm_lights_off_sub": "The lights turn off",
-  "hm_do_nothing_sub": "The press does nothing",
-  "hm_time_based_light_sub": "Your lights will mimic natural light based on the time of day or a custom schedule",
-  "hm_entire_home_off_sub": "All lights in your home turn off"
+  "zones": "zones"
 };
+
+/* The styles of the Spotify sync and sync box popups, added to the dashboard's page by the plugin (the dashboard's own styles are for its own parts). */
+var HUE_PLUS_CSS = ".hs-now{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:4px 0 var(--sp)}\n.hs-art{width:min(62%,248px);aspect-ratio:1;border-radius:var(--r-m);background:var(--f-raise);border:1px solid var(--f-line);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--ink2);position:relative}\n.hs-art svg{width:44px;height:44px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}\n.hs-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}\n.hs-art.has-art svg{visibility:hidden}\n.hs-st{margin-top:12px;font-size:var(--fs-xs);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}\n.hs-tt{font-size:19px;font-weight:600;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}\n.hs-sub{font-size:var(--fs-m);color:var(--ink2);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.hs-set{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-s);margin:var(--sp) 0}\n.hs-set.one{grid-template-columns:minmax(0,1fr)}\n.hs-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}\n.hs-cap{font-size:var(--fs-xs);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}\n.hs-tile{display:flex;align-items:center;justify-content:center;width:76px;height:50px;border-radius:25px;box-sizing:border-box;background:var(--f-card);border:1px solid var(--f-line);color:var(--ink);cursor:pointer;min-width:0;transition:background .2s}\n.hs-tile:active{background:var(--f-line)}\n.hs-tile.hs-grad{border-color:transparent}\n.hs-i{display:flex;align-items:center;justify-content:center}\n.hs-i svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}\n\n.hs-now,.hs-bar,.hs>.pill,.hs-col{transition:opacity .25s}\n.hs.bri-open .hs-now,.hs.bri-open .hs-bar,.hs.bri-open>.pill,.hs.bri-open .hs-col:not(:last-child){opacity:.25;pointer-events:none}\n.hs-bar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:var(--sp);padding:14px 12px;margin:var(--sp) 0;border-radius:var(--r-l)}\n.hs-side{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;text-align:center}\n.hs-btn{cursor:pointer}\n.hs-nm{font-size:var(--fs-s);color:var(--ink);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.hs-go{width:76px;height:76px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--f-raise);border:2px solid var(--f-line2);color:var(--ink);cursor:pointer;transition:background .2s,border-color .2s}\n.hs-go svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}\n.hs-go.on{background:color-mix(in srgb,var(--acc) 40%,var(--f-raise));border-color:var(--acc)}\n.hs-go.on svg{animation:hs-spin 14s linear infinite}\n@keyframes hs-spin{to{transform:rotate(360deg)}}\n@media(prefers-reduced-motion:reduce){.hs-go.on svg{animation:none}}\n.hs-tile:focus-visible,.hs-go:focus-visible,.hs-btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}\n.hs-off{opacity:.5;pointer-events:none}\n.hs-sw{width:54px;height:16px;border-radius:999px;flex:none;margin-left:auto;border:1px solid var(--f-line2)}\n.hs-sw+.ck{margin-left:10px}\n.lp-mode.hs-m svg{fill:none}";
 
 /* What Hue Plus offers, read from Home Assistant's registry and states (so a page shows only what exists): the bridge's entities, the lights, what belongs to one light, the
  updates, and the bridge's own data (a service that answers). It was the dashboard's `Integrations.hueplus`; now it is this plugin's. */
@@ -2794,6 +2853,1025 @@ HP_PAGES["hue-escene"] = ["hp_scene", "scene", hmEndScene];
 HP_PAGES["hue-motion"] = ["hm_motionaware_areas", "motion", hmMotion];
 HP_PAGES["hue-marea"] = ["motion_area", "motion", hmMotionArea];
 
+/* ---- Hue Spotify sync (the sync module of the Philips Hue Plus integration) ---- */
+
+var HUESYNC = {
+ /* What each of its entities is for. The registry's unique_id of an entity is "<bridge>_sync_<key>". */
+ keys:["sync","now_playing","brightness","light_delay","intensity","palette","style","area"],
+ keyOf:function(h,id){
+  var e=h.entities[id];
+  if(!e||e.platform!=="hue_plus"||!e.unique_id)return null;
+  return HUESYNC.keys.filter(function(k){var tail="_sync_"+k;return e.unique_id.length>tail.length&&e.unique_id.slice(-tail.length)===tail})[0]||null;
+ },
+ /* The entities of the bridge that owns entity `id`, as {sync, now_playing, brightness, light_delay, intensity, palette, style, area}
+  (a key is missing when that entity is disabled), or null when `id` is not a sync entity. */
+ entities:function(h,id){
+  var key=HUESYNC.keyOf(h,id);
+  if(!key)return null;
+  var uid=h.entities[id].unique_id,bridge=uid.slice(0,uid.length-key.length-6),out={};
+  Object.keys(h.entities).forEach(function(k){
+   var e=h.entities[k],kk=e.platform==="hue_plus"&&e.unique_id&&e.unique_id.indexOf(bridge+"_sync_")===0?HUESYNC.keyOf(h,k):null;
+   if(kk&&e.unique_id===bridge+"_sync_"+kk)out[kk]=k;
+  });
+  return out.sync?out:null;
+ },
+ isSync:function(h,id){return HUESYNC.keyOf(h,id)==="sync"}
+};
+
+/* ---- Hue Play HDMI Sync Box (an entry of the Philips Hue Plus integration) ---- */
+
+var HUESYNCBOX = {
+ /* What each of its entities is for. The registry's unique_id of an entity is "<box>_syncbox_<key>". */
+ keys:["sync","mode","source","intensity","brightness","hdmi_signal"],
+ keyOf:function(h,id){
+  var e=h.entities[id];
+  if(!e||e.platform!=="hue_plus"||!e.unique_id)return null;
+  var at=e.unique_id.indexOf("_syncbox_");
+  if(at<0)return null;
+  var key=e.unique_id.slice(at+9);
+  return HUESYNCBOX.keys.indexOf(key)>=0?key:null;
+ },
+ /* The entities of the box that owns entity `id`, as {sync, mode, source, intensity, brightness, hdmi_signal}, or null when `id` is not
+  an entity of a sync box (or the box has no sync switch). */
+ entities:function(h,id){
+  var key=HUESYNCBOX.keyOf(h,id);
+  if(!key)return null;
+  var uid=h.entities[id].unique_id,box=uid.slice(0,uid.indexOf("_syncbox_")),out={};
+  Object.keys(h.entities).forEach(function(k){
+   var e=h.entities[k],kk=e.platform==="hue_plus"&&e.unique_id&&e.unique_id.indexOf(box+"_syncbox_")===0?HUESYNCBOX.keyOf(h,k):null;
+   if(kk&&e.unique_id===box+"_syncbox_"+kk)out[kk]=k;
+  });
+  return out.sync?out:null;
+ },
+ isBox:function(h,id){return HUESYNCBOX.keyOf(h,id)==="sync"}
+};
+
+/* Spotify sync (the sync module of the Philips Hue Plus integration, Hue's music sync): its row, which looks like a light, its popup, laid out like the Hue app's Sync tab (what plays, four settings, the area and the button that starts and stops the sync), and which lights it plays on. A setting opens a popup over the main one, as the effect settings do over the lights popup, so that popup stays as it is underneath. */
+
+var HS_STYLE_ICON = { Classic: "eq", Pulse: "pulsebars" };
+var HS_WAVE = { auto: "sparkle", subtle: "wave1", moderate: "wave2", high: "wave3", extreme: "wave4" };
+
+/* The popups opened over the main one: key -> [title string, icon, builder]. */
+var HS_PICK = {
+  "hsync-style": ["style", "eq", hsStylePopup],
+  "hsync-intensity": ["intensity", "wave3", hsIntensityPopup],
+  "hsync-colour": ["colour", "palette", hsColourPopup],
+  "hsync-area": ["area", "lights", hsAreaPopup],
+  "hsync-delay": ["light_delay", "clock", hsDelayPopup],
+};
+
+function hsKnown(id) {
+  var v = V_(id);
+  return v !== "unknown" && v !== "unavailable" && v !== "";
+}
+
+function hsNumber(id) {
+  return hsKnown(id) && !isNaN(Number(V_(id))) ? Number(V_(id)) : null;
+}
+
+/* The colours of a palette as a CSS gradient, or "" for a palette without colours (Auto). */
+function hsGradient(rgbs) {
+  return rgbs && rgbs.length
+    ? "linear-gradient(90deg," +
+        rgbs
+          .map(function (c) {
+            return "rgb(" + c.join(",") + ")";
+          })
+          .join(",") +
+        ")"
+    : "";
+}
+
+function hsPick(E, key, option) {
+  call("select", "select_option", { entity_id: E[key], option: option });
+  closeLayer();
+}
+
+function hsOpenLayer(key, id) {
+  showPopup(key + ":" + id, false, true);
+}
+
+/* A control that is not a button element: it answers Enter and Space as a click does. */
+function hsPress(el, fn) {
+  el.tabIndex = 0;
+  el.addEventListener("click", fn);
+  el.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      fn();
+    }
+  });
+}
+
+/* ---- the row, and the lights it plays on ---- */
+
+/* The Spotify sync as a row of the Lights section: it looks and works like a light. The bar is the brightness, the icon starts and stops the sync (while it runs the icon shows the stop button, as while an effect plays), a tap or a press and hold opens the popup. */
+function hsyncRow(d) {
+  var id = d.id,
+    E = HUESYNC.entities(H(), id),
+    pk = "hsync:" + id,
+    icon = d.icon || "syncring";
+  if (!E)
+    return pill(icon, d.name, {
+      tap: function () {
+        showPopup(pk, true);
+      },
+    });
+  var r = mk("div", "pill pane slide");
+  r.innerHTML =
+    "<div class='fill'></div>" +
+    ic(icon) +
+    "<span class='tx'><span class='nm'></span><span class='sb'></span></span><span class='vl'></span>";
+  r.dataset.pin = JSON.stringify(pinPop(pk, id, d.name, icon));
+  r.querySelector(".nm").textContent = d.name;
+  var fill = r.querySelector(".fill"),
+    vl = r.querySelector(".vl"),
+    sb = r.querySelector(".sb"),
+    drag = false,
+    was = null,
+    liveT = 0,
+    liveAt = 0;
+  function pct() {
+    return isOn(id) ? hsNumber(E.brightness) || 0 : 0;
+  }
+  /* While dragging the brightness follows: at most one command every 150 ms, and the last position always arrives. */
+  function sendLive(p) {
+    var wait = liveAt + 150 - Date.now();
+    clearTimeout(liveT);
+    function go() {
+      liveAt = Date.now();
+      callLive("hs-bri", "number", "set_value", { entity_id: E.brightness, value: p });
+    }
+    if (wait <= 0) go();
+    else liveT = setTimeout(go, wait);
+  }
+  attachSlide(r, {
+    onMove: function (f) {
+      drag = true;
+      var p = Math.max(1, Math.round(f * 100));
+      fill.style.width = p + "%";
+      vl.textContent = p + "%";
+      inkRow(r, r._ink, p);
+      sendLive(p);
+    },
+    onCommit: function (f) {
+      var p = Math.max(1, Math.round(f * 100));
+      clearTimeout(liveT);
+      call("number", "set_value", { entity_id: E.brightness, value: p });
+      if (!isOn(id)) call("switch", "turn_on", { entity_id: id });
+      setTimeout(function () {
+        drag = false;
+      }, 800);
+    },
+    onCancel: function () {
+      drag = false;
+    },
+    onHold: function () {
+      showPopup(pk, true);
+    },
+    onTap: function (t) {
+      drag = false;
+      if (t && t.closest(".ic")) call("switch", isOn(id) ? "turn_off" : "turn_on", { entity_id: id });
+      else showPopup(pk, true);
+    },
+  });
+  r.refresh = function () {
+    var on = isOn(id),
+      i = r.querySelector(".ic"),
+      cc = on && pageFill();
+    i.classList.toggle("fx", on);
+    if (on && !i.querySelector(".ic-stop")) i.appendChild(mk("span", "ic-stop", "<i></i>"));
+    r.classList.toggle("on", on);
+    if (was !== null && on !== was) pop(r);
+    was = on;
+    r._ink = on ? cssToRgb(pageFill()) : null;
+    sb.textContent = on && hsKnown(E.now_playing) ? V_(E.now_playing) : "";
+    if (cc) {
+      fill.style.background =
+        "linear-gradient(180deg,color-mix(in srgb," + cc + " 88%,transparent),color-mix(in srgb," + cc + " 64%,transparent))";
+      fill.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.35)";
+    } else {
+      fill.style.background = "";
+      fill.style.boxShadow = "";
+    }
+    if (drag) return;
+    fill.style.width = pct() + "%";
+    vl.textContent = on ? pct() + "%" : V_(id) === "unavailable" ? _T("unavailable") : _T("off");
+    inkRow(r, r._ink, pct());
+  };
+  reg(r.refresh);
+  return r;
+}
+
+/* The Hue ids of the lights each running Spotify sync plays on (the lights of its area): [{sw, rids}]. Every light row asks, so it is rebuilt at most every 400 ms. */
+var HS_RUN = { at: 0, list: [] };
+
+function hsRunning() {
+  var now = Date.now();
+  if (now - HS_RUN.at < 400) return HS_RUN.list;
+  HS_RUN.at = now;
+  HS_RUN.list = [];
+  var h = H();
+  Object.keys(h.entities || {}).forEach(function (k) {
+    if (!HUESYNC.isSync(h, k) || !isOn(k)) return;
+    var E = HUESYNC.entities(h, k);
+    HS_RUN.list.push({ sw: k, rids: (E && E.area && A(E.area).light_ids) || [] });
+  });
+  return HS_RUN.list;
+}
+
+/* The id Hue knows a light by: a Hue light's own id, or the one a light made of zones (Hue gradient zones) is built on. */
+function hsLightRid(id) {
+  var e = (H().entities || {})[id];
+  return A(id).hue_light_id || (e && e.platform === "hue" && dom(id) === "light" ? e.unique_id : null);
+}
+
+/* The Spotify sync switch that plays on light `id` (the light itself, or any member of a group), or "". */
+function lightSyncPlays(id, seen) {
+  var run = hsRunning();
+  if (!run.length) return "";
+  var rid = hsLightRid(id),
+    hit = rid
+      ? run.filter(function (x) {
+          return x.rids.indexOf(rid) >= 0;
+        })[0]
+      : null;
+  if (hit) return hit.sw;
+  seen = seen || {};
+  seen[id] = 1;
+  var found = "";
+  lightMembers(id).forEach(function (m) {
+    if (!found && !seen[m]) found = lightSyncPlays(m, seen);
+  });
+  return found;
+}
+
+/* The brightness the Spotify sync `sw` plays at, for a light row that shows it. */
+function hsyncPct(sw) {
+  var E = HUESYNC.entities(H(), sw);
+  return (E && hsNumber(E.brightness)) || 0;
+}
+
+/* ---- the popup ---- */
+
+/* The cover comes from Spotify's own image servers; anything else is not shown. */
+var HS_ART_OK = /^https:\/\/[a-z0-9.-]+\.scdn\.co\//;
+
+function hsArt(box, url) {
+  var want = url && HS_ART_OK.test(url) ? url : "";
+  if (box.dataset.art === want) return;
+  box.dataset.art = want;
+  var img = box.querySelector("img");
+  if (img) img.remove();
+  box.classList.toggle("has-art", !!want);
+  if (!want) return;
+  img = mk("img");
+  img.alt = "";
+  img.referrerPolicy = "no-referrer";
+  img.addEventListener("error", function () {
+    img.remove();
+    box.classList.remove("has-art");
+  });
+  img.src = want;
+  box.appendChild(img);
+}
+
+function hsNow(E) {
+  var box = mk("div", "hs-now"),
+    art = mk("div", "hs-art", svg("note")),
+    st = mk("div", "hs-st"),
+    tt = mk("div", "hs-tt"),
+    sub = mk("div", "hs-sub");
+  [art, st, tt, sub].forEach(function (el) {
+    box.appendChild(el);
+  });
+  reg(function () {
+    var a = A(E.now_playing),
+      has = hsKnown(E.now_playing);
+    st.textContent =
+      V_(E.sync) === "unavailable"
+        ? _T("unavailable")
+        : !has
+          ? _T("nothing_playing")
+          : a.is_playing === true
+            ? _T("playing")
+            : a.is_playing === false
+              ? _T("paused")
+              : "";
+    tt.textContent = has ? V_(E.now_playing) : "";
+    sub.textContent = has
+      ? [(a.artists || []).join(", "), a.album].filter(Boolean).join(" • ")
+      : "";
+    tt.style.display = sub.style.display = has ? "" : "none";
+    hsArt(art, has ? a.album_art_url : "");
+  });
+  return box;
+}
+
+/* One of the settings: a caption over a round-ended button that opens its popup. `paint(button, icon)` fills it and returns what it shows in words, for screen readers. */
+function hsTile(caption, key, id, paint) {
+  var col = mk("div", "hs-col"),
+    t = mk("div", "hs-tile", "<span class='hs-i'></span>"),
+    i = t.querySelector(".hs-i");
+  col.appendChild(mk("div", "hs-cap")).textContent = caption;
+  t.setAttribute("role", "button");
+  hsPress(t, function () {
+    hsOpenLayer(key, id);
+  });
+  reg(function () {
+    var words = paint(t, i);
+    t.setAttribute("aria-label", caption + ": " + words);
+    t.title = words;
+  });
+  col.appendChild(t);
+  return col;
+}
+
+/* Style, intensity and colour open a popup each; brightness is the button of the light popup, with its slider that rises from it. `root` is dimmed while that slider is open. */
+function hsSettings(id, E, root) {
+  var g = mk("div", "hs-set");
+  g.appendChild(
+    hsTile(_T("style"), "hsync-style", id, function (t, i) {
+      var s = V_(E.style);
+      i.innerHTML = svg(HS_STYLE_ICON[s] || "eq");
+      return hsKnown(E.style) ? s : "–";
+    })
+  );
+  g.appendChild(
+    hsTile(_T("intensity"), "hsync-intensity", id, function (t, i) {
+      var s = V_(E.intensity);
+      i.innerHTML = svg(HS_WAVE[s] || "wave3");
+      return hsKnown(E.intensity) ? cap(s) : "–";
+    })
+  );
+  g.appendChild(
+    hsTile(_T("colour"), "hsync-colour", id, function (t, i) {
+      var s = V_(E.palette),
+        grad = hsGradient((A(E.palette).colors || {})[s] || []);
+      t.style.background = grad;
+      t.classList.toggle("hs-grad", !!grad);
+      i.innerHTML = grad ? "" : svg("sparkle");
+      return hsKnown(E.palette) ? cap(s) : "–";
+    })
+  );
+  var col = mk("div", "hs-col");
+  col.appendChild(mk("div", "hs-cap")).textContent = _T("brightness");
+  col.appendChild(
+    briControl({
+      pct: function () {
+        return hsNumber(E.brightness) || 0;
+      },
+      lit: function () {
+        return isOn(E.sync);
+      },
+      live: function (v) {
+        callLive("hs-bri", "number", "set_value", { entity_id: E.brightness, value: Math.max(1, v) });
+      },
+      commit: function (v) {
+        call("number", "set_value", { entity_id: E.brightness, value: Math.max(1, v) });
+      },
+      stage: function () {
+        return root;
+      },
+    })
+  );
+  g.appendChild(col);
+  return g;
+}
+
+/* The bar at the bottom, as in the Hue app: where the music plays, the button that starts and stops the sync, and the area. */
+function hsBar(id, E) {
+  var bar = mk("div", "hs-bar pane"),
+    left = mk("div", "hs-side"),
+    right = mk("div", "hs-side hs-btn"),
+    go = mk("div", "hs-go", svg("syncring")),
+    dev = mk("div", "hs-nm"),
+    area = mk("div", "hs-nm");
+  left.innerHTML = ic("speaker");
+  left.appendChild(mk("div", "hs-cap")).textContent = _T("playing_on");
+  left.appendChild(dev);
+  right.innerHTML = ic("lights");
+  right.appendChild(mk("div", "hs-cap")).textContent = _T("area");
+  right.appendChild(area);
+  right.setAttribute("role", "button");
+  hsPress(right, function () {
+    hsOpenLayer("hsync-area", id);
+  });
+  go.setAttribute("role", "switch");
+  go.setAttribute("aria-label", _T("spotify_sync"));
+  hsPress(go, function () {
+    call("switch", isOn(E.sync) ? "turn_off" : "turn_on", { entity_id: E.sync });
+  });
+  var was = null;
+  reg(function () {
+    var on = isOn(E.sync);
+    go.classList.toggle("on", on);
+    go.setAttribute("aria-checked", on ? "true" : "false");
+    if (was !== null && on !== was) pop(go);
+    was = on;
+    dev.textContent = A(E.now_playing).playback_device || "–";
+    area.textContent = hsKnown(E.area) ? V_(E.area) : "–";
+  });
+  bar.appendChild(left);
+  bar.appendChild(go);
+  bar.appendChild(right);
+  return bar;
+}
+
+function hsyncPopup(b, id) {
+  var E = HUESYNC.entities(H(), id);
+  if (!E) {
+    b.appendChild(pill("info", _T("nothing_found"), {}));
+    return;
+  }
+  var root = mk("div", "hs");
+  b.appendChild(root);
+  root.appendChild(hsNow(E));
+  root.appendChild(hsSettings(id, E, root));
+  root.appendChild(hsBar(id, E));
+  if (E.light_delay)
+    root.appendChild(
+      pill("clock", _T("light_delay"), {
+        val: function () {
+          var n = hsNumber(E.light_delay);
+          return n === null ? "–" : n + " s";
+        },
+        tap: function () {
+          hsOpenLayer("hsync-delay", id);
+        },
+      })
+    );
+  reg(function () {
+    root.classList.toggle("hs-off", V_(E.sync) === "unavailable");
+  });
+}
+
+/* ---- the popups over the main one ---- */
+
+function hsEnts(id) {
+  return HUESYNC.entities(H(), id) || {};
+}
+
+function hsStylePopup(b, id) {
+  var E = hsEnts(id),
+    g = mk("div", "gridl g2 lp-modes"),
+    tiles = {};
+  (A(E.style).options || []).forEach(function (name) {
+    var el = mk("div", "lp-mode hs-m", svg(HS_STYLE_ICON[name] || "eq"));
+    el.appendChild(mk("div", "lp-mode-n")).textContent = name;
+    el.setAttribute("role", "button");
+    hsPress(el, function () {
+      hsPick(E, "style", name);
+    });
+    tiles[name] = el;
+    g.appendChild(el);
+  });
+  b.appendChild(g);
+  reg(function () {
+    Object.keys(tiles).forEach(function (name) {
+      tiles[name].classList.toggle("picked", V_(E.style) === name);
+    });
+  });
+}
+
+/* One row for each option of a select entity, the chosen one checked; choosing sends it and closes this popup. */
+function hsChoice(b, id, key, icon, label) {
+  var E = hsEnts(id);
+  (A(E[key]).options || []).forEach(function (name) {
+    var row = pill(icon(name), label(name), {
+      check: function () {
+        return V_(E[key]) === name;
+      },
+      tap: function () {
+        hsPick(E, key, name);
+      },
+    });
+    b.appendChild(row);
+    var grad = key === "palette" ? hsGradient((A(E.palette).colors || {})[name] || []) : "";
+    if (grad) {
+      var sw = mk("span", "hs-sw");
+      sw.style.background = grad;
+      row.insertBefore(sw, row.querySelector(".ck"));
+    }
+  });
+}
+
+function hsIntensityPopup(b, id) {
+  hsChoice(
+    b,
+    id,
+    "intensity",
+    function (n) {
+      return HS_WAVE[n] || "wave3";
+    },
+    cap
+  );
+}
+
+function hsColourPopup(b, id) {
+  hsChoice(
+    b,
+    id,
+    "palette",
+    function (n) {
+      return n === "auto" ? "sparkle" : "palette";
+    },
+    cap
+  );
+}
+
+function hsAreaPopup(b, id) {
+  hsChoice(
+    b,
+    id,
+    "area",
+    function () {
+      return "lights";
+    },
+    function (n) {
+      return n;
+    }
+  );
+}
+
+function hsDelayPopup(b, id) {
+  var E = hsEnts(id);
+  b.appendChild(
+    sliderRow({
+      icon: "clock",
+      name: _T("light_delay"),
+      min: 0,
+      max: 10,
+      step: 1,
+      off: "–",
+      get: function () {
+        return hsNumber(E.light_delay);
+      },
+      fmt: function (v) {
+        return v + " s";
+      },
+      on: function () {
+        return true;
+      },
+      commit: function (v) {
+        call("number", "set_value", { entity_id: E.light_delay, value: v });
+      },
+    })
+  );
+}
+
+/* Hue Play HDMI Sync Box (an entry of the Philips Hue Plus integration): its row, which looks like a light, and its popup. Built from the shared controls only. */
+
+/* The brightness of the box runs from 0 to 200, where 100 is the normal brightness of the lights. */
+var HB_MAX = 200;
+
+function hbNumber(id) {
+  var v = V_(id);
+  return v !== "unknown" && v !== "unavailable" && v !== "" && !isNaN(Number(v)) ? Number(v) : null;
+}
+
+function hbBrightness(E, name, icon, onTap) {
+  return sliderRow({
+    onTap: onTap,
+    name: name,
+    icon: icon,
+    min: 0,
+    max: HB_MAX,
+    step: 1,
+    fmt: function (v) {
+      return v + "%";
+    },
+    get: function () {
+      return hbNumber(E.brightness);
+    },
+    on: function () {
+      return isOn(E.sync);
+    },
+    live: function (v) {
+      callLive("hb-bri", "number", "set_value", { entity_id: E.brightness, value: v });
+    },
+    commit: function (v) {
+      call("number", "set_value", { entity_id: E.brightness, value: v });
+    },
+  });
+}
+
+/* The box as a row of the Lights section. The bar is the brightness, the icon starts and stops the sync, the rest of the row opens the popup. */
+function hsboxRow(d) {
+  var id = d.id,
+    E = HUESYNCBOX.entities(H(), id),
+    pk = "hsbox:" + id,
+    icon = d.icon || "syncring";
+  if (!E)
+    return pill(icon, d.name, {
+      tap: function () {
+        showPopup(pk, true);
+      },
+    });
+  var r = hbBrightness(E, d.name, icon, function (t) {
+    if (t && t.closest && t.closest(".ic")) toggleEnt(id);
+    else showPopup(pk, true);
+  });
+  r.dataset.pin = JSON.stringify(pinPop(pk, id, d.name, icon));
+  return r;
+}
+
+function hsboxSelect(E, key, label, icon) {
+  var t = dropRow(
+    label,
+    function () {
+      return A(E[key]).options || [];
+    },
+    function () {
+      return V_(E[key]);
+    },
+    function (v) {
+      call("select", "select_option", { entity_id: E[key], option: v });
+    },
+    icon
+  );
+  return t;
+}
+
+/* The brightness of the box in the popup: the button of the light popup with the slider that rises from it, as on the Spotify sync. The slider is in percent of the box's range (0 to 200, where the middle is the normal brightness of the lights), and the number it shows is the box's own. */
+function hbBrightnessButton(E, root) {
+  var g = mk("div", "hs-set one"),
+    col = mk("div", "hs-col");
+  function toBox(v) {
+    return Math.round((v * HB_MAX) / 100);
+  }
+  col.appendChild(mk("div", "hs-cap")).textContent = _T("brightness");
+  col.appendChild(
+    briControl({
+      pct: function () {
+        return Math.round(((hbNumber(E.brightness) || 0) * 100) / HB_MAX);
+      },
+      lit: function () {
+        return isOn(E.sync);
+      },
+      fmt: function (v) {
+        return toBox(v) + "%";
+      },
+      live: function (v) {
+        callLive("hb-bri", "number", "set_value", { entity_id: E.brightness, value: toBox(v) });
+      },
+      commit: function (v) {
+        call("number", "set_value", { entity_id: E.brightness, value: toBox(v) });
+      },
+      stage: function () {
+        return root;
+      },
+    })
+  );
+  g.appendChild(col);
+  return g;
+}
+
+function hsboxPopup(b, id) {
+  var E = HUESYNCBOX.entities(H(), id);
+  if (!E) {
+    b.appendChild(pill("info", _T("nothing_found"), {}));
+    return;
+  }
+  /* `hs` is what dims the rest of the popup while the brightness slider is open. */
+  var root = mk("div", "hs");
+  b.appendChild(root);
+  root.appendChild(switchPill("syncring", _T("sync"), E.sync));
+  root.appendChild(hsboxSelect(E, "mode", _T("mode"), "tv"));
+  root.appendChild(hsboxSelect(E, "source", _T("hdmi_input"), "plug"));
+  /* The box keeps an intensity for video, game and music only, so there is nothing to choose in the other modes. */
+  var intensity = hsboxSelect(E, "intensity", _T("intensity"), "wave3");
+  root.appendChild(intensity);
+  reg(function () {
+    intensity.style.display = V_(E.intensity) === "unavailable" ? "none" : "";
+  });
+  root.appendChild(hbBrightnessButton(E, root));
+  root.appendChild(
+    pill("tv", _T("hdmi_signal"), {
+      val: function () {
+        return isOn(E.hdmi_signal) ? _T("on_2") : _T("off");
+      },
+    })
+  );
+}
+
+/* Hue scenes (the scene entities of the Hue integration and of Hue Plus): playing one live at a speed, freezing it, its popup, reading its colours from the bridge to
+ import it as a live scene, and the room's scenes in the light panel. A scene kind and a scene import source registered with the dashboard (see epilogue.js). */
+
+var HUESCENES = {
+ /* Philips Hue: a scene entity says nothing about being on, but the room has a "Scene" select entity (same device) whose state is the name of the scene that is on. */
+ /* Hue Plus runs the Hue integration's scenes itself (platform hue_plus), with the same attributes, and its own activate_scene service. */
+ isHue:function(h,id){var e=h.entities[id];return id.indexOf("scene.")===0&&!!e&&(e.platform==="hue"||e.platform==="hue_plus")},
+ /* The light that stands for the whole room of a Hue scene: the Hue group light on the same device. Its "dynamics" attribute says whether a live scene is playing. */
+ group:function(h,id){
+  var e=h.entities[id];
+  if(!e||!e.device_id)return null;
+  return Object.keys(h.states).filter(function(k){var x=h.entities[k];return k.indexOf("light.")===0&&x&&x.device_id===e.device_id&&h.states[k].attributes.is_hue_group})[0]||null;
+ },
+ /* The service call that starts a scene live, at a speed (0 to 100) and brightness (1 to 255). It is the only way to change a scene's speed; dynamic:false does not stop a live scene. */
+ start:function(h,id,speed,brightness){
+  return[h.entities[id].platform==="hue_plus"?"hue_plus":"hue","activate_scene",{entity_id:id,dynamic:true,speed:Math.max(0,Math.min(100,Math.round(speed))),brightness:Math.max(1,Math.min(255,Math.round(brightness)))}];
+ },
+ /* The Hue app sets a scene's speed in 12 steps. The service takes 0 to 100, so step 1 is 0 and step 12 is 100. */
+ speedSteps:12,
+ stepToSpeed:function(step){return Math.round((step-1)/(this.speedSteps-1)*100)},
+ speedToStep:function(speed){return Math.max(1,Math.min(this.speedSteps,Math.round(speed/100*(this.speedSteps-1))+1))},
+ /* Each Hue light reports "dynamic_palette" in its dynamics attribute while a live scene plays on it (an off light keeps the word). */
+ playing:function(h,grp){
+  return !!grp&&(h.states[grp].attributes.entity_id||[]).some(function(m){var s=h.states[m];return s&&s.state==="on"&&s.attributes.dynamics==="dynamic_palette"});
+ },
+ /* Freezing a live scene: every light that is on is told the colour and brightness it shows right now, as a plain command. Hue then stops animating it. Returns service calls as [domain, service, data]. */
+ freeze:function(h,grp){
+  var out=[];
+  (h.states[grp].attributes.entity_id||[]).forEach(function(m){
+   var s=h.states[m];
+   if(!s||s.state!=="on")return;
+   var a=s.attributes,d={entity_id:m,transition:0};
+   if(a.brightness)d.brightness=a.brightness;
+   if(a.color_mode==="color_temp"&&a.color_temp_kelvin)d.color_temp_kelvin=a.color_temp_kelvin;
+   else if(a.xy_color)d.xy_color=a.xy_color;
+   else if(a.hs_color)d.hs_color=a.hs_color;
+   out.push(["light","turn_on",d]);
+  });
+  return out;
+ },
+ active:function(h,id){
+  var nm=h.states[id]&&h.states[id].attributes.name,e=h.entities[id];
+  if(!nm||!e||(e.platform!=="hue"&&e.platform!=="hue_plus")||!e.device_id)return false;
+  return Object.keys(h.states).some(function(k){
+   var se=h.entities[k];
+   return k.indexOf("select.")===0&&se&&se.platform===e.platform&&se.device_id===e.device_id&&(h.states[k].attributes.options||[]).indexOf(nm)>=0&&h.states[k].state===nm;
+  });
+ }
+};
+
+/* The Hue live scenes of the home: the ones that can be imported, by room. */
+function hueLiveScenes() {
+  var h = H();
+  return Object.keys(h.states)
+    .filter(function (id) {
+      return HUESCENES.isHue(h, id) && A(id).is_dynamic !== false;
+    })
+    .sort(function (x, y) {
+      return (
+        String(A(x).group_name || "").localeCompare(String(A(y).group_name || "")) ||
+        String(A(x).name || x).localeCompare(String(A(y).name || y))
+      );
+    });
+}
+
+/* Reading a Hue scene from the bridge, to import it, is a service of Hue Plus. */
+function hueImportable() {
+  var s = H().services;
+  return !!(s && s.hue_plus && s.hue_plus.import_hue_scene);
+}
+
+/* The colours of a Hue scene, read once from the bridge, as CSS colours for the light panel's scene tiles. */
+var LP_SCENEPAL = {};
+
+function hueScenePalette(id, done) {
+  if (LP_SCENEPAL[id]) return done(LP_SCENEPAL[id]);
+  if (!hueImportable()) return;
+  serviceResponse("hue_plus", "import_hue_scene", { entity_id: id })
+    .then(function (r) {
+      if (!r || !r.palette || !r.palette.length) return;
+      LP_SCENEPAL[id] = r.palette.map(function (c) {
+        return cssRgb(c.k ? kelvinRgb(c.k) : liveXyRgb(c.xy[0], c.xy[1]));
+      });
+      done(LP_SCENEPAL[id]);
+    })
+    .catch(function () {});
+}
+
+/* Speed and brightness a Hue scene is started with, kept on this device. */
+function hueSceneSet(id) {
+  var s = deviceGet("db_hsc_" + id, {});
+  return {
+    speed: typeof s.speed === "number" ? s.speed : Math.round((A(id).speed || 0.5) * 100),
+    bri: typeof s.bri === "number" ? s.bri : Math.round((A(id).brightness || 255) / 2.55),
+  };
+}
+
+function hueSceneSave(id, st) {
+  deviceSet("db_hsc_" + id, st);
+}
+
+/* The room's Hue group light of the scene that was frozen last, so the Freeze button can show it. */
+var HFROZEN = {};
+
+/* Starts the scene live with the saved speed, keeping the brightness the room has now. */
+function hueSceneStart(id) {
+  var st = hueSceneSet(id),
+    grp = HUESCENES.group(H(), id),
+    bri = grp && V_(grp) === "on" ? (A(grp).brightness || 0) / 2.55 : st.bri;
+  if (grp) {
+    delete HFROZEN[grp];
+    liveStopOn([grp]);
+  }
+  var c = HUESCENES.start(H(), id, st.speed, Math.max(1, bri) * 2.55);
+  call(c[0], c[1], c[2]);
+}
+
+/* Freezes the scene where it is: the lights keep the colours they show now. */
+function hueSceneFreeze(id) {
+  var grp = HUESCENES.group(H(), id);
+  if (!grp || V_(grp) !== "on") return;
+  HUESCENES.freeze(H(), grp).forEach(function (c) {
+    call(c[0], c[1], c[2]);
+  });
+  HFROZEN[grp] = id;
+}
+
+function hueSceneToggle(id) {
+  var grp = HUESCENES.group(H(), id);
+  if (HUESCENES.active(H(), id)) {
+    if (grp) call("light", "turn_off", { entity_id: grp });
+  } else hueSceneStart(id);
+}
+
+/* The popup of a Hue scene: brightness (follows the room live), speed (starts the scene again at the new speed), play (live) and freeze (a still picture). */
+function hueScenePopup(b, id, room) {
+  var P = HUESCENES;
+  function grp() {
+    return P.group(H(), id);
+  }
+  function playing() {
+    return P.active(H(), id) && P.playing(H(), grp());
+  }
+  function live() {
+    var g = grp();
+    return P.active(H(), id) && !!g && V_(g) === "on";
+  }
+  b.appendChild(
+    sliderRow({
+      icon: "bright",
+      name: _T("brightness"),
+      min: 1,
+      max: 100,
+      step: 1,
+      get: function () {
+        var g = grp();
+        return g && V_(g) === "on" ? Math.max(1, Math.round((A(g).brightness || 0) / 2.55)) : hueSceneSet(id).bri;
+      },
+      fmt: function (v) {
+        return v + "%";
+      },
+      on: function () {
+        return P.active(H(), id);
+      },
+      live: function (v) {
+        if (live()) callLive(grp(), "light", "turn_on", { entity_id: grp(), brightness_pct: v });
+      },
+      commit: function (v) {
+        var st = hueSceneSet(id);
+        st.bri = v;
+        hueSceneSave(id, st);
+        if (live()) call("light", "turn_on", { entity_id: grp(), brightness_pct: v });
+      },
+    })
+  );
+  b.appendChild(
+    sliderRow({
+      icon: "tune",
+      name: _T("speed"),
+      min: 1,
+      max: P.speedSteps,
+      step: 1,
+      get: function () {
+        return P.speedToStep(hueSceneSet(id).speed);
+      },
+      fmt: function (v) {
+        return v + " / " + P.speedSteps;
+      },
+      on: function () {
+        return P.active(H(), id);
+      },
+      commit: function (v) {
+        var st = hueSceneSet(id);
+        st.speed = P.stepToSpeed(v);
+        hueSceneSave(id, st);
+        if (playing()) hueSceneStart(id);
+      },
+    })
+  );
+  var g2 = mk("div", "gridl g2");
+  g2.appendChild(
+    pill("play", _T("play"), {
+      on: playing,
+      tap: function () {
+        hueSceneStart(id);
+      },
+    })
+  );
+  g2.appendChild(
+    pill("pause", _T("freeze"), {
+      on: function () {
+        var g = grp();
+        return !!g && HFROZEN[g] === id && V_(g) === "on" && !P.playing(H(), g);
+      },
+      tap: function () {
+        hueSceneFreeze(id);
+      },
+    })
+  );
+  b.appendChild(g2);
+  if (isAdmin() && hueImportable())
+    b.appendChild(
+      pill("palette", _T("import_as_a_live_scene"), {
+        sub: function () {
+          return _T("a_copy_you_can_edit_and_place_on_your_lights");
+        },
+        tap: function () {
+          importLiveScene("hue", id);
+        },
+      })
+    );
+  if (isEditing() && room)
+    b.appendChild(
+      pill("eye", sceneEntHidden(room, id) ? _T("show_this_scene") : _T("hide_this_scene"), {
+        sub: function () {
+          return sceneEntHidden(room, id) ? _T("hidden") : _T("visible");
+        },
+        tap: function () {
+          sceneEntSetHidden(room, id, !sceneEntHidden(room, id));
+          closeSheet();
+        },
+      })
+    );
+}
+
+/* The styles of a Hue light made of zones (a gradient tube or strip), as in the Hue app: pins with a smooth blend (Linear, Mirrored) or colours of their own
+ (Scattered, Segmented). The dashboard shows a Style button on a light panel when a registered light style applies to the light (see epilogue.js). */
+
+/* Whether the light has styles to choose: Hue Plus lists them in the light's gradient_modes. */
+function hueStyleApplies(id) {
+  return !!A(id).gradient_modes;
+}
+
+/* Whether the zones are blended into a line (the Linear and Mirrored styles); in Scattered and Segmented every zone is a colour of its own. */
+function hueStyleBlends(id) {
+  var m = A(id).gradient_mode;
+  return !m || m === "interpolated_palette" || m === "interpolated_palette_mirrored";
+}
+
+/* The styles of a light made of zones, as in the Hue app: pins with a smooth blend (Linear, Mirrored) or colours of their own (Scattered, Segmented). */
+var LP_STYLES = [
+  ["interpolated_palette", "linear", "<circle cx='5' cy='8' r='2.4'/><circle cx='12' cy='8' r='2.4'/><circle cx='19' cy='8' r='2.4'/><path d='M3 16h18'/>"],
+  ["interpolated_palette_mirrored", "mirrored", "<circle cx='6' cy='8' r='2.4'/><circle cx='18' cy='8' r='2.4'/><path d='M12 3v16M3 16h18'/>"],
+  ["random_pixelated", "scattered", "<circle cx='5' cy='11' r='2.4'/><circle cx='12' cy='6' r='2.4'/><circle cx='19' cy='12' r='2.4'/>"],
+  ["segmented_palette", "segmented", "<circle cx='5' cy='8' r='2.4'/><circle cx='12' cy='8' r='2.4'/><circle cx='19' cy='8' r='2.4'/><path d='M3 16h4M10 16h4M17 16h4'/>"],
+];
+
+function lpStyleIcon(mode) {
+  var s = LP_STYLES.filter(function (x) {
+    return x[0] === mode;
+  })[0];
+  return "<svg viewBox='0 0 24 24'>" + (s ? s[2] : LP_STYLES[0][2]) + "</svg>";
+}
+
+/* The popup of the style button. Tapping a style changes the light at once; the orientation turns the zones around (Linear and Mirrored). */
+function lpStylePopup(b, id) {
+  var box = mk("div"),
+    tiles = {};
+  b.appendChild(sep(_T("mode"), "palette"));
+  var g = mk("div", "gridl g2 lp-modes");
+  LP_STYLES.forEach(function (s) {
+    var el = mk("div", "lp-mode", "<svg viewBox='0 0 24 24'>" + s[2] + "</svg>");
+    el.appendChild(mk("div", "lp-mode-n")).textContent = _T(s[1]);
+    el.setAttribute("role", "button");
+    el.addEventListener("click", function () {
+      call("hue_plus", "set_style", { light: A(id).hue_light_id, style: s[1] });
+    });
+    tiles[s[0]] = el;
+    g.appendChild(el);
+  });
+  b.appendChild(g);
+  b.appendChild(box);
+  function paint() {
+    var mode = A(id).gradient_mode,
+      offered = A(id).gradient_modes || [];
+    Object.keys(tiles).forEach(function (k) {
+      tiles[k].classList.toggle("picked", k === mode);
+      tiles[k].style.display = offered.indexOf(k) < 0 ? "none" : "";
+    });
+    box.innerHTML = "";
+    if (mode === "interpolated_palette" || mode === "interpolated_palette_mirrored") {
+      box.appendChild(sep(_T("orientation"), "swap"));
+      box.appendChild(
+        pill("swap", _T("turn_the_colours_around"), {
+          tap: function () {
+            call("hue_plus", "set_style", { light: A(id).hue_light_id, flip: true });
+          },
+        })
+      );
+    }
+  }
+  paint();
+  reg(function () {
+    if (b.isConnected) paint();
+  });
+}
+
 
   /* Registration with the dashboard. */
   HC.addStrings(PLUGIN_STRINGS);
@@ -2811,6 +3889,106 @@ HP_PAGES["hue-marea"] = ["motion_area", "motion", hmMotionArea];
     visible: hpShown,
     keywords: "hue plus bridge firmware updates zigbee matter routines automations entertainment motion lights",
   });
+  /* The Spotify sync and the Hue Play HDMI Sync Box: rows of the Lights section that look like lights, their popups, and what plays on a light. */
+  HC.addStyles(HUE_PLUS_CSS);
+  HC.registerPage("hsync", "spotify_sync", "syncring", function (body, id) {
+    hsyncPopup(body, id);
+  });
+  HC.registerPage("hsbox", "hue_play_hdmi_sync_box", "syncring", function (body, id) {
+    hsboxPopup(body, id);
+  });
+  Object.keys(HS_PICK).forEach(function (key) {
+    HC.registerPage(key, HS_PICK[key][0], HS_PICK[key][1], HS_PICK[key][2]);
+  });
+  HC.registerDeviceKind({
+    match: function (id) {
+      return HUESYNC.isSync(H(), id);
+    },
+    pop: "hsync",
+    icon: "syncring",
+    search: "light",
+    row: hsyncRow,
+  });
+  HC.registerDeviceKind({
+    match: function (id) {
+      return HUESYNCBOX.isBox(H(), id);
+    },
+    pop: "hsbox",
+    icon: "syncring",
+    search: "light",
+    row: hsboxRow,
+  });
+  HC.registerPlayback({
+    plays: function (id) {
+      var sw = lightSyncPlays(id);
+      return sw
+        ? {
+            entity: sw,
+            label: _T("spotify_sync"),
+            pct: function () {
+              return hsyncPct(sw);
+            },
+          }
+        : null;
+    },
+  });
+
+  /* Hue's scenes: the room's scene rows, their popup, the scene tiles of the light panel, and importing one as a live scene. */
+  HC.registerPage(
+    "hue-scene",
+    function (id) {
+      return A(id.split("~")[0]).name || A(id.split("~")[0]).friendly_name || _T("scenes");
+    },
+    "palette",
+    function (body, id) {
+      var q = id.split("~");
+      hueScenePopup(body, q[0], q[1] ? roomById(q[1]) : null);
+    }
+  );
+  HC.registerSceneKind({
+    match: function (id) {
+      return HUESCENES.isHue(H(), id);
+    },
+    icon: "palette",
+    popup: "hue-scene",
+    active: function (id) {
+      return HUESCENES.active(H(), id);
+    },
+    toggle: hueSceneToggle,
+    start: hueSceneStart,
+    dynamic: function (id) {
+      return A(id).is_dynamic !== false;
+    },
+    palette: hueScenePalette,
+  });
+  HC.registerSceneImport({
+    id: "hue",
+    title: "import_a_live_scene_from_hue",
+    sub: "copies_its_colours_and_speed",
+    unavailable: "importing_a_hue_scene_needs_hue_plus",
+    empty: "no_hue_scenes_found",
+    failed: "couldn_t_read_that_scene_from_the_hue_bridge",
+    available: hueImportable,
+    list: function () {
+      return hueLiveScenes().map(function (id) {
+        return { id: id, name: A(id).name || id, group: A(id).group_name || "" };
+      });
+    },
+    read: function (id) {
+      return serviceResponse("hue_plus", "import_hue_scene", { entity_id: id });
+    },
+  });
+
+  /* The styles of a Hue light made of zones. */
+  HC.registerLightStyle({
+    applies: hueStyleApplies,
+    blends: hueStyleBlends,
+    icon: function (id) {
+      return lpStyleIcon(A(id).gradient_mode);
+    },
+    popup: lpStylePopup,
+  });
+
   HC.registerAreaHooks("hue_plus", {
     importRow: hpAreaImport,
     actions: hpAreaActions,

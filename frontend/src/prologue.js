@@ -29,11 +29,44 @@
     _T = HC.t,
     eaRoomLights = HC.areas.roomLights,
     eaClamp = HC.areas.clamp,
-    eaIdentifyOff = HC.areas.identifyOff;
+    eaIdentifyOff = HC.areas.identifyOff,
+    attachSlide = HC.ui.attachSlide,
+    briControl = HC.ui.briControl,
+    callLive = HC.ui.callLive,
+    cap = HC.ui.cap,
+    closeSheet = HC.ui.closeSheet,
+    cssRgb = HC.ui.cssRgb,
+    cssToRgb = HC.ui.cssToRgb,
+    deviceGet = HC.ui.deviceGet,
+    deviceSet = HC.ui.deviceSet,
+    dom = HC.ui.dom,
+    dropRow = HC.ui.dropRow,
+    ic = HC.ui.ic,
+    inkRow = HC.ui.inkRow,
+    kelvinRgb = HC.ui.kelvinRgb,
+    lightMembers = HC.ui.lightMembers,
+    liveStopOn = HC.ui.liveStopOn,
+    liveXyRgb = HC.ui.liveXyRgb,
+    pinPop = HC.ui.pinPop,
+    pop = HC.ui.pop,
+    sep = HC.ui.sep,
+    sliderRow = HC.ui.sliderRow,
+    switchPill = HC.ui.switchPill,
+    roomById = HC.room,
+    serviceResponse = HC.serviceResponse,
+    sceneEntHidden = HC.scenes.hidden,
+    sceneEntSetHidden = HC.scenes.setHidden,
+    importLiveScene = HC.scenes.importFrom;
 
   /* What the dashboard keeps in variables is read when it is needed. */
   function isAdmin() {
     return HC.isAdmin;
+  }
+  function isEditing() {
+    return HC.editing();
+  }
+  function pageFill() {
+    return HC.ui.pageFill;
   }
   function currentSheet() {
     return HC.sheet;
