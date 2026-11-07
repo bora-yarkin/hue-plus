@@ -12,7 +12,19 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SOURCES = ROOT / "frontend" / "src"  # not shipped
 BUILT = ROOT / "custom_components" / "hue_plus" / "frontend" / "menu.js"  # the only file the integration serves
-ORDER = ("prologue.js", "strings.js", "huecss.js", "adapter.js", "hmdraft.js", "hueplus.js", "huemenu.js", "huesync.js", "huescenes.js", "huestyle.js", "epilogue.js")
+ORDER = (
+    "prologue.js",
+    "strings.js",
+    "huecss.js",
+    "adapter.js",
+    "hmdraft.js",
+    "hueplus.js",
+    "huemenu.js",
+    "huesync.js",
+    "huescenes.js",
+    "huestyle.js",
+    "epilogue.js",
+)
 
 
 def build() -> str:
