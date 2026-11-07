@@ -442,6 +442,7 @@
       }
     ]
   },
+  "replaces": ["hue"],
   "menu": {
     "url": "/hue_plus_static/menu.js"
   }
