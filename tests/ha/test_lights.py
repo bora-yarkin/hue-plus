@@ -12,15 +12,17 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+import voluptuous as vol
 from aiohue.v2 import HueBridgeV2
 from aiohue.v2.scene_activity import SceneActivityTracker
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.hue_plus.const import CONF_HUE_ENTRY, CONF_MODULES, DOMAIN
+from custom_components.hue_plus.const import CONF_HUE_ENTRY, CONF_MODULES, DOMAIN, PLAY_EFFECTS
 from custom_components.hue_plus.lights import adopt
 
 DATA = json.loads((Path(__file__).parent / "fixtures" / "home.json").read_text())
@@ -229,3 +231,61 @@ async def test_an_entry_from_before_the_lights_module_gets_it(hass, home):
         await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
     assert entry.version == 3 and {"lights", "devices"} <= set(entry.options[CONF_MODULES])
+
+
+# --- playing a light's own effect with a colour: what Home Control's live scenes use (decision D-25) -------------------------------
+
+
+async def effect_light(hass, home):
+    await plus(hass, home, ["lights"])
+    light = next(x for x in home.runtime_data.api.lights if x.effects and x.supports_dimming)
+    return light, er.async_get(hass).async_get_entity_id("light", DOMAIN, light.id)
+
+
+async def test_an_effect_and_a_colour_reach_the_bridge_together(hass, home):
+    light, entity = await effect_light(hass, home)
+    await hass.services.async_call(
+        DOMAIN,
+        "play_effect",
+        {"entity_id": entity, "effect": "underwater", "xy": [0.2, 0.3], "brightness": 128, "speed": 0.4},
+        blocking=True,
+    )
+    method, path, body = home.runtime_data.writes[-1]
+    assert (method, path) == ("put", f"clip/v2/resource/light/{light.id}")
+    assert body["on"] == {"on": True} and body["dimming"] == {"brightness": 50.2}
+    assert "underwater" in json.dumps(body) and "0.2" in json.dumps(body) and "0.3" in json.dumps(body) and "0.4" in json.dumps(body), body
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [{"effect": "disco"}, {"xy": [2, 0.3]}, {"xy": [0.3]}, {"brightness": 0}, {"brightness": 300}, {"speed": 1.5}, {"speed": -0.1}],
+)
+async def test_an_effect_that_does_not_exist_or_a_value_out_of_range_reaches_nothing(hass, home, bad):
+    _light, entity = await effect_light(hass, home)
+    before = len(home.runtime_data.writes)
+    data = {"entity_id": entity, "effect": "candle", "xy": [0.4, 0.4], "brightness": 100, "speed": 0.5, **bad}
+    with pytest.raises((vol.Invalid, ServiceValidationError)):
+        await hass.services.async_call(DOMAIN, "play_effect", data, blocking=True)
+    assert len(home.runtime_data.writes) == before
+
+
+def test_the_declaration_for_the_dashboard_matches_the_code():
+    declaration = json.loads((Path(__file__).parents[2] / "custom_components" / "hue_plus" / "home_control.json").read_text())
+    assert declaration["schema"] == 1 and declaration["play_effect"] == "play_effect"
+    assert tuple(declaration["effects"]) == PLAY_EFFECTS
+    assert declaration["lights"]["hue_plus"] == {"group": "hue:plus", "rate": 8.0, "effects": True, "parent": "_zone_[0-9]+$"}
+    assert declaration["lights"]["hue"] == {"rate": 8.0}
+
+
+async def test_a_zone_light_has_the_unique_id_the_declaration_cuts_to_get_its_light(hass, home):
+    import re
+
+    await plus(hass, home, ["lights", "zones"])
+    registry = er.async_get(hass)
+    declared = json.loads((Path(__file__).parents[2] / "custom_components" / "hue_plus" / "home_control.json").read_text())["lights"][
+        "hue_plus"
+    ]["parent"]
+    zones = [e for e in registry.entities.values() if e.platform == DOMAIN and e.domain == "light" and "_zone_" in e.unique_id]
+    assert zones, "the gradient light of the fixture has zones"
+    ids = {light.id for light in home.runtime_data.api.lights}
+    assert all(re.sub(declared, "", z.unique_id) in ids for z in zones)

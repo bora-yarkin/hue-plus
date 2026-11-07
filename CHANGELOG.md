@@ -4,6 +4,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.7.0]
+
+### Added
+- `home_control.json`, the declaration that makes Hue Plus the expansion pack for Hue lights in Home Control (decision D-25): the Hue lights it owns, the bridge's command rate, and the native effects it can play.
+- `hue_plus.play_effect`, an action on Hue Plus's lights that plays one of a light's own effects with a chosen colour through the bridge (experimental, as the effects of live scenes were). Home Control's live scenes play Hue effects through it.
+
 ## [0.6.2]
 
 ### Fixed
