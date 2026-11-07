@@ -4,6 +4,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-11-07
+
+### Fixed
+- `play_effect` with a field left out (it needs `effect`, `xy`, `brightness` and `speed`, as its description says) failed with an internal `TypeError` and an "Unexpected exception" in the log; it is now refused with a normal validation error before anything is sent to the bridge.
+
 ## [0.9.0] - 2026-11-07
 
 ### Added

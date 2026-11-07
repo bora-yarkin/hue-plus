@@ -14,6 +14,7 @@ import asyncio
 import logging
 from typing import Any
 
+import voluptuous as vol
 from aiohue.v2.controllers.events import EventType
 from aiohue.v2.controllers.groups import GroupedLight
 from aiohue.v2.models.feature import EffectStatus
@@ -65,10 +66,10 @@ def _xy(value: Any) -> tuple[float, float]:
 
 
 PLAY_EFFECT_SCHEMA = {
-    "effect": cv.string,
-    "xy": _xy,
-    "brightness": lambda value: round(_number_in(1, 255)(value)),
-    "speed": _number_in(0, 1),
+    vol.Required("effect"): cv.string,
+    vol.Required("xy"): _xy,
+    vol.Required("brightness"): lambda value: round(_number_in(1, 255)(value)),
+    vol.Required("speed"): _number_in(0, 1),
 }
 
 
