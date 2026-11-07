@@ -4,6 +4,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-11-07
+
 ### Changed
 - What was Hue-specific in the dashboard is Hue Plus's own now, brought through the dashboard's plugin API (decision D-26; needs Home Control 0.8.0 or later, install both together): Hue's scenes (their rows, the popup with brightness, speed, play and freeze, the scene tiles of the light panel and *Import as a live scene*), the Spotify sync and the Hue Play HDMI Sync Box (their rows in the Lights section, popups and the lights they play on) and the Style button of a gradient light. They look and behave as before. `menu.js` registers them; the sources are `frontend/src/huescenes.js`, `huesync.js` and `huestyle.js`.
 - `home_control.json` declares `"replaces": ["hue"]`: the dashboard shows Hue Plus's entities and leaves out the Hue integration's where Hue Plus has one for it (the dashboard no longer has a rule of its own for this).
