@@ -147,7 +147,20 @@ CONFIG = {
         },
         "reconfigure": {
             "title": "Reconfigure Philips Hue Plus",
-            "menu_options": {"bridge_address": "Bridge address", "sync_developer": "Spotify Sync with a Hue developer app"},
+            "menu_options": {
+                "own_connection": "Use my own connection to the bridge (instead of the Hue integration's)",
+                "bridge_address": "Bridge address",
+                "sync_developer": "Spotify Sync with a Hue developer app",
+            },
+        },
+        "own_connection": {
+            "title": "The bridge's address",
+            "description": "Hue Plus will register with the bridge itself, so the Hue integration can be removed afterwards. Everything Hue Plus has made (entities, devices, names) stays. Enter the bridge's address.",
+            "data": {"host": "Address"},
+        },
+        "own_connection_link": {
+            "title": "Press the link button",
+            "description": "Press the round button on top of the bridge, then submit this form within thirty seconds.",
         },
         "bridge_address": {
             "title": "The bridge's address",
@@ -222,6 +235,7 @@ CONFIG = {
         "cannot_connect": "Could not verify Spotify Sync. Try again later.",
         "missing_configuration": "Add your Hue developer Client ID and Client Secret in Home Assistant Application credentials, then try again.",
         "reconfigure_successful": "The new address is stored.",
+        "own_connection_successful": "Hue Plus now has its own connection to the bridge. The Hue integration can be removed.",
         "already_configured": "Hue Plus is already set up for this bridge.",
         "reauth_successful": "The new credentials are stored.",
         "no_options": "A sync box has no options.",

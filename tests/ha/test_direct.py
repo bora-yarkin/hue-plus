@@ -405,3 +405,69 @@ async def test_lights_and_devices_work_over_a_direct_connection_with_their_own_n
         await hass.services.async_call("light", "turn_on", {"entity_id": entity, "brightness": 128}, blocking=True)
         assert any(light.id in path for _method, path, _body in RealDirectBridge.writes)
         assert await hass.config_entries.async_unload(entry.entry_id)
+
+
+# --- an entry that used the Hue integration's connection gets its own ------------------------------------------------------
+def make_riding(hass, hue_entry) -> MockConfigEntry:
+    from custom_components.hue_plus.const import CONF_HUE_ENTRY, CONF_TAKEOVER, TAKEOVER_REPLACE
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        version=3,
+        unique_id=BRIDGE_ID,
+        title="Hue Bridge Plus",
+        data={CONF_HUE_ENTRY: hue_entry.entry_id, CONF_TAKEOVER: TAKEOVER_REPLACE},
+        options={CONF_MODULES: ["bridge"]},
+    )
+    entry.add_to_hass(hass)
+    return entry
+
+
+async def _own_connection(hass, entry, host=HOST):
+    result = await entry.start_reconfigure_flow(hass)
+    assert result["type"] is FlowResultType.MENU and "own_connection" in result["menu_options"]
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], {"next_step_id": "own_connection"})
+    return await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_HOST: host})
+
+
+async def test_an_entry_on_the_hue_integration_gets_its_own_connection_and_keeps_everything_else(hass, hue_entry):
+    from custom_components.hue_plus.const import CONF_HUE_ENTRY, CONF_TAKEOVER
+
+    entry = make_riding(hass, hue_entry)
+    discover, fingerprint = _bridge_calls()
+    with discover, fingerprint, patch("custom_components.hue_plus.async_setup_entry", return_value=True):
+        result = await _own_connection(hass, entry)
+        assert result["type"] is FlowResultType.FORM and result["step_id"] == "own_connection_link"
+        with patch("custom_components.hue_plus.config_flow.register", AsyncMock(return_value=REGISTRATION)):
+            result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    assert result["type"] is FlowResultType.ABORT and result["reason"] == "own_connection_successful"
+    assert CONF_HUE_ENTRY not in entry.data and CONF_TAKEOVER not in entry.data
+    assert entry.data[CONF_HOST] == HOST and entry.data[CONF_APP_KEY] == "new-app-key" and entry.data[CONF_CERT_SHA256] == FINGERPRINT
+    assert entry.unique_id == BRIDGE_ID and entry.options[CONF_MODULES] == ["bridge"], "the entry, so its entities and devices, stays"
+
+
+async def test_another_bridge_is_not_accepted_for_an_entry_that_is_changing_connection(hass, hue_entry):
+    entry = make_riding(hass, hue_entry)
+    discover, fingerprint = _bridge_calls(_found(bridge_id="AABBCCDDEEFF"))
+    with discover, fingerprint:
+        result = await _own_connection(hass, entry)
+    assert result["type"] is FlowResultType.FORM and result["errors"] == {"base": "wrong_bridge"}
+
+
+async def test_without_the_link_button_the_entry_keeps_riding_on_the_hue_integration(hass, hue_entry):
+    from custom_components.hue_plus.const import CONF_HUE_ENTRY
+
+    entry = make_riding(hass, hue_entry)
+    discover, fingerprint = _bridge_calls()
+    with discover, fingerprint:
+        result = await _own_connection(hass, entry)
+        with patch("custom_components.hue_plus.config_flow.register", AsyncMock(side_effect=LinkButtonNotPressed("press"))):
+            result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    assert result["type"] is FlowResultType.FORM and result["errors"] == {"base": "link_button_not_pressed"}
+    assert CONF_HUE_ENTRY in entry.data
+
+
+async def test_an_entry_that_already_has_its_own_connection_is_not_offered_the_change(hass):
+    entry = make_direct(hass)
+    result = await entry.start_reconfigure_flow(hass)
+    assert "own_connection" not in result["menu_options"]

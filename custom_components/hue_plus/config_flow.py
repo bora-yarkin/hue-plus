@@ -235,7 +235,59 @@ class HuePlusConfigFlow(_CredentialsMixin, AbstractOAuth2FlowHandler, domain=DOM
         menu = ["sync_developer"]
         if CONF_HOST in entry.data and connects_directly(entry):
             menu.insert(0, "bridge_address")
+        if CONF_HUE_ENTRY in entry.data:
+            menu.insert(0, "own_connection")
         return self.async_show_menu(step_id="reconfigure", menu_options=menu)
+
+    async def async_step_own_connection(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """A Hue Plus entry that uses the Hue integration's connection gets one of its own, so the Hue integration can be removed.
+
+        The bridge is the same, so the entry (its entities, devices and their names) stays; only how it reaches the bridge changes.
+        """
+        entry = self._get_reconfigure_entry()
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            host = user_input[CONF_HOST].strip()
+            try:
+                found = await discover_bridge(host, async_get_clientsession(self.hass))
+                fingerprint = await peer_fingerprint(host)
+            except aiohttp.ClientError, TimeoutError, BridgeError:
+                errors["base"] = "cannot_connect"
+            else:
+                if normalize_bridge_id(found.id) != entry.unique_id:
+                    errors["base"] = "wrong_bridge"
+                elif not found.supports_v2:
+                    errors["base"] = "not_v2"
+                else:
+                    self._host, self._fingerprint = host, fingerprint.hex()
+                    return await self.async_step_own_connection_link()
+        hue = self.hass.config_entries.async_get_entry(entry.data[CONF_HUE_ENTRY])
+        schema = self.add_suggested_values_to_schema(HOST_SCHEMA, {CONF_HOST: hue.data.get("host", "") if hue else ""})
+        return self.async_show_form(step_id="own_connection", data_schema=schema, errors=errors)
+
+    async def async_step_own_connection_link(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """The bridge only registers a new app while its link button is pressed, so this waits for the person."""
+        entry = self._get_reconfigure_entry()
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            result = await self._register()
+            if isinstance(result, str):
+                errors["base"] = result
+            else:
+                return self.async_update_reload_and_abort(
+                    entry,
+                    data={
+                        CONF_HOST: self._host,
+                        CONF_APP_KEY: result.app_key,
+                        CONF_CERT_SHA256: self._fingerprint,
+                        # The registration also made the keys that local streaming needs.
+                        CONF_STREAM_APP_KEY: result.app_key,
+                        CONF_STREAM_CLIENT_KEY: result.client_key,
+                        CONF_STREAM_APP_ID: result.application_id,
+                    },
+                    reason="own_connection_successful",
+                )
+        return self.async_show_form(step_id="own_connection_link", data_schema=vol.Schema({}), errors=errors)
 
     async def async_step_bridge_address(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """A bridge that moved to another address. It must be the same bridge, showing the same certificate."""
