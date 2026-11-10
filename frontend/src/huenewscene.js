@@ -1,8 +1,8 @@
-/* Making and changing Hue scenes from the dashboard's scenes section, the way the Hue app does ("Add a scene"): choose the room or zone and its lights, then a custom scene (the lights set
+/* Making and changing Hue scenes from the dashboard's scenes section, the way the Hue app does ("Add a scene"): choose the room or zone, then a custom scene (the lights set
  in the dashboard's light popup, then saved), the current settings saved as a scene, an all-day scene (scenes by time of day) or a colour palette taken from a photo. Everything is written
  to the bridge (hue_plus.create_scene, update_scene, delete_scene, create_daily_smart_scene). Dynamic scenes cannot be made here: the Hue app only has them from its cloud gallery. */
 
-/* g: the room or zone chosen {id, name, type, lights: [the bridge's light ids]}; sel: the bridge's light ids chosen; data: what the bridge says about its rooms, zones and scenes. */
+/* g: the room or zone chosen {id, name, type, lights: [the bridge's light ids]}; sel: the bridge's light ids of it (a scene sets every light of its room or zone: the bridge refuses one that leaves a light out); data: what the bridge says about its rooms, zones and scenes. */
 var HUENEW = { scope: "", g: null, sel: {}, mode: "", name: "", slots: [], days: [1, 1, 1, 1, 1, 1, 1], open: {}, restrict: "", target: "", data: null };
 
 /* ---- what the bridge has ---- */
@@ -154,7 +154,7 @@ function hueChooseLights(mode) {
 function hueSelectGroup(g) {
   HUENEW.g = g;
   HUENEW.sel = {};
-  hueGroupLightIds(g).forEach(function (id) {
+  g.lights.forEach(function (id) {
     HUENEW.sel[id] = true;
   });
 }
@@ -166,26 +166,17 @@ function hueLightsPage(b) {
     });
   b.appendChild(box);
   if (HUENEW.mode === "edit") HUENEW.open[HUENEW.restrict] = true;
-  function allOf(g) {
-    var ids = hueGroupLightIds(g);
-    return !!HUENEW.g && HUENEW.g.id === g.id && ids.length > 0 && ids.every(function (id) { return HUENEW.sel[id]; });
-  }
   function groupRow(g) {
     var wrap = mk("div"),
-      ids = hueGroupLightIds(g),
       row = pill(g.type === "zone" ? "target" : "home", g.name, {
         check: function () {
-          return allOf(g);
+          return !!HUENEW.g && HUENEW.g.id === g.id;
         },
         sub: function () {
-          var n = HUENEW.g && HUENEW.g.id === g.id ? hueSelectedIds().length : 0;
-          return n ? n + " / " + ids.length : cntS(ids.length, _T("light"), _T("lights"));
+          return cntS(g.lights.length, _T("light"), _T("lights"));
         },
         tap: function () {
-          if (allOf(g)) {
-            HUENEW.sel = {};
-            HUENEW.g = null;
-          } else hueSelectGroup(g);
+          hueSelectGroup(g);
           refresh();
         },
       }),
@@ -198,25 +189,10 @@ function hueLightsPage(b) {
     row.appendChild(chev);
     wrap.appendChild(row);
     if (HUENEW.open[g.id]) {
+      /* The lights of the room or zone, for information: the scene sets all of them (any one can be set to off in the light popup). */
       var grid = mk("div", "gridl g2");
-      ids.forEach(function (id) {
-        grid.appendChild(
-          pill("light", hueLightName(id), {
-            check: function () {
-              return !!HUENEW.g && HUENEW.g.id === g.id && !!HUENEW.sel[id];
-            },
-            tap: function () {
-              /* A scene belongs to one room or zone: choosing a light of another one chooses that one instead. */
-              if (!HUENEW.g || HUENEW.g.id !== g.id) {
-                HUENEW.g = g;
-                HUENEW.sel = {};
-              }
-              HUENEW.sel[id] = !HUENEW.sel[id];
-              if (!hueSelectedIds().length) HUENEW.g = null;
-              refresh();
-            },
-          })
-        );
+      g.lights.forEach(function (id) {
+        grid.appendChild(pill("light", hueLightName(id), {}));
       });
       wrap.appendChild(grid);
     }
@@ -239,8 +215,8 @@ function hueLightsPage(b) {
     box.appendChild(
       pill("check", _T("hn_next"), {
         tap: function () {
-          if (!HUENEW.g || !hueSelectedIds().length) {
-            toast(_T("hn_choose_a_light"));
+          if (!HUENEW.g) {
+            toast(_T("hn_choose_a_room"));
             return;
           }
           hueAfterLights();
@@ -299,9 +275,9 @@ function hueNamePage(b) {
   }, 150);
 }
 
-/* A scene of the lights chosen, in the room or zone chosen. */
+/* A scene of the room or zone chosen: what every one of its lights shows now, which is what the light popup has set. */
 function hueCreate() {
-  return callRaw("hue_plus", "create_scene", { name: HUENEW.name, group: HUENEW.g.id, group_type: HUENEW.g.type, lights: hueSelectedIds() });
+  return callRaw("hue_plus", "create_scene", { name: HUENEW.name, group: HUENEW.g.id, group_type: HUENEW.g.type });
 }
 
 /* The lights as they are now, saved. */
@@ -377,6 +353,9 @@ function hueStartAllDay() {
   HUENEW.mode = "allday";
   showPopup("hue-all-day", true);
 }
+
+/* The bridge's names of the days, in the order of the day buttons (Sunday first, as in the Hue app). */
+var HUE_DAY_NAMES = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
 var HUE_DAYS = ["hn_day_sun", "hn_day_mon", "hn_day_tue", "hn_day_wed", "hn_day_thu", "hn_day_fri", "hn_day_sat"];
 
@@ -485,11 +464,9 @@ function hueSaveAllDay() {
     slots: slots,
     days: HUENEW.days
       .map(function (on, i) {
-        return on ? i : -1;
+        return on ? HUE_DAY_NAMES[i] : "";
       })
-      .filter(function (i) {
-        return i >= 0;
-      }),
+      .filter(Boolean),
   }).then(
     function () {
       toast(_T("hn_scene_saved") + name);
@@ -621,8 +598,7 @@ function huePhotoPage(b) {
 
 /* ---- changing a scene that exists ---- */
 
-/* Choose the lights of the scene (the ones it has are chosen, the others of its room or zone can be added), then the scene's lights are set as it has them, the light popup opens
- on the chosen ones, and the checkmark records what they show as the scene. */
+/* The scene's own room or zone is shown, then its lights are set as the scene has them, the light popup opens on all of them, and the checkmark records what they show as the scene. */
 function hueSceneEdit(id) {
   var uid = hueSceneUid(id);
   if (!uid) {
@@ -640,9 +616,7 @@ function hueSceneEdit(id) {
         return;
       }
       HUENEW = { scope: "", g: g, sel: {}, mode: "edit", name: A(id).name || A(id).friendly_name || "", slots: [], days: [], open: {}, restrict: g.id, target: id, data: data };
-      (scene.lights || []).forEach(function (l) {
-        HUENEW.sel[l] = true;
-      });
+      hueSelectGroup(g);
       showPopup("hue-lights", true);
     },
     function () {
@@ -655,7 +629,6 @@ function hueEditOpen() {
   var id = HUENEW.target,
     uid = hueSceneUid(id),
     name = HUENEW.name,
-    ids = hueSelectedIds(),
     lights = hueSelectedEntities();
   if (!uid || !lights.length) {
     toast(_T("hn_no_hue_lights_here"));
@@ -668,7 +641,7 @@ function hueEditOpen() {
       icon: "palette",
       lights: lights,
       onSave: function () {
-        return Promise.resolve(callRaw("hue_plus", "update_scene", { scene: uid, record_current: true, lights: ids })).then(
+        return Promise.resolve(callRaw("hue_plus", "update_scene", { scene: uid, record_current: true })).then(
           function () {
             toast(_T("hn_scene_saved") + name);
             return true;

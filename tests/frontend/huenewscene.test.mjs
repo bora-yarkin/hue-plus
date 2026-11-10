@@ -101,7 +101,7 @@ test("a page's room is chosen with all its lights to begin with, by its area or 
   assert.equal(none.sandbox.HUENEW.g, null, "the home page chooses nothing: the person does");
 });
 
-test("choosing a zone chooses its lights, and a light of a zone can be one of several chosen", async () => {
+test("choosing a room or zone chooses all its lights: a scene sets every light of it", async () => {
   const { sandbox } = page();
   const data = await sandbox.hueLoadData();
   sandbox.hueSelectGroup(data.groups[1]);
@@ -109,29 +109,27 @@ test("choosing a zone chooses its lights, and a light of a zone can be one of se
   assert.deepEqual(plain(sandbox.hueSelectedEntities()), ["light.l1", "light.far"]);
 });
 
-test("a scene is written to the room or zone chosen with the lights chosen, and nothing before", async () => {
+test("a scene is written to the room or zone chosen, and nothing before", async () => {
   const { sandbox, log } = page();
   const data = await sandbox.hueLoadData();
   sandbox.hueSelectGroup(data.groups[0]);
-  sandbox.HUENEW.sel.bl3 = false;
   sandbox.HUENEW.name = "Evening";
   sandbox.hueSaveCurrent();
   await Promise.resolve();
-  assert.deepEqual(log.raw, [["hue_plus", "create_scene", { name: "Evening", group: "room-1", group_type: "room", lights: ["bl1", "bl2"] }]]);
+  assert.deepEqual(log.raw, [["hue_plus", "create_scene", { name: "Evening", group: "room-1", group_type: "room" }]]);
 });
 
-test("a custom scene is made in the light popup on the chosen lights: nothing is written until its checkmark", async () => {
+test("a custom scene is made in the light popup on all lights of the room: nothing is written until its checkmark", async () => {
   const { sandbox, log } = page();
   const data = await sandbox.hueLoadData();
   sandbox.hueSelectGroup(data.groups[0]);
-  sandbox.HUENEW.sel.bl2 = false;
   sandbox.HUENEW.name = "Mine";
   sandbox.hueOpenEditor();
   assert.deepEqual(log.raw, []);
   const editor = log.editors[0];
-  assert.deepEqual([editor.name, plain(editor.lights)], ["Mine", ["light.l1", "light.l3"]]);
+  assert.deepEqual([editor.name, plain(editor.lights)], ["Mine", ["light.l1", "light.l2", "light.l3"]], "every light of the room is in the popup");
   assert.equal(await editor.onSave([]), true);
-  assert.deepEqual(log.raw, [["hue_plus", "create_scene", { name: "Mine", group: "room-1", group_type: "room", lights: ["bl1", "bl3"] }]]);
+  assert.deepEqual(log.raw, [["hue_plus", "create_scene", { name: "Mine", group: "room-1", group_type: "room" }]]);
 });
 
 test("a scene that could not be written to the bridge leaves the popup open and says so", async () => {
@@ -144,13 +142,13 @@ test("a scene that could not be written to the bridge leaves the popup open and 
   assert.deepEqual(log.toasts, ["hn_couldn_t_save_the_scene"]);
 });
 
-test("changing a scene starts with its own lights chosen in its own room, which can add lights of that room", async () => {
+test("changing a scene starts with its own room chosen, and only that room is shown", async () => {
   const { sandbox, log } = page();
   sandbox.hueSceneEdit("scene.a");
   await new Promise((r) => setImmediate(r));
   assert.equal(sandbox.HUENEW.mode, "edit");
   assert.equal(sandbox.HUENEW.restrict, "room-1");
-  assert.deepEqual(plain(sandbox.hueSelectedIds()), ["bl1", "bl2"]);
+  assert.deepEqual(plain(sandbox.hueSelectedIds()), ["bl1", "bl2", "bl3"], "all the lights of the room");
   assert.deepEqual(log.opened, ["hue-lights"]);
 });
 
@@ -158,12 +156,11 @@ test("then the lights are set as the scene has them, the light popup opens on th
   const { sandbox, log } = page();
   sandbox.hueSceneEdit("scene.a");
   await new Promise((r) => setImmediate(r));
-  sandbox.HUENEW.sel.bl3 = true; // a light added to the scene
   sandbox.hueAfterLights();
   assert.deepEqual(log.calls, [["scene", "turn_on", { entity_id: "scene.a" }]]);
   assert.deepEqual(plain(log.editors[0].lights), ["light.l1", "light.l2", "light.l3"]);
   assert.equal(await log.editors[0].onSave([]), true);
-  assert.deepEqual(log.raw, [["hue_plus", "update_scene", { scene: "uid-a", record_current: true, lights: ["bl1", "bl2", "bl3"] }]]);
+  assert.deepEqual(log.raw, [["hue_plus", "update_scene", { scene: "uid-a", record_current: true }]]);
 });
 
 test("an all-day scene is written with its times in order, the scenes by their bridge ids, the room by its id and the days chosen", async () => {
@@ -175,7 +172,7 @@ test("an all-day scene is written with its times in order, the scenes by their b
   sandbox.HUENEW.days = [0, 1, 1, 1, 1, 1, 0];
   sandbox.hueSaveAllDay();
   assert.deepEqual(log.responses, [
-    ["hue_plus", "create_daily_smart_scene", { name: "Day", group: "room-1", group_type: "room", slots: [{ time: "07:00", scene: "uid-a" }, { time: "18:00", scene: "uid-b" }], days: [1, 2, 3, 4, 5] }],
+    ["hue_plus", "create_daily_smart_scene", { name: "Day", group: "room-1", group_type: "room", slots: [{ time: "07:00", scene: "uid-a" }, { time: "18:00", scene: "uid-b" }], days: ["monday", "tuesday", "wednesday", "thursday", "friday"] }],
   ]);
 });
 

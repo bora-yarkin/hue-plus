@@ -318,6 +318,16 @@ async def set_name(api, snap, data):
 # ---- scenes ----
 
 
+def _whole_group(group_lights: list[dict[str, Any]], wanted: set[str], kind: str) -> None:
+    """The bridge refuses a scene that does not set every light of its room or zone, so say so instead of passing its short answer on."""
+    missing = {item["id"] for item in group_lights} - wanted
+    if missing or not wanted <= {item["id"] for item in group_lights}:
+        raise ValueError(
+            f"A scene of a {kind} sets every light of it: the bridge refuses one that leaves lights out. "
+            "Set the lights you do not want lit to off in the scene, or make a zone of only the lights you want."
+        )
+
+
 @action("create_scene", response=True)
 async def create_scene(api, snap, data):
     """A scene for a room or zone. Without ``lights`` it records the look the group's lights have right now."""
@@ -331,6 +341,7 @@ async def create_scene(api, snap, data):
         lights = [item for item in snap.light if item["id"] in ids or (item.get("owner") or {}).get("rid") in owner_ids]
         if data.get("lights"):
             wanted = {_light(snap, str(x))["id"] for x in data["lights"]}
+            _whole_group(lights, wanted, group_type)
             lights = [item for item in lights if item["id"] in wanted]
         actions = payloads.scene_actions_from_lights(lights)
     rid = await api.post(
@@ -346,10 +357,7 @@ async def update_scene(api, snap, data):
         raise ValueError("Give either actions or record_current, not both")
     if data.get("record_current"):
         # The look of the scene's own lights as they are now (after being adjusted): the same recording create_scene makes.
-        if data.get("lights"):  # the lights to record, so that lights can be added to a scene or taken out of it
-            wanted = {_light(snap, str(x))["id"] for x in data["lights"]}
-        else:
-            wanted = {(a.get("target") or {}).get("rid") for a in scene.get("actions") or []}
+        wanted = {(a.get("target") or {}).get("rid") for a in scene.get("actions") or []}
         actions = payloads.scene_actions_from_lights([light for light in snap.light if light["id"] in wanted])
         if not actions:
             raise ValueError("This scene has no light to record")

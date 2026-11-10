@@ -242,8 +242,12 @@ class ActionTests(unittest.IsolatedAsyncioTestCase):
         body = calls[0][3]
         self.assertEqual(result, {"id": "new-id"})
         self.assertEqual((body["group"], [a["target"]["rid"] for a in body["actions"]]), ({"rid": "r1", "rtype": "room"}, ["l1", "l2"]))
-        calls, _ = await self.go("create_scene", {"name": "Only one", "group": "r1", "lights": ["Bed Light"]})
-        self.assertEqual([a["target"]["rid"] for a in calls[0][3]["actions"]], ["l2"])
+        calls, _ = await self.go("create_scene", {"name": "Named", "group": "r1", "lights": ["Bed Light", "l1"]})
+        self.assertEqual(
+            [a["target"]["rid"] for a in calls[0][3]["actions"]], ["l1", "l2"], "naming every light of the room is naming none"
+        )
+        with self.assertRaisesRegex(ValueError, "sets every light"):  # the real bridge refuses a scene that leaves a light of its room out
+            await self.go("create_scene", {"name": "Only one", "group": "r1", "lights": ["Bed Light"]})
 
     async def test_a_scene_for_a_zone_uses_the_zones_lights_and_given_actions_may_be_json_text(self):
         calls, _ = await self.go("create_scene", {"name": "Z", "group": "Reading", "group_type": "zone"})
@@ -267,10 +271,6 @@ class ActionTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(calls[0][:3], ("put", "scene", "s1"))
         recorded = calls[0][3]["actions"]
         self.assertTrue(recorded and all(a["target"]["rtype"] == "light" and "on" in a["action"] for a in recorded))
-        calls, _ = await self.go("update_scene", {"scene": "Soho", "record_current": True, "lights": ["l2"]})
-        self.assertEqual(
-            [a["target"]["rid"] for a in calls[0][3]["actions"]], ["l2"], "other lights than the scene's own can be recorded into it"
-        )
         with self.assertRaisesRegex(ValueError, "either actions or record_current"):
             await self.go("update_scene", {"scene": "Soho", "record_current": True, "actions": "[]"})
 

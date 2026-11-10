@@ -575,10 +575,6 @@
         "record_current": {
           "name": "Record current",
           "description": "Records how the scene's lights look right now as its actions (after adjusting them), instead of giving actions."
-        },
-        "lights": {
-          "name": "Lights",
-          "description": "With record_current: the lights to record (names or ids), to add lights to the scene or take some out. The scene's own lights when empty."
         }
       }
     },
