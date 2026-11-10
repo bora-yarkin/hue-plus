@@ -9,11 +9,11 @@ take over their names. When Hue Plus has a connection of its own, these are the 
 
 from __future__ import annotations
 
-import importlib
 import logging
 from collections.abc import Iterable
 from typing import Any
 
+from aiohue.v2.models.resource import ResourceTypes
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import Entity
@@ -21,11 +21,15 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from ..const import DOMAIN, HUE_DOMAIN, MANUFACTURER, replaces_hue
 from ..entity import accessory_device, bridge_device
+from ..hue import binary_sensor, event, scene, select, sensor, switch
 from ..lights import adopt
 from ..lights.alongside import beside_hue
 from ..runtime import HuePlusConfigEntry, Runtime
 
 _LOGGER = logging.getLogger(__name__)
+
+# Imported here, with the rest, and not when a platform is set up: importing a module inside the event loop blocks it.
+PLATFORMS = {"binary_sensor": binary_sensor, "event": event, "scene": scene, "select": select, "sensor": sensor, "switch": switch}
 
 
 class _Entry:
@@ -59,6 +63,11 @@ def rehome(runtime: Runtime, bridge: Any, entity: Entity) -> None:
         return
     device = api.devices.get(ident)
     if device is not None:
+        # The bridge is also a device of its own in the Hue API (the one that carries its firmware and connectivity): it is the bridge's
+        # device here too, not a second "Hue Bridge" next to it.
+        if any(getattr(service, "rtype", None) == ResourceTypes.BRIDGE for service in device.services):
+            entity._attr_device_info = bridge_device(runtime)
+            return
         entity._attr_device_info = accessory_device(runtime, device.id, device.metadata.name, device.product_data.product_name)
         return
     group = api.groups.get(ident)
@@ -90,5 +99,5 @@ async def run_platform(hass: HomeAssistant, entry: HuePlusConfigEntry, platform:
             rehome(runtime, bridge, entity)
         add(moved, *args, **kwargs)
 
-    module = importlib.import_module(f"homeassistant.components.hue.{platform}")
+    module = PLATFORMS[platform]
     await module.async_setup_entry(hass, _Entry(entry), add_rehomed)
