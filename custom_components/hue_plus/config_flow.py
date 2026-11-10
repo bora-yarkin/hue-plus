@@ -273,9 +273,10 @@ class HuePlusConfigFlow(_CredentialsMixin, AbstractOAuth2FlowHandler, domain=DOM
             if isinstance(result, str):
                 errors["base"] = result
             else:
-                return self.async_update_reload_and_abort(
-                    entry,
-                    data={
+                # Everything else the entry holds (the Spotify sync's credentials and the like) stays: only how it reaches the bridge changes.
+                data = {k: v for k, v in entry.data.items() if k not in (CONF_HUE_ENTRY, CONF_TAKEOVER)}
+                data.update(
+                    {
                         CONF_HOST: self._host,
                         CONF_APP_KEY: result.app_key,
                         CONF_CERT_SHA256: self._fingerprint,
@@ -283,9 +284,9 @@ class HuePlusConfigFlow(_CredentialsMixin, AbstractOAuth2FlowHandler, domain=DOM
                         CONF_STREAM_APP_KEY: result.app_key,
                         CONF_STREAM_CLIENT_KEY: result.client_key,
                         CONF_STREAM_APP_ID: result.application_id,
-                    },
-                    reason="own_connection_successful",
+                    }
                 )
+                return self.async_update_reload_and_abort(entry, data=data, reason="own_connection_successful")
         return self.async_show_form(step_id="own_connection_link", data_schema=vol.Schema({}), errors=errors)
 
     async def async_step_bridge_address(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
