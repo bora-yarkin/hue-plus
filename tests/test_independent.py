@@ -51,7 +51,7 @@ def test_the_manifest_needs_no_hue_integration_and_the_library_it_needs():
     manifest = json.loads((PACKAGE / "manifest.json").read_text(encoding="utf-8"))
     assert "hue" not in manifest["dependencies"]
     assert "hue" in manifest["after_dependencies"], "set up after the Hue integration when there is one (Hue Plus rides on it then)"
-    assert any(r.startswith("aiohue==") for r in manifest["requirements"])
+    assert any(r.startswith("aiohue>=") for r in manifest["requirements"])
 
 
 def test_every_copied_file_says_where_it_comes_from():
