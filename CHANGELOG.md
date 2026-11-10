@@ -4,6 +4,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.14.1] - 2026-11-10
+
 ### Fixed
 - *Reconfigure, Use my own connection* (and adding a bridge by its address) said "Could not connect" for a Bridge Pro: the bridge answers plain http with a redirect to https, which the library Hue Plus asked with then followed using Home Assistant's own certificate check, and that fails on the bridge's private certificate. Hue Plus now reads who the bridge is over https directly, without following redirects.
 - The Hue scene editor and the new-scene popup showed only the lights of the dashboard page. They now use the room or zone of the bridge and all its lights.
