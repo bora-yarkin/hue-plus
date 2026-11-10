@@ -77,7 +77,7 @@ def world():
         ],
         zone=[{"id": "z1", "metadata": {"name": "Reading"}, "children": [{"rid": "l1", "rtype": "light"}]}],
         scene=[
-            {"id": "s1", "metadata": {"name": "Soho"}},
+            {"id": "s1", "metadata": {"name": "Soho"}, "actions": [{"target": {"rid": "l1", "rtype": "light"}, "action": {}}]},
             {"id": "s2", "metadata": {"name": "Twin"}},
             {"id": "s3", "metadata": {"name": "twin"}},
         ],
@@ -261,6 +261,14 @@ class ActionTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(calls, [("put", "scene", "s1", {"speed": 0.3})])
         with self.assertRaisesRegex(ValueError, "Nothing to change"):
             await self.go("update_scene", {"scene": "Soho"})
+
+    async def test_a_scene_can_record_how_its_own_lights_look_now(self):
+        calls, _ = await self.go("update_scene", {"scene": "Soho", "record_current": True})
+        self.assertEqual(calls[0][:3], ("put", "scene", "s1"))
+        recorded = calls[0][3]["actions"]
+        self.assertTrue(recorded and all(a["target"]["rtype"] == "light" and "on" in a["action"] for a in recorded))
+        with self.assertRaisesRegex(ValueError, "either actions or record_current"):
+            await self.go("update_scene", {"scene": "Soho", "record_current": True, "actions": "[]"})
 
     async def test_smart_scenes(self):
         calls, _ = await self.go("set_smart_scene", {"smart_scene": "Daily", "action": "deactivate"})

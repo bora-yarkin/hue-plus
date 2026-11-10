@@ -4,6 +4,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+### Added
+- Hue scenes in the scenes section like any other scene (needs Home Control 0.9.7 or later): the new-scene popup has **Hue scene**, with the Hue app's choices: **Custom scene** (set the lights in the dashboard's light popup, press the checkmark, and what they show is written to the bridge as the scene), **Save current settings**, **All-day scene** (scenes by time of day, a smart scene, on the days chosen) and **Color palette from photo** (colours taken from a picture go to the lights, then saved as a scene). In edit mode a Hue scene has a trash that deletes it from the bridge, and its page has *Change the lights* (the scene's lights are set as it has them, you adjust them, the checkmark records the result over the scene), *Rename* and *Delete scene*. Dynamic scenes cannot be made: the Hue app only has them from its cloud gallery.
+- `hue_plus.update_scene` takes `record_current: true`: the scene's lights, as they look now, become its actions.
+
 ## [0.13.0] - 2026-11-10
 
 ### Changed

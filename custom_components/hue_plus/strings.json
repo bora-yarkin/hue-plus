@@ -571,6 +571,10 @@
         "actions": {
           "name": "Actions",
           "description": "New actions as the bridge writes them."
+        },
+        "record_current": {
+          "name": "Record current",
+          "description": "Records how the scene's lights look right now as its actions (after adjusting them), instead of giving actions."
         }
       }
     },

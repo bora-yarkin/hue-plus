@@ -9,7 +9,7 @@ import vm from "node:vm";
 const BUILT = readFileSync(new URL("../../custom_components/hue_plus/frontend/menu.js", import.meta.url), "utf8");
 
 function load(hass) {
-  const reg = { pages: {}, kinds: [], devices: [], imports: [], playback: [], styles: [], settings: [], styles_css: [], calls: [] };
+  const reg = { pages: {}, kinds: [], makers: [], devices: [], imports: [], playback: [], styles: [], settings: [], styles_css: [], calls: [] };
   const noop = () => undefined;
   const ui = new Proxy({}, { get: (_t, key) => (key === "pageFill" ? "pagefill" : noop) });
   const HC = {
@@ -40,13 +40,14 @@ function load(hass) {
     serviceResponse: async (domain, service, data) => ({ domain, service, data, name: "Read", states: [{ entity_id: "light.plain", on: true }] }),
     ui,
     areas: new Proxy({}, { get: () => noop }),
-    scenes: { hidden: () => false, setHidden: noop, importFrom: noop },
+    scenes: { hidden: () => false, setHidden: noop, importFrom: noop, editLights: noop, roomLights: () => [] },
     addStrings: noop,
     addStyles: (css) => reg.styles_css.push(css),
     registerPage: (key, title, icon, builder) => (reg.pages[key] = { title, icon, builder }),
     registerSettings: (def) => reg.settings.push(def),
     registerAreaHooks: noop,
     registerSceneKind: (def) => reg.kinds.push(def),
+    registerSceneMaker: (def) => reg.makers.push(def),
     registerSceneImport: (def) => reg.imports.push(def),
     registerDeviceKind: (def) => reg.devices.push(def),
     registerPlayback: (def) => reg.playback.push(def),
@@ -146,8 +147,28 @@ test("a light with gradient styles has the style button, and the other lights do
   assert.equal(scattered.styles[0].blends("light.tube"), false);
 });
 
-test("the styles of the sync popups are added to the page once", () => {
+test("the styles of the sync popups and of the scene pages are each added to the page once", () => {
   const reg = load(HASS);
-  assert.equal(reg.styles_css.length, 1);
+  assert.equal(reg.styles_css.length, 2);
   assert.match(reg.styles_css[0], /\.hs-now/);
+  assert.match(reg.styles_css[1], /\.hn-day/);
+});
+
+test("Hue offers its scenes in the new-scene popup only where Hue Plus can make them, and its scenes can be deleted from the dashboard", () => {
+  const hass = {
+    states: { "light.room": { state: "on", attributes: { is_hue_group: true, hue_type: "room", friendly_name: "Bora" } } },
+    entities: { "light.room": entity("hue_plus", "g1", { area_id: "bora" }) },
+    services: { hue_plus: { create_scene: {} } },
+  };
+  const reg = load(hass);
+  assert.equal(reg.makers.length, 1);
+  assert.equal(reg.makers[0].title, "hn_hue_scene");
+  assert.equal(reg.makers[0].available(), true);
+  hass.services = {};
+  assert.equal(reg.makers[0].available(), false, "without Hue Plus's service there is nothing to make a scene with");
+  hass.services = { hue_plus: { create_scene: {} } };
+  hass.states = {};
+  assert.equal(reg.makers[0].available(), false, "and no room or zone of the bridge to make it in");
+  assert.equal(typeof reg.kinds[0].remove, "function");
+  for (const key of ["hue-add-scene", "hue-scene-name", "hue-all-day", "hue-photo", "hue-pick-group"]) assert.ok(reg.pages[key], key);
 });

@@ -114,6 +114,9 @@ SPEC: dict[str, dict[str, Any]] = {
             "speed": f("number", "From 0 to 1."),
             "auto_dynamic": f("bool", "Whether it starts moving when recalled."),
             "actions": f("object", "New actions as the bridge writes them."),
+            "record_current": f(
+                "bool", "Records how the scene's lights look right now as its actions (after adjusting them), instead of giving actions."
+            ),
         },
     },
     "delete_scene": {"description": "Deletes a scene from the bridge.", "fields": {"scene": f("text", "The scene (id or name).", True)}},
