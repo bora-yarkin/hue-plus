@@ -77,3 +77,20 @@ Finding (checked in `homeassistant/components/hue/v2/light.py` and `aiohue`): a 
 - HP-12.2 planned (Home Control P5-B): the effect catalogue (groups, icons, labels) and the Hue Plus menu script come from Hue Plus (`menu.js` registered to the dashboard's Settings), not from Home Control.
 - HP-12.3 in_progress (built and tested; not yet released or checked on the real box) (Home Control P5-C): the scenes package (engine, library, `hue_plus.scene_*`, `area_*`, `locate_light`, `get_library`, the live-scenes sensor and websocket command) is removed; `import_hue_scene` and `activate_scene` stay (they read and play the bridge's own scenes). AC: nothing in Hue Plus refers to live scenes or areas; the Hue Plus tests that covered them moved to Home Control first.
 
+
+## HP-13 The Hue app in the dashboard (owner's requirements, 2026-11-10, D-29)
+
+Goal: reproduce the Hue app's behaviour as closely as possible, written to the bridge, with all Hue-specific dashboard code in Hue Plus (plugin API; nothing Hue in Home Control). Reference screens: `hue new images/` (IMG_0471 to IMG_0506: Automations list and wizards, the "Add a scene" screen, the MotionAware area wizard and its Edit area page) and `hue-app-images/` (bridge settings, accessories, button programming).
+
+Requirements (owner):
+- R1 Every Hue scene (static and dynamic) is a dashboard scene like any other (rows in sections, run together with other devices like classic scenes), keeping the Hue icon as the mark of its origin.
+- R2 Scenes are made and edited from the scenes section only: the new-scene popup gets Hue's kinds (custom scene, save current settings, all-day scene, colour palette from a photo; the cloud gallery cannot be reproduced) and a Hue scene is edited with the dashboard's light popup in scene mode, the way the Hue app edits a scene. Saving writes to the bridge.
+- R3 Automations (Wake up, Go to sleep, Coming home, Leaving home, Mimic presence, Timer, Lighting schedule) and MotionAware areas (create, calibrate, edit: nightlight schedule, motion-sensitive devices, sensitivity, daylight settings) are in the Hue Plus menu, built as the app's wizards, and written to the bridge.
+- R4 Gap work: what Hue Plus has but the dashboard does not show, and what the bridge exposes that is not built (list below, from `analysis/gap-analysis.md`, 2026-10-29, and the 2026-11-10 check).
+- R5 The UI is as close to the Hue app as possible.
+
+Order: (1) Hue scenes as dashboard scenes; (2) Hue scene creation and editing; (3) Automations; (4) MotionAware; (5) gaps. Each step is deployed to the owner's box for testing before anything is released (owner's rule), and ships its dashboard side in the same piece of work.
+
+Known limits: the scene gallery, Coming home / Leaving home (geofence by the phone and Hue's cloud), Custom AI behaviours and Security alerts (subscription) are Signify cloud features; the bridge's local API has no counterpart. Where the local API has part of one (the bridge's `geofence_client`, `behavior_instance` of those templates), Hue Plus shows and edits that part.
+
+2026-11-10 check: 54 services; 19 are used by the dashboard menu. Not on the dashboard yet: create/update/delete scene, smart scene (create, set), room and zone create/update/delete, create automation and routine, create daily smart scene, motion area create, bridge settings (set name, auto update, check for update, install bridge update, Zigbee channel, link button, search for devices, remove device), entertainment area delete and control, identify signal, power-on behaviour, light step, sensor configure, raw request, effect and gradient setters. The bridge-side gaps are the 11 rows of `analysis/gap-analysis.md` (after-streaming behaviour, gradient orientation and order, light function, minimum dim level and gamut, battery state, scene last recall, Matter pairing code, Zigbee diagnostics, motion area candidates, Contact Sensor and PM scripts).
