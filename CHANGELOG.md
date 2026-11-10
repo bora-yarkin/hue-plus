@@ -13,7 +13,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 - An entry that uses the Hue integration's connection can get one of its own: *Reconfigure → Use my own connection to the bridge*. Hue Plus registers with the bridge itself (press the link button) and keeps everything it has made: the entry, its entities, devices and names. The Hue integration can then be removed without Hue Plus losing the bridge.
 
 ### Fixed
-- The bridge showed as two "Hue Bridge" devices: the Hue API also lists the bridge as a device of its own (it carries the firmware and connectivity), and Hue Plus made a second device for it. It is the bridge's device now. After the update, delete the old second device once (Settings, Devices, the empty "Hue Bridge" device of Hue Plus, Delete).
+- The bridge showed as two "Hue Bridge" devices: the Hue API also lists the bridge as a device of its own (it carries the firmware and connectivity), and Hue Plus made a second device for it. It is the bridge's device now., and the empty second device an earlier version made is removed when Hue Plus starts.
 
 ## [0.12.0] - 2026-11-08
 

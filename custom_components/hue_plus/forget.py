@@ -11,8 +11,10 @@ its own: it removes one when the bridge reports it deleted, and, when Hue Plus s
 from __future__ import annotations
 
 from aiohue.v2.controllers.events import EventType
+from aiohue.v2.models.resource import ResourceTypes
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
 
 from .const import DOMAIN
 from .runtime import HuePlusConfigEntry
@@ -32,8 +34,13 @@ def async_forget_removed_devices(hass: HomeAssistant, entry: HuePlusConfigEntry)
     on_bridge = {runtime.uid, f"{runtime.uid}_sync"}  # the bridge's device, and the device of the Spotify sync (not a bridge resource)
     for controller in controllers:
         on_bridge.update(resource.id for resource in controller)
+    # The Hue API lists the bridge as a device of its own too; it is the bridge's device here, so an earlier version's second device for it
+    # (made before that was so) is removed once it has no entity left.
+    own_resources = {d.id for d in api.devices if any(service.rtype == ResourceTypes.BRIDGE for service in d.services)}
+    entities = er.async_get(hass)
     for device in dr.async_entries_for_config_entry(registry, entry.entry_id):
-        if not {ident for domain, ident in device.identifiers if domain == DOMAIN} & on_bridge:
+        idents = {ident for domain, ident in device.identifiers if domain == DOMAIN}
+        if not idents & on_bridge or (idents & own_resources and not er.async_entries_for_device(entities, device.id)):
             registry.async_remove_device(device.id)
 
     @callback
