@@ -40,7 +40,7 @@ function load(hass) {
     serviceResponse: async (domain, service, data) => ({ domain, service, data, name: "Read", states: [{ entity_id: "light.plain", on: true }] }),
     ui,
     areas: new Proxy({}, { get: () => noop }),
-    scenes: { hidden: () => false, setHidden: noop, importFrom: noop, editLights: noop, roomLights: () => [] },
+    scenes: { hidden: () => false, setHidden: noop, importFrom: noop, editLights: noop },
     addStrings: noop,
     addStyles: (css) => reg.styles_css.push(css),
     registerPage: (key, title, icon, builder) => (reg.pages[key] = { title, icon, builder }),
@@ -170,5 +170,5 @@ test("Hue offers its scenes in the new-scene popup only where Hue Plus can make 
   hass.states = {};
   assert.equal(reg.makers[0].available(), false, "and no room or zone of the bridge to make it in");
   assert.equal(typeof reg.kinds[0].remove, "function");
-  for (const key of ["hue-add-scene", "hue-scene-name", "hue-all-day", "hue-photo", "hue-pick-group"]) assert.ok(reg.pages[key], key);
+  for (const key of ["hue-add-scene", "hue-lights", "hue-scene-name", "hue-all-day", "hue-photo"]) assert.ok(reg.pages[key], key);
 });

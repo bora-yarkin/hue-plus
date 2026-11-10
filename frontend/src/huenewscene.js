@@ -1,10 +1,81 @@
-/* Making and changing Hue scenes from the dashboard's scenes section, the way the Hue app does ("Add a scene"): a custom scene (the lights set in the dashboard's light
- popup, then saved), the current settings saved as a scene, an all-day scene (scenes by time of day), and a colour palette taken from a photo. Everything is written to the
- bridge (hue_plus.create_scene, update_scene, delete_scene, create_daily_smart_scene). Dynamic scenes cannot be made here: the Hue app only has them from its cloud gallery. */
+/* Making and changing Hue scenes from the dashboard's scenes section, the way the Hue app does ("Add a scene"): choose the room or zone and its lights, then a custom scene (the lights set
+ in the dashboard's light popup, then saved), the current settings saved as a scene, an all-day scene (scenes by time of day) or a colour palette taken from a photo. Everything is written
+ to the bridge (hue_plus.create_scene, update_scene, delete_scene, create_daily_smart_scene). Dynamic scenes cannot be made here: the Hue app only has them from its cloud gallery. */
 
-var HUENEW = { scope: "", group: "", name: "", slots: [], days: [1, 1, 1, 1, 1, 1, 1], photo: null };
+/* g: the room or zone chosen {id, name, type, lights: [the bridge's light ids]}; sel: the bridge's light ids chosen; data: what the bridge says about its rooms, zones and scenes. */
+var HUENEW = { scope: "", g: null, sel: {}, mode: "", name: "", slots: [], days: [1, 1, 1, 1, 1, 1, 1], open: {}, restrict: "", target: "", data: null };
 
-/* The Hue Plus light that stands for a room or zone: the one of the page's area, else the only one there is. */
+/* ---- what the bridge has ---- */
+
+function hueLoadData() {
+  return hueplus.resources(["rooms", "zones", "scenes"]).then(function (r) {
+    var groups = (r.rooms || [])
+      .map(function (g) {
+        return { id: g.id, name: g.name, type: "room", lights: g.lights || [] };
+      })
+      .concat(
+        (r.zones || []).map(function (g) {
+          return { id: g.id, name: g.name, type: "zone", lights: g.lights || [] };
+        })
+      );
+    HUENEW.data = { groups: groups, scenes: r.scenes || [] };
+    return HUENEW.data;
+  });
+}
+
+/* The Home Assistant light that stands for one of the bridge's lights. */
+function hueLightEntity(lightId) {
+  var h = H();
+  return (
+    hueplus.lights(h).filter(function (id) {
+      return A(id).hue_light_id === lightId;
+    })[0] || null
+  );
+}
+
+function hueLightName(lightId) {
+  var e = hueLightEntity(lightId);
+  return e ? A(e).friendly_name || e : lightId;
+}
+
+/* The lights that have an entity (a light of the bridge Home Assistant does not show cannot be set from here). */
+function hueGroupLightIds(g) {
+  return g.lights.filter(function (id) {
+    return !!hueLightEntity(id);
+  });
+}
+
+function hueSelectedIds() {
+  return Object.keys(HUENEW.sel).filter(function (id) {
+    return HUENEW.sel[id];
+  });
+}
+
+/* The entities of the lights chosen, to set in the light popup. */
+function hueSelectedEntities() {
+  return hueSelectedIds()
+    .map(hueLightEntity)
+    .filter(function (e) {
+      return !!e;
+    });
+}
+
+/* The room or zone of the page the scene is made from, if it is one of the bridge's: by its name (the Hue Plus light of a room carries the room's name). */
+function hueGroupOfPage(scope) {
+  var h = H(),
+    room = scope && scope !== "home" ? roomById(scope) : null,
+    groups = hueGroups().filter(function (k) {
+      return room && room.area && h.entities[k].area_id === room.area;
+    });
+  if (groups.length !== 1 && room) {
+    groups = hueGroups().filter(function (k) {
+      return A(k).friendly_name === room.name;
+    });
+  }
+  return groups.length === 1 ? A(groups[0]).friendly_name : null;
+}
+
+/* The Hue Plus lights that stand for a room or zone of the bridge. */
 function hueGroups() {
   var h = H();
   return Object.keys(h.states).filter(function (k) {
@@ -13,58 +84,10 @@ function hueGroups() {
   });
 }
 
-function hueGroupFor(scope) {
-  var h = H(),
-    room = scope && scope !== "home" ? roomById(scope) : null,
-    all = hueGroups(),
-    byArea = room && room.area ? all.filter(function (k) { return h.entities[k].area_id === room.area; }) : [];
-  if (byArea.length === 1) return byArea[0];
-  return all.length === 1 ? all[0] : null;
-}
-
-/* The Hue lights a scene of that room or zone is made of: the lights of the group's area, else of the page. */
-function hueGroupLights(scope, group) {
-  var h = H(),
-    area = group && h.entities[group] && h.entities[group].area_id,
-    mine = (sceneLights(scope) || []).filter(function (id) { return !!A(id).hue_light_id; });
-  if (mine.length) return mine;
-  return hueplus.lights(h).filter(function (id) { return !!area && h.entities[id].area_id === area; });
-}
-
-function hueGroupRef(group) {
-  return { group: A(group).friendly_name, group_type: A(group).hue_type === "zone" ? "zone" : "room" };
-}
-
 /* The bridge's own id of a scene entity (its unique id). */
 function hueSceneUid(id) {
   var e = H().entities[id];
   return e && e.unique_id;
-}
-
-/* ---- the choices ---- */
-
-function hueStartMaker(scope) {
-  HUENEW = { scope: scope, group: hueGroupFor(scope), name: "", slots: [], days: [1, 1, 1, 1, 1, 1, 1], photo: null };
-  showPopup(HUENEW.group ? "hue-add-scene" : "hue-pick-group", true);
-}
-
-function huePickGroupPage(b) {
-  var h = H();
-  b.appendChild(mkHint(_T("hn_which_room")));
-  hueGroups().forEach(function (g) {
-    b.appendChild(
-      pill(A(g).hue_type === "zone" ? "target" : "home", A(g).friendly_name || g, {
-        sub: function () {
-          return A(g).hue_type === "zone" ? _T("hn_zone") : _T("hn_room");
-        },
-        tap: function () {
-          HUENEW.group = g;
-          showPopup("hue-add-scene", true);
-        },
-      })
-    );
-  });
-  if (!hueGroups().length) b.appendChild(mkHint(_T("hn_no_hue_room")));
 }
 
 function mkHint(text) {
@@ -73,34 +96,173 @@ function mkHint(text) {
   return d;
 }
 
-/* The Hue app's "Add a scene". */
+/* ---- the start: the Hue app's "Add a scene" ---- */
+
+function hueStartMaker(scope) {
+  HUENEW = { scope: scope, g: null, sel: {}, mode: "", name: "", slots: [], days: [1, 1, 1, 1, 1, 1, 1], open: {}, restrict: "", target: "", data: null };
+  hueLoadData().then(
+    function () {
+      showPopup("hue-add-scene", true);
+    },
+    function () {
+      toast(_T("hn_couldn_t_read_the_hue_bridge"));
+    }
+  );
+}
+
 function hueAddScenePage(b) {
   var grid = mk("div", "gridl g2"),
     items = [
-      ["edit", "hn_custom_scene", "hn_custom_scene_sub", function () { hueAskName("custom"); }],
-      ["check", "hn_save_current", "hn_save_current_sub", function () { hueAskName("current"); }],
-      ["clock", "hn_all_day", "hn_all_day_sub", function () { hueStartAllDay(); }],
-      ["cam", "hn_from_photo", "hn_from_photo_sub", function () { showPopup("hue-photo", true); }],
+      ["edit", "hn_custom_scene", "hn_custom_scene_sub", "custom"],
+      ["check", "hn_save_current", "hn_save_current_sub", "current"],
+      ["clock", "hn_all_day", "hn_all_day_sub", "allday"],
+      ["cam", "hn_from_photo", "hn_from_photo_sub", "photo"],
     ];
-  b.appendChild(mkHint(_T("hn_add_a_scene_hint").replace("{room}", A(HUENEW.group).friendly_name || "")));
+  b.appendChild(mkHint(_T("hn_add_a_scene_hint")));
   items.forEach(function (it) {
     grid.appendChild(
       pill(it[0], _T(it[1]), {
         sub: function () {
           return _T(it[2]);
         },
-        tap: it[3],
+        tap: function () {
+          hueChooseLights(it[3]);
+        },
       })
     );
   });
   b.appendChild(grid);
 }
 
+/* ---- choose your lights: rooms and zones, each with its lights ---- */
+
+/* Opens the choice for a way of making a scene. The room of the page is chosen, with all its lights, to begin with. */
+function hueChooseLights(mode) {
+  HUENEW.mode = mode;
+  var name = hueGroupOfPage(HUENEW.scope),
+    g = name
+      ? HUENEW.data.groups.filter(function (x) {
+          return x.name === name;
+        })[0]
+      : null;
+  HUENEW.sel = {};
+  HUENEW.g = null;
+  if (g) hueSelectGroup(g);
+  showPopup("hue-lights", true);
+}
+
+function hueSelectGroup(g) {
+  HUENEW.g = g;
+  HUENEW.sel = {};
+  hueGroupLightIds(g).forEach(function (id) {
+    HUENEW.sel[id] = true;
+  });
+}
+
+function hueLightsPage(b) {
+  var box = mk("div"),
+    groups = HUENEW.data.groups.filter(function (g) {
+      return !HUENEW.restrict || g.id === HUENEW.restrict;
+    });
+  b.appendChild(box);
+  if (HUENEW.mode === "edit") HUENEW.open[HUENEW.restrict] = true;
+  function allOf(g) {
+    var ids = hueGroupLightIds(g);
+    return !!HUENEW.g && HUENEW.g.id === g.id && ids.length > 0 && ids.every(function (id) { return HUENEW.sel[id]; });
+  }
+  function groupRow(g) {
+    var wrap = mk("div"),
+      ids = hueGroupLightIds(g),
+      row = pill(g.type === "zone" ? "target" : "home", g.name, {
+        check: function () {
+          return allOf(g);
+        },
+        sub: function () {
+          var n = HUENEW.g && HUENEW.g.id === g.id ? hueSelectedIds().length : 0;
+          return n ? n + " / " + ids.length : cntS(ids.length, _T("light"), _T("lights"));
+        },
+        tap: function () {
+          if (allOf(g)) {
+            HUENEW.sel = {};
+            HUENEW.g = null;
+          } else hueSelectGroup(g);
+          refresh();
+        },
+      }),
+      chev = mk("span", "chev", svg("chev"));
+    chev.addEventListener("click", function (e) {
+      e.stopPropagation();
+      HUENEW.open[g.id] = !HUENEW.open[g.id];
+      draw();
+    });
+    row.appendChild(chev);
+    wrap.appendChild(row);
+    if (HUENEW.open[g.id]) {
+      var grid = mk("div", "gridl g2");
+      ids.forEach(function (id) {
+        grid.appendChild(
+          pill("light", hueLightName(id), {
+            check: function () {
+              return !!HUENEW.g && HUENEW.g.id === g.id && !!HUENEW.sel[id];
+            },
+            tap: function () {
+              /* A scene belongs to one room or zone: choosing a light of another one chooses that one instead. */
+              if (!HUENEW.g || HUENEW.g.id !== g.id) {
+                HUENEW.g = g;
+                HUENEW.sel = {};
+              }
+              HUENEW.sel[id] = !HUENEW.sel[id];
+              if (!hueSelectedIds().length) HUENEW.g = null;
+              refresh();
+            },
+          })
+        );
+      });
+      wrap.appendChild(grid);
+    }
+    return wrap;
+  }
+  function draw() {
+    box.innerHTML = "";
+    box.appendChild(mkHint(_T(HUENEW.mode === "edit" ? "hn_choose_hint_edit" : "hn_choose_hint")));
+    [["zone", "hn_zones"], ["room", "hn_rooms"]].forEach(function (t) {
+      var list = groups.filter(function (g) {
+        return g.type === t[0];
+      });
+      if (!list.length) return;
+      box.appendChild(sep(_T(t[1]), t[0] === "zone" ? "target" : "home"));
+      list.forEach(function (g) {
+        box.appendChild(groupRow(g));
+      });
+    });
+    if (!groups.length) box.appendChild(mkHint(_T("hn_no_hue_room")));
+    box.appendChild(
+      pill("check", _T("hn_next"), {
+        tap: function () {
+          if (!HUENEW.g || !hueSelectedIds().length) {
+            toast(_T("hn_choose_a_light"));
+            return;
+          }
+          hueAfterLights();
+        },
+      })
+    );
+  }
+  draw();
+}
+
+function hueAfterLights() {
+  var m = HUENEW.mode;
+  if (m === "allday") hueStartAllDay();
+  else if (m === "photo") showPopup("hue-photo", true);
+  else if (m === "edit") hueEditOpen();
+  else hueAskName(m);
+}
+
 /* ---- a name ---- */
 
 function hueAskName(mode) {
   HUENEW.mode = mode;
-  HUENEW.name = "";
   showPopup("hue-scene-name", true);
 }
 
@@ -137,15 +299,14 @@ function hueNamePage(b) {
   }, 150);
 }
 
-function hueCreate(extra) {
-  var ref = hueGroupRef(HUENEW.group);
-  return callRaw("hue_plus", "create_scene", Object.assign({ name: HUENEW.name, group: ref.group, group_type: ref.group_type }, extra || {}));
+/* A scene of the lights chosen, in the room or zone chosen. */
+function hueCreate() {
+  return callRaw("hue_plus", "create_scene", { name: HUENEW.name, group: HUENEW.g.id, group_type: HUENEW.g.type, lights: hueSelectedIds() });
 }
 
 /* The lights as they are now, saved. */
 function hueSaveCurrent() {
-  var p = hueCreate();
-  Promise.resolve(p).then(
+  Promise.resolve(hueCreate()).then(
     function () {
       toast(_T("hn_scene_saved") + HUENEW.name);
       closeSheet();
@@ -156,9 +317,9 @@ function hueSaveCurrent() {
   );
 }
 
-/* The dashboard's light popup for the room's lights: set them, press the checkmark, and what they show is the scene. */
+/* The dashboard's light popup for the lights chosen: set them, press the checkmark, and what they show is the scene. */
 function hueOpenEditor() {
-  var lights = hueGroupLights(HUENEW.scope, HUENEW.group);
+  var lights = hueSelectedEntities();
   if (!lights.length) {
     toast(_T("hn_no_hue_lights_here"));
     return;
@@ -188,12 +349,13 @@ function hueOpenEditor() {
 
 /* ---- all-day scene: scenes by time of day ---- */
 
-function hueRoomScenes(group) {
+/* The still scenes of the room or zone chosen (a moving scene cannot be a time slot of a smart scene made here). */
+function hueRoomScenes() {
   var h = H(),
-    name = A(group).friendly_name;
+    g = HUENEW.g;
   return Object.keys(h.states)
     .filter(function (k) {
-      return k.indexOf("scene.") === 0 && HUESCENES.isHue(h, k) && A(k).group_name === name && A(k).is_dynamic === false;
+      return k.indexOf("scene.") === 0 && h.entities[k] && ["hue", "hue_plus"].indexOf(h.entities[k].platform) >= 0 && A(k).group_name === g.name && A(k).group_type === g.type && A(k).is_dynamic === false;
     })
     .sort(function (x, y) {
       return (A(x).name || x).localeCompare(A(y).name || y);
@@ -201,7 +363,7 @@ function hueRoomScenes(group) {
 }
 
 function hueStartAllDay() {
-  var scenes = hueRoomScenes(HUENEW.group);
+  var scenes = hueRoomScenes();
   if (!scenes.length) {
     toast(_T("hn_make_a_scene_first"));
     return;
@@ -221,7 +383,7 @@ var HUE_DAYS = ["hn_day_sun", "hn_day_mon", "hn_day_tue", "hn_day_wed", "hn_day_
 function hueAllDayPage(b) {
   var box = mk("div");
   b.appendChild(box);
-  var scenes = hueRoomScenes(HUENEW.group);
+  var scenes = hueRoomScenes();
   function draw() {
     box.innerHTML = "";
     var w = mk("div", "sqw pane"),
@@ -308,19 +470,18 @@ function hueSaveAllDay() {
     toast(_T("hn_pick_a_day"));
     return;
   }
-  var ref = hueGroupRef(HUENEW.group),
-    slots = HUENEW.slots
-      .slice()
-      .sort(function (x, y) {
-        return x.time.localeCompare(y.time);
-      })
-      .map(function (s) {
-        return { time: s.time, scene: hueSceneUid(s.scene) };
-      });
+  var slots = HUENEW.slots
+    .slice()
+    .sort(function (x, y) {
+      return x.time.localeCompare(y.time);
+    })
+    .map(function (s) {
+      return { time: s.time, scene: hueSceneUid(s.scene) };
+    });
   serviceResponse("hue_plus", "create_daily_smart_scene", {
     name: name,
-    group: ref.group,
-    group_type: ref.group_type,
+    group: HUENEW.g.id,
+    group_type: HUENEW.g.type,
     slots: slots,
     days: HUENEW.days
       .map(function (on, i) {
@@ -408,18 +569,19 @@ function huePhotoPixels(img) {
 }
 
 function huePhotoPage(b) {
-  var lights = hueGroupLights(HUENEW.scope, HUENEW.group),
+  var lights = hueSelectedEntities(),
     sw = mk("div", "hn-swatches"),
     file = mk("input");
   file.type = "file";
   file.accept = "image/*";
   b.appendChild(mkHint(_T("hn_photo_hint")));
-  var pick = pill("cam", _T("hn_choose_a_photo"), {
-    tap: function () {
-      file.click();
-    },
-  });
-  b.appendChild(pick);
+  b.appendChild(
+    pill("cam", _T("hn_choose_a_photo"), {
+      tap: function () {
+        file.click();
+      },
+    })
+  );
   b.appendChild(sw);
   file.addEventListener("change", function () {
     var f = file.files && file.files[0];
@@ -440,8 +602,7 @@ function huePhotoPage(b) {
       });
       /* Each light gets one of the colours, in turn; the lights show it at once. */
       lights.forEach(function (id, i) {
-        var c = colors[i % colors.length];
-        callRaw("light", "turn_on", { entity_id: id, rgb_color: c, brightness: 255 });
+        callRaw("light", "turn_on", { entity_id: id, rgb_color: colors[i % colors.length], brightness: 255 });
       });
       b.appendChild(
         pill("check", _T("hn_use_these_colours"), {
@@ -460,24 +621,54 @@ function huePhotoPage(b) {
 
 /* ---- changing a scene that exists ---- */
 
-/* The scene's lights are set as the scene has them, the light popup opens on them, and the checkmark records what they show as the scene. */
-function hueSceneEdit(id, room) {
-  var group = hueGroupFor(room ? room.id : "home"),
-    lights = hueGroupLights(room ? room.id : "home", group),
-    uid = hueSceneUid(id);
+/* Choose the lights of the scene (the ones it has are chosen, the others of its room or zone can be added), then the scene's lights are set as it has them, the light popup opens
+ on the chosen ones, and the checkmark records what they show as the scene. */
+function hueSceneEdit(id) {
+  var uid = hueSceneUid(id);
+  if (!uid) {
+    toast(_T("hn_no_hue_lights_here"));
+    return;
+  }
+  hueLoadData().then(
+    function (data) {
+      var scene = data.scenes.filter(function (s) {
+          return s.id === uid;
+        })[0],
+        g = scene && data.groups.filter(function (x) { return x.id === scene.group_id; })[0];
+      if (!g) {
+        toast(_T("hn_no_hue_lights_here"));
+        return;
+      }
+      HUENEW = { scope: "", g: g, sel: {}, mode: "edit", name: A(id).name || A(id).friendly_name || "", slots: [], days: [], open: {}, restrict: g.id, target: id, data: data };
+      (scene.lights || []).forEach(function (l) {
+        HUENEW.sel[l] = true;
+      });
+      showPopup("hue-lights", true);
+    },
+    function () {
+      toast(_T("hn_couldn_t_read_the_hue_bridge"));
+    }
+  );
+}
+
+function hueEditOpen() {
+  var id = HUENEW.target,
+    uid = hueSceneUid(id),
+    name = HUENEW.name,
+    ids = hueSelectedIds(),
+    lights = hueSelectedEntities();
   if (!uid || !lights.length) {
     toast(_T("hn_no_hue_lights_here"));
     return;
   }
   call("scene", "turn_on", { entity_id: id });
-  var name = A(id).name || A(id).friendly_name || "";
   setTimeout(function () {
     editLights({
       name: name,
       icon: "palette",
       lights: lights,
       onSave: function () {
-        return Promise.resolve(callRaw("hue_plus", "update_scene", { scene: uid, record_current: true })).then(
+        return Promise.resolve(callRaw("hue_plus", "update_scene", { scene: uid, record_current: true, lights: ids })).then(
           function () {
             toast(_T("hn_scene_saved") + name);
             return true;
@@ -488,14 +679,17 @@ function hueSceneEdit(id, room) {
           }
         );
       },
+      after: function () {
+        closeSheet();
+      },
     });
   }, 900);
 }
 
 function hueSceneRename(id) {
   HUENEW.target = id;
-  hueAskName("rename");
   HUENEW.name = A(id).name || "";
+  hueAskName("rename");
 }
 
 function hueRenameNow(name) {

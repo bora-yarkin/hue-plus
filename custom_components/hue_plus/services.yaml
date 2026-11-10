@@ -231,6 +231,9 @@ update_scene:
     "record_current":
       selector:
         boolean: {}
+    "lights":
+      selector:
+        object: {}
 
 delete_scene:
   fields:

@@ -267,6 +267,10 @@ class ActionTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(calls[0][:3], ("put", "scene", "s1"))
         recorded = calls[0][3]["actions"]
         self.assertTrue(recorded and all(a["target"]["rtype"] == "light" and "on" in a["action"] for a in recorded))
+        calls, _ = await self.go("update_scene", {"scene": "Soho", "record_current": True, "lights": ["l2"]})
+        self.assertEqual(
+            [a["target"]["rid"] for a in calls[0][3]["actions"]], ["l2"], "other lights than the scene's own can be recorded into it"
+        )
         with self.assertRaisesRegex(ValueError, "either actions or record_current"):
             await self.go("update_scene", {"scene": "Soho", "record_current": True, "actions": "[]"})
 

@@ -346,7 +346,10 @@ async def update_scene(api, snap, data):
         raise ValueError("Give either actions or record_current, not both")
     if data.get("record_current"):
         # The look of the scene's own lights as they are now (after being adjusted): the same recording create_scene makes.
-        wanted = {(a.get("target") or {}).get("rid") for a in scene.get("actions") or []}
+        if data.get("lights"):  # the lights to record, so that lights can be added to a scene or taken out of it
+            wanted = {_light(snap, str(x))["id"] for x in data["lights"]}
+        else:
+            wanted = {(a.get("target") or {}).get("rid") for a in scene.get("actions") or []}
         actions = payloads.scene_actions_from_lights([light for light in snap.light if light["id"] in wanted])
         if not actions:
             raise ValueError("This scene has no light to record")

@@ -57,8 +57,7 @@
     sceneEntHidden = HC.scenes.hidden,
     sceneEntSetHidden = HC.scenes.setHidden,
     importLiveScene = HC.scenes.importFrom,
-    editLights = HC.scenes.editLights,
-    sceneLights = HC.scenes.roomLights;
+    editLights = HC.scenes.editLights;
 
   /* What the dashboard keeps in variables is read when it is needed. */
   function isAdmin() {

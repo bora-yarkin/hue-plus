@@ -117,6 +117,10 @@ SPEC: dict[str, dict[str, Any]] = {
             "record_current": f(
                 "bool", "Records how the scene's lights look right now as its actions (after adjusting them), instead of giving actions."
             ),
+            "lights": f(
+                "list",
+                "With record_current: the lights to record (names or ids), to add lights to the scene or take some out. The scene's own lights when empty.",
+            ),
         },
     },
     "delete_scene": {"description": "Deletes a scene from the bridge.", "fields": {"scene": f("text", "The scene (id or name).", True)}},

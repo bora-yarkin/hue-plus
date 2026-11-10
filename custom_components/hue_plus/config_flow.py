@@ -11,7 +11,6 @@ from uuid import UUID
 
 import aiohttp
 import voluptuous as vol
-from aiohue.discovery import discover_bridge
 from aiohue.util import normalize_bridge_id
 from homeassistant.config_entries import SOURCE_REAUTH, SOURCE_RECONFIGURE, ConfigEntry, ConfigFlowResult, FlowType, OptionsFlow
 from homeassistant.core import callback
@@ -28,7 +27,7 @@ from homeassistant.helpers.selector import (
 )
 
 from .bridge.api import BridgeError
-from .bridge.connect import peer_fingerprint, pin
+from .bridge.connect import discover_bridge, peer_fingerprint, pin
 from .const import (
     CONF_APP_KEY,
     CONF_AUTH,

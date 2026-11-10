@@ -1,14 +1,18 @@
 /* The text of this plugin's pages (the dashboard adds it to its own table when the plugin starts). */
 
 var PLUGIN_STRINGS = {
+  "hn_add_a_scene_hint": "Create scenes to save to the Hue bridge. You choose the lights next.",
+  "hn_choose_your_lights": "Choose your lights",
+  "hn_zones": "Zones",
+  "hn_rooms": "Rooms",
+  "hn_choose_hint": "Choose a room or zone, or only some of its lights. A scene belongs to one room or zone.",
+  "hn_choose_hint_edit": "The scene's lights are chosen. Choose more of this room or zone to add them, or take some away.",
+  "hn_choose_a_light": "Choose at least one light",
+  "hn_couldn_t_read_the_hue_bridge": "Couldn’t read the Hue bridge",
   "hn_hue_scene": "Hue scene",
   "hn_hue_scene_sub": "Made on the bridge, as in the Hue app",
-  "hn_which_room": "Which room or zone is the scene for?",
-  "hn_zone": "Zone",
-  "hn_room": "Room",
   "hn_no_hue_room": "Hue Plus has no room or zone to make a scene in.",
   "hn_add_a_scene": "Add a scene",
-  "hn_add_a_scene_hint": "Create scenes to save to {room}. They are written to the Hue bridge.",
   "hn_custom_scene": "Custom scene",
   "hn_custom_scene_sub": "Set the lights, then save",
   "hn_save_current": "Save current settings",
