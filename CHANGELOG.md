@@ -4,6 +4,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-11-10
+
+### Changed
+- Hue Plus no longer needs the Hue integration. It has its own copies of the platforms it used to run from it (lights, light groups, sensors, binary sensors, button and dial events, scenes, motion and contact switches, selects: `custom_components/hue_plus/hue/`, Apache-2.0, copied from Home Assistant 2026.11.0, see `NOTICE.md`), and the manifest names the `aiohue` library itself. Side by side with the Hue integration nothing changes: Hue Plus still rides on its connection when it is set up, and hides or leaves alone its entities as chosen.
+
 ### Added
 - An entry that uses the Hue integration's connection can get one of its own: *Reconfigure → Use my own connection to the bridge*. Hue Plus registers with the bridge itself (press the link button) and keeps everything it has made: the entry, its entities, devices and names. The Hue integration can then be removed without Hue Plus losing the bridge.
 

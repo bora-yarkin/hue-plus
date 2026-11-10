@@ -96,5 +96,5 @@ async def run_platform(hass: HomeAssistant, entry: HuePlusConfigEntry, platform:
             rehome(runtime, bridge, entity)
         add(moved, *args, **kwargs)
 
-    module = importlib.import_module(f"homeassistant.components.hue.{platform}")
+    module = importlib.import_module(f"{__package__.rsplit('.', 1)[0]}.hue.{platform}")
     await module.async_setup_entry(hass, _Entry(entry), add_rehomed)

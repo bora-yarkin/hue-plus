@@ -5,16 +5,20 @@
     "@bora-yarkin"
   ],
   "config_flow": true,
+  "after_dependencies": [
+    "hue"
+  ],
   "dependencies": [
     "application_credentials",
     "http",
-    "hue",
     "websocket_api"
   ],
   "documentation": "https://github.com/bora-yarkin/hue-plus",
   "integration_type": "hub",
   "iot_class": "local_push",
   "issue_tracker": "https://github.com/bora-yarkin/hue-plus/issues",
-  "requirements": [],
-  "version": "0.12.0"
+  "requirements": [
+    "aiohue==4.9.0"
+  ],
+  "version": "0.13.0"
 }

@@ -20,8 +20,6 @@ from aiohue.v2.controllers.groups import GroupedLight
 from aiohue.v2.models.feature import EffectStatus
 from aiohue.v2.models.light import Light
 from aiohue.v2.models.resource import ResourceTypes
-from homeassistant.components.hue.v2.group import GroupedHueLight
-from homeassistant.components.hue.v2.light import HueLight
 from homeassistant.components.light import DOMAIN as LIGHT_DOMAIN
 from homeassistant.components.light import LightEntityDescription
 from homeassistant.core import HomeAssistant, callback
@@ -35,6 +33,8 @@ from homeassistant.helpers.service import async_register_platform_entity_service
 from ..bridge import models
 from ..const import DOMAIN, MANUFACTURER, PLAY_EFFECTS, replaces_hue
 from ..entity import accessory_device
+from ..hue.v2.group import GroupedHueLight
+from ..hue.v2.light import HueLight
 from ..runtime import HuePlusConfigEntry, Runtime
 from . import adopt
 from .alongside import beside_hue

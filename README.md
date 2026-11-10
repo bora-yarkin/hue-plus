@@ -3,7 +3,7 @@
 An unofficial Home Assistant integration that adds what the built-in Hue integration does not show. It uses the connection
 the Hue integration already has to your bridge, so there is no second login. Not affiliated with or endorsed by Signify.
 
-Needs Home Assistant 2026.10 or newer and the Hue integration set up with a v2 bridge (Bridge Pro or Bridge v2); Hue Plus uses its connection.
+Needs Home Assistant 2026.10 or newer and a v2 bridge (Bridge Pro or Bridge v2). Hue Plus can connect to the bridge itself (no Hue integration needed), or use the connection of the Hue integration when that is set up, side by side with it.
 
 ## It does not break what you have
 
@@ -23,7 +23,7 @@ Each module is switched on or off per bridge in the integration's options.
 |---|---|
 | **Bridge** | Firmware state and install for the bridge and every device; the apps allowed on the bridge; the bridge's own automations as switches; automatic update time; Zigbee channel; internet and remote-access state; per-light power-on behaviour, identify, timed effects, signals; search for new devices. Services for scenes, smart scenes, rooms, zones, entertainment areas, automations, Matter sharing (removing a fabric), bridge settings and raw requests. Actions that cannot be undone need `confirm: true`; every service is for administrators only. |
 | **Bridge, more** | Routines for a room or zone made from the bridge's own templates (wake-up, go-to-sleep, timer); what each press of a dimmer, smart button or tap switch does; smart scenes that change through the day; motion sensor on/off and sensitivity (experimental); Home and Away state. |
-| **Lights** | Hue Plus's own light entities, next to or in place of the Hue integration's (see above): every light, room and zone, with brightness, colour, white, transitions, flash and each light's effects. In *hide and rename* mode the Hue integration's entities are hidden and renamed (`light.floor_light` becomes `light.floor_light_hue`) and Hue Plus's take the name they had, so automations and dashboards keep working. Switching the module off, or removing Hue Plus, gives them back. For now Hue Plus still uses the Hue integration's connection to the bridge. |
+| **Lights** | Hue Plus's own light entities, next to or in place of the Hue integration's (see above): every light, room and zone, with brightness, colour, white, transitions, flash and each light's effects. In *hide and rename* mode the Hue integration's entities are hidden and renamed (`light.floor_light` becomes `light.floor_light_hue`) and Hue Plus's take the name they had, so automations and dashboards keep working. Switching the module off, or removing Hue Plus, gives them back. |
 | **Devices** | The Hue integration's other entities, on Hue Plus's devices: motion, temperature, light-level and contact sensors, batteries, buttons and dials (as event entities), the bridge's scenes and smart scenes, motion-aware switches and selects. Like the lights, in *hide and rename* mode the Hue integration's own are hidden and renamed and Hue Plus's take their names. The bridge's automations show as switches here, so the bridge module does not add its own. |
 | **Zones** | A light for each colour zone of a gradient light (the gradient light itself is the main light, named like the device, with its zones listed in its attributes). Styles (linear, mirrored, scattered, segmented), flip, colour effects with a colour and speed of your choice, raw gradient points. |
 | **Live scenes** | Not here any more: live scenes and areas are played by [Home Control](https://github.com/bora-yarkin/home-control), for any light, and Hue Plus is its expansion pack for Hue lights (`home_control.json`, the native effects through `hue_plus.play_effect`). Hue Plus keeps reading a Hue scene (`hue_plus.import_hue_scene`) so Home Control can import it as a live scene. |
@@ -52,6 +52,8 @@ bridge's address, press the round button on the bridge, and Hue Plus registers i
 one is refused). If the Hue integration already has that bridge, Hue Plus uses its connection. If the bridge's address changes, use *Reconfigure*.
 
 Without the Marketplace, copy `custom_components/hue_plus` into your configuration folder and restart.
+
+Hue Plus has its own copies of the platforms of the Hue integration (`custom_components/hue_plus/hue/`, Apache-2.0, see `NOTICE.md`), so it does not need that integration, in either way of connecting. An entry that uses the Hue integration's connection can switch to a connection of its own without losing anything (*Reconfigure → Use my own connection to the bridge*); the Hue integration can be removed afterwards.
 
 Devices: Home Assistant gives a device to one integration only, so Hue Plus makes its own devices (the bridge, and each
 light or accessory it has an entity for), named like the Hue ones and linked to the bridge.

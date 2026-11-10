@@ -14,6 +14,8 @@ testpaths = ["tests"]
 asyncio_mode = "auto"
 
 [tool.ruff]
+# The platforms copied from the Hue integration (custom_components/hue_plus/hue) stay as they are in Home Assistant, so that a change there can be compared.
+extend-exclude = ["custom_components/hue_plus/hue"]
 line-length = 140
 target-version = "py314"
 
