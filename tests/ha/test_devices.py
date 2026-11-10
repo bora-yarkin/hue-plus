@@ -9,6 +9,7 @@ from unittest.mock import patch
 
 import pytest
 from aiohue.v2.controllers.events import EventType
+from aiohue.v2.models.resource import ResourceTypes
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import EntityPlatform
@@ -189,7 +190,8 @@ async def test_a_device_deleted_from_the_bridge_while_running_is_removed(hass, h
     await hass.async_block_till_done()
     assert dr.async_get(hass).async_get(device.id) is None
     assert all(er.async_get(hass).async_get(entity_id) is None for entity_id in entities)
-    assert hue_plus_device_ids(hass, entry) >= {d.id for d in api.devices}
+    # Every device of the bridge has a Hue Plus device, except the bridge's own device resource: that is the bridge's device itself.
+    assert hue_plus_device_ids(hass, entry) >= {d.id for d in api.devices if not any(s.rtype == ResourceTypes.BRIDGE for s in d.services)}
 
 
 async def test_nothing_is_removed_when_the_bridges_data_has_not_loaded(hass, home):  # noqa: F811
@@ -278,3 +280,12 @@ async def test_the_buttons_of_one_switch_have_different_names(hass, home):  # no
     for names in switches:
         assert len(set(names)) == len(names), names
         assert all(name and name.startswith("Button ") for name in names), names
+
+
+async def test_the_bridge_is_one_device_not_two(hass, home):  # noqa: F811
+    """The Hue API has the bridge as a device of its own too (it carries the firmware and connectivity); it is the bridge's device, not a second "Hue Bridge"."""
+    entry = await plus(hass, home, ["devices"])
+    devices = [d for d in dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id) if d.model == "Hue Bridge"]
+    assert len(devices) == 1, [(d.name, sorted(d.identifiers)) for d in devices]
+    bridge_entities = [e for e in er.async_get(hass).entities.values() if e.platform == DOMAIN and e.device_id == devices[0].id]
+    assert bridge_entities, "the bridge device keeps its entities"

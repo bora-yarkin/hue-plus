@@ -14,6 +14,7 @@ import logging
 from collections.abc import Iterable
 from typing import Any
 
+from aiohue.v2.models.resource import ResourceTypes
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import Entity
@@ -59,6 +60,11 @@ def rehome(runtime: Runtime, bridge: Any, entity: Entity) -> None:
         return
     device = api.devices.get(ident)
     if device is not None:
+        # The bridge is also a device of its own in the Hue API (the one that carries its firmware and connectivity): it is the bridge's
+        # device here too, not a second "Hue Bridge" next to it.
+        if any(getattr(service, "rtype", None) == ResourceTypes.BRIDGE for service in device.services):
+            entity._attr_device_info = bridge_device(runtime)
+            return
         entity._attr_device_info = accessory_device(runtime, device.id, device.metadata.name, device.product_data.product_name)
         return
     group = api.groups.get(ident)
