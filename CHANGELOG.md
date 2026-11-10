@@ -15,6 +15,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 ### Fixed
 - The bridge showed as two "Hue Bridge" devices: the Hue API also lists the bridge as a device of its own (it carries the firmware and connectivity), and Hue Plus made a second device for it. It is the bridge's device now., and the empty second device an earlier version made is removed when Hue Plus starts.
 
+
+
 ## [0.12.0] - 2026-11-08
 
 ### Added
