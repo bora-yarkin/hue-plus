@@ -342,12 +342,15 @@ def groups(snap: Snapshot, kind: str) -> list[dict[str, Any]]:
     out = []
     for group in getattr(snap, kind):
         children = [c.get("rid") for c in group.get("children") or []]
+        # The lights of the group: a zone's children are lights, a room's are devices, and a device's light is the one it owns.
+        lights = children if kind == "zone" else [item["id"] for item in snap.light if (item.get("owner") or {}).get("rid") in children]
         out.append(
             {
                 "id": group["id"],
                 "name": _name(group),
                 "archetype": (group.get("metadata") or {}).get("archetype"),
                 "children": [{"id": c, "name": (light_names if kind == "zone" else names).get(c, c)} for c in children],
+                "lights": lights,
             }
         )
     return out
@@ -360,6 +363,9 @@ def scenes(snap: Snapshot) -> list[dict[str, Any]]:
             "name": _name(s),
             "group_id": (s.get("group") or {}).get("rid"),
             "group_type": (s.get("group") or {}).get("rtype"),
+            "lights": [
+                (a.get("target") or {}).get("rid") for a in s.get("actions") or [] if (a.get("target") or {}).get("rtype") == "light"
+            ],
             "speed": s.get("speed"),
             "auto_dynamic": s.get("auto_dynamic"),
             "active": ((s.get("status") or {}).get("active")),

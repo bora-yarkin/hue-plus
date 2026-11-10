@@ -17,6 +17,7 @@
   });
   /* The Spotify sync and the Hue Play HDMI Sync Box: rows of the Lights section that look like lights, their popups, and what plays on a light. */
   HC.addStyles(HUE_PLUS_CSS);
+  HC.addStyles(HUE_NEW_CSS);
   HC.registerPage("hsync", "spotify_sync", "syncring", function (body, id) {
     hsyncPopup(body, id);
   });
@@ -81,11 +82,38 @@
       return HUESCENES.active(H(), id);
     },
     toggle: hueSceneToggle,
+    remove: hueSceneRemove,
     start: hueSceneStart,
     dynamic: function (id) {
       return A(id).is_dynamic !== false;
     },
     palette: hueScenePalette,
+  });
+  /* The Hue app's "Add a scene", in the new-scene popup of a scenes section. */
+  HC.registerPage("hue-lights", "hn_choose_your_lights", "palette", function (body) {
+    hueLightsPage(body);
+  });
+  HC.registerPage("hue-add-scene", "hn_add_a_scene", "palette", function (body) {
+    hueAddScenePage(body);
+  });
+  HC.registerPage("hue-scene-name", "hn_name_your_scene", "palette", function (body) {
+    hueNamePage(body);
+  });
+  HC.registerPage("hue-all-day", "hn_all_day_scene", "clock", function (body) {
+    hueAllDayPage(body);
+  });
+  HC.registerPage("hue-photo", "hn_from_photo", "cam", function (body) {
+    huePhotoPage(body);
+  });
+  HC.registerSceneMaker({
+    id: "hue",
+    title: "hn_hue_scene",
+    sub: "hn_hue_scene_sub",
+    icon: "palette",
+    available: function () {
+      return hueplus.has(H(), "create_scene") && hueGroups().length > 0;
+    },
+    start: hueStartMaker,
   });
   HC.registerSceneImport({
     id: "hue",

@@ -256,6 +256,8 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(models.groups(s, "room")[0]["children"], [{"id": "d1", "name": "Floor Light L"}])
         self.assertEqual(models.groups(s, "zone")[0]["children"], [{"id": "l1", "name": "Floor Light L"}])
         self.assertEqual(models.groups(s, "room")[0]["archetype"], "bedroom")
+        self.assertEqual(models.groups(s, "room")[0]["lights"], ["l1"], "the light of each device the room holds")
+        self.assertEqual(models.groups(s, "zone")[0]["lights"], ["l1"])
 
     def test_scenes_and_search_status(self):
         s = snap(
@@ -264,6 +266,7 @@ class ModelTests(unittest.TestCase):
                     "id": "sc",
                     "metadata": {"name": "Soho"},
                     "group": {"rid": "r1", "rtype": "room"},
+                    "actions": [{"target": {"rid": "l1", "rtype": "light"}, "action": {}}, {"target": {"rid": "x", "rtype": "other"}}],
                     "speed": 0.6,
                     "auto_dynamic": False,
                     "status": {"active": "inactive"},
@@ -278,6 +281,7 @@ class ModelTests(unittest.TestCase):
                 "name": "Soho",
                 "group_id": "r1",
                 "group_type": "room",
+                "lights": ["l1"],
                 "speed": 0.6,
                 "auto_dynamic": False,
                 "active": "inactive",

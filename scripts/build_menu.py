@@ -22,6 +22,7 @@ ORDER = (
     "huemenu.js",
     "huesync.js",
     "huescenes.js",
+    "huenewscene.js",
     "huestyle.js",
     "epilogue.js",
 )

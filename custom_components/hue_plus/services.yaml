@@ -228,6 +228,9 @@ update_scene:
     "actions":
       selector:
         object: {}
+    "record_current":
+      selector:
+        boolean: {}
 
 delete_scene:
   fields:

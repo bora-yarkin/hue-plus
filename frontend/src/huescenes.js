@@ -249,6 +249,38 @@ function hueScenePopup(b, id, room) {
         },
       })
     );
+  /* In edit mode, the scene can be changed the way the Hue app changes it, and it is written to the bridge. */
+  if (isEditing() && isAdmin() && hueplus.has(H(), "update_scene") && stat) {
+    b.appendChild(
+      pill("light", _T("hn_change_the_lights"), {
+        sub: function () {
+          return _T("hn_change_the_lights_sub");
+        },
+        tap: function () {
+          hueSceneEdit(id, room);
+        },
+      })
+    );
+    b.appendChild(
+      pill("edit", _T("hn_rename"), {
+        tap: function () {
+          hueSceneRename(id);
+        },
+      })
+    );
+  }
+  if (isEditing() && isAdmin() && hueplus.has(H(), "delete_scene"))
+    b.appendChild(
+      pill("trash", _T("hn_delete_scene"), {
+        tap: function () {
+          confirmDlg(_T("hn_delete_scene") + ": " + (A(id).name || id) + "?", function () {
+            hueSceneRemove(id).then(function () {
+              closeSheet();
+            });
+          });
+        },
+      })
+    );
   if (isEditing() && room)
     b.appendChild(
       pill("eye", sceneEntHidden(room, id) ? _T("show_this_scene") : _T("hide_this_scene"), {

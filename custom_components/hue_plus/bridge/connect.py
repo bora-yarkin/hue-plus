@@ -12,6 +12,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import ssl
+from dataclasses import dataclass
 
 import aiohttp
 
@@ -43,3 +44,37 @@ async def peer_fingerprint(host: str, port: int = HTTPS_PORT) -> bytes:
 def pin(fingerprint_hex: str) -> aiohttp.Fingerprint:
     """The aiohttp ``ssl`` argument that only accepts a server showing this certificate."""
     return aiohttp.Fingerprint(bytes.fromhex(fingerprint_hex))
+
+
+@dataclass(frozen=True)
+class DiscoveredBridge:
+    host: str
+    id: str  # the bridge's id as the bridge writes it, 16 hexadecimal digits
+    supports_v2: bool
+
+
+async def discover_bridge(host: str, session: aiohttp.ClientSession) -> DiscoveredBridge:
+    """Who the bridge at ``host`` is and whether it speaks the v2 API, read over https.
+
+    The bridge's certificate is not checked here (it has no public chain; it is being learned, see ``peer_fingerprint``), and nothing
+    secret is sent or read. The Hue integration's library asks over plain http, which a Bridge Pro answers with a redirect to https:
+    followed with Home Assistant's own certificate check that fails on the bridge's private authority, so it cannot be used here.
+    """
+    timeout = aiohttp.ClientTimeout(total=CONNECT_TIMEOUT_S)
+    try:
+        async with session.get(f"https://{host}/api/config", ssl=False, allow_redirects=False, timeout=timeout) as response:
+            response.raise_for_status()
+            data = await response.json(content_type=None)
+    except (aiohttp.ClientError, TimeoutError, ValueError) as err:
+        raise BridgeError(f"The bridge could not be reached ({type(err).__name__})") from err
+    if not isinstance(data, dict) or not isinstance(data.get("bridgeid"), str):
+        raise BridgeError("That is not a Hue bridge")
+    try:
+        # The v2 API answers 403 (forbidden) to a request that has no application key.
+        async with session.get(
+            f"https://{host}/clip/v2/resource", ssl=False, allow_redirects=False, raise_for_status=False, timeout=timeout
+        ) as response:
+            supports_v2 = response.status == 403
+    except aiohttp.ClientError, TimeoutError:
+        supports_v2 = False
+    return DiscoveredBridge(host, data["bridgeid"], supports_v2)

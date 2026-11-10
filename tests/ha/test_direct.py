@@ -416,7 +416,13 @@ def make_riding(hass, hue_entry) -> MockConfigEntry:
         version=3,
         unique_id=BRIDGE_ID,
         title="Hue Bridge Plus",
-        data={CONF_HUE_ENTRY: hue_entry.entry_id, CONF_TAKEOVER: TAKEOVER_REPLACE},
+        data={
+            CONF_HUE_ENTRY: hue_entry.entry_id,
+            CONF_TAKEOVER: TAKEOVER_REPLACE,
+            "uuid": "sync-uuid",
+            "token": {"refresh_token": "r"},
+            "sync_app_id": "app",
+        },
         options={CONF_MODULES: ["bridge"]},
     )
     entry.add_to_hass(hass)
@@ -444,6 +450,9 @@ async def test_an_entry_on_the_hue_integration_gets_its_own_connection_and_keeps
     assert CONF_HUE_ENTRY not in entry.data and CONF_TAKEOVER not in entry.data
     assert entry.data[CONF_HOST] == HOST and entry.data[CONF_APP_KEY] == "new-app-key" and entry.data[CONF_CERT_SHA256] == FINGERPRINT
     assert entry.unique_id == BRIDGE_ID and entry.options[CONF_MODULES] == ["bridge"], "the entry, so its entities and devices, stays"
+    assert (entry.data["uuid"], entry.data["token"], entry.data["sync_app_id"]) == ("sync-uuid", {"refresh_token": "r"}, "app"), (
+        "the Spotify sync's credentials are not lost"
+    )
 
 
 async def test_another_bridge_is_not_accepted_for_an_entry_that_is_changing_connection(hass, hue_entry):
