@@ -100,7 +100,7 @@ Status words: done = a page in the menu that writes to the bridge; missing = no 
 | 1 | Hue scenes as dashboard scenes | done (0.14.1) | live |
 | 2 | Create / edit / rename / delete Hue scenes | done (`huenewscene.js`) | not recorded |
 | 3 | Automations: list, on/off, delete | done | live (existing) |
-| 3 | Wake up, Go to sleep, Timer, Lighting schedule, Coming home, Leaving home: create and edit (`huewizard.js`) | done | request proven for wake up (style, switch-off delay), go to sleep (style), timer, schedule (end time, randomise); coming home / leaving home from the earlier proof; service not tried |
+| 3 | Wake up, Go to sleep, Timer, Lighting schedule, Coming home, Leaving home: create and edit (`huewizard.js`) | done | `create_routine` and `update_routine` tried on the real bridge for wake up, go to sleep, timer, schedule, coming home and leaving home (disabled, read back as sent, deleted) |
 | 3 | Mimic presence (`PM` template, one per bridge: where, all day or only when dark, end with) | done | request proven (as a disabled throwaway); service not tried |
 | 3 | Go to sleep: "At a certain time" or "With a button press", End with lights off / dimmed lights / warm nightlight | done | requests proven; the play button is `trigger_automation` (start / stop), tried on a throwaway routine for the bathroom light |
 | 3 | Play and stop for wake up, go to sleep, timer and Mimic presence | done | request proven |
