@@ -263,15 +263,20 @@ async def _candidates(api: BridgeApi, snap: models.Snapshot, refs: list[str]) ->
 
 @action("set_motion_area")
 async def set_motion_area(api, snap, data):
-    """Switches a MotionAware area on or off, renames it, changes its devices, or sets how sensitive it is (a setting of the area's convenience service)."""
+    """Switches a MotionAware area on or off, renames it, changes its devices, or sets how sensitive it is.
+
+    An area only senses motion while its convenience service is on: switching that on is also what calibrates a new area (the bridge reports the
+    area ``healthy`` after about 25 seconds), so ``enabled`` is written to both the area and that service."""
     area = _motion_area(await api.list("motion_area_configuration"), data["area"])
     candidates = await _candidates(api, snap, data["lights"]) if data.get("lights") is not None else None
+    service = _area_service(area, "convenience_area_motion")
+    if (data.get("sensitivity") is not None or data.get("enabled") is not None) and service is None:
+        raise ValueError("This area has no motion service")
     if data.get("name") is not None or data.get("enabled") is not None or candidates is not None:
         await api.put("motion_area_configuration", area["id"], payloads.motion_area_put(data.get("name"), data.get("enabled"), candidates))
+    if data.get("enabled") is not None:
+        await api.put("convenience_area_motion", service, {"enabled": bool(data["enabled"])})
     if data.get("sensitivity") is not None:
-        service = _area_service(area, "convenience_area_motion")
-        if service is None:
-            raise ValueError("This area has no motion service to set the sensitivity on")
         await api.put("convenience_area_motion", service, payloads.motion_sensitivity_put(int(data["sensitivity"])))
 
 

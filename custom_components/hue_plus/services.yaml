@@ -98,7 +98,7 @@ set_motion_area:
         number:
           mode: "box"
           min: 0
-          max: 10
+          max: 4
           step: 1
 
 create_motion_area:

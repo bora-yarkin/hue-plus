@@ -157,7 +157,8 @@ function hwNamePage(b) {
         inp.focus();
         return;
       }
-      hwAdvance();
+      if (HW.onName) HW.onName();
+      else hwAdvance();
     })
   );
   setTimeout(function () {

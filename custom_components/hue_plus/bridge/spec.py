@@ -73,7 +73,9 @@ SPEC: dict[str, dict[str, Any]] = {
             "enabled": f("bool", "On or off."),
             "name": f("text", "A new name."),
             "lights": f("list", "The devices that sense motion from now on (three or four; names, ids or device ids).", False),
-            "sensitivity": f("int", "How sensitive it is (0 is the least; the highest value is the area's own maximum).", min=0, max=10),
+            "sensitivity": f(
+                "int", "How sensitive it is, from 0 (the least) to the area's own maximum (4 on the bridge it was tried on).", min=0, max=4
+            ),
         },
     },
     "create_motion_area": {

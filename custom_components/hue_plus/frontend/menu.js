@@ -528,6 +528,17 @@ var PLUGIN_STRINGS = {
   "hrw_zigbee_hint": "Every light and accessory has to find the bridge again after the channel changes, and some may not.",
   "hrw_keeps_clear_of_wifi": "Keeps clear of Wi-Fi",
   "hrw_change_the_zigbee_channel": "Change the Zigbee channel? Every light and accessory has to find the bridge again, and some may not.",
+  "hmw_leave_the_area": "Leave the area",
+  "hmw_leave_hint": "Let’s calibrate your MotionAware area. Make sure nobody, including pets, is in the area during the 20 seconds it will take to calibrate.",
+  "hmw_calibrating_area": "Calibrating area…",
+  "hmw_calibrating_hint": "This sets the baseline signal strength for MotionAware to detect motion accurately.",
+  "hmw_second_to_go": "second to go",
+  "hmw_seconds_to_go": "seconds to go",
+  "hmw_almost_done": "Almost done…",
+  "hmw_calibration_didn_t_finish": "The bridge didn’t finish calibrating. Check that the devices are powered, then try again.",
+  "hmw_try_again": "Try again",
+  "hmw_lowest": "Lowest",
+  "hmw_highest": "Highest",
 };
 
 /* The styles of the Spotify sync and sync box popups, added to the dashboard's page by the plugin (the dashboard's own styles are for its own parts). */
@@ -3247,7 +3258,8 @@ function hwNamePage(b) {
         inp.focus();
         return;
       }
-      hwAdvance();
+      if (HW.onName) HW.onName();
+      else hwAdvance();
     })
   );
   setTimeout(function () {
@@ -3720,12 +3732,13 @@ function hmwStart() {
   hwBegin({
     kind: "motion",
     icon: "motion",
-    steps: ["hue-mw-intro", "hue-mw-tip1", "hue-mw-tip2", "hue-mw-tip3", "hue-mw-where", "hue-mw-devices", "hue-wz-name"],
+    steps: ["hue-mw-intro", "hue-mw-tip1", "hue-mw-tip2", "hue-mw-tip3", "hue-mw-where", "hue-mw-devices", "hue-mw-leave", "hue-mw-calibrating", "hue-wz-name", "hue-mw-created", "hue-mw-groups", "hue-mw-done"],
     group: null,
     devices: {},
     name: _T("hm_motionaware_area"),
     nameHeading: _T("hmw_name_your_area"),
-    finish: hmwCreate,
+    finish: hmwSetLights,
+    onName: hmwRename1,
     last: "hn_next",
     slots: [],
     groups: [],
@@ -3735,14 +3748,14 @@ function hmwStart() {
 }
 
 /* A page of advice: a heading, the paragraphs, Next. */
-function hmwInfo(key, title, texts, label) {
+function hmwInfo(key, title, texts, label, next) {
   return function (b) {
     if (!hwOpen(b, key)) return;
     b.appendChild(hmTitle("motion", _T(title)));
     texts.forEach(function (t) {
       hwHint(b, _T(t));
     });
-    b.appendChild(hwNext(label ? _T(label) : null));
+    b.appendChild(hwNext(label ? _T(label) : null, next));
   };
 }
 
@@ -3845,28 +3858,114 @@ function hmwDevicesPage(b) {
   });
 }
 
-/* The name was given: the area is made on the bridge, then the wizard goes on with what it does. */
-function hmwCreate() {
+/* "Leave the area" was read: the area is made on the bridge with the name it will be called until it is named, and switched on, which calibrates it. Nobody may be in the room for about 20 seconds. */
+function hmwStartCalibration() {
   var before = {};
   hmMotionAreas().forEach(function (x) {
     before[x.id] = 1;
   });
-  hpCall("hue_plus", "create_motion_area", { name: HW.name, group: HW.group.id, group_type: "room", lights: hmwChosen() }).then(
-    function () {
-      hueplus.resources(["motion_areas", "automations"]).then(function (r) {
-        HM.motion_areas = r.motion_areas;
-        HM.automations = r.automations;
-        var made = ((r.motion_areas || {}).areas || []).filter(function (x) {
-          return !before[x.id];
-        })[0];
-        HW.areaId = made ? made.id : null;
-        HW.steps = HW.steps.concat(["hue-mw-created", "hue-mw-groups", "hue-mw-done"]);
-        HW.finish = hmwSetLights;
-        hwPush("hue-mw-created");
+  var made = HW.areaId
+    ? Promise.resolve()
+    : hpCall("hue_plus", "create_motion_area", { name: HW.name, group: HW.group.id, group_type: "room", lights: hmwChosen() }).then(function () {
+        return hueplus.resources(["motion_areas", "automations"]).then(function (r) {
+          HM.motion_areas = r.motion_areas;
+          HM.automations = r.automations;
+          var area = ((r.motion_areas || {}).areas || []).filter(function (x) {
+            return !before[x.id];
+          })[0];
+          if (!area) throw new Error("not found");
+          HW.areaId = area.id;
+        });
       });
+  made
+    .then(function () {
+      return hpCall("hue_plus", "set_motion_area", { area: HW.areaId, enabled: true });
+    })
+    .then(
+      function () {
+        HW.calibrationStart = Date.now();
+        hwPush("hue-mw-calibrating");
+      },
+      function () {
+        toast(_T("hmw_couldn_t_create_the_area"));
+      }
+    );
+}
+
+/* The bridge calls the area healthy once its devices have measured the room. */
+function hmwCalibrated(x) {
+  return !!x && x.health === "healthy" && (x.participants || []).every(function (p) {
+    return !p.status || p.status.health === "healthy";
+  });
+}
+
+var HMW_CALIBRATION_SECONDS = 20;
+var HMW_CALIBRATION_GIVE_UP_SECONDS = 120;
+
+/* "Calibrating area…": a count down while the bridge is asked every two seconds; when the area is healthy the wizard goes on to the name. */
+function hmwCalibratingPage(b) {
+  if (!hwOpen(b, "hue-mw-calibrating")) return;
+  b.appendChild(hmTitle("motion", _T("hmw_calibrating_area")));
+  hwHint(b, _T("hmw_calibrating_hint"));
+  var status = hmRow({
+      title: function () {
+        var left = HMW_CALIBRATION_SECONDS - Math.floor((Date.now() - HW.calibrationStart) / 1000);
+        return left > 0 ? cntS(left, _T("hmw_second_to_go"), _T("hmw_seconds_to_go")) : _T("hmw_almost_done");
+      },
+    }),
+    box = hmGroup([status]),
+    stopped = false,
+    timer = null;
+  b.appendChild(box);
+  function leave() {
+    stopped = true;
+    clearInterval(timer);
+  }
+  function check() {
+    if (stopped || !b.isConnected) return leave();
+    refresh();
+    if (Date.now() - HW.calibrationStart > HMW_CALIBRATION_GIVE_UP_SECONDS * 1000) {
+      leave();
+      b.appendChild(hmCallout(_T("hmw_calibration_didn_t_finish")));
+      b.appendChild(
+        hmActions([
+          hmButton(_T("hmw_try_again"), "primary", function () {
+            popBack();
+          }),
+        ])
+      );
+      return;
+    }
+    hueplus.resources(["motion_areas"]).then(function (r) {
+      if (stopped) return;
+      HM.motion_areas = r.motion_areas;
+      var x = hmMotionArea1(HW.areaId);
+      if (hmwCalibrated(x) && Date.now() - HW.calibrationStart > HMW_CALIBRATION_SECONDS * 1000 - 5000) {
+        leave();
+        HW.depth--;
+        popBack();
+        hwPush("hue-wz-name");
+      }
+    });
+  }
+  timer = setInterval(check, 2000);
+}
+
+/* The area exists and is calibrated: if it was given a name other than the one it was made with, it is renamed, then the wizard goes on. */
+function hmwRename1() {
+  var d = HW,
+    area = hmMotionArea1(d.areaId);
+  if (area && area.name === d.name) {
+    hwAdvance();
+    return;
+  }
+  hpCall("hue_plus", "set_motion_area", { area: d.areaId, name: d.name }).then(
+    function () {
+      if (area) area.name = d.name;
+      hwAdvance();
     },
     function () {
-      toast(_T("hmw_couldn_t_create_the_area"));
+      toast(_T("hmw_couldn_t_save"));
     }
   );
 }
@@ -4283,10 +4382,11 @@ function hmMotionArea(b, id) {
   });
 }
 
-/* The levels the bridge offers are 0 to its maximum: two are low and high, three add medium; more have no names of their own. */
+/* The levels the bridge offers are 0 to its maximum: two are low and high, three add medium, five (the bridge it was tried on, medium is its default 2) add lowest and highest; other counts have no names of their own. */
 function hmwLevelText(v, max) {
   if (max === 1) return [_T("hmw_low"), _T("hmw_high")][v];
   if (max === 2) return [_T("hmw_low"), _T("hmw_medium"), _T("hmw_high")][v];
+  if (max === 4) return [_T("hmw_lowest"), _T("hmw_low"), _T("hmw_medium"), _T("hmw_high"), _T("hmw_highest")][v];
   return _T("hmw_level") + " " + v;
 }
 
@@ -4498,6 +4598,8 @@ HP_PAGES["hue-mw-tip2"] = ["hmw_before_you_choose_devices", "motion", hmwInfo("h
 HP_PAGES["hue-mw-tip3"] = ["hmw_before_you_choose_devices", "motion", hmwInfo("hue-mw-tip3", "hmw_before_you_choose_devices", ["hmw_tip3_1", "hmw_tip3_2"])];
 HP_PAGES["hue-mw-where"] = ["hmw_create_a_motionaware_area", "motion", hmwWherePage];
 HP_PAGES["hue-mw-devices"] = ["hmw_choose_devices", "motion", hmwDevicesPage];
+HP_PAGES["hue-mw-leave"] = ["hmw_leave_the_area", "motion", hmwInfo("hue-mw-leave", "hmw_leave_the_area", ["hmw_leave_hint"], null, hmwStartCalibration)];
+HP_PAGES["hue-mw-calibrating"] = ["hmw_calibrating_area", "motion", hmwCalibratingPage];
 HP_PAGES["hue-mw-created"] = ["hmw_area_created", "motion", hmwInfo("hue-mw-created", "hmw_area_created", ["hmw_area_created_sub"])];
 HP_PAGES["hue-mw-groups"] = ["hmw_which_lights", "lamp", hmwGroupsPage];
 HP_PAGES["hue-mw-done"] = ["hmw_success", "check", hmwDonePage];

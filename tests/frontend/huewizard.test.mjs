@@ -225,7 +225,9 @@ test("the levels of sensitivity are named when the bridge has two or three, and 
   assert.equal(w.hmwLevelText(0, 1), "hmw_low");
   assert.equal(w.hmwLevelText(1, 1), "hmw_high");
   assert.equal(w.hmwLevelText(1, 2), "hmw_medium");
-  assert.equal(w.hmwLevelText(3, 4), "hmw_level 3");
+  assert.equal(w.hmwLevelText(2, 4), "hmw_medium");
+  assert.equal(w.hmwLevelText(4, 4), "hmw_highest");
+  assert.equal(w.hmwLevelText(3, 6), "hmw_level 3");
   assert.equal(w.hmwLux(1), "1.0 lx");
   assert.equal(w.hmwLux(20001), "100 lx");
 });
@@ -248,4 +250,12 @@ test("a room or zone is saved with the devices chosen, and a new one is created"
   w.HW.members.hl1 = true;
   w.hrwSave();
   assert.deepEqual(w.sent[1], ["hue_plus", "create_zone", { name: "Desk", members: ["hl1"] }]);
+});
+
+test("an area is calibrated when the bridge calls it and every device of it healthy", () => {
+  const w = load();
+  assert.equal(w.hmwCalibrated({ health: "healthy", participants: [{ status: { health: "healthy" } }, { status: { health: "healthy" } }] }), true);
+  assert.equal(w.hmwCalibrated({ health: "healthy", participants: [{ status: { health: "unhealthy" } }] }), false, "the devices are still measuring");
+  assert.equal(w.hmwCalibrated({ health: "not_running", participants: [] }), false);
+  assert.equal(w.hmwCalibrated(undefined), false);
 });

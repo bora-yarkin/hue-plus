@@ -250,6 +250,12 @@ class ActionTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(calls[0], ("put", "motion_area_configuration", "a1", {"name": "Entrance"}))
         self.assertEqual(calls[1], ("put", "convenience_area_motion", "cv1", {"sensitivity": {"sensitivity": 2}}))
 
+    async def test_switching_an_area_on_switches_its_motion_service_on_which_calibrates_it(self):
+        s, bridge = self._area_world()
+        calls, _ = await self.go("set_motion_area", {"area": "a1", "enabled": True}, snap=s, rec=bridge([]))
+        self.assertEqual(calls[0], ("put", "motion_area_configuration", "a1", {"enabled": True}))
+        self.assertEqual(calls[1], ("put", "convenience_area_motion", "cv1", {"enabled": True}))
+
     async def test_the_devices_of_a_motion_area_are_replaced_by_three_or_four_candidates(self):
         s, bridge = self._area_world()
         s.device = [{"id": f"d{i}", "metadata": {"name": f"Lamp {i}"}} for i in (1, 2, 3, 4, 5)]

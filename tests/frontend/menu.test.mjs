@@ -94,7 +94,8 @@ test("a page never writes a setting of a device: only saving a device's draft do
   assert.ok(writes.length >= 6, "the device writes are all there");
   for (const match of writes) {
     const owner = [...menu.slice(0, match.index).matchAll(/^function (\w+)/gm)].pop()[1];
-    assert.match(owner, /^hmSave(Light|Switch|Motion|Area)$/, `${match[2]} is sent from ${owner}`);
+    // The one exception: the MotionAware wizard switches on and names the area it has just made, which has no draft because it did not exist.
+    assert.match(owner, /^(hmSave(Light|Switch|Motion|Area)|hmw(StartCalibration|Rename1))$/, `${match[2]} is sent from ${owner}`);
   }
 });
 

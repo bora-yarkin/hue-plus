@@ -414,7 +414,7 @@
         },
         "sensitivity": {
           "name": "Sensitivity",
-          "description": "How sensitive it is (0 is the least; the highest value is the area's own maximum)."
+          "description": "How sensitive it is, from 0 (the least) to the area's own maximum (4 on the bridge it was tried on)."
         }
       }
     },
