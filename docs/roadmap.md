@@ -91,6 +91,22 @@ Requirements (owner):
 
 Order: (1) Hue scenes as dashboard scenes; (2) Hue scene creation and editing; (3) Automations; (4) MotionAware; (5) gaps. Each step is deployed to the owner's box for testing before anything is released (owner's rule), and ships its dashboard side in the same piece of work.
 
+### HP-13 status, read from the code on 2026-11-12 (the table above is the plan; this is what exists)
+
+Status words: done = in the dashboard menu and wired to a bridge write; backend only = the service exists but nothing in the dashboard calls it; missing = neither. "Live" = tried on the real bridge.
+
+| Step | What | Dashboard | Backend | Live |
+|---|---|---|---|---|
+| 1 | Hue scenes as dashboard scenes | done (0.14.1) | done | yes |
+| 2 | Create / edit / rename / delete Hue scenes (custom, current settings, all-day, photo palette) | done (`huenewscene.js`) | done | not recorded |
+| 3 | Automations: list, switch on/off, delete | done (`hmRoutines`) | done | not recorded |
+| 3 | Automations: create or edit (Wake up, Go to sleep, Timer, Lighting schedule, Mimic presence) | missing | `create_routine`, `create_automation`, `update_automation` exist | no |
+| 4 | MotionAware: list, on/off, delete | done (`hmMotion`, `hmMotionArea`) | documented by Signify | no |
+| 4 | MotionAware: create (wizard), calibrate, edit (name, nightlight schedule, sensitive devices, sensitivity, daylight) | missing | `create_motion_area` is EXPERIMENTAL (payload guessed, fakes only); rename exists in `set_motion_area`; nothing for the rest | no |
+| 5 | Rooms and zones: create / edit / delete | missing | exist | no |
+| 5 | Bridge settings (name, auto update, Zigbee channel, link button, remove device) | missing | exist | no |
+| 5 | Entertainment area delete and control, identify, power-on behaviour, light step, sensor configure | partly (create/update area, power-on and light setup are in) | exist | no |
+
 Known limits: the scene gallery, Coming home / Leaving home (geofence by the phone and Hue's cloud), Custom AI behaviours and Security alerts (subscription) are Signify cloud features; the bridge's local API has no counterpart. Where the local API has part of one (the bridge's `geofence_client`, `behavior_instance` of those templates), Hue Plus shows and edits that part.
 
 2026-11-10 check: 54 services; 19 are used by the dashboard menu. Not on the dashboard yet: create/update/delete scene, smart scene (create, set), room and zone create/update/delete, create automation and routine, create daily smart scene, motion area create, bridge settings (set name, auto update, check for update, install bridge update, Zigbee channel, link button, search for devices, remove device), entertainment area delete and control, identify signal, power-on behaviour, light step, sensor configure, raw request, effect and gradient setters. The bridge-side gaps are the 11 rows of `analysis/gap-analysis.md` (after-streaming behaviour, gradient orientation and order, light function, minimum dim level and gamut, battery state, scene last recall, Matter pairing code, Zigbee diagnostics, motion area candidates, Contact Sensor and PM scripts).

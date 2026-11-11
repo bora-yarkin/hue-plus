@@ -123,6 +123,63 @@ class RoutineTests(unittest.IsolatedAsyncioTestCase):
             )
 
 
+class AppWizardRoutineTests(unittest.IsolatedAsyncioTestCase):
+    """The settings the Hue app's wizards ask for, in the fields the bridge accepted for them."""
+
+    async def go(self, name, data):
+        rec = Recorder()
+        await actions.run(name, rec, snapshot(), data)
+        return rec.calls[0]
+
+    async def test_wake_up_and_go_to_sleep_carry_their_style_and_when_the_lights_go_off(self):
+        wake = {"routine": "wake_up", "name": "x", "group": "Bedroom", "time": time(7, 0), "style": "basic", "turn_off_after_minutes": 10}
+        configuration = (await self.go("create_routine", wake))[3]["configuration"]
+        self.assertEqual((configuration["style"], configuration["turn_lights_off_after"]), ("basic", {"minutes": 10}))
+        sleep = {"routine": "go_to_sleep", "name": "x", "group": "Bedroom", "time": time(22, 0), "style": "sunset"}
+        self.assertEqual((await self.go("create_routine", sleep))[3]["configuration"]["style"], "sunset")
+        configuration = (await self.go("create_routine", {**wake, "style": None, "turn_off_after_minutes": None}))[3]["configuration"]
+        self.assertNotIn("style", configuration)
+        self.assertNotIn("turn_lights_off_after", configuration)
+        for bad in ({**wake, "style": "sunset"}, {**sleep, "style": "sunrise"}, {**wake, "turn_off_after_minutes": 999}):
+            with self.assertRaises(ValueError):
+                await self.go("create_routine", bad)
+
+    async def test_a_lighting_schedule_can_end_and_randomise_its_times(self):
+        data = {
+            "routine": "schedule",
+            "name": "x",
+            "group": "Bedroom",
+            "time": time(18, 0),
+            "until": time(23, 0),
+            "scene": "Soho",
+            "randomize_minutes": 15,
+        }
+        when = (await self.go("create_routine", data))[3]["configuration"]["when_extended"]
+        self.assertEqual(when["end_at"], {"time_point": {"type": "time", "time": {"hour": 23, "minute": 0}}})
+        self.assertEqual(when["randomization"], {"minutes": 15})
+        with self.assertRaises(ValueError):
+            await self.go("create_routine", {**data, "randomize_minutes": 500})
+
+    async def test_changing_a_routine_writes_its_settings_again_through_its_own_template(self):
+        snap = snapshot()
+        snap.behavior_instance = [{"id": "bi1", "script_id": "w", "metadata": {"name": "Morning"}}]
+        rec = Recorder()
+        await actions.run(
+            "update_routine",
+            rec,
+            snap,
+            {"automation": "Morning", "name": "Early", "group": "Bedroom", "time": time(6, 0), "style": "sunrise", "enabled": False},
+        )
+        kind, resource, rid, body = rec.calls[0]
+        self.assertEqual((kind, resource, rid), ("put", "behavior_instance", "bi1"))
+        self.assertEqual(body["metadata"], {"name": "Early"})
+        self.assertFalse(body["enabled"])
+        self.assertEqual(body["configuration"]["when"]["time_point"]["time"], {"hour": 6, "minute": 0})
+        snap.behavior_instance = [{"id": "bi2", "script_id": "other", "metadata": {"name": "Buttons"}}]
+        with self.assertRaisesRegex(ValueError, "Only a routine made from"):
+            await actions.run("update_routine", Recorder(), snap, {"automation": "Buttons", "group": "Bedroom"})
+
+
 class MoreRoutineTests(unittest.IsolatedAsyncioTestCase):
     async def go(self, data):
         rec = Recorder()
@@ -208,7 +265,10 @@ class StepTests(unittest.IsolatedAsyncioTestCase):
 class ListTests(unittest.IsolatedAsyncioTestCase):
     async def test_motion_areas_and_the_resources_the_bridge_supports_are_asked_for_now(self):
         result = await actions.run("get_resources", Recorder(), snapshot(), {"kinds": ["motion_areas", "supported_resources"]})
-        self.assertEqual(result, {"motion_areas": {"candidates": [{"id": "c1"}], "areas": []}, "supported_resources": ["light", "motion"]})
+        self.assertEqual(
+            result,
+            {"motion_areas": {"candidates": [{"id": "c1"}], "areas": [], "services": []}, "supported_resources": ["light", "motion"]},
+        )
 
 
 class ButtonTests(unittest.IsolatedAsyncioTestCase):

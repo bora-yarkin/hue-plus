@@ -394,7 +394,7 @@
     },
     "set_motion_area": {
       "name": "Set motion area",
-      "description": "Switches a motion area on or off, or renames it. A motion area uses the lights themselves as a motion sensor (Bridge Pro).",
+      "description": "Switches a MotionAware area on or off, renames it, or sets how sensitive it is. A MotionAware area uses the lights themselves as a motion sensor (Bridge Pro).",
       "fields": {
         "area": {
           "name": "Area",
@@ -407,24 +407,58 @@
         "name": {
           "name": "Name",
           "description": "A new name."
+        },
+        "sensitivity": {
+          "name": "Sensitivity",
+          "description": "How sensitive it is (0 is the least; the highest value is the area's own maximum)."
         }
       }
     },
     "create_motion_area": {
       "name": "Create motion area",
-      "description": "Experimental. Creates a motion area from three or more lights of a zone. The bridge's documentation does not describe this, so the request is a guess from what an existing area looks like.",
+      "description": "Creates a MotionAware area from three or four lights of a room or zone. A new area still has to be calibrated before it senses motion (see the Hue app).",
       "fields": {
         "name": {
           "name": "Name",
           "description": "The name."
         },
-        "zone": {
-          "name": "Zone",
-          "description": "The zone (id or name)."
+        "group": {
+          "name": "Group",
+          "description": "The room or zone (id or name)."
+        },
+        "group_type": {
+          "name": "Group type",
+          "description": "Room or zone."
         },
         "lights": {
           "name": "Lights",
-          "description": "The lights (names or ids), at least three."
+          "description": "The lights (names, ids or device ids), three or four."
+        }
+      }
+    },
+    "set_motion_area_lights": {
+      "name": "Set motion area lights",
+      "description": "Sets what a MotionAware area does when it senses motion: from each time, motion recalls a scene and, after some minutes without motion, the lights go off. Replaces what was set before.",
+      "fields": {
+        "area": {
+          "name": "Area",
+          "description": "The motion area (id or name)."
+        },
+        "groups": {
+          "name": "Groups",
+          "description": "The rooms (up to three) or the one zone whose lights it controls (ids or names)."
+        },
+        "slots": {
+          "name": "Slots",
+          "description": "The times: a list of {\"time\": \"07:00\", \"scene\": \"<scene name or id>\", \"off_after_minutes\": 10}. Leave off_after_minutes out to leave the lights on."
+        },
+        "dark_threshold": {
+          "name": "Dark threshold",
+          "description": "Act only when it is darker than this light level (0 to 65534). Leave out to act in daylight too."
+        },
+        "enabled": {
+          "name": "Enabled",
+          "description": "Whether it runs."
         }
       }
     },
@@ -991,7 +1025,7 @@
     },
     "create_routine": {
       "name": "Create routine",
-      "description": "Makes a routine for a room or zone from the bridge's own template. Wake-up fades the lights up, go-to-sleep fades them out and turns them off, a timer recalls a scene after a while, a schedule recalls a scene at a time, coming home recalls a scene when you arrive (optionally only between two times; needs Home and Away), leaving home turns the lights off when everyone leaves, the smoke alarm template lights the room when a smoke alarm sounds.",
+      "description": "Makes a routine for a room or zone from the bridge's own template. Wake-up fades the lights up, go-to-sleep fades them out and turns them off, a timer recalls a scene after a while, a schedule recalls a scene at a time (optionally until another time, optionally at randomised times), coming home recalls a scene when you arrive (optionally only between two times; needs Home and Away), leaving home turns the lights off when everyone leaves, the smoke alarm template lights the room when a smoke alarm sounds.",
       "fields": {
         "routine": {
           "name": "Routine",
@@ -1015,7 +1049,7 @@
         },
         "until": {
           "name": "Until",
-          "description": "Coming home: the time it stops (give both or neither)."
+          "description": "Schedule: the time it ends. Coming home: the time it stops (give both or neither)."
         },
         "days": {
           "name": "Days",
@@ -1028,6 +1062,80 @@
         "end_brightness": {
           "name": "End brightness",
           "description": "Wake-up: the brightness it ends on, 1 to 100."
+        },
+        "style": {
+          "name": "Style",
+          "description": "Wake-up: sunrise or basic (a plain fade). Go-to-sleep: sunset or basic."
+        },
+        "turn_off_after_minutes": {
+          "name": "Turn off after minutes",
+          "description": "Wake-up: switch the lights off this many minutes after it ends."
+        },
+        "randomize_minutes": {
+          "name": "Randomize minutes",
+          "description": "Schedule: shift the times by up to this many minutes."
+        },
+        "scene": {
+          "name": "Scene",
+          "description": "Timer, schedule and coming home: the scene to recall (id or name)."
+        },
+        "enabled": {
+          "name": "Enabled",
+          "description": "Whether it runs."
+        }
+      }
+    },
+    "update_routine": {
+      "name": "Update routine",
+      "description": "Changes a routine made from the bridge's wake-up, go-to-sleep, timer, schedule, coming home, leaving home or smoke alarm template. The settings are written again, so give all of them.",
+      "fields": {
+        "automation": {
+          "name": "Automation",
+          "description": "The routine (id or name)."
+        },
+        "name": {
+          "name": "Name",
+          "description": "A new name."
+        },
+        "group": {
+          "name": "Group",
+          "description": "The room or zone (id or name)."
+        },
+        "group_type": {
+          "name": "Group type",
+          "description": "Room or zone."
+        },
+        "time": {
+          "name": "Time",
+          "description": "The time of day (wake-up, go-to-sleep and schedule), or the time coming home starts."
+        },
+        "until": {
+          "name": "Until",
+          "description": "Schedule: the time it ends. Coming home: the time it stops (give both or neither)."
+        },
+        "days": {
+          "name": "Days",
+          "description": "The days. Every day when empty."
+        },
+        "minutes": {
+          "name": "Minutes",
+          "description": "How long the fade or the timer takes, in minutes (a fade: 15 for wake-up and 30 for go-to-sleep when empty)."
+        },
+        "end_brightness": {
+          "name": "End brightness",
+          "description": "Wake-up: the brightness it ends on, 1 to 100."
+        },
+        "style": {
+          "name": "Style",
+          "description": "Wake-up: sunrise or basic (a plain fade). Go-to-sleep: sunset or basic."
+        },
+        "turn_off_after_minutes": {
+          "name": "Turn off after minutes",
+          "description": "Wake-up: switch the lights off this many minutes after it ends."
+        },
+        "randomize_minutes": {
+          "name": "Randomize minutes",
+          "description": "Schedule: shift the times by up to this many minutes."
         },
         "scene": {
           "name": "Scene",

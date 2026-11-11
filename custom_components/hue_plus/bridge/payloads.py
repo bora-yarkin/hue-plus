@@ -410,12 +410,29 @@ def _recall(where: list[dict[str, Any]], scene_id: str | None) -> list[dict[str,
     return [{"group": where[0]["group"], "recall": {"rid": scene_id, "rtype": "scene"}}]
 
 
-def _schedule_routine(where: list[dict[str, Any]], scene_id: str | None, at: time | None, days: list[str] | None) -> dict[str, Any]:
+def _time_point(at: time) -> dict[str, Any]:
+    return {"time_point": {"type": "time", "time": {"hour": at.hour, "minute": at.minute}}}
+
+
+def _schedule_routine(
+    where: list[dict[str, Any]],
+    scene_id: str | None,
+    at: time | None,
+    days: list[str] | None,
+    until: time | None,
+    randomize_minutes: int | None,
+) -> dict[str, Any]:
     what = _recall(where, scene_id)
     if at is None:
         raise ValueError("Give the time of day")
-    start = {"time_point": {"type": "time", "time": {"hour": at.hour, "minute": at.minute}}}
-    return {"when_extended": {"start_at": start, "recurrence_days": _days(days)}, "what": what, "where": where}
+    when: dict[str, Any] = {"start_at": _time_point(at), "recurrence_days": _days(days)}
+    if until is not None:
+        when["end_at"] = _time_point(until)
+    if randomize_minutes:
+        if not 1 <= randomize_minutes <= 120:
+            raise ValueError("The times are randomised by 1 to 120 minutes")
+        when["randomization"] = {"minutes": int(randomize_minutes)}
+    return {"when_extended": when, "what": what, "where": where}
 
 
 def _coming_home_routine(where: list[dict[str, Any]], scene_id: str | None, at: time | None, until: time | None) -> dict[str, Any]:
@@ -436,15 +453,52 @@ def _timer_routine(where: list[dict[str, Any]], scene_id: str | None, minutes: f
     return {"duration": {"minutes": int(minutes)}, "what": _recall(where, scene_id), "where": where}
 
 
+WAKE_UP_STYLES = ("sunrise", "basic")
+GO_TO_SLEEP_STYLES = ("sunset", "basic")
+
+
+def _style(style: str | None, allowed: tuple[str, ...]) -> dict[str, Any]:
+    if style is None:
+        return {}
+    if style not in allowed:
+        raise ValueError(f"The style is {' or '.join(allowed)}")
+    return {"style": style}
+
+
 def _wake_up_routine(
-    where: list[dict[str, Any]], at: time, days: list[str] | None, minutes: float | None, end_brightness: float | None
+    where: list[dict[str, Any]],
+    at: time,
+    days: list[str] | None,
+    minutes: float | None,
+    end_brightness: float | None,
+    style: str | None,
+    turn_off_after_minutes: int | None,
 ) -> dict[str, Any]:
     brightness = 100.0 if end_brightness is None else _percent(end_brightness, "end_brightness")
-    return {"fade_in_duration": {"seconds": _seconds(minutes, 15)}, "end_brightness": brightness, "when": _when(at, days), "where": where}
+    configuration: dict[str, Any] = {
+        "fade_in_duration": {"seconds": _seconds(minutes, 15)},
+        "end_brightness": brightness,
+        "when": _when(at, days),
+        "where": where,
+        **_style(style, WAKE_UP_STYLES),
+    }
+    if turn_off_after_minutes:
+        if not 1 <= turn_off_after_minutes <= 240:
+            raise ValueError("The lights switch off 1 to 240 minutes after the wake-up")
+        configuration["turn_lights_off_after"] = {"minutes": int(turn_off_after_minutes)}
+    return configuration
 
 
-def _go_to_sleep_routine(where: list[dict[str, Any]], at: time, days: list[str] | None, minutes: float | None) -> dict[str, Any]:
-    return {"fade_out_duration": {"seconds": _seconds(minutes, 30)}, "end_state": "turn_off", "when": _when(at, days), "where": where}
+def _go_to_sleep_routine(
+    where: list[dict[str, Any]], at: time, days: list[str] | None, minutes: float | None, style: str | None
+) -> dict[str, Any]:
+    return {
+        "fade_out_duration": {"seconds": _seconds(minutes, 30)},
+        "end_state": "turn_off",
+        "when": _when(at, days),
+        "where": where,
+        **_style(style, GO_TO_SLEEP_STYLES),
+    }
 
 
 def routine_configuration(
@@ -458,6 +512,9 @@ def routine_configuration(
     end_brightness: float | None,
     scene_id: str | None,
     until: time | None = None,
+    style: str | None = None,
+    turn_off_after_minutes: int | None = None,
+    randomize_minutes: int | None = None,
 ) -> dict[str, Any]:
     """The configuration of a routine for a room or zone. Every shape here was accepted by a real bridge (as a disabled routine).
 
@@ -469,7 +526,7 @@ def routine_configuration(
     if kind in ("leaving_home", "smoke_alarm"):
         return {"where": where}
     if kind == "schedule":
-        return _schedule_routine(where, scene_id, at, days)
+        return _schedule_routine(where, scene_id, at, days, until, randomize_minutes)
     if kind == "coming_home":
         return _coming_home_routine(where, scene_id, at, until)
     if kind == "timer":
@@ -477,8 +534,8 @@ def routine_configuration(
     if at is None:
         raise ValueError("Give the time of day")
     if kind == "wake_up":
-        return _wake_up_routine(where, at, days, minutes, end_brightness)
-    return _go_to_sleep_routine(where, at, days, minutes)
+        return _wake_up_routine(where, at, days, minutes, end_brightness, style, turn_off_after_minutes)
+    return _go_to_sleep_routine(where, at, days, minutes, style)
 
 
 def _seconds(minutes: float | None, default: float) -> int:
@@ -653,7 +710,7 @@ def light_step(brightness_step: float | None, mirek_step: int | None) -> dict[st
 def motion_area_put(name: str | None, enabled: bool | None) -> dict[str, Any]:
     body: dict[str, Any] = {}
     if name is not None:
-        body["metadata"] = {"name": name}
+        body["name"] = name
     if enabled is not None:
         body["enabled"] = enabled
     if not body:
@@ -661,16 +718,72 @@ def motion_area_put(name: str | None, enabled: bool | None) -> dict[str, Any]:
     return body
 
 
-def motion_area_post(name: str, zone_id: str, sensor_ids: list[str]) -> dict[str, Any]:
-    """Experimental: the bridge's documentation lists motion areas but gives no way to create one, so this is the shape of what
-    the bridge reports for an existing area (a name, the group, and the motion sensors)."""
-    if len(sensor_ids) < 3:
-        raise ValueError("A motion area needs at least three lights")
+def motion_area_post(name: str, group_id: str, group_type: str, candidate_ids: list[str]) -> dict[str, Any]:
+    """A MotionAware area of a room or zone, made from three or four of its lights' ``motion_area_candidate`` services
+    (the shape the bridge accepts; the name is at the top level, not in ``metadata``)."""
+    if group_type not in ("room", "zone"):
+        raise ValueError("A motion area belongs to a room or a zone")
+    if not 3 <= len(candidate_ids) <= 4:
+        raise ValueError("A motion area uses three or four devices")
     return {
-        "type": "motion_area_configuration",
-        "metadata": {"name": name},
-        "group": {"rid": zone_id, "rtype": "zone"},
-        "motion_sensors": [{"rid": sensor_id, "rtype": "motion_area_candidate"} for sensor_id in sensor_ids],
+        "name": name,
+        "group": {"rid": group_id, "rtype": group_type},
+        "participants": [{"resource": {"rid": cid, "rtype": "motion_area_candidate"}} for cid in candidate_ids],
+    }
+
+
+def motion_sensitivity_put(level: int) -> dict[str, Any]:
+    if level < 0:
+        raise ValueError("The sensitivity cannot be negative")
+    return {"sensitivity": {"sensitivity": int(level)}}
+
+
+# The bridge's light level scale: 10000 * log10(lux) + 1. A daylight threshold is a light level below which the area acts.
+DARK_THRESHOLD_MAX = 65534
+DAYLIGHT_OFFSET = 7000
+
+
+def daylight_settings(dark_threshold: int | None) -> dict[str, Any]:
+    """``settings`` of the Motion Sensor template: act only when it is darker than the threshold. No threshold, no ``settings``."""
+    if dark_threshold is None:
+        return {}
+    if not 0 <= dark_threshold <= DARK_THRESHOLD_MAX:
+        raise ValueError(f"The dark threshold is from 0 to {DARK_THRESHOLD_MAX}")
+    return {"settings": {"daylight_sensitivity": {"dark_threshold": int(dark_threshold), "offset": DAYLIGHT_OFFSET}}}
+
+
+MOTION_SENSOR_SCRIPT = "Motion Sensor"
+MOTION_SLOTS = (1, 10)
+
+
+def motion_area_configuration(
+    area_id: str, groups: list[tuple[str, str]], slots: list[dict[str, Any]], dark_threshold: int | None
+) -> dict[str, Any]:
+    """The Motion Sensor template's configuration that makes a MotionAware area control lights: from each start time, motion recalls
+    a scene and, when given, no motion for some minutes switches the lights off. ``groups`` are (id, "room"|"zone")."""
+    if not groups:
+        raise ValueError("Give the rooms or the zone whose lights the area controls")
+    if not MOTION_SLOTS[0] <= len(slots) <= MOTION_SLOTS[1]:
+        raise ValueError(f"An area needs from {MOTION_SLOTS[0]} to {MOTION_SLOTS[1]} times")
+    timeslots = []
+    for slot in sorted(slots, key=lambda x: x["at"]):
+        entry: dict[str, Any] = {
+            "start_time": {"type": "time", "time": {"hour": slot["at"].hour, "minute": slot["at"].minute}},
+            "on_motion": {"recall_single": [{"action": {"recall": {"rid": slot["scene"], "rtype": "scene"}}}]},
+        }
+        minutes = slot.get("off_after_minutes")
+        if minutes is not None:
+            if not 1 <= minutes <= 60:
+                raise ValueError("The lights switch off after 1 to 60 minutes without motion")
+            entry["on_no_motion"] = {"after": {"minutes": int(minutes)}, "recall_single": [{"action": "all_off"}]}
+        timeslots.append(entry)
+    if len({(t["start_time"]["time"]["hour"], t["start_time"]["time"]["minute"]) for t in timeslots}) != len(timeslots):
+        raise ValueError("Two times cannot be the same")
+    return {
+        "source": {"rid": area_id, "rtype": "motion_area_configuration"},
+        "where": [{"group": {"rid": gid, "rtype": gtype}} for gid, gtype in groups],
+        "when": {"timeslots": timeslots},
+        **daylight_settings(dark_threshold),
     }
 
 

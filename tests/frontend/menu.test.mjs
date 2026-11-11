@@ -7,21 +7,22 @@ import test from "node:test";
 
 const SRC = new URL("../../frontend/src/", import.meta.url);
 const read = (name) => readFileSync(new URL(name, SRC), "utf8");
-const menu = read("huemenu.js");
+const MENU_FILES = ["huemenu.js", "huewizard.js", "humotion.js", "huerooms.js"];
+const menu = MENU_FILES.map(read).join("\n");
 // The plugin's own texts, and the few the dashboard has for everything (a word like "off" or "lights" is not repeated in every plugin).
 const strings = read("strings.js");
 const SHARED = new Set(["brightness", "colour", "freeze", "hidden", "mode", "palette", "paused", "play", "playing", "speed", "style", "visible", "now_playing", "nothing_playing", "speaker", "tv", "note", "add_at_least_one_light", "all_off", "area", "auto", "automations", "button", "clock", "firmware", "give_the_area_a_name", "home", "home_and_away", "hue_plus", "in_this_room", "light", "lights", "loading", "lock", "manual", "no_effect", "none", "nothing_found", "number", "off", "on_2", "other", "pause", "power", "press", "rooms", "safety", "scene", "scenes", "switch", "time", "unavailable", "zigbee_channel"]);
-const pages = new Set([...(menu + read("hueplus.js")).matchAll(/HP_PAGES\["([a-z-]+)"\]\s*=|^\s*"([a-z-]+)": \[/gm)].map((m) => m[1] || m[2]));
+const pages = new Set([...(menu + read("hueplus.js")).matchAll(/HP_PAGES\["([a-z0-9-]+)"\]\s*=|^\s*"([a-z0-9-]+)": \[/gm)].map((m) => m[1] || m[2]));
 const hasText = (key) => SHARED.has(key) || strings.includes(`"${key}":`);
 
 test("every page the menu opens is defined", () => {
-  const opened = [...menu.matchAll(/(?:tap: |showPopup\()"(hue-[a-z]+|stg-hue)(?::|")/g)].map((m) => m[1]);
+  const opened = [...menu.matchAll(/(?:tap: |showPopup\()"(hue-[a-z0-9-]+|stg-hue)(?::|")/g)].map((m) => m[1]);
   assert.ok(opened.length > 10);
   for (const key of opened) assert.ok(pages.has(key), `${key} is opened but has no page`);
 });
 
 test("every text of the menu is defined", () => {
-  const keys = new Set([...["huemenu.js", "huesync.js", "huescenes.js", "huestyle.js"].map(read).join("\n").matchAll(/_T\("([a-z0-9_]+)"\)/g)].map((m) => m[1]));
+  const keys = new Set([...[...MENU_FILES, "huesync.js", "huescenes.js", "huestyle.js"].map(read).join("\n").matchAll(/_T\("([a-z0-9_]+)"\)/g)].map((m) => m[1]));
   for (const key of keys) assert.ok(hasText(`${key}`), `${key} has no text`);
   // The texts built from a value of the bridge or of an entity: every value the menu offers has its own.
   const families = {
@@ -33,6 +34,11 @@ test("every text of the menu is defined", () => {
     hm_: ["horizontal", "vertical", "forward", "reversed"],
     hp_: ["sunrise", "sunset", "no_effect"],
     hm_kind_: ["brighten", "dim", "off", "nothing", "scene", "cycle", "time"],
+    hw_day_: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+    hw_day_long_: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+    hw_style_: ["sunrise", "sunset", "basic_up", "basic_down"],
+    hw_name_: ["wake_up", "go_to_sleep", "coming_home", "leaving_home", "timer", "schedule"],
+    hmw_health_: ["healthy", "unhealthy", "degraded", "recovering", "unrecoverable", "not_running", "unknown"],
   };
   for (const [prefix, values] of Object.entries(families))
     for (const value of values) assert.ok(hasText(`${prefix}${value}`), `${prefix}${value} has no text`);
@@ -109,17 +115,17 @@ test("a device of the menu asks when it is left with changes that are not saved,
 
 test("every function and variable of the menu and its drafts that is used is defined somewhere", () => {
   // The menu's own helpers (hm..., hp..., hmd..., HM...) are global; a helper that was removed while a page still calls it only fails when that page is opened.
-  const all = ["adapter.js", "hmdraft.js", "hueplus.js", "huemenu.js"].map(read).join("\n");
+  const all = ["adapter.js", "hmdraft.js", "hueplus.js", ...MENU_FILES].map(read).join("\n");
   const defined = new Set([...all.matchAll(/(?:^|\n)\s*(?:function\s+([A-Za-z_]\w*)|var\s+([A-Za-z_]\w*)\s*=)/g)].flatMap((m) => [m[1], m[2]]).filter(Boolean));
   const used = new Set();
-  for (const file of ["huemenu.js", "hmdraft.js", "hueplus.js"])
-    for (const m of read(file).replaceAll(/\/\*[\s\S]*?\*\//g, "").replaceAll(/"(?:[^"\\\n]|\\.)*"/g, '""').matchAll(/(?<![.\w$])((?:hm|hp|hmd|HM|HP)[A-Za-z0-9_]*)\s*\(/g)) used.add(m[1]);
+  for (const file of [...MENU_FILES, "hmdraft.js", "hueplus.js"])
+    for (const m of read(file).replaceAll(/\/\*[\s\S]*?\*\//g, "").replaceAll(/"(?:[^"\\\n]|\\.)*"/g, '""').matchAll(/(?<![.\w$])((?:hm|hp|hmd|hw|HM|HP|HW)[A-Za-z0-9_]*)\s*\(/g)) used.add(m[1]);
   assert.ok(used.size > 40);
   for (const name of used) assert.ok(defined.has(name), `${name} is called but defined nowhere`);
 });
 
 test("the bundle is built in the order the pages need, and uses the dashboard only through the plugin API", () => {
-  const order = ["prologue.js", "strings.js", "huecss.js", "adapter.js", "hmdraft.js", "hueplus.js", "huemenu.js", "huesync.js", "huescenes.js", "huestyle.js", "epilogue.js"];
+  const order = ["prologue.js", "strings.js", "huecss.js", "adapter.js", "hmdraft.js", "hueplus.js", "huemenu.js", "huewizard.js", "humotion.js", "huerooms.js", "huesync.js", "huescenes.js", "huestyle.js", "epilogue.js"];
   const built = readFileSync(new URL("../../custom_components/hue_plus/frontend/menu.js", import.meta.url), "utf8");
   let at = -1;
   for (const name of order) {
@@ -130,6 +136,6 @@ test("the bundle is built in the order the pages need, and uses the dashboard on
   }
   assert.match(read("prologue.js"), /if \(!HC \|\| HC\.version !== 1\) return;/, "a dashboard with another version of the API is left alone");
   // Nothing in the sources reaches for a dashboard variable by name: what the dashboard keeps in variables is read through the prologue's functions.
-  for (const name of ["huemenu.js", "hueplus.js", "hmdraft.js", "adapter.js", "huesync.js", "huescenes.js", "huestyle.js"])
+  for (const name of [...MENU_FILES, "hueplus.js", "hmdraft.js", "adapter.js", "huesync.js", "huescenes.js", "huestyle.js"])
     assert.doesNotMatch(read(name).replace(/\/\*[\s\S]*?\*\//g, ""), /\b(ISADMIN|SHEET|POPGUARD|EAD|Integrations|PAGEFILL|STORE|UIROOM)\b/, `${name} uses a dashboard variable directly`);
 });

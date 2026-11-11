@@ -5,7 +5,7 @@
 /* What the bridge said, by kind of resource. Everything the menu shows is read once, when the menu opens (one loading screen); after that every page draws at once from here.
    The edits of a device are not written here but kept as a draft (hmdraft.js) until that device is saved. */
 var HM = {};
-var HM_KINDS = ["accessories", "scenes", "rooms", "zones", "entertainment_areas", "motion_areas", "automations", "apps", "bridge"];
+var HM_KINDS = ["accessories", "scenes", "rooms", "zones", "entertainment_areas", "motion_areas", "automations", "apps", "bridge", "devices"];
 var HM_READY = false;
 var HM_READING = null;
 
@@ -295,9 +295,8 @@ function hmReread(kind, id) {
           });
         };
       if (!mine) return;
-      if (kind === "motion_areas") {
-        if (HM.motion_areas) HM.motion_areas.areas = swap(hmMotionAreas());
-      } else HM[kind] = swap(hmList(kind));
+      if (kind === "motion_areas") HM.motion_areas = fresh; /* the areas, their candidates and the sensitivity services move together */
+      else HM[kind] = swap(hmList(kind));
     },
     function () {}
   );
@@ -343,9 +342,11 @@ function hmSaveSwitch(id, ch) {
 }
 
 function hmSaveMotion(id, ch) {
-  return hpCall("hue_plus", "set_motion_area", { area: id, enabled: ch.enabled }).then(function () {
-    var x = hmMotionArea1(id);
-    if (x) x.enabled = ch.enabled;
+  var body = { area: id };
+  ["enabled", "name", "sensitivity"].forEach(function (f) {
+    if (ch[f] !== undefined) body[f] = ch[f];
+  });
+  return hpCall("hue_plus", "set_motion_area", body).then(function () {
     return hmReread("motion_areas", id);
   });
 }
@@ -550,6 +551,14 @@ function hmDevices(b) {
         },
         tap: "hue-switches",
       }),
+      hmRow({
+        icon: "home",
+        title: _T("hrw_rooms_and_zones"),
+        val: function () {
+          return HM.rooms ? String(hmList("rooms").length + hmList("zones").length) : "";
+        },
+        tap: "hue-groups",
+      }),
     ])
   );
   if (E.search)
@@ -712,14 +721,34 @@ function hmLight(b, id) {
       })
     )
   );
-  if (X.identify)
-    b.appendChild(
-      hmActions([
-        hmButton(_T("identify"), "ghost", function () {
-          call("button", "press", { entity_id: X.identify });
-        }),
-      ])
+  b.appendChild(
+    hmActions([
+      X.identify
+        ? hmButton(_T("identify"), "ghost", function () {
+            call("button", "press", { entity_id: X.identify });
+          })
+        : null,
+      hmButton(_T("hm_delete"), "danger", function () {
+        hmRemoveDevice(hpName(id), id);
+      }),
+    ])
+  );
+}
+
+/* Takes a light or an accessory off the bridge, after asking. The device must be reset before it can be added again. */
+function hmRemoveDevice(device, entity) {
+  confirmDlg(_T("hm_remove_this_device"), function () {
+    hpCall("hue_plus", "remove_device", { device: device, confirm: true }).then(
+      function () {
+        HM_READY = false;
+        closeLayer();
+        hmEnsure();
+      },
+      function () {
+        toast(_T("hm_couldn_t_remove_the_device"));
+      }
     );
+  });
 }
 
 /* ---- a choice, shown as a checklist (like the Hue app's "Power on") ---- */
@@ -835,12 +864,20 @@ function hmBridge(b) {
   b.appendChild(hmLabel(_T("hm_settings")));
   b.appendChild(
     hmGroup([
+      hmRow({
+        title: _T("hw_name"),
+        val: function () {
+          return (HM.bridge && HM.bridge.name) || "";
+        },
+        tap: "hue-bname",
+      }),
       E.zigbee_channel
         ? hmRow({
             title: _T("zigbee_channel"),
             val: function () {
               return V_(E.zigbee_channel);
             },
+            tap: "hue-zch",
           })
         : null,
       hmRow({
@@ -1049,6 +1086,7 @@ function hmRoutines(b) {
           })
         )
       );
+    box.appendChild(hmGroup([hmRow({ icon: "plus", title: _T("hw_new_automation"), tap: "hue-newauto" })]));
   });
 }
 
@@ -1079,6 +1117,18 @@ function hmRoutine(b, id) {
         }),
       ])
     );
+    if (hwEditable(x))
+      box.appendChild(
+        hmGroup([
+          hmRow({
+            icon: "edit",
+            title: _T("hw_edit_settings"),
+            tap: function () {
+              hwStartAutomation(hwKindOf(x), x);
+            },
+          }),
+        ])
+      );
     if (x.last_error) box.appendChild(hmCallout(x.last_error));
     box.appendChild(
       hmActions([
@@ -1160,6 +1210,15 @@ function hmArea(b, id) {
     box.appendChild(hmCallout(_T("experimental_only_the_last_state_has_been_seen_on_a_real_bridge")));
     box.appendChild(
       hmActions([
+        hmButton(_T("hm_delete"), "danger", function () {
+          confirmDlg(_T("hm_delete_this_entertainment_area"), function () {
+            hmdDiscard(hmdKey("area", x.id));
+            call("hue_plus", "delete_entertainment_area", { area: x.id, confirm: true });
+            HM_READY = false;
+            closeLayer();
+            hmEnsure();
+          });
+        }),
         hmButton(_T("show_red_for_5_seconds"), "ghost", function () {
           call("hue_plus", "stream_colors", { area: x.id, colors: [[255, 0, 0]], duration: 5 });
         }),
@@ -1294,61 +1353,26 @@ function hmMotion(b) {
   hmBox(b);
   hmLoad(b, ["motion_areas"], function (box, r) {
     var list = (r.motion_areas || {}).areas || [];
-    if (!list.length) box.appendChild(hmCallout(_T("no_motion_areas")));
-    else
+    if (list.length)
       box.appendChild(
         hmGroup(
           list.map(function (x) {
             return hmRow({
               icon: "motion",
-              title: (x.metadata || {}).name || x.id,
+              title: x.name || x.id,
               val: x.enabled ? _T("on_2") : _T("off"),
               tap: "hue-marea:" + x.id,
             });
           })
         )
       );
-  });
-}
-
-function hmMotionArea(b, id) {
-  hmBox(b);
-  hmGuard(hmdKey("marea", id));
-  hmLoad(b, ["motion_areas"], function (box, r) {
-    var x = ((r.motion_areas || {}).areas || []).filter(function (y) {
-      return y.id === id;
-    })[0];
-    if (!x) {
-      box.appendChild(hmCallout(_T("nothing_found")));
-      return;
-    }
-    var key = hmdKey("marea", x.id),
-      enabled = function () {
-        return hmdValue(key, "enabled", !!x.enabled);
-      };
-    box.appendChild(hmTitle("motion", (x.metadata || {}).name || x.id));
+    else box.appendChild(hmCallout(_T("no_motion_areas")));
     box.appendChild(
       hmGroup([
         hmRow({
-          title: _T("hm_enabled"),
-          toggle: {
-            get: enabled,
-            set: function () {
-              hmdStage(key, "enabled", !enabled(), !!x.enabled);
-              refresh();
-            },
-          },
-        }),
-      ])
-    );
-    box.appendChild(
-      hmActions([
-        hmButton(_T("hm_delete"), "danger", function () {
-          confirmDlg(_T("delete_this_motion_area"), function () {
-            hmdDiscard(key);
-            call("hue_plus", "delete_motion_area", { area: x.id, confirm: true });
-            closeLayer();
-          });
+          icon: "plus",
+          title: _T("hmw_create_area"),
+          tap: hmwStart,
         }),
       ])
     );
@@ -1500,6 +1524,13 @@ function hmSwitch(b, id) {
           });
         })
       )
+    );
+    box.appendChild(
+      hmActions([
+        hmButton(_T("hm_delete"), "danger", function () {
+          hmRemoveDevice(x.id, null);
+        }),
+      ])
     );
   });
 }
@@ -2051,4 +2082,3 @@ HP_PAGES["hue-end"] = ["hm_when_sync_stops", "target", hmEnd];
 HP_PAGES["hue-perf"] = ["hm_performance", "target", hmPerf];
 HP_PAGES["hue-escene"] = ["hp_scene", "scene", hmEndScene];
 HP_PAGES["hue-motion"] = ["hm_motionaware_areas", "motion", hmMotion];
-HP_PAGES["hue-marea"] = ["motion_area", "motion", hmMotionArea];
