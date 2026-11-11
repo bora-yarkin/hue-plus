@@ -109,7 +109,8 @@ Status words: done = a page in the menu that writes to the bridge; missing = no 
 | 4 | MotionAware: list, create (the app's pages, with calibration, four areas at most, a device in one area), name, on/off, devices (3 or 4), sensitivity (Very low to Very high), times (a time, sunrise or sunset) and scenes or no lights ("Control lights"), daylight (sunrise/sunset), delete (`humotion.js`) | done | create, rename, devices, sensitivity, "Control lights" and delete tried through the services; calibration: request proven (enable the area's motion service), wizard step not tried on the real bridge |
 | 4 | MotionAware: "Area activity" (high / low) and the algorithm mode (`mimic_pir` / `mimic_radar`) | not built: no writable field found for activity, and which mode it means is a guess | read only |
 | 4 | MotionAware: "Group with other sensors", "Send alerts" | not built: a sensor group needs other sensors; alerts are a Signify subscription | no |
-| 5 | Rooms and zones: create, rename, devices, delete (`huerooms.js`) | done | services tried (zone with lights; an empty room) |
+| 5 | Rooms and zones: create, rename, devices, delete (`huerooms.js`) | done | clicked through in the real dashboard (a zone: create, rename, change lights, delete) |
+| 5 | Bridge home location: a row on the Bridges page, "Set the bridge's home location to Home Assistant's" (`set_home_location`) | done | the request was proven earlier; the button's service loads at the next restart |
 | 5 | Bridge: name, Zigbee channel | done | service not tried |
 | 5 | Remove a light or switch; delete an entertainment area | done | not tried (destructive) |
 | 5 | Sensors: sensitivity, `configure_sensor` | not built into a page | no motion sensor on the bridge |
