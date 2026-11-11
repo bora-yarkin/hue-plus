@@ -104,8 +104,8 @@ Status words: done = a page in the menu that writes to the bridge; missing = no 
 | 3 | Mimic presence (`PM` template, one per bridge: where, all day or only when dark, end with) | done | request proven (as a disabled throwaway); service not tried |
 | 3 | Go to sleep: "At a certain time" or "With a button press", End with lights off / dimmed lights / warm nightlight | done | requests proven; the play button is `trigger_automation` (start / stop), tried on a throwaway routine for the bathroom light |
 | 3 | Play and stop for wake up, go to sleep, timer and Mimic presence | done | request proven |
-| 3 | Lighting schedule: start at a time, sunrise or sunset, optional end, on / off / scene | done | time, on/off and scene proven; sunrise and sunset are accepted by the bridge's schema but need its home location, which is not set on the owner's bridge (not tried) |
-| 3 | Coming home: always or at night | done | `always` proven; `nighttime` needs the home location (not tried) |
+| 3 | Lighting schedule: start at a time, sunrise or sunset, optional end, on / off / scene | done | `create_routine` tried for time, sunset to sunrise, on and off, and a scene |
+| 3 | Coming home: always or at night | done | `always` and `nighttime` tried (the bridge's home location is now set) |
 | 4 | MotionAware: list, create (the app's pages, with calibration, four areas at most, a device in one area), name, on/off, devices (3 or 4), sensitivity (Very low to Very high), times (a time, sunrise or sunset) and scenes or no lights ("Control lights"), daylight (sunrise/sunset), delete (`humotion.js`) | done | create, rename, devices, sensitivity, "Control lights" and delete tried through the services; calibration: request proven (enable the area's motion service), wizard step not tried on the real bridge |
 | 4 | MotionAware: "Area activity" (high / low) and the algorithm mode (`mimic_pir` / `mimic_radar`) | not built: no writable field found for activity, and which mode it means is a guess | read only |
 | 4 | MotionAware: "Group with other sensors", "Send alerts" | not built: a sensor group needs other sensors; alerts are a Signify subscription | no |
