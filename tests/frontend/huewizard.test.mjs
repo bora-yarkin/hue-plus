@@ -92,35 +92,84 @@ test("saving sends the fields the service takes, for every kind of automation", 
   const w = load();
   const group = { id: "room-1", type: "room" };
   const base = { group, name: "N", days: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] };
+  const head = { name: "N", group: "room-1", group_type: "room" };
 
   let [domain, service, data] = saved(w, { ...base, kind: "wake_up", time: "06:45", minutes: 20, brightness: 80, style: "basic", offAfter: 15 });
   assert.deepEqual([domain, service], ["hue_plus", "create_routine"]);
-  assert.deepEqual(data, { name: "N", group: "room-1", group_type: "room", time: "06:45:00", days: [], minutes: 20, end_brightness: 80, style: "basic", turn_off_after_minutes: 15, routine: "wake_up" });
+  assert.deepEqual(data, { ...head, time: "06:45:00", days: [], minutes: 20, end_brightness: 80, style: "basic", turn_off_after_minutes: 15, routine: "wake_up" });
 
   [, , data] = saved(w, { ...base, kind: "wake_up", time: "06:45", minutes: 20, brightness: 80, style: "sunrise", offAfter: 0, days: ["monday"] });
   assert.equal("turn_off_after_minutes" in data, false, "no switch-off when the answer is No");
   assert.deepEqual(data.days, ["monday"]);
 
-  [, , data] = saved(w, { ...base, kind: "go_to_sleep", time: "22:30", minutes: 15, style: "sunset" });
-  assert.deepEqual(data, { name: "N", group: "room-1", group_type: "room", time: "22:30:00", days: [], minutes: 15, style: "sunset", routine: "go_to_sleep" });
+  [, , data] = saved(w, { ...base, kind: "go_to_sleep", time: "22:30", minutes: 15, style: "sunset", endState: "nightlight", manual: false });
+  assert.deepEqual(data, { ...head, time: "22:30:00", days: [], minutes: 15, style: "sunset", end_state: "nightlight", enabled: true, routine: "go_to_sleep" });
+  [, , data] = saved(w, { ...base, kind: "go_to_sleep", time: "22:00", minutes: 15, style: "sunset", endState: "turn_off", manual: true });
+  assert.equal(data.enabled, false, "started by the play button only: made switched off");
 
   [, , data] = saved(w, { ...base, kind: "timer", hours: 1, mins: 5, scene: "s1" });
-  assert.deepEqual(data, { name: "N", group: "room-1", group_type: "room", minutes: 65, scene: "s1", routine: "timer" });
+  assert.deepEqual(data, { ...head, minutes: 65, scene: "s1", routine: "timer" });
 
-  [, , data] = saved(w, { ...base, kind: "schedule", time: "18:00", until: "23:00", randomize: 15, scene: "s1" });
-  assert.equal(data.until, "23:00:00");
-  assert.equal(data.randomize_minutes, 15);
-  assert.equal(data.scene, "s1");
+  const schedule = { ...base, kind: "schedule", startType: "time", time: "18:00", untilType: "time", until: "23:00", randomize: 15, action: "scene", scene: "s1" };
+  [, , data] = saved(w, schedule);
+  assert.deepEqual(data, { ...head, time: "18:00:00", days: [], start_type: "time", until_type: "time", until: "23:00:00", randomize_minutes: 15, action: "scene", scene: "s1", routine: "schedule" });
+  [, , data] = saved(w, { ...schedule, startType: "sunset", untilType: "none", randomize: 0, action: "off", scene: "" });
+  assert.deepEqual(data, { ...head, days: [], start_type: "sunset", action: "off", routine: "schedule" }, "sunset has no time, no end time sends nothing, off needs no scene");
 
-  [, , data] = saved(w, { ...base, kind: "schedule", time: "18:00", until: "", randomize: 0, scene: "s1" });
-  assert.equal("until" in data, false);
-  assert.equal("randomize_minutes" in data, false);
-
-  [, , data] = saved(w, { ...base, kind: "coming_home", scene: "s1" });
-  assert.deepEqual(data, { name: "N", group: "room-1", group_type: "room", scene: "s1", routine: "coming_home" });
+  [, , data] = saved(w, { ...base, kind: "coming_home", scene: "s1", whenType: "nighttime" });
+  assert.deepEqual(data, { ...head, when_type: "nighttime", scene: "s1", routine: "coming_home" });
+  [, , data] = saved(w, { ...base, kind: "coming_home", scene: "s1", whenType: "between", between: { start: { hour: 20, minute: 0 }, end: { hour: 6, minute: 30 } } });
+  assert.equal(data.time, "20:00:00");
+  assert.equal(data.until, "06:30:00", "a routine made between two times keeps them, with the hours as two digits the service reads");
 
   [, , data] = saved(w, { ...base, kind: "leaving_home" });
-  assert.deepEqual(data, { name: "N", group: "room-1", group_type: "room", routine: "leaving_home" });
+  assert.deepEqual(data, { ...head, routine: "leaving_home" });
+
+  [, , data] = saved(w, { ...base, kind: "mimic_presence", mode: "nighttime", endState: "turn_off", excluded: "turn_off" });
+  assert.deepEqual(data, { ...head, mode: "nighttime", end_state: "turn_off", excluded_lights: "turn_off", routine: "mimic_presence" });
+});
+
+test("a Mimic presence automation, a Go to sleep by hand and a schedule of the bridge become the answers of their wizards", () => {
+  const w = load({ automations: [] });
+  const mimic = w.hwAutomationState("mimic_presence", {
+    id: "pm-1",
+    name: "Mimic presence",
+    configuration: { where: [{ group: { rid: "room-1", rtype: "room" } }], excluded_lights: "turn_off", end_state: "do_nothing", mode: "nighttime" },
+  });
+  assert.equal(mimic.mode, "nighttime");
+  assert.equal(mimic.endState, "do_nothing");
+  assert.equal(mimic.excluded, "turn_off");
+  const fresh = w.hwAutomationState("mimic_presence", null);
+  assert.deepEqual([fresh.mode, fresh.endState, fresh.excluded], ["24h", "do_nothing", "turn_off"], "the app's own start: all day, do nothing, other rooms off");
+
+  const byHand = w.hwAutomationState("go_to_sleep", { id: "g", name: "Sleep", enabled: false, configuration: { end_state: "minimum_brightness", fade_out_duration: { seconds: 600 }, when: { time_point: { type: "time", time: { hour: 22, minute: 15 } }, recurrence_days: ["monday"] }, where: [] } });
+  assert.equal(byHand.manual, true, "a Go to sleep that is switched off is started by the play button");
+  assert.equal(byHand.endState, "minimum_brightness");
+  assert.equal(byHand.steps.includes("hue-wz-when"), false, "no time page for one that starts by hand");
+  assert.equal(w.hwAutomationState("go_to_sleep", null).steps.includes("hue-wz-when"), true);
+
+  const sched = w.hwAutomationState("schedule", {
+    id: "s",
+    name: "Garden",
+    configuration: {
+      when_extended: { start_at: { time_point: { type: "sunset" } }, end_at: { time_point: { type: "time", time: { hour: 23, minute: 0 } } }, recurrence_days: ["friday"], randomization: { minutes: 10 } },
+      what: [{ group: { rid: "room-1", rtype: "room" }, actions: [{ target: { rid: "l1", rtype: "light" }, action: { on: { on: false } } }] }],
+      where: [{ group: { rid: "room-1", rtype: "room" } }],
+    },
+  });
+  assert.deepEqual([sched.startType, sched.untilType, sched.until, sched.action, sched.randomize], ["sunset", "time", "23:00", "off", 10]);
+  const noEnd = w.hwAutomationState("schedule", { id: "s", name: "x", configuration: { when_extended: { start_at: { time_point: { type: "time", time: { hour: 7, minute: 0 } } }, recurrence_days: [] }, what: [{ recall: { rid: "sc", rtype: "scene" } }], where: [] } });
+  assert.deepEqual([noEnd.untilType, noEnd.action, noEnd.scene], ["none", "scene", "sc"]);
+});
+
+test("the play button shows for the automations that have it, and says when one is running", () => {
+  const w = load();
+  for (const script of ["Basic wake up routine", "Native Go To Sleep", "Timers", "PM"]) assert.equal(w.hwRunnable({ script }), true, script);
+  for (const script of ["Schedule", "Coming home", "Hue Accessories", "Motion Sensor"]) assert.equal(w.hwRunnable({ script }), false, script);
+  assert.equal(w.hwRunText({ state: { gts_state: "started" } }), "hw_running");
+  assert.equal(w.hwRunText({ state: { pm_state: "started" } }), "hw_running");
+  assert.equal(w.hwRunText({ state: { gts_state: "stopped" } }), "");
+  assert.equal(w.hwRunText({}), "");
 });
 
 test("changing a routine names it, and goes to update_routine instead of creating another", () => {
@@ -160,8 +209,8 @@ test("the times of a MotionAware area are read from its automation the way the b
   assert.equal(w.hmwAutomationOf("ma-1").id, "auto-3");
   assert.equal(w.hmwAutomationOf("other"), undefined);
   assert.deepEqual(plain(w.hmwSlotsFrom(AREA_AUTOMATION)), [
-    { time: "07:00", scene: "scene-4", off: 10 },
-    { time: "23:00", scene: "scene-3", off: 0 },
+    { sun: null, offset: 0, time: "07:00", scene: "scene-4", off: 10 },
+    { sun: null, offset: 0, time: "23:00", scene: "scene-3", off: 0 },
   ]);
   w.hmwStartSlots("ma-1");
   assert.deepEqual(plain(w.HW.groups), [{ id: "room-1", type: "room" }]);
@@ -202,9 +251,9 @@ test("the Hue app's default times use the scenes of the room by name, and only w
   const w = load({ scenes });
   w.hwBegin({ kind: "motion", groups: [{ id: "room-1", type: "room" }] });
   assert.deepEqual(plain(w.hmwDefaultSlots()), [
-    { time: "07:00", scene: "c", off: 10 },
-    { time: "17:00", scene: "r", off: 15 },
-    { time: "23:00", scene: "n", off: 10 },
+    { sun: null, offset: 0, time: "07:00", scene: "c", off: 10 },
+    { sun: null, offset: 0, time: "17:00", scene: "r", off: 15 },
+    { sun: null, offset: 0, time: "23:00", scene: "n", off: 10 },
   ]);
   w.hwBegin({ kind: "motion", groups: [{ id: "other-room", type: "room" }] });
   assert.deepEqual(plain(w.hmwDefaultSlots()), [], "a room without the three scenes gets no invented times");
@@ -220,16 +269,75 @@ test("only devices the bridge offers take part, three or four of them, and the a
   assert.deepEqual(plain(w.hmwChosen()), ["d1", "d2", "d3"]);
 });
 
-test("the levels of sensitivity are named when the bridge has two or three, and the daylight level is shown in lux", () => {
+test("the levels of sensitivity are the app's names when the bridge has five", () => {
   const w = load();
   assert.equal(w.hmwLevelText(0, 1), "hmw_low");
   assert.equal(w.hmwLevelText(1, 1), "hmw_high");
   assert.equal(w.hmwLevelText(1, 2), "hmw_medium");
-  assert.equal(w.hmwLevelText(2, 4), "hmw_medium");
-  assert.equal(w.hmwLevelText(4, 4), "hmw_highest");
+  assert.deepEqual([0, 1, 2, 3, 4].map((v) => w.hmwLevelText(v, 4)), ["hmw_very_low", "hmw_low", "hmw_medium", "hmw_high", "hmw_very_high"]);
   assert.equal(w.hmwLevelText(3, 6), "hmw_level 3");
-  assert.equal(w.hmwLux(1), "1.0 lx");
-  assert.equal(w.hmwLux(20001), "100 lx");
+});
+
+test("an area's times can start at sunrise or sunset, and one that triggers no lights is the daylight setting", () => {
+  const w = load({ scenes: [] });
+  const automation = {
+    configuration: {
+      when: {
+        timeslots: [
+          { start_time: { type: "sunrise", offset: { minutes: -30 } }, on_motion: { recall_single: [{ action: "do_nothing" }] } },
+          { start_time: { type: "sunset" }, on_motion: { recall_single: [{ action: { recall: { rid: "s1", rtype: "scene" } } }] }, on_no_motion: { after: { minutes: 10 }, recall_single: [{ action: "all_off" }] } },
+        ],
+      },
+    },
+  };
+  const slots = plain(w.hmwSlotsFrom(automation));
+  assert.deepEqual(slots[0], { sun: "sunrise", offset: -30, time: "", scene: "", off: 0 }, "no lights is an empty scene");
+  assert.deepEqual(slots[1], { sun: "sunset", offset: 0, time: "", scene: "s1", off: 10 });
+  assert.equal(w.hmwDaylightOn(slots), true);
+  assert.equal(w.hmwDaylightOn([slots[1]]), false);
+  assert.equal(w.hmwStartText(slots[0]), "30 hm_min hmw_before hw_sunrise".replace("hw_sunrise", "hw_sunrise".toLowerCase()), "texts are keys here");
+});
+
+test("turning daylight on replaces the times of the day with sunset and a sunrise that triggers no lights, and turning it off removes them", () => {
+  const w = load();
+  const timed = (time, scene, off) => ({ sun: null, offset: 0, time, scene, off });
+  w.hwBegin({ kind: "mslots", slots: [timed("07:00", "concentrate", 10), timed("17:00", "read", 15), timed("23:00", "night", 10)], groups: [] });
+  assert.equal(w.hmwApplyDaylight(true, 0, 0), true);
+  const on = plain(w.HW.slots);
+  assert.deepEqual(on.filter((s) => !s.sun).map((s) => s.scene), ["night"], "the daytime times are gone, the night one stays");
+  assert.deepEqual(on.find((s) => s.sun === "sunset"), { sun: "sunset", offset: 0, time: "", scene: "read", off: 15 }, "sunset starts with the scene the evening had");
+  assert.deepEqual(on.find((s) => s.sun === "sunrise"), { sun: "sunrise", offset: 0, time: "", scene: "", off: 0 });
+  assert.equal(w.hmwApplyDaylight(false, 0, 0), true);
+  assert.deepEqual(plain(w.HW.slots).map((s) => s.scene), ["night"], "off removes the sunrise and sunset times");
+  w.hwBegin({ kind: "mslots", slots: [{ sun: "sunrise", offset: 0, time: "", scene: "", off: 0 }], groups: [] });
+  assert.equal(w.hmwApplyDaylight(false, 0, 0), false, "nothing is left to trigger the lights: it is refused");
+  w.hwBegin({ kind: "mslots", slots: [timed("07:00", "", 0)], groups: [] });
+  assert.equal(w.hmwApplyDaylight(true, 0, 0), false, "a time with no scene gives sunset nothing to start with");
+});
+
+test("slots written to the bridge say how they start: a time, or sunrise or sunset with minutes", () => {
+  const w = load();
+  w.hwBegin({
+    kind: "mslots",
+    areaId: "ma-1",
+    groups: [{ id: "room-1", type: "room" }],
+    slots: [{ sun: "sunset", offset: -30, time: "", scene: "s1", off: 10 }, { sun: "sunrise", offset: 0, time: "", scene: "", off: 0 }, { sun: null, offset: 0, time: "23:00", scene: "s2", off: 0 }],
+    dark: null,
+  });
+  w.HW.depth = 1;
+  w.hmwSetLights();
+  assert.deepEqual(w.sent[0][2].slots, [{ sun: "sunset", offset_minutes: -30, scene: "s1", off_after_minutes: 10 }, { sun: "sunrise" }, { time: "23:00", scene: "s2" }]);
+});
+
+test("a bridge takes four MotionAware areas, and a device can be in one", () => {
+  const areas = [1, 2, 3, 4].map((n) => ({ id: "a" + n, participants: [{ resource: { rid: "c" + n } }] }));
+  const w = load({ motion_areas: { areas, candidates: [1, 2, 3, 4, 5].map((n) => ({ id: "c" + n, owner: { rid: "d" + n } })) } });
+  assert.deepEqual(Object.keys(plain(w.hmwUsed())).sort(), ["d1", "d2", "d3", "d4"]);
+  const room = { id: "r", children: [1, 2, 3, 4, 5].map((n) => ({ id: "d" + n, name: "D" + n })) };
+  assert.deepEqual(plain(w.hmwFreeDevicesOf(room).map((c) => c.id)), ["d5"], "the others are in use");
+  w.toasts = [];
+  w.hmwStart();
+  assert.equal(w.HW, null, "no wizard starts when the bridge already has four areas");
 });
 
 test("a room holds devices but not the bridge; a zone holds lights", () => {

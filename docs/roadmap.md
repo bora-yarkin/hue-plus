@@ -101,10 +101,14 @@ Status words: done = a page in the menu that writes to the bridge; missing = no 
 | 2 | Create / edit / rename / delete Hue scenes | done (`huenewscene.js`) | not recorded |
 | 3 | Automations: list, on/off, delete | done | live (existing) |
 | 3 | Wake up, Go to sleep, Timer, Lighting schedule, Coming home, Leaving home: create and edit (`huewizard.js`) | done | request proven for wake up (style, switch-off delay), go to sleep (style), timer, schedule (end time, randomise); coming home / leaving home from the earlier proof; service not tried |
-| 3 | Mimic presence | **missing**: the template's `excluded_lights` and `mode` values are not known | no |
-| 3 | Go to sleep "With a button press", "End with" other than lights off | **missing**: only `turn_off` is accepted from what was tried | no |
-| 4 | MotionAware: list, create (the app's pages, with calibration), name, on/off, devices (3 or 4), sensitivity (0 to 4), times and scenes ("Control lights"), daylight, delete (`humotion.js`) | done | create, rename, devices, sensitivity, "Control lights" and delete tried through the services; calibration: request proven (enable the area's motion service), wizard step not tried on the real bridge |
-| 4 | MotionAware: algorithm mode (`mimic_pir` / `mimic_radar`) | not built: the app hides it behind a setting and I have no screen of it | read only |
+| 3 | Mimic presence (`PM` template, one per bridge: where, all day or only when dark, end with) | done | request proven (as a disabled throwaway); service not tried |
+| 3 | Go to sleep: "At a certain time" or "With a button press", End with lights off / dimmed lights / warm nightlight | done | requests proven; the play button is `trigger_automation` (start / stop), tried on a throwaway routine for the bathroom light |
+| 3 | Play and stop for wake up, go to sleep, timer and Mimic presence | done | request proven |
+| 3 | Lighting schedule: start at a time, sunrise or sunset, optional end, on / off / scene | done | time, on/off and scene proven; sunrise and sunset are accepted by the bridge's schema but need its home location, which is not set on the owner's bridge (not tried) |
+| 3 | Coming home: always or at night | done | `always` proven; `nighttime` needs the home location (not tried) |
+| 4 | MotionAware: list, create (the app's pages, with calibration, four areas at most, a device in one area), name, on/off, devices (3 or 4), sensitivity (Very low to Very high), times (a time, sunrise or sunset) and scenes or no lights ("Control lights"), daylight (sunrise/sunset), delete (`humotion.js`) | done | create, rename, devices, sensitivity, "Control lights" and delete tried through the services; calibration: request proven (enable the area's motion service), wizard step not tried on the real bridge |
+| 4 | MotionAware: "Area activity" (high / low) and the algorithm mode (`mimic_pir` / `mimic_radar`) | not built: no writable field found for activity, and which mode it means is a guess | read only |
+| 4 | MotionAware: "Group with other sensors", "Send alerts" | not built: a sensor group needs other sensors; alerts are a Signify subscription | no |
 | 5 | Rooms and zones: create, rename, devices, delete (`huerooms.js`) | done | services tried (zone with lights; an empty room) |
 | 5 | Bridge: name, Zigbee channel | done | service not tried |
 | 5 | Remove a light or switch; delete an entertainment area | done | not tried (destructive) |

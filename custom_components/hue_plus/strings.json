@@ -454,7 +454,7 @@
         },
         "slots": {
           "name": "Slots",
-          "description": "The times: a list of {\"time\": \"07:00\", \"scene\": \"<scene name or id>\", \"off_after_minutes\": 10}. Leave off_after_minutes out to leave the lights on."
+          "description": "The times: a list of {\"time\": \"07:00\", \"scene\": \"<scene name or id>\", \"off_after_minutes\": 10}, or {\"sun\": \"sunset\", \"offset_minutes\": -30, ...} to start at sunrise or sunset. Leave off_after_minutes out to leave the lights on, and scene out to leave them alone."
         },
         "dark_threshold": {
           "name": "Dark threshold",
@@ -908,6 +908,20 @@
         }
       }
     },
+    "trigger_automation": {
+      "name": "Trigger automation",
+      "description": "The play button of the Hue app: starts or stops a wake up, go to sleep, timer or mimic presence automation. It works whether or not the automation is switched on, which is how a Go to sleep or a timer that only starts by hand is used.",
+      "fields": {
+        "automation": {
+          "name": "Automation",
+          "description": "The automation (id or name)."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Start or stop it."
+        }
+      }
+    },
     "delete_automation": {
       "name": "Delete automation",
       "description": "Deletes a Hue automation from the bridge.",
@@ -1083,6 +1097,34 @@
           "name": "Scene",
           "description": "Timer, schedule and coming home: the scene to recall (id or name)."
         },
+        "end_state": {
+          "name": "End state",
+          "description": "Go to sleep: what the lights end on (turn_off, minimum_brightness, nightlight). Mimic presence: do_nothing or turn_off."
+        },
+        "mode": {
+          "name": "Mode",
+          "description": "Mimic presence: 24h is all day, nighttime only when it is dark."
+        },
+        "excluded_lights": {
+          "name": "Excluded lights",
+          "description": "Mimic presence: what happens to the lights of the rooms that are not chosen."
+        },
+        "when_type": {
+          "name": "When type",
+          "description": "Coming home: always, or only at night (needs the bridge's home location)."
+        },
+        "start_type": {
+          "name": "Start type",
+          "description": "Schedule: start at a time of day, at sunrise or at sunset (those need the bridge's home location)."
+        },
+        "until_type": {
+          "name": "Until type",
+          "description": "Schedule: end at a time of day, at sunrise or at sunset."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Schedule: recall a scene, or switch the lights on or off."
+        },
         "enabled": {
           "name": "Enabled",
           "description": "Whether it runs."
@@ -1144,6 +1186,34 @@
         "scene": {
           "name": "Scene",
           "description": "Timer, schedule and coming home: the scene to recall (id or name)."
+        },
+        "end_state": {
+          "name": "End state",
+          "description": "Go to sleep: what the lights end on (turn_off, minimum_brightness, nightlight). Mimic presence: do_nothing or turn_off."
+        },
+        "mode": {
+          "name": "Mode",
+          "description": "Mimic presence: 24h is all day, nighttime only when it is dark."
+        },
+        "excluded_lights": {
+          "name": "Excluded lights",
+          "description": "Mimic presence: what happens to the lights of the rooms that are not chosen."
+        },
+        "when_type": {
+          "name": "When type",
+          "description": "Coming home: always, or only at night (needs the bridge's home location)."
+        },
+        "start_type": {
+          "name": "Start type",
+          "description": "Schedule: start at a time of day, at sunrise or at sunset (those need the bridge's home location)."
+        },
+        "until_type": {
+          "name": "Until type",
+          "description": "Schedule: end at a time of day, at sunrise or at sunset."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Schedule: recall a scene, or switch the lights on or off."
         },
         "enabled": {
           "name": "Enabled",

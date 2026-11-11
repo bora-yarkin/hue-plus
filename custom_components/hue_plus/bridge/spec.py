@@ -27,6 +27,23 @@ ROUTINE_FIELDS: dict[str, Any] = {
     "turn_off_after_minutes": f("int", "Wake-up: switch the lights off this many minutes after it ends.", min=1, max=240),
     "randomize_minutes": f("int", "Schedule: shift the times by up to this many minutes.", min=1, max=120),
     "scene": f("text", "Timer, schedule and coming home: the scene to recall (id or name)."),
+    "end_state": f(
+        "select",
+        "Go to sleep: what the lights end on (turn_off, minimum_brightness, nightlight). Mimic presence: do_nothing or turn_off.",
+        options=["turn_off", "minimum_brightness", "nightlight", "do_nothing"],
+    ),
+    "mode": f("select", "Mimic presence: 24h is all day, nighttime only when it is dark.", options=["24h", "nighttime"]),
+    "excluded_lights": f(
+        "select", "Mimic presence: what happens to the lights of the rooms that are not chosen.", options=["do_nothing", "turn_off"]
+    ),
+    "when_type": f("select", "Coming home: always, or only at night (needs the bridge's home location).", options=["always", "nighttime"]),
+    "start_type": f(
+        "select",
+        "Schedule: start at a time of day, at sunrise or at sunset (those need the bridge's home location).",
+        options=["time", "sunrise", "sunset"],
+    ),
+    "until_type": f("select", "Schedule: end at a time of day, at sunrise or at sunset.", options=["time", "sunrise", "sunset"]),
+    "action": f("select", "Schedule: recall a scene, or switch the lights on or off.", options=["scene", "on", "off"], default="scene"),
     "enabled": f("bool", "Whether it runs.", default=True),
 }
 
@@ -94,7 +111,7 @@ SPEC: dict[str, dict[str, Any]] = {
             "groups": f("list", "The rooms (up to three) or the one zone whose lights it controls (ids or names).", True),
             "slots": f(
                 "object",
-                'The times: a list of {"time": "07:00", "scene": "<scene name or id>", "off_after_minutes": 10}. Leave off_after_minutes out to leave the lights on.',
+                'The times: a list of {"time": "07:00", "scene": "<scene name or id>", "off_after_minutes": 10}, or {"sun": "sunset", "offset_minutes": -30, ...} to start at sunrise or sunset. Leave off_after_minutes out to leave the lights on, and scene out to leave them alone.',
                 True,
             ),
             "dark_threshold": f(
@@ -281,6 +298,13 @@ SPEC: dict[str, dict[str, Any]] = {
             "enabled": f("bool", "Turn it on or off."),
         },
     },
+    "trigger_automation": {
+        "description": "The play button of the Hue app: starts or stops a wake up, go to sleep, timer or mimic presence automation. It works whether or not the automation is switched on, which is how a Go to sleep or a timer that only starts by hand is used.",
+        "fields": {
+            "automation": f("text", "The automation (id or name).", True),
+            "action": f("select", "Start or stop it.", True, options=["start", "stop"]),
+        },
+    },
     "delete_automation": {
         "description": "Deletes a Hue automation from the bridge.",
         "fields": {"automation": f("text", "The automation (id or name).", True)},
@@ -324,7 +348,7 @@ SPEC: dict[str, dict[str, Any]] = {
                 "select",
                 "The kind of routine.",
                 True,
-                options=["wake_up", "go_to_sleep", "timer", "schedule", "coming_home", "leaving_home", "smoke_alarm"],
+                options=["wake_up", "go_to_sleep", "timer", "schedule", "coming_home", "leaving_home", "smoke_alarm", "mimic_presence"],
             ),
             "name": f("text", "The routine's name.", True),
             **ROUTINE_FIELDS,

@@ -499,9 +499,6 @@ var PLUGIN_STRINGS = {
   "hmw_motion_sensitivity": "Motion sensitivity",
   "hmw_daylight_settings": "Daylight settings",
   "hmw_disabled": "Disabled",
-  "hmw_only_when_dark": "Only when it’s dark",
-  "hmw_darker_than": "Darker than",
-  "hmw_daylight_hint": "Choose whether the area acts only when it is darker than a light level.",
   "hmw_low": "Low",
   "hmw_medium": "Medium",
   "hmw_high": "High",
@@ -537,8 +534,64 @@ var PLUGIN_STRINGS = {
   "hmw_almost_done": "Almost done…",
   "hmw_calibration_didn_t_finish": "The bridge didn’t finish calibrating. Check that the devices are powered, then try again.",
   "hmw_try_again": "Try again",
-  "hmw_lowest": "Lowest",
-  "hmw_highest": "Highest",
+  "hw_mimic_presence": "Mimic presence",
+  "hw_mimic_presence_sub": "Set your lights to turn on and off to make it look like you’re home.",
+  "hw_name_mimic_presence": "Mimic presence",
+  "hw_one_only": "An automation of this type already exists on this bridge. You can edit it to change the behavior.",
+  "hw_how_should_go_to_sleep_start": "How should Go to sleep start?",
+  "hw_at_a_certain_time": "At a certain time",
+  "hw_at_a_certain_time_sub": "Schedule Go to sleep for a certain time.",
+  "hw_with_a_button_press": "With a button press",
+  "hw_with_a_button_press_sub": "Tap the play button to start Go to sleep.",
+  "hw_when_should_your_lights_turn_on": "When should your lights turn on?",
+  "hw_always": "Always",
+  "hw_always_sub": "Your lights will turn on every time you come home.",
+  "hw_at_night": "At night",
+  "hw_at_night_sub": "Your lights will turn on when the sun is down.",
+  "hw_when_should_your_lights_turn_on_active": "When should your lights turn on when the automation is active?",
+  "hw_all_day": "All day",
+  "hw_all_day_sub": "Your lights will turn on and off during both day and night.",
+  "hw_only_when_its_dark": "Only when it’s dark",
+  "hw_only_when_its_dark_sub": "Your lights will turn on and off between sunset and sunrise.",
+  "hw_this_is_how_your_automation_works": "This is how your automation works",
+  "hw_mimic_presence_explanation": "Based on the rooms you selected, your lights will turn on and off to different scenes. They’ll mimic the activities that would be expected in those types of rooms. You can leave all your other automations turned on. Rooms that were not selected will turn off.",
+  "hw_where": "Where",
+  "hw_when": "When",
+  "hw_do_nothing": "Do nothing",
+  "hw_end_turn_off": "Lights off",
+  "hw_end_minimum_brightness": "Dimmed lights",
+  "hw_end_nightlight": "Warm nightlight",
+  "hw_on": "On",
+  "hw_off": "Off",
+  "hw_custom": "Custom",
+  "hw_no_end_time": "No end time",
+  "hw_at_a_specific_time": "At a specific time",
+  "hw_sunrise": "Sunrise",
+  "hw_sunset": "Sunset",
+  "hw_sun_needs_home_location": "Sunrise and sunset need the bridge to know where home is. Set the home location in the Hue app (Settings, Location settings).",
+  "hw_start": "Start",
+  "hw_stop": "Stop",
+  "hw_running": "Running now",
+  "hmw_before": "before",
+  "hmw_after": "after",
+  "hmw_no_lights": "No lights",
+  "hmw_starts": "Starts",
+  "hmw_shifted_by": "Shifted by (minutes)",
+  "hmw_dont_trigger_lights": "Don’t trigger lights",
+  "hmw_very_low": "Very low",
+  "hmw_very_high": "Very high",
+  "hmw_sunrise_sunset": "Sunrise/Sunset",
+  "hmw_start_triggering": "Start triggering lights",
+  "hmw_stop_triggering": "Stop triggering lights",
+  "hmw_when_x": "When",
+  "hmw_add_a_time_with_a_scene": "Add a time that triggers a scene first",
+  "hmw_four_areas": "A bridge takes up to four MotionAware areas",
+  "hmw_in_use": "In use",
+  "hmw_in_use_hint": "A device can be in one MotionAware area only",
+  "hmw_what_should_your_area_do": "What should your MotionAware area do?",
+  "hmw_control_lights_sub": "Your lights will turn on and off when motion is detected.",
+  "hmw_choice_footer": "You can always adjust what your MotionAware area controls in Settings, MotionAware areas.",
+  "hmw_daylight_hint": "MotionAware areas don’t measure daylight, so they can use sunrise and sunset to decide when to trigger lights. Sunrise/Sunset replaces the times between sunrise and sunset with one that starts at sunset and one at sunrise that triggers no lights.",
 };
 
 /* The styles of the Spotify sync and sync box popups, added to the dashboard's page by the plugin (the dashboard's own styles are for its own parts). */
@@ -1020,7 +1073,7 @@ function hpSaveBridge(leave) {
 /* What the bridge said, by kind of resource. Everything the menu shows is read once, when the menu opens (one loading screen); after that every page draws at once from here.
    The edits of a device are not written here but kept as a draft (hmdraft.js) until that device is saved. */
 var HM = {};
-var HM_KINDS = ["accessories", "scenes", "rooms", "zones", "entertainment_areas", "motion_areas", "automations", "apps", "bridge", "devices"];
+var HM_KINDS = ["accessories", "scenes", "rooms", "zones", "entertainment_areas", "motion_areas", "automations", "apps", "bridge", "devices", "home_and_away"];
 var HM_READY = false;
 var HM_READING = null;
 
@@ -2144,6 +2197,21 @@ function hmRoutine(b, id) {
             },
           }),
         ])
+      );
+    if (hwRunnable(x))
+      box.appendChild(
+        hmGroup(
+          [["start", "play", "hw_start"], ["stop", "stop", "hw_stop"]].map(function (t) {
+            return hmRow({
+              icon: t[1],
+              title: _T(t[2]),
+              sub: t[0] === "start" ? hwRunText(x) : "",
+              tap: function () {
+                hpDo(again, "trigger_automation", { automation: x.id, action: t[0] });
+              },
+            });
+          })
+        )
       );
     if (x.last_error) box.appendChild(hmCallout(x.last_error));
     box.appendChild(
@@ -3304,9 +3372,10 @@ function hwChoose(pick) {
 
 var HW_AUTOMATIONS = [
   { kind: "wake_up", icon: "bright", title: "hw_wake_up", sub: "hw_wake_up_sub", steps: ["hue-wz-lights", "hue-wz-when", "hue-wz-settings", "hue-wz-name"] },
-  { kind: "go_to_sleep", icon: "moon", title: "hw_go_to_sleep", sub: "hw_go_to_sleep_sub", steps: ["hue-wz-lights", "hue-wz-when", "hue-wz-settings", "hue-wz-name"] },
-  { kind: "coming_home", icon: "home", title: "hw_coming_home", sub: "hw_coming_home_sub", steps: ["hue-wz-lights", "hue-wz-scene", "hue-wz-name"] },
+  { kind: "go_to_sleep", icon: "moon", title: "hw_go_to_sleep", sub: "hw_go_to_sleep_sub", steps: ["hue-wz-lights", "hue-wz-start", "hue-wz-when", "hue-wz-settings", "hue-wz-name"] },
+  { kind: "coming_home", icon: "home", title: "hw_coming_home", sub: "hw_coming_home_sub", steps: ["hue-wz-lights", "hue-wz-whenhome", "hue-wz-scene", "hue-wz-name"] },
   { kind: "leaving_home", icon: "home", title: "hw_leaving_home", sub: "hw_leaving_home_sub", steps: ["hue-wz-lights", "hue-wz-name"] },
+  { kind: "mimic_presence", icon: "home", title: "hw_mimic_presence", sub: "hw_mimic_presence_sub", steps: ["hue-wz-lights", "hue-wz-mimic", "hue-wz-summary"], one: "PM" },
   { kind: "timer", icon: "clock", title: "hw_timer", sub: "hw_timer_sub", steps: ["hue-wz-lights", "hue-wz-length", "hue-wz-scene", "hue-wz-name"] },
   { kind: "schedule", icon: "clock", title: "hw_lighting_schedule", sub: "hw_lighting_schedule_sub", steps: ["hue-wz-lights", "hue-wz-when", "hue-wz-scene", "hue-wz-name"] },
 ];
@@ -3317,6 +3386,15 @@ function hwAutomation(kind) {
   })[0];
 }
 
+/* The bridge keeps one automation of some kinds (Mimic presence): the kind then opens the one there is. */
+function hwExisting(a) {
+  return a.one
+    ? hmList("automations").filter(function (x) {
+        return x.script === a.one;
+      })[0]
+    : null;
+}
+
 function hwNewAutomation(b) {
   hmBox(b);
   b.appendChild(hmTitle("plus", _T("hw_what_kind_of_automation")));
@@ -3324,12 +3402,13 @@ function hwNewAutomation(b) {
   b.appendChild(
     hmGroup(
       HW_AUTOMATIONS.map(function (a) {
+        var have = hwExisting(a);
         return hmRow({
           icon: a.icon,
           title: _T(a.title),
-          sub: _T(a.sub),
+          sub: have ? _T("hw_one_only") : _T(a.sub),
           tap: function () {
-            hwStartAutomation(a.kind, null);
+            hwStartAutomation(a.kind, have || null);
           },
         });
       })
@@ -3338,17 +3417,30 @@ function hwNewAutomation(b) {
 }
 
 /* The answers of an automation wizard, from a routine on the bridge when it is being changed, else the Hue app's starting values. */
+/* {hour, minute} as "HH:MM". */
+function hwHhmm(t) {
+  return String(t.hour).padStart(2, "0") + ":" + String(t.minute).padStart(2, "0");
+}
+
+function hwClock(point) {
+  var t = (point && point.time_point && point.time_point.time) || {};
+  return t.hour === undefined ? "" : String(t.hour).padStart(2, "0") + ":" + String(t.minute).padStart(2, "0");
+}
+
+/* A start or an end of a schedule: "time", "sunrise" or "sunset" (and "none" for an end that is not there). */
+function hwPointType(point) {
+  return point && point.time_point ? point.time_point.type : "none";
+}
+
 function hwAutomationState(kind, x) {
   var a = hwAutomation(kind),
     c = (x && x.configuration) || {},
     when = c.when || {},
     point = (when.time_point || {}).time || {},
     ext = c.when_extended || {},
-    time = function (p) {
-      var t = (p && p.time_point && p.time_point.time) || {};
-      return t.hour === undefined ? "" : String(t.hour).padStart(2, "0") + ":" + String(t.minute).padStart(2, "0");
-    },
+    between = (c.when_constrained || {}).type === "between" ? c.when_constrained : null,
     recall = ((c.what || [])[0] || {}).recall || {},
+    firstAction = ((((c.what || [])[0] || {}).actions || [])[0] || {}).action || null,
     group = ((c.where || [])[0] || {}).group || {},
     st = {
       kind: kind,
@@ -3357,15 +3449,24 @@ function hwAutomationState(kind, x) {
       edit: x ? x.id : null,
       group: group.rid ? { id: group.rid, type: group.rtype } : null,
       name: x ? x.name : "",
-      time: when.time_point ? String(point.hour).padStart(2, "0") + ":" + String(point.minute).padStart(2, "0") : time(ext.start_at) || (kind === "wake_up" ? "07:00" : kind === "go_to_sleep" ? "22:00" : ""),
-      until: time(ext.end_at),
+      time: when.time_point ? String(point.hour).padStart(2, "0") + ":" + String(point.minute).padStart(2, "0") : hwClock(ext.start_at) || (kind === "wake_up" ? "07:00" : kind === "go_to_sleep" ? "22:00" : ""),
+      startType: ext.start_at ? hwPointType(ext.start_at) : "time",
+      until: hwClock(ext.end_at),
+      untilType: ext.end_at ? hwPointType(ext.end_at) : "none",
       days: (when.recurrence_days || ext.recurrence_days || HW_WEEK).slice(),
       minutes: c.fade_in_duration ? c.fade_in_duration.seconds / 60 : c.fade_out_duration ? c.fade_out_duration.seconds / 60 : kind === "go_to_sleep" ? 15 : 30,
       brightness: c.end_brightness ? Math.round(c.end_brightness) : 100,
       style: c.style || (kind === "go_to_sleep" ? "sunset" : "sunrise"),
+      endState: c.end_state || (kind === "mimic_presence" ? "do_nothing" : "turn_off"),
+      mode: c.mode || "24h",
+      excluded: c.excluded_lights || "turn_off",
+      whenType: between ? "between" : (c.when_constrained || {}).type || "always",
+      between: between,
+      manual: kind === "go_to_sleep" && !!x && !x.enabled,
       offAfter: c.turn_lights_off_after ? c.turn_lights_off_after.minutes || Math.round(c.turn_lights_off_after.seconds / 60) : 0,
       randomize: (ext.randomization || {}).minutes || 0,
       scene: recall.rid || "",
+      action: firstAction && firstAction.on ? (firstAction.on.on ? "on" : "off") : "scene",
       hours: c.duration ? Math.floor((c.duration.minutes || 0) / 60) : 0,
       mins: c.duration ? (c.duration.minutes || 0) % 60 : 1,
       finish: hwSaveAutomation,
@@ -3373,7 +3474,13 @@ function hwAutomationState(kind, x) {
       last: "hw_save",
     };
   if (!st.name) st.name = hwDefaultName(kind);
+  if (kind === "go_to_sleep" && st.manual) st.steps = hwSleepSteps(true);
   return st;
+}
+
+/* Go to sleep that starts by hand has no time page: the bridge still wants a time, which is kept and never used. */
+function hwSleepSteps(manual) {
+  return manual ? ["hue-wz-lights", "hue-wz-start", "hue-wz-settings", "hue-wz-name"] : ["hue-wz-lights", "hue-wz-start", "hue-wz-when", "hue-wz-settings", "hue-wz-name"];
 }
 
 var hwSeen = null; /* the automations read when the wizard began, to number a default name */
@@ -3426,21 +3533,64 @@ function hwLightsPage(b) {
   });
 }
 
+/* Sunrise and sunset need the bridge to know where home is. */
+function hwHasLocation() {
+  return !!(HM.home_and_away && HM.home_and_away.configured);
+}
+
+var HW_POINTS = ["time", "sunrise", "sunset"];
+
+function hwPointText(t) {
+  return _T(t === "none" ? "hw_no_end_time" : t === "time" ? "hw_at_a_specific_time" : "hw_" + t);
+}
+
+/* A start or an end that is a time, sunrise, sunset (or, for an end, nothing): its picker row. */
+function hwPointRow(title, key, withNone) {
+  return hmRow({
+    title: title,
+    val: function () {
+      return hwPointText(HW[key]);
+    },
+    tap: function () {
+      hwChoose({
+        hint: hwHasLocation() ? "" : _T("hw_sun_needs_home_location"),
+        options: (withNone ? ["none"] : []).concat(HW_POINTS).map(function (t) {
+          return { value: t, title: hwPointText(t) };
+        }),
+        get: function () {
+          return HW[key];
+        },
+        set: function (v) {
+          if ((v === "sunrise" || v === "sunset") && !hwHasLocation()) {
+            toast(_T("hw_sun_needs_home_location"));
+            return;
+          }
+          HW[key] = v;
+        },
+      });
+    },
+  });
+}
+
 /* When: wake up, go to sleep and the schedule differ in what goes with the time. */
 function hwWhenPage(b) {
   if (!hwOpen(b, "hue-wz-when")) return;
-  var kind = HW.kind;
+  var kind = HW.kind,
+    schedule = kind === "schedule";
   b.appendChild(hmTitle("clock", _T(kind === "wake_up" ? "hw_when_do_you_want_to_wake_up" : kind === "go_to_sleep" ? "hw_when_do_you_want_to_go_to_sleep" : "hw_when_do_you_want_to_schedule")));
-  b.appendChild(hmGroup([hwTimeRow(_T(kind === "schedule" ? "hw_start_at" : "time"), function () { return HW.time; }, function (v) { HW.time = v; })]));
-  if (kind === "schedule")
-    b.appendChild(hmGroup([hwTimeRow(_T("hw_end_at"), function () { return HW.until; }, function (v) { HW.until = v; })]));
+  if (schedule) {
+    b.appendChild(hmGroup([hwPointRow(_T("hw_start_at"), "startType", false)]));
+    if (HW.startType === "time") b.appendChild(hmGroup([hwTimeRow(_T("time"), function () { return HW.time; }, function (v) { HW.time = v; })]));
+    b.appendChild(hmGroup([hwPointRow(_T("hw_end_at"), "untilType", true)]));
+    if (HW.untilType === "time") b.appendChild(hmGroup([hwTimeRow(_T("time"), function () { return HW.until; }, function (v) { HW.until = v; })]));
+  } else b.appendChild(hmGroup([hwTimeRow(_T("time"), function () { return HW.time; }, function (v) { HW.time = v; })]));
   if (kind === "wake_up") {
     b.appendChild(hmLabel(_T("hw_fade_duration")));
     b.appendChild(hmChips([5, 10, 15, 20, 30, 45, 60], function () { return HW.minutes; }, function (v) { HW.minutes = v; }, hwMinutesText));
   }
   b.appendChild(hmLabel(_T("hw_repeat")));
   b.appendChild(hwDays(HW.days));
-  if (kind === "schedule") {
+  if (schedule) {
     b.appendChild(hmLabel(_T("hw_extra_options")));
     b.appendChild(
       hmGroup([
@@ -3465,11 +3615,15 @@ function hwWhenPage(b) {
   }
   b.appendChild(
     hwNext(null, function () {
-      if (!/^\d\d:\d\d$/.test(HW.time)) {
+      if ((!schedule || HW.startType === "time") && !/^\d\d:\d\d$/.test(HW.time)) {
         toast(_T("hm_pick_a_time"));
         return;
       }
-      if (kind === "schedule" && HW.until && HW.until === HW.time) {
+      if (schedule && HW.untilType === "time" && !/^\d\d:\d\d$/.test(HW.until)) {
+        toast(_T("hm_pick_a_time"));
+        return;
+      }
+      if (schedule && HW.startType === "time" && HW.untilType === "time" && HW.until === HW.time) {
         toast(_T("hm_two_times_cannot_be_the_same"));
         return;
       }
@@ -3480,6 +3634,144 @@ function hwWhenPage(b) {
       hwAdvance();
     })
   );
+}
+
+/* "How should Go to sleep start?": at a time, or only by the play button. */
+function hwStartPage(b) {
+  if (!hwOpen(b, "hue-wz-start")) return;
+  b.appendChild(hmTitle("moon", _T("hw_how_should_go_to_sleep_start")));
+  function row(manual, icon, title, sub) {
+    return hmRow({
+      icon: icon,
+      title: title,
+      sub: sub,
+      check: function () {
+        return HW.manual === manual;
+      },
+      tap: function () {
+        HW.manual = manual;
+        HW.steps = hwSleepSteps(manual);
+        hwAdvance();
+      },
+    });
+  }
+  b.appendChild(
+    hmGroup([
+      row(false, "clock", _T("hw_at_a_certain_time"), _T("hw_at_a_certain_time_sub")),
+      row(true, "play", _T("hw_with_a_button_press"), _T("hw_with_a_button_press_sub")),
+    ])
+  );
+}
+
+/* Coming home: every time, or only when the sun is down. */
+function hwHomeWhenPage(b) {
+  if (!hwOpen(b, "hue-wz-whenhome")) return;
+  b.appendChild(hmTitle("home", _T("hw_when_should_your_lights_turn_on")));
+  function row(type, icon, title, sub) {
+    return hmRow({
+      icon: icon,
+      title: title,
+      sub: sub,
+      check: function () {
+        return HW.whenType === type;
+      },
+      tap: function () {
+        if (type === "nighttime" && !hwHasLocation()) {
+          toast(_T("hw_sun_needs_home_location"));
+          return;
+        }
+        HW.whenType = type;
+        hwAdvance();
+      },
+    });
+  }
+  b.appendChild(
+    hmGroup([
+      row("always", "bright", _T("hw_always"), _T("hw_always_sub")),
+      row("nighttime", "moon", _T("hw_at_night"), _T("hw_at_night_sub")),
+    ])
+  );
+  if (!hwHasLocation()) b.appendChild(hmCallout(_T("hw_sun_needs_home_location")));
+}
+
+/* Mimic presence, step two: all day or only when it is dark. */
+function hwMimicPage(b) {
+  if (!hwOpen(b, "hue-wz-mimic")) return;
+  b.appendChild(hmTitle("home", _T("hw_when_should_your_lights_turn_on_active")));
+  function row(mode, icon, title, sub) {
+    return hmRow({
+      icon: icon,
+      title: title,
+      sub: sub,
+      check: function () {
+        return HW.mode === mode;
+      },
+      tap: function () {
+        HW.mode = mode;
+        if (HW.fromSummary) {
+          HW.fromSummary = false;
+          popBack();
+        } else hwAdvance();
+      },
+    });
+  }
+  b.appendChild(
+    hmGroup([
+      row("24h", "bright", _T("hw_all_day"), _T("hw_all_day_sub")),
+      row("nighttime", "moon", _T("hw_only_when_its_dark"), _T("hw_only_when_its_dark_sub")),
+    ])
+  );
+}
+
+function hwGroupName() {
+  var found = null;
+  hwGroups({ rooms: hmList("rooms"), zones: hmList("zones") }).forEach(function (g) {
+    if (HW.group && g.id === HW.group.id) found = g.name;
+  });
+  return found || "";
+}
+
+/* "This is how your automation works": where, when and what it ends with, then Save. */
+function hwSummaryPage(b) {
+  if (!hwOpen(b, "hue-wz-summary")) return;
+  HW.fromSummary = false;
+  b.appendChild(hmTitle("home", _T("hw_this_is_how_your_automation_works")));
+  hwHint(b, _T("hw_mimic_presence_explanation"));
+  b.appendChild(
+    hmGroup([
+      hmRow({ title: _T("hw_where"), val: hwGroupName }),
+      hmRow({
+        title: _T("hw_when"),
+        val: function () {
+          return _T(HW.mode === "24h" ? "hw_all_day" : "hw_only_when_its_dark");
+        },
+        tap: function () {
+          HW.fromSummary = true;
+          showPopup("hue-wz-mimic", true);
+        },
+      }),
+      hmRow({
+        title: _T("hw_end_with"),
+        val: function () {
+          return _T(HW.endState === "turn_off" ? "hw_lights_off" : "hw_do_nothing");
+        },
+        tap: function () {
+          hwChoose({
+            options: ["do_nothing", "turn_off"].map(function (v) {
+              return { value: v, title: _T(v === "turn_off" ? "hw_lights_off" : "hw_do_nothing") };
+            }),
+            get: function () {
+              return HW.endState;
+            },
+            set: function (v) {
+              HW.endState = v;
+            },
+          });
+        },
+      }),
+    ])
+  );
+  b.appendChild(hwNext(_T("hw_save"), HW.finish));
 }
 
 function hwStyleText(style) {
@@ -3527,7 +3819,25 @@ function hwSettingsPage(b) {
           });
         },
       }),
-      hmRow({ title: _T("hw_end_with"), val: _T("hw_lights_off") })
+      hmRow({
+        title: _T("hw_end_with"),
+        val: function () {
+          return _T("hw_end_" + HW.endState);
+        },
+        tap: function () {
+          hwChoose({
+            options: ["turn_off", "minimum_brightness", "nightlight"].map(function (v) {
+              return { value: v, title: _T("hw_end_" + v) };
+            }),
+            get: function () {
+              return HW.endState;
+            },
+            set: function (v) {
+              HW.endState = v;
+            },
+          });
+        },
+      })
     );
   }
   b.appendChild(hmGroup(rows));
@@ -3569,11 +3879,31 @@ function hwSettingsPage(b) {
   b.appendChild(hwNext());
 }
 
-/* The scenes of the room or zone chosen, from what the menu read. */
+/* The scenes of the room or zone chosen, from what the menu read. A lighting schedule can also switch the lights on or off. */
 function hwSceneRows(box, r) {
   var scenes = (r.scenes || []).filter(function (s) {
     return HW.group && s.group_id === HW.group.id;
   });
+  if (HW.kind === "schedule")
+    box.appendChild(
+      hmGroup(
+        [["on", "bright", "hw_on"], ["off", "power", "hw_off"]].map(function (t) {
+          return hmRow({
+            icon: t[1],
+            title: _T(t[2]),
+            check: function () {
+              return HW.action === t[0];
+            },
+            tap: function () {
+              HW.action = t[0];
+              HW.scene = "";
+              refresh();
+            },
+          });
+        })
+      )
+    );
+  if (HW.kind === "schedule") box.appendChild(hmLabel(_T("hw_custom")));
   if (!scenes.length) box.appendChild(hmCallout(_T("hw_no_scenes_here")));
   box.appendChild(
     hmGroup(
@@ -3581,8 +3911,14 @@ function hwSceneRows(box, r) {
         return hmRow({
           icon: "scene",
           title: s.name,
-          check: function () { return HW.scene === s.id; },
-          tap: function () { HW.scene = s.id; refresh(); },
+          check: function () {
+            return HW.action === "scene" && HW.scene === s.id;
+          },
+          tap: function () {
+            HW.action = "scene";
+            HW.scene = s.id;
+            refresh();
+          },
         });
       })
     )
@@ -3596,7 +3932,7 @@ function hwScenePage(b) {
     hwSceneRows(box, r);
     box.appendChild(
       hwNext(null, function () {
-        if (!HW.scene) {
+        if (HW.action === "scene" && !HW.scene) {
           toast(_T("hm_pick_a_scene"));
           return;
         }
@@ -3654,7 +3990,8 @@ function hwSaveAutomation() {
     },
     body = { name: d.name, group: d.group.id, group_type: d.group.type };
   if (d.kind === "wake_up" || d.kind === "go_to_sleep" || d.kind === "schedule") {
-    body.time = pad(d.time);
+    var timed = d.kind !== "schedule" || d.startType === "time";
+    if (timed) body.time = pad(d.time);
     body.days = d.days.length === 7 ? [] : d.days;
   }
   if (d.kind === "wake_up") {
@@ -3666,13 +4003,31 @@ function hwSaveAutomation() {
   if (d.kind === "go_to_sleep") {
     body.minutes = d.minutes;
     body.style = d.style;
+    body.end_state = d.endState;
+    body.enabled = !d.manual;
   }
   if (d.kind === "schedule") {
-    if (d.until) body.until = pad(d.until);
+    body.start_type = d.startType;
+    if (d.untilType !== "none") {
+      body.until_type = d.untilType;
+      if (d.untilType === "time") body.until = pad(d.until);
+    }
     if (d.randomize) body.randomize_minutes = d.randomize;
+    body.action = d.action;
+  }
+  if (d.kind === "mimic_presence") {
+    body.mode = d.mode;
+    body.end_state = d.endState;
+    body.excluded_lights = d.excluded;
+  }
+  if (d.kind === "coming_home") {
+    if (d.whenType === "between" && d.between) {
+      body.time = pad(hwHhmm(d.between.start));
+      body.until = pad(hwHhmm(d.between.end));
+    } else body.when_type = d.whenType;
   }
   if (d.kind === "timer") body.minutes = d.hours * 60 + d.mins;
-  if (d.kind === "timer" || d.kind === "schedule" || d.kind === "coming_home") body.scene = d.scene;
+  if (d.kind === "timer" || d.kind === "coming_home" || (d.kind === "schedule" && d.action === "scene")) body.scene = d.scene;
   if (d.edit) body.automation = d.edit;
   else body.routine = d.kind;
   hpCall("hue_plus", d.edit ? "update_routine" : "create_routine", body).then(
@@ -3689,17 +4044,35 @@ function hwSaveAutomation() {
 
 /* A routine made from one of the bridge's templates can be changed with the same pages it was made with. */
 function hwEditable(x) {
-  return !!x.script && ["Basic wake up routine", "Native Go To Sleep", "Timers", "Schedule", "Coming home", "Leaving home"].indexOf(x.script) >= 0;
+  return !!x.script && ["Basic wake up routine", "Native Go To Sleep", "Timers", "Schedule", "Coming home", "Leaving home", "PM"].indexOf(x.script) >= 0;
+}
+
+/* The automations that have the app's play button: they start and stop by hand, whether or not they are switched on. */
+function hwRunnable(x) {
+  return ["Basic wake up routine", "Native Go To Sleep", "Timers", "PM"].indexOf(x.script) >= 0;
+}
+
+/* Whether it is running now, from the state the bridge keeps for it (gts_state, pm_state, ...). */
+function hwRunText(x) {
+  var st = x.state || {},
+    running = Object.keys(st).some(function (k) {
+      return /_state$/.test(k) && (st[k] === "started" || st[k] === "running");
+    });
+  return running ? _T("hw_running") : "";
 }
 
 function hwKindOf(x) {
-  return { "Basic wake up routine": "wake_up", "Native Go To Sleep": "go_to_sleep", Timers: "timer", Schedule: "schedule", "Coming home": "coming_home", "Leaving home": "leaving_home" }[x.script];
+  return { "Basic wake up routine": "wake_up", "Native Go To Sleep": "go_to_sleep", Timers: "timer", Schedule: "schedule", "Coming home": "coming_home", "Leaving home": "leaving_home", PM: "mimic_presence" }[x.script];
 }
 
 HP_PAGES["hue-newauto"] = ["hw_new_automation", "plus", hwNewAutomation];
 HP_PAGES["hue-wz-lights"] = ["hn_choose_your_lights", "lamp", hwLightsPage];
 HP_PAGES["hue-wz-when"] = ["hm_time", "clock", hwWhenPage];
 HP_PAGES["hue-wz-settings"] = ["hw_choose_your_settings", "tune", hwSettingsPage];
+HP_PAGES["hue-wz-start"] = ["hw_go_to_sleep", "moon", hwStartPage];
+HP_PAGES["hue-wz-whenhome"] = ["hw_coming_home", "home", hwHomeWhenPage];
+HP_PAGES["hue-wz-mimic"] = ["hw_mimic_presence", "home", hwMimicPage];
+HP_PAGES["hue-wz-summary"] = ["hw_mimic_presence", "home", hwSummaryPage];
 HP_PAGES["hue-wz-scene"] = ["hm_scene", "scene", hwScenePage];
 HP_PAGES["hue-wz-length"] = ["hw_timer", "clock", hwLengthPage];
 HP_PAGES["hue-wz-name"] = ["hw_name_your_automation", "edit", hwNamePage];
@@ -3728,11 +4101,36 @@ function hmwDevicesOf(group) {
   });
 }
 
+/* The devices that already belong to an area: a device is in one area only. */
+function hmwUsed() {
+  var used = {};
+  hmMotionAreas().forEach(function (x) {
+    hmwOwners(x).forEach(function (d) {
+      used[d] = true;
+    });
+  });
+  return used;
+}
+
+/* The devices of a room that can still be chosen. */
+function hmwFreeDevicesOf(group) {
+  var used = hmwUsed();
+  return hmwDevicesOf(group).filter(function (c) {
+    return !used[c.id];
+  });
+}
+
+var HMW_MAX_AREAS = 4;
+
 function hmwStart() {
+  if (hmMotionAreas().length >= HMW_MAX_AREAS) {
+    toast(_T("hmw_four_areas"));
+    return;
+  }
   hwBegin({
     kind: "motion",
     icon: "motion",
-    steps: ["hue-mw-intro", "hue-mw-tip1", "hue-mw-tip2", "hue-mw-tip3", "hue-mw-where", "hue-mw-devices", "hue-mw-leave", "hue-mw-calibrating", "hue-wz-name", "hue-mw-created", "hue-mw-groups", "hue-mw-done"],
+    steps: ["hue-mw-intro", "hue-mw-tip1", "hue-mw-tip2", "hue-mw-tip3", "hue-mw-where", "hue-mw-devices", "hue-mw-leave", "hue-mw-calibrating", "hue-wz-name", "hue-mw-created", "hue-mw-choice", "hue-mw-groups", "hue-mw-done"],
     group: null,
     devices: {},
     name: _T("hm_motionaware_area"),
@@ -3771,7 +4169,7 @@ function hmwWherePage(b) {
     box.appendChild(
       hmGroup(
         rooms.map(function (g) {
-          var n = hmwDevicesOf(g).length;
+          var n = hmwFreeDevicesOf(g).length;
           return hmRow({
             icon: "home",
             title: g.name,
@@ -3787,7 +4185,7 @@ function hmwWherePage(b) {
               if (!HW.group || HW.group.id !== g.id) {
                 HW.group = g;
                 HW.devices = {};
-                hmwDevicesOf(g)
+                hmwFreeDevicesOf(g)
                   .slice(0, 3)
                   .forEach(function (c) {
                     HW.devices[c.id] = true;
@@ -3820,7 +4218,8 @@ function hmwChosen() {
 function hmwDevicesPage(b) {
   if (!hwOpen(b, "hue-mw-devices")) return;
   hmLoad(b, ["rooms", "zones", "motion_areas"], function (box) {
-    var list = hmwDevicesOf(HW.group);
+    var list = hmwDevicesOf(HW.group),
+      used = hmwUsed();
     box.appendChild(hmTitle("motion", _T("hmw_choose_devices")));
     hwHint(box, _T("hmw_choose_devices_hint"));
     box.appendChild(hmLabel(HW.group.name));
@@ -3830,10 +4229,15 @@ function hmwDevicesPage(b) {
           return hmRow({
             icon: "lamp",
             title: c.name,
+            sub: used[c.id] ? _T("hmw_in_use") : "",
             check: function () {
               return !!HW.devices[c.id];
             },
             tap: function () {
+              if (used[c.id]) {
+                toast(_T("hmw_in_use_hint"));
+                return;
+              }
               if (!HW.devices[c.id] && hmwChosen().length >= 4) {
                 toast(_T("hmw_three_or_four"));
                 return;
@@ -3984,9 +4388,26 @@ function hmwDefaultSlots() {
     var s = here.filter(function (x) {
       return String(x.name).toLowerCase() === d[1].toLowerCase();
     })[0];
-    if (s) out.push({ time: d[0], scene: s.id, off: d[2] });
+    if (s) out.push({ sun: null, offset: 0, time: d[0], scene: s.id, off: d[2] });
   });
   return out.length === HMW_DEFAULTS.length ? out : [];
+}
+
+/* "What should your MotionAware area do?": the app offers three; here the bridge can do the first (the other two are a sensor group, and alerts that are a Signify subscription). */
+function hmwChoicePage(b) {
+  if (!hwOpen(b, "hue-mw-choice")) return;
+  b.appendChild(hmTitle("motion", _T("hmw_what_should_your_area_do")));
+  b.appendChild(
+    hmGroup([
+      hmRow({
+        icon: "lamp",
+        title: _T("hmw_control_lights"),
+        sub: _T("hmw_control_lights_sub"),
+        tap: hwAdvance,
+      }),
+    ])
+  );
+  hwHint(b, _T("hmw_choice_footer"));
 }
 
 function hmwGroupsPage(b) {
@@ -4062,18 +4483,39 @@ function hmwSceneName(id) {
   return s ? s.name : "";
 }
 
-/* One row for each time: from when to when, the scene, the minutes without motion before the lights go off. `plain` rows are not pressable. */
-function hmwSlotRows(plain) {
-  var sorted = HW.slots.slice().sort(function (a, b) {
-    return a.time < b.time ? -1 : a.time > b.time ? 1 : 0;
+/* A slot starts at a time of day, or at sunrise or sunset shifted by some minutes. */
+function hmwSunText(sun, offset) {
+  var n = Math.abs(offset || 0);
+  if (!n) return _T("hw_" + sun);
+  return n + " " + _T("hm_min") + " " + _T(offset < 0 ? "hmw_before" : "hmw_after") + " " + _T("hw_" + sun).toLowerCase();
+}
+
+function hmwStartText(s) {
+  return s.sun ? hmwSunText(s.sun, s.offset) : s.time;
+}
+
+/* Where a slot falls in the day, to put them in order (sunrise and sunset count as 06:00 and 18:00 here, as on the bridge's side). */
+function hmwOrder(s) {
+  if (!s.sun) return Number(s.time.slice(0, 2)) * 60 + Number(s.time.slice(3, 5));
+  return (s.sun === "sunrise" ? 360 : 1080) + (s.offset || 0);
+}
+
+function hmwSorted() {
+  return HW.slots.slice().sort(function (a, b) {
+    return hmwOrder(a) - hmwOrder(b);
   });
+}
+
+/* One row for each time: from when to when, the scene (or no lights), the minutes without motion before the lights go off. `plain` rows are not pressable. */
+function hmwSlotRows(plain) {
+  var sorted = hmwSorted();
   return hmGroup(
     sorted.map(function (s, i) {
-      var to = sorted[(i + 1) % sorted.length].time;
+      var to = sorted[(i + 1) % sorted.length];
       return hmRow({
         icon: "clock",
-        title: s.time + " – " + to,
-        sub: hmwSceneName(s.scene) + (s.off ? " · " + hwMinutesText(s.off) : ""),
+        title: hmwStartText(s) + " – " + hmwStartText(to),
+        sub: (s.scene ? hmwSceneName(s.scene) : _T("hmw_no_lights")) + (s.scene && s.off ? " · " + hwMinutesText(s.off) : ""),
         tap: plain
           ? null
           : function () {
@@ -4095,12 +4537,17 @@ function hmwAutomationOf(areaId) {
 
 function hmwSlotsFrom(a) {
   return (((a.configuration || {}).when || {}).timeslots || []).map(function (t) {
-    var tm = (t.start_time || {}).time || {};
-    return {
-      time: String(tm.hour).padStart(2, "0") + ":" + String(tm.minute).padStart(2, "0"),
-      scene: (((((t.on_motion || {}).recall_single || [])[0] || {}).action || {}).recall || {}).rid,
-      off: ((t.on_no_motion || {}).after || {}).minutes || 0,
-    };
+    var start = t.start_time || {},
+      tm = start.time || {},
+      action = (((t.on_motion || {}).recall_single || [])[0] || {}).action,
+      slot = {
+        sun: start.type === "sunrise" || start.type === "sunset" ? start.type : null,
+        offset: (start.offset || {}).minutes || 0,
+        time: tm.hour === undefined ? "" : String(tm.hour).padStart(2, "0") + ":" + String(tm.minute).padStart(2, "0"),
+        scene: (action && action.recall && action.recall.rid) || "",
+        off: ((t.on_no_motion || {}).after || {}).minutes || 0,
+      };
+    return slot;
   });
 }
 
@@ -4178,6 +4625,8 @@ function hmwDefaultGroup(areaId) {
   return x && x.group ? [{ id: x.group.rid, type: x.group.rtype }] : [];
 }
 
+var HMW_OFFSETS = [-60, -30, -15, 0, 15, 30, 60];
+
 function hmwSlotPage(b) {
   hmBox(b);
   if (!HW || HW.edit === undefined) {
@@ -4185,23 +4634,61 @@ function hmwSlotPage(b) {
     return;
   }
   var isNew = HW.edit >= HW.slots.length,
-    cur = isNew ? { time: "12:00", scene: "", off: 10 } : Object.assign({}, HW.slots[HW.edit]),
+    cur = isNew ? { sun: null, offset: 0, time: "12:00", scene: "", off: 10 } : Object.assign({}, HW.slots[HW.edit]),
     ids = HW.groups.map(function (g) {
       return g.id;
     }),
     scenes = hmList("scenes").filter(function (s) {
       return ids.indexOf(s.group_id) >= 0;
     });
-  b.appendChild(hmGroup([hwTimeRow(_T("time"), function () { return cur.time; }, function (v) { cur.time = v; })]));
+  b.appendChild(hmLabel(_T("hmw_starts")));
+  b.appendChild(
+    hmGroup(
+      [["", "hw_at_a_specific_time"], ["sunrise", "hw_sunrise"], ["sunset", "hw_sunset"]].map(function (t) {
+        return hmRow({
+          title: _T(t[1]),
+          check: function () {
+            return (cur.sun || "") === t[0];
+          },
+          tap: function () {
+            if (t[0] && !hwHasLocation()) {
+              toast(_T("hw_sun_needs_home_location"));
+              return;
+            }
+            cur.sun = t[0] || null;
+            refresh();
+            hmwShowStart();
+          },
+        });
+      })
+    )
+  );
+  var timeBox = mk("div"),
+    sunBox = mk("div");
+  b.appendChild(timeBox);
+  b.appendChild(sunBox);
+  timeBox.appendChild(hmGroup([hwTimeRow(_T("time"), function () { return cur.time; }, function (v) { cur.time = v; })]));
+  sunBox.appendChild(hmLabel(_T("hmw_shifted_by")));
+  sunBox.appendChild(hmChips(HMW_OFFSETS, function () { return cur.offset; }, function (v) { cur.offset = v; }, function (v) { return v ? (v > 0 ? "+" : "−") + Math.abs(v) : "0"; }));
+  function hmwShowStart() {
+    timeBox.style.display = cur.sun ? "none" : "";
+    sunBox.style.display = cur.sun ? "" : "none";
+  }
+  hmwShowStart();
   b.appendChild(hmLabel(_T("hm_scene")));
   b.appendChild(
     hmGroup(
-      scenes.map(function (s) {
+      [{ id: "", name: _T("hmw_dont_trigger_lights") }].concat(scenes).map(function (s) {
         return hmRow({
-          icon: "scene",
+          icon: s.id ? "scene" : "power",
           title: s.name,
-          check: function () { return cur.scene === s.id; },
-          tap: function () { cur.scene = s.id; refresh(); },
+          check: function () {
+            return cur.scene === s.id;
+          },
+          tap: function () {
+            cur.scene = s.id;
+            refresh();
+          },
         });
       })
     )
@@ -4210,16 +4697,12 @@ function hmwSlotPage(b) {
   b.appendChild(hmChips([0, 5, 10, 15, 30, 60], function () { return cur.off; }, function (v) { cur.off = v; }, function (v) { return v ? hwMinutesText(v) : _T("hmw_stay_on"); }));
   var actions = [
     hmButton(_T("hm_done"), "primary", function () {
-      if (!/^\d\d:\d\d$/.test(cur.time)) {
+      if (!cur.sun && !/^\d\d:\d\d$/.test(cur.time)) {
         toast(_T("hm_pick_a_time"));
         return;
       }
-      if (!cur.scene) {
-        toast(_T("hm_pick_a_scene"));
-        return;
-      }
       var clash = HW.slots.some(function (s, i) {
-        return i !== HW.edit && s.time === cur.time;
+        return i !== HW.edit && hmwStartText(s) === hmwStartText(cur);
       });
       if (clash) {
         toast(_T("hm_two_times_cannot_be_the_same"));
@@ -4251,7 +4734,11 @@ function hmwSetLights() {
         return g.id;
       }),
       slots: d.slots.map(function (s) {
-        return s.off ? { time: s.time, scene: s.scene, off_after_minutes: s.off } : { time: s.time, scene: s.scene };
+        var slot = s.sun ? { sun: s.sun } : { time: s.time };
+        if (s.sun && s.offset) slot.offset_minutes = s.offset;
+        if (s.scene) slot.scene = s.scene;
+        if (s.scene && s.off) slot.off_after_minutes = s.off;
+        return slot;
       }),
     };
   if (d.dark !== null && d.dark !== undefined) body.dark_threshold = d.dark;
@@ -4282,6 +4769,7 @@ function hmMotionArea(b, id) {
   hmBox(b);
   hmGuard(hmdKey("marea", id));
   if (HW && HW.kind === "mslots") HW = null;
+  HMW_DAY = null;
   var key = hmdKey("marea", id);
   hmLoad(b, ["motion_areas", "automations", "scenes", "rooms", "zones"], function (box) {
     var x = hmMotionArea1(id);
@@ -4299,8 +4787,7 @@ function hmMotionArea(b, id) {
       level = function () {
         return hmdValue(key, "sensitivity", svc && svc.sensitivity ? svc.sensitivity.sensitivity : 0);
       },
-      a = hmwAutomationOf(id),
-      dark = a && ((a.configuration.settings || {}).daylight_sensitivity || {}).dark_threshold;
+      a = hmwAutomationOf(id);
     box.appendChild(hmTitle("motion", name));
     box.appendChild(
       hmGroup([
@@ -4360,7 +4847,7 @@ function hmMotionArea(b, id) {
           ? hmRow({
               icon: "bright",
               title: _T("hmw_daylight_settings"),
-              val: dark === undefined ? _T("hmw_disabled") : _T("hmw_only_when_dark"),
+              val: hmwDaylightOn(hmwSlotsFrom(a)) ? _T("hmw_sunrise_sunset") : _T("hmw_disabled"),
               tap: "hue-mday:" + id,
             })
           : null,
@@ -4382,11 +4869,11 @@ function hmMotionArea(b, id) {
   });
 }
 
-/* The levels the bridge offers are 0 to its maximum: two are low and high, three add medium, five (the bridge it was tried on, medium is its default 2) add lowest and highest; other counts have no names of their own. */
+/* The levels the bridge offers are 0 to its maximum; five of them (the bridge it was tried on) are the app's Very low, Low, Medium, High and Very high. Two or three are low and high (and medium); other counts have no names of their own. */
 function hmwLevelText(v, max) {
   if (max === 1) return [_T("hmw_low"), _T("hmw_high")][v];
   if (max === 2) return [_T("hmw_low"), _T("hmw_medium"), _T("hmw_high")][v];
-  if (max === 4) return [_T("hmw_lowest"), _T("hmw_low"), _T("hmw_medium"), _T("hmw_high"), _T("hmw_highest")][v];
+  if (max === 4) return [_T("hmw_very_low"), _T("hmw_low"), _T("hmw_medium"), _T("hmw_high"), _T("hmw_very_high")][v];
   return _T("hmw_level") + " " + v;
 }
 
@@ -4538,57 +5025,138 @@ function hmwSensitivity(b, id) {
   });
 }
 
-/* The light level (the bridge's own scale, 10000 * log10(lux) + 1) shown as lux. */
-function hmwLux(level) {
-  var lux = Math.pow(10, (level - 1) / 10000);
-  return (lux < 10 ? lux.toFixed(1) : String(Math.round(lux))) + " lx";
+/* Whether the area is left dark by day: a time that starts at sunrise and triggers no lights. */
+function hmwDaylightOn(slots) {
+  return slots.some(function (s) {
+    return s.sun === "sunrise" && !s.scene;
+  });
 }
+
+/* Turns "only when it's dark" on or off in the times of the area. On: the times of the day (between sunrise and sunset) are replaced by one that starts at sunset with the scene the evening had,
+   and a time that starts at sunrise and triggers no lights. Off: those two are removed. */
+function hmwApplyDaylight(on, startOffset, stopOffset) {
+  var timed = HW.slots.filter(function (s) {
+    return !s.sun;
+  });
+  if (!on) {
+    if (!timed.length) return false;
+    HW.slots = timed;
+    return true;
+  }
+  var sunrise = 360 + stopOffset,
+    sunset = 1080 + startOffset,
+    day = timed
+      .filter(function (s) {
+        return hmwOrder(s) > sunrise && hmwOrder(s) < sunset;
+      })
+      .sort(function (a, b) {
+        return hmwOrder(a) - hmwOrder(b);
+      }),
+    rest = timed.filter(function (s) {
+      return day.indexOf(s) < 0;
+    }),
+    basis = day.length ? day[day.length - 1] : rest.slice().sort(function (a, b) { return hmwOrder(a) - hmwOrder(b); })[0];
+  if (!basis || !basis.scene) return false;
+  HW.slots = rest.concat([
+    { sun: "sunset", offset: startOffset, time: "", scene: basis.scene, off: basis.off },
+    { sun: "sunrise", offset: stopOffset, time: "", scene: "", off: 0 },
+  ]);
+  return true;
+}
+
+/* The daylight choice being made, kept while a page that picks minutes is open on top of it; the area's page drops it. */
+var HMW_DAY = null;
 
 function hmwDaylight(b, id) {
   hmBox(b);
-  hmLoad(b, ["automations", "scenes"], function (box) {
-    var a = hmwAutomationOf(id),
-      cur = a ? ((a.configuration.settings || {}).daylight_sensitivity || {}).dark_threshold : undefined;
+  hmLoad(b, ["automations", "scenes", "home_and_away"], function (box) {
+    var a = hmwAutomationOf(id);
     if (!a) {
       box.appendChild(hmCallout(_T("nothing_found")));
       return;
     }
-    var st = { on: cur !== undefined, level: cur === undefined ? 20000 : cur };
+    if (!HMW_DAY || HMW_DAY.id !== id) {
+      var slots = hmwSlotsFrom(a),
+        sunsetSlot = slots.filter(function (s) { return s.sun === "sunset"; })[0],
+        sunriseSlot = slots.filter(function (s) { return s.sun === "sunrise" && !s.scene; })[0];
+      HMW_DAY = { id: id, st: { on: hmwDaylightOn(slots), start: sunsetSlot ? sunsetSlot.offset : 0, stop: sunriseSlot ? sunriseSlot.offset : 0 } };
+    }
+    var st = HMW_DAY.st;
     hwHint(box, _T("hmw_daylight_hint"));
     box.appendChild(
-      hmGroup([
-        hmRow({
-          title: _T("hmw_only_when_dark"),
-          toggle: {
-            get: function () { return st.on; },
-            set: function () { st.on = !st.on; refresh(); },
-          },
-        }),
-      ])
+      hmGroup(
+        [[false, "hmw_disabled"], [true, "hmw_sunrise_sunset"]].map(function (t) {
+          return hmRow({
+            title: _T(t[1]),
+            check: function () {
+              return st.on === t[0];
+            },
+            tap: function () {
+              if (t[0] && !hwHasLocation()) {
+                toast(_T("hw_sun_needs_home_location"));
+                return;
+              }
+              st.on = t[0];
+              refresh();
+              show();
+            },
+          });
+        })
+      )
     );
-    box.appendChild(
-      sliderRow({
-        icon: "bright",
-        name: _T("hmw_darker_than"),
-        min: 0,
-        max: 40000,
-        step: 500,
-        get: function () { return st.level; },
-        fmt: hmwLux,
-        on: function () { return st.on; },
-        commit: function (v) { st.level = v; st.on = true; refresh(); },
-      })
-    );
+    var more = mk("div");
+    box.appendChild(more);
+    function show() {
+      more.innerHTML = "";
+      if (!st.on) return;
+      [["start", "hmw_start_triggering", "sunset"], ["stop", "hmw_stop_triggering", "sunrise"]].forEach(function (t) {
+        more.appendChild(hmLabel(_T(t[1])));
+        more.appendChild(
+          hmGroup([
+            hmRow({
+              title: _T("hmw_when_x"),
+              val: function () {
+                return hmwSunText(t[2], st[t[0]]);
+              },
+              tap: function () {
+                hmwPickOffset(st, t[0], t[2]);
+              },
+            }),
+          ])
+        );
+      });
+      refresh();
+    }
+    show();
     box.appendChild(
       hmActions([
         hmButton(_T("hm_done"), "primary", function () {
           hmwStartSlots(id);
-          HW.dark = st.on ? st.level : null;
           HW.depth = 1;
+          if (!hmwApplyDaylight(st.on, st.start, st.stop)) {
+            toast(_T("hmw_add_a_time_with_a_scene"));
+            return;
+          }
           HW.finish();
         }),
       ])
     );
+  });
+}
+
+/* The minutes before or after sunrise or sunset, chosen on a page of their own. */
+function hmwPickOffset(st, key, sun) {
+  hwBegin({ kind: "pick-holder", steps: [], depth: 0 });
+  hwChoose({
+    options: HMW_OFFSETS.map(function (v) {
+      return { value: v, title: hmwSunText(sun, v) };
+    }),
+    get: function () {
+      return st[key];
+    },
+    set: function (v) {
+      st[key] = v;
+    },
   });
 }
 
@@ -4601,6 +5169,7 @@ HP_PAGES["hue-mw-devices"] = ["hmw_choose_devices", "motion", hmwDevicesPage];
 HP_PAGES["hue-mw-leave"] = ["hmw_leave_the_area", "motion", hmwInfo("hue-mw-leave", "hmw_leave_the_area", ["hmw_leave_hint"], null, hmwStartCalibration)];
 HP_PAGES["hue-mw-calibrating"] = ["hmw_calibrating_area", "motion", hmwCalibratingPage];
 HP_PAGES["hue-mw-created"] = ["hmw_area_created", "motion", hmwInfo("hue-mw-created", "hmw_area_created", ["hmw_area_created_sub"])];
+HP_PAGES["hue-mw-choice"] = ["hmw_what_should_your_area_do", "motion", hmwChoicePage];
 HP_PAGES["hue-mw-groups"] = ["hmw_which_lights", "lamp", hmwGroupsPage];
 HP_PAGES["hue-mw-done"] = ["hmw_success", "check", hmwDonePage];
 HP_PAGES["hue-mslots"] = ["hmw_control_lights", "clock", hmwSlotsPage];

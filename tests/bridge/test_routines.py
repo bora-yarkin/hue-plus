@@ -24,6 +24,7 @@ def snapshot():
         {"id": "ch", "metadata": {"name": "Coming home"}},
         {"id": "lh", "metadata": {"name": "Leaving home"}},
         {"id": "sa", "metadata": {"name": "Smoke alarm"}},
+        {"id": "pm", "metadata": {"name": "PM"}},
     ]
     snap.device.append({"id": "dim", "metadata": {"name": "Dimmer"}, "services": []})
     snap.button = [
@@ -184,6 +185,89 @@ class AppWizardRoutineTests(unittest.IsolatedAsyncioTestCase):
         snap.behavior_instance = [{"id": "bi2", "script_id": "other", "metadata": {"name": "Buttons"}}]
         with self.assertRaisesRegex(ValueError, "Only a routine made from"):
             await actions.run("update_routine", Recorder(), snap, {"automation": "Buttons", "group": "Bedroom"})
+
+
+class FoundInTheAppTests(unittest.IsolatedAsyncioTestCase):
+    """What the Hue app's own texts and the bridge's answers showed (docs/bridge-findings.md)."""
+
+    async def go(self, name, data):
+        rec = Recorder()
+        await actions.run(name, rec, snapshot(), data)
+        return rec.calls[0]
+
+    async def test_mimic_presence_is_the_pm_template_with_its_mode_and_end_state(self):
+        body = (
+            await self.go(
+                "create_routine",
+                {"routine": "mimic_presence", "name": "Away", "group": "Bedroom", "mode": "nighttime", "end_state": "turn_off"},
+            )
+        )[3]
+        self.assertEqual(body["script_id"], "pm")
+        self.assertEqual(
+            body["configuration"], {"where": [ROOM_GROUP], "excluded_lights": "do_nothing", "end_state": "turn_off", "mode": "nighttime"}
+        )
+        config = (await self.go("create_routine", {"routine": "mimic_presence", "name": "Away", "group": "Bedroom"}))[3]["configuration"]
+        self.assertEqual((config["mode"], config["end_state"]), ("24h", "do_nothing"), "all day, and do nothing at the end, unless chosen")
+        off = (
+            await self.go(
+                "create_routine", {"routine": "mimic_presence", "name": "Away", "group": "Bedroom", "excluded_lights": "turn_off"}
+            )
+        )[3]
+        self.assertEqual(off["configuration"]["excluded_lights"], "turn_off", "the Hue app switches the other rooms off")
+        for bad in ({"mode": "always"}, {"end_state": "nightlight"}, {"excluded_lights": "dim"}):
+            with self.assertRaises(ValueError):
+                await self.go("create_routine", {"routine": "mimic_presence", "name": "x", "group": "Bedroom", **bad})
+
+    async def test_go_to_sleep_ends_with_lights_off_dimmed_lights_or_a_warm_nightlight(self):
+        for end in ("turn_off", "minimum_brightness", "nightlight"):
+            data = {"routine": "go_to_sleep", "name": "x", "group": "Bedroom", "time": time(22, 0), "end_state": end}
+            self.assertEqual((await self.go("create_routine", data))[3]["configuration"]["end_state"], end)
+        with self.assertRaises(ValueError):
+            await self.go(
+                "create_routine", {"routine": "go_to_sleep", "name": "x", "group": "Bedroom", "time": time(22, 0), "end_state": "off"}
+            )
+
+    async def test_a_schedule_can_start_at_sunset_and_switch_the_lights_off_or_on(self):
+        sunset = {"routine": "schedule", "name": "x", "group": "Bedroom", "start_type": "sunset", "until_type": "sunrise", "action": "off"}
+        config = (await self.go("create_routine", sunset))[3]["configuration"]
+        self.assertEqual(config["when_extended"]["start_at"], {"time_point": {"type": "sunset"}})
+        self.assertEqual(config["when_extended"]["end_at"], {"time_point": {"type": "sunrise"}})
+        self.assertEqual(
+            config["what"],
+            [
+                {
+                    "group": ROOM_GROUP["group"],
+                    "actions": [{"target": {"rid": lid, "rtype": "light"}, "action": {"on": {"on": False}}} for lid in ("l1", "l2")],
+                }
+            ],
+        )
+        on = (await self.go("create_routine", {**sunset, "action": "on", "start_type": "time", "time": time(18, 0), "until_type": "time"}))[
+            3
+        ]["configuration"]
+        self.assertTrue(on["what"][0]["actions"][0]["action"]["on"]["on"])
+        self.assertEqual(on["when_extended"]["start_at"]["time_point"]["time"], {"hour": 18, "minute": 0})
+        self.assertNotIn("end_at", on["when_extended"])
+        for bad in ({"action": "dim"}, {"start_type": "noon"}, {"start_type": "time"}):
+            with self.assertRaises(ValueError):
+                await self.go("create_routine", {**sunset, **bad})
+
+    async def test_coming_home_is_always_or_only_at_night(self):
+        base = {"routine": "coming_home", "name": "x", "group": "Bedroom", "scene": "Soho"}
+        self.assertEqual((await self.go("create_routine", base))[3]["configuration"]["when_constrained"], {"type": "always"})
+        night = (await self.go("create_routine", {**base, "when_type": "nighttime"}))[3]["configuration"]
+        self.assertEqual(night["when_constrained"], {"type": "nighttime"})
+        with self.assertRaises(ValueError):
+            await self.go("create_routine", {**base, "when_type": "dusk"})
+
+    async def test_the_play_button_starts_and_stops_an_automation(self):
+        snap = snapshot()
+        snap.behavior_instance = [{"id": "bi1", "metadata": {"name": "Sleep"}}]
+        for action_name in ("start", "stop"):
+            rec = Recorder()
+            await actions.run("trigger_automation", rec, snap, {"automation": "Sleep", "action": action_name})
+            self.assertEqual(rec.calls, [("put", "behavior_instance", "bi1", {"trigger": {action_name: True}})])
+        with self.assertRaises(ValueError):
+            await actions.run("trigger_automation", Recorder(), snap, {"automation": "Sleep", "action": "pause"})
 
 
 class MoreRoutineTests(unittest.IsolatedAsyncioTestCase):

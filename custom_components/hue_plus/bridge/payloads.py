@@ -388,6 +388,7 @@ ROUTINE_TEMPLATES = {
     "coming_home": "Coming home",
     "leaving_home": "Leaving home",
     "smoke_alarm": "Smoke alarm",
+    "mimic_presence": "PM",
 }
 
 
@@ -410,8 +411,34 @@ def _recall(where: list[dict[str, Any]], scene_id: str | None) -> list[dict[str,
     return [{"group": where[0]["group"], "recall": {"rid": scene_id, "rtype": "scene"}}]
 
 
-def _time_point(at: time) -> dict[str, Any]:
+SUN_POINTS = ("sunrise", "sunset")
+START_TYPES = ("time", *SUN_POINTS)
+
+
+def _time_point(at: time | None, kind: str = "time") -> dict[str, Any]:
+    """A time of day, or sunrise or sunset (those need the bridge's home location to be set)."""
+    if kind not in START_TYPES:
+        raise ValueError(f"A time is at a time of day, sunrise or sunset: {', '.join(START_TYPES)}")
+    if kind in SUN_POINTS:
+        return {"time_point": {"type": kind}}
+    if at is None:
+        raise ValueError("Give the time of day")
     return {"time_point": {"type": "time", "time": {"hour": at.hour, "minute": at.minute}}}
+
+
+SCHEDULE_ACTIONS = ("scene", "on", "off")
+
+
+def _schedule_what(where: list[dict[str, Any]], action: str, scene_id: str | None, light_ids: list[str]) -> list[dict[str, Any]]:
+    """What a lighting schedule does at its start: recall a scene, or switch every light of the room or zone on or off."""
+    if action not in SCHEDULE_ACTIONS:
+        raise ValueError(f"A schedule recalls a scene or switches the lights on or off: {', '.join(SCHEDULE_ACTIONS)}")
+    if action == "scene":
+        return _recall(where, scene_id)
+    if not light_ids:
+        raise ValueError("The room or zone has no lights to switch")
+    targets = [{"target": {"rid": rid, "rtype": "light"}, "action": {"on": {"on": action == "on"}}} for rid in light_ids]
+    return [{"group": where[0]["group"], "actions": targets}]
 
 
 def _schedule_routine(
@@ -421,13 +448,15 @@ def _schedule_routine(
     days: list[str] | None,
     until: time | None,
     randomize_minutes: int | None,
+    start_type: str = "time",
+    until_type: str = "time",
+    action: str = "scene",
+    light_ids: list[str] | None = None,
 ) -> dict[str, Any]:
-    what = _recall(where, scene_id)
-    if at is None:
-        raise ValueError("Give the time of day")
-    when: dict[str, Any] = {"start_at": _time_point(at), "recurrence_days": _days(days)}
-    if until is not None:
-        when["end_at"] = _time_point(until)
+    what = _schedule_what(where, action, scene_id, light_ids or [])
+    when: dict[str, Any] = {"start_at": _time_point(at, start_type), "recurrence_days": _days(days)}
+    if until is not None or until_type in SUN_POINTS:
+        when["end_at"] = _time_point(until, until_type)
     if randomize_minutes:
         if not 1 <= randomize_minutes <= 120:
             raise ValueError("The times are randomised by 1 to 120 minutes")
@@ -435,15 +464,26 @@ def _schedule_routine(
     return {"when_extended": when, "what": what, "where": where}
 
 
-def _coming_home_routine(where: list[dict[str, Any]], scene_id: str | None, at: time | None, until: time | None) -> dict[str, Any]:
+COMING_HOME_WHEN = ("always", "nighttime")
+
+
+def _coming_home_routine(
+    where: list[dict[str, Any]], scene_id: str | None, at: time | None, until: time | None, when_type: str | None
+) -> dict[str, Any]:
+    """Always, only at night (the bridge needs its home location for that), or only between two times."""
     what = _recall(where, scene_id)
     if (at is None) != (until is None):
         raise ValueError("Give both the time it starts and the time it ends, or neither")
-    when = (
-        {"type": "always"}
-        if at is None
-        else {"type": "between", "start": {"hour": at.hour, "minute": at.minute}, "end": {"hour": until.hour, "minute": until.minute}}
-    )
+    if at is not None:
+        when: dict[str, Any] = {
+            "type": "between",
+            "start": {"hour": at.hour, "minute": at.minute},
+            "end": {"hour": until.hour, "minute": until.minute},
+        }
+    else:
+        if when_type not in (None, *COMING_HOME_WHEN):
+            raise ValueError(f"Coming home is {' or '.join(COMING_HOME_WHEN)}, or between two times")
+        when = {"type": when_type or "always"}
     return {"when_constrained": when, "what": what, "where": where}
 
 
@@ -489,12 +529,19 @@ def _wake_up_routine(
     return configuration
 
 
+GO_TO_SLEEP_END_STATES = ("turn_off", "minimum_brightness", "nightlight")
+MIMIC_MODES = ("24h", "nighttime")
+MIMIC_END_STATES = ("do_nothing", "turn_off")
+
+
 def _go_to_sleep_routine(
-    where: list[dict[str, Any]], at: time, days: list[str] | None, minutes: float | None, style: str | None
+    where: list[dict[str, Any]], at: time, days: list[str] | None, minutes: float | None, style: str | None, end_state: str | None
 ) -> dict[str, Any]:
+    if end_state not in (None, *GO_TO_SLEEP_END_STATES):
+        raise ValueError(f"Go to sleep ends with {', '.join(GO_TO_SLEEP_END_STATES)}")
     return {
         "fade_out_duration": {"seconds": _seconds(minutes, 30)},
-        "end_state": "turn_off",
+        "end_state": end_state or "turn_off",
         "when": _when(at, days),
         "where": where,
         **_style(style, GO_TO_SLEEP_STYLES),
@@ -515,6 +562,14 @@ def routine_configuration(
     style: str | None = None,
     turn_off_after_minutes: int | None = None,
     randomize_minutes: int | None = None,
+    end_state: str | None = None,
+    mode: str | None = None,
+    excluded_lights: str | None = None,
+    when_type: str | None = None,
+    start_type: str = "time",
+    until_type: str = "time",
+    action: str = "scene",
+    light_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     """The configuration of a routine for a room or zone. Every shape here was accepted by a real bridge (as a disabled routine).
 
@@ -525,17 +580,38 @@ def routine_configuration(
     where = [{"group": {"rid": group_id, "rtype": group_type}}]
     if kind in ("leaving_home", "smoke_alarm"):
         return {"where": where}
+    if kind == "mimic_presence":
+        return _mimic_presence_routine(where, mode, end_state, excluded_lights)
     if kind == "schedule":
-        return _schedule_routine(where, scene_id, at, days, until, randomize_minutes)
+        return _schedule_routine(where, scene_id, at, days, until, randomize_minutes, start_type, until_type, action, light_ids)
     if kind == "coming_home":
-        return _coming_home_routine(where, scene_id, at, until)
+        return _coming_home_routine(where, scene_id, at, until, when_type)
     if kind == "timer":
         return _timer_routine(where, scene_id, minutes)
     if at is None:
         raise ValueError("Give the time of day")
     if kind == "wake_up":
         return _wake_up_routine(where, at, days, minutes, end_brightness, style, turn_off_after_minutes)
-    return _go_to_sleep_routine(where, at, days, minutes, style)
+    return _go_to_sleep_routine(where, at, days, minutes, style, end_state)
+
+
+def _mimic_presence_routine(
+    where: list[dict[str, Any]], mode: str | None, end_state: str | None, excluded_lights: str | None
+) -> dict[str, Any]:
+    """Mimic presence: lights go on and off as if someone were home, all day or only when it is dark. The bridge keeps one of these.
+    ``excluded_lights`` is what happens to the lights of the rooms that are not chosen: nothing, or they are switched off (the Hue app's text)."""
+    if excluded_lights not in (None, *MIMIC_END_STATES):
+        raise ValueError(f"The other lights: {' or '.join(MIMIC_END_STATES)}")
+    if mode not in (None, *MIMIC_MODES):
+        raise ValueError(f"Mimic presence is active {' or '.join(MIMIC_MODES)} (24h is all day, nighttime only when it is dark)")
+    if end_state not in (None, *MIMIC_END_STATES):
+        raise ValueError(f"Mimic presence ends with {' or '.join(MIMIC_END_STATES)}")
+    return {
+        "where": where,
+        "excluded_lights": excluded_lights or "do_nothing",
+        "end_state": end_state or "do_nothing",
+        "mode": mode or "24h",
+    }
 
 
 def _seconds(minutes: float | None, default: float) -> int:
@@ -758,28 +834,50 @@ MOTION_SENSOR_SCRIPT = "Motion Sensor"
 MOTION_SLOTS = (1, 10)
 
 
+def _slot_start(slot: dict[str, Any]) -> dict[str, Any]:
+    """When a slot begins: a time of day, or sunrise or sunset with a number of minutes before (negative) or after."""
+    sun = slot.get("sun")
+    if sun is None:
+        return {"type": "time", "time": {"hour": slot["at"].hour, "minute": slot["at"].minute}}
+    if sun not in SUN_POINTS:
+        raise ValueError(f"A time is a time of day, sunrise or sunset: {', '.join(START_TYPES)}")
+    offset = int(slot.get("offset_minutes") or 0)
+    if not -180 <= offset <= 180:
+        raise ValueError("Sunrise and sunset can be shifted by up to three hours")
+    return {"type": sun, **({"offset": {"minutes": offset}} if offset else {})}
+
+
+def _slot_order(slot: dict[str, Any]) -> int:
+    """Where a slot falls in the day, for putting them in order (sunrise and sunset count as 06:00 and 18:00 here)."""
+    if slot.get("sun") is None:
+        return slot["at"].hour * 60 + slot["at"].minute
+    return (360 if slot["sun"] == "sunrise" else 1080) + int(slot.get("offset_minutes") or 0)
+
+
 def motion_area_configuration(
     area_id: str, groups: list[tuple[str, str]], slots: list[dict[str, Any]], dark_threshold: int | None
 ) -> dict[str, Any]:
-    """The Motion Sensor template's configuration that makes a MotionAware area control lights: from each start time, motion recalls
-    a scene and, when given, no motion for some minutes switches the lights off. ``groups`` are (id, "room"|"zone")."""
+    """The Motion Sensor template's configuration that makes a MotionAware area control lights: from each start (a time, sunrise or sunset)
+    motion recalls a scene (no scene: no lights, which is how a time is left dark) and, when given, no motion for some minutes switches
+    the lights off. ``groups`` are (id, "room"|"zone")."""
     if not groups:
         raise ValueError("Give the rooms or the zone whose lights the area controls")
     if not MOTION_SLOTS[0] <= len(slots) <= MOTION_SLOTS[1]:
         raise ValueError(f"An area needs from {MOTION_SLOTS[0]} to {MOTION_SLOTS[1]} times")
     timeslots = []
-    for slot in sorted(slots, key=lambda x: x["at"]):
+    for slot in sorted(slots, key=_slot_order):
+        scene = slot.get("scene")
         entry: dict[str, Any] = {
-            "start_time": {"type": "time", "time": {"hour": slot["at"].hour, "minute": slot["at"].minute}},
-            "on_motion": {"recall_single": [{"action": {"recall": {"rid": slot["scene"], "rtype": "scene"}}}]},
+            "start_time": _slot_start(slot),
+            "on_motion": {"recall_single": [{"action": {"recall": {"rid": scene, "rtype": "scene"}} if scene else "do_nothing"}]},
         }
         minutes = slot.get("off_after_minutes")
-        if minutes is not None:
+        if minutes is not None and scene:
             if not 1 <= minutes <= 60:
                 raise ValueError("The lights switch off after 1 to 60 minutes without motion")
             entry["on_no_motion"] = {"after": {"minutes": int(minutes)}, "recall_single": [{"action": "all_off"}]}
         timeslots.append(entry)
-    if len({(t["start_time"]["time"]["hour"], t["start_time"]["time"]["minute"]) for t in timeslots}) != len(timeslots):
+    if len({repr(t["start_time"]) for t in timeslots}) != len(timeslots):
         raise ValueError("Two times cannot be the same")
     return {
         "source": {"rid": area_id, "rtype": "motion_area_configuration"},

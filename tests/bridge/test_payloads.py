@@ -192,6 +192,27 @@ class PayloadTests(unittest.TestCase):
                 bad()
         self.assertEqual(p.motion_sensitivity_put(2), {"sensitivity": {"sensitivity": 2}})
 
+    def test_a_motion_area_time_can_start_at_sunrise_or_sunset_and_leave_the_lights_alone(self):
+        slots = [
+            {"at": time(23, 0), "scene": "s3", "off_after_minutes": 10},
+            {"sun": "sunrise", "offset_minutes": -30, "scene": None},
+            {"sun": "sunset", "scene": "s1", "off_after_minutes": 15},
+        ]
+        slots_out = p.motion_area_configuration("a1", [("r1", "room")], slots, None)["when"]["timeslots"]
+        self.assertEqual([t["start_time"]["type"] for t in slots_out], ["sunrise", "sunset", "time"], "in the order of the day")
+        self.assertEqual(slots_out[0]["start_time"], {"type": "sunrise", "offset": {"minutes": -30}})
+        self.assertEqual(slots_out[0]["on_motion"], {"recall_single": [{"action": "do_nothing"}]})
+        self.assertNotIn("on_no_motion", slots_out[0], "no lights, so nothing to switch off")
+        self.assertEqual(slots_out[1]["start_time"], {"type": "sunset"}, "no offset is not written")
+        self.assertIn("on_no_motion", slots_out[1])
+        for bad in (
+            [{"sun": "noon", "scene": "s"}],
+            [{"sun": "sunset", "offset_minutes": 500, "scene": "s"}],
+            [{"sun": "sunset", "scene": "s"}, {"sun": "sunset", "scene": "t"}],
+        ):
+            with self.assertRaises(ValueError):
+                p.motion_area_configuration("a1", [("r1", "room")], bad, None)
+
     def test_streaming_end_states_take_a_scene_only_for_scene(self):
         self.assertEqual(
             p.streaming_end_configuration("a1", "last_state", None),

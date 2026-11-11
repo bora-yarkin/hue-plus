@@ -297,6 +297,22 @@ class ActionTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaisesRegex(ValueError, "No scene called"):
             await self.go("set_motion_area_lights", {**data, "slots": [{"time": "07:00", "scene": "Nope"}]}, snap=s, rec=bridge([]))
 
+    async def test_an_area_time_can_start_at_sunset_and_a_time_without_a_scene_leaves_the_lights_alone(self):
+        s, bridge = self._area_world()
+        data = {
+            "area": "a1",
+            "groups": ["Hall"],
+            "slots": [{"sun": "sunrise", "offset_minutes": 15}, {"sun": "sunset", "scene": "Read", "off_after_minutes": 10}],
+        }
+        calls, _ = await self.go("set_motion_area_lights", data, snap=s, rec=bridge([]))
+        slots = calls[0][3]["configuration"]["when"]["timeslots"]
+        self.assertEqual(slots[0]["start_time"], {"type": "sunrise", "offset": {"minutes": 15}})
+        self.assertEqual(slots[0]["on_motion"], {"recall_single": [{"action": "do_nothing"}]})
+        self.assertEqual(slots[1]["start_time"], {"type": "sunset"})
+        for bad in ({"time": "07:00", "sun": "sunset"}, {"scene": "Read"}):
+            with self.assertRaisesRegex(ValueError, "Each time is"):
+                await self.go("set_motion_area_lights", {**data, "slots": [bad]}, snap=s, rec=bridge([]))
+
     async def test_deleting_a_motion_area_deletes_the_automation_that_uses_it_first(self):
         s, bridge = self._area_world()
         mine = {"id": "bi9", "configuration": {"source": {"rid": "a1", "rtype": "motion_area_configuration"}}}

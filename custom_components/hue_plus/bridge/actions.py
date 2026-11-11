@@ -294,6 +294,19 @@ async def _area_automations(api: BridgeApi, area_id: str) -> list[dict[str, Any]
     return [a for a in await api.list("behavior_instance") if ((a.get("configuration") or {}).get("source") or {}).get("rid") == area_id]
 
 
+def _motion_slot(snap: models.Snapshot, slot: dict[str, Any]) -> dict[str, Any]:
+    """One time of an area: ``{"time": "07:00"}`` or ``{"sun": "sunset", "offset_minutes": -30}``, a ``scene`` (none leaves the lights alone)."""
+    if not isinstance(slot, dict) or ("time" in slot) == ("sun" in slot):
+        raise ValueError('Each time is {"time": "07:00"} or {"sun": "sunset"}, with a scene and optionally off_after_minutes')
+    return {
+        "at": time.fromisoformat(str(slot["time"])) if "time" in slot else None,
+        "sun": slot.get("sun"),
+        "offset_minutes": slot.get("offset_minutes"),
+        "scene": resolve(snap.scene, slot["scene"], "scene")["id"] if slot.get("scene") else None,
+        "off_after_minutes": slot.get("off_after_minutes"),
+    }
+
+
 @action("set_motion_area_lights")
 async def set_motion_area_lights(api, snap, data):
     """What a MotionAware area does when it senses motion: the scenes by time of day, when the lights go off again, and in which rooms.
@@ -303,14 +316,7 @@ async def set_motion_area_lights(api, snap, data):
     for ref in data["groups"]:
         kind = "zone" if any(z["id"] == ref or models._name(z).casefold() == str(ref).casefold() for z in snap.zone) else "room"
         groups.append((_group(snap, kind, ref)["id"], kind))
-    slots = [
-        {
-            "at": time.fromisoformat(str(slot["time"])),
-            "scene": resolve(snap.scene, slot["scene"], "scene")["id"],
-            "off_after_minutes": slot.get("off_after_minutes"),
-        }
-        for slot in data["slots"]
-    ]
+    slots = [_motion_slot(snap, slot) for slot in data["slots"]]
     configuration = payloads.motion_area_configuration(area["id"], groups, slots, data.get("dark_threshold"))
     existing = await _area_automations(api, area["id"])
     if existing:
@@ -553,6 +559,15 @@ async def update_automation(api, snap, data):
     await api.put("behavior_instance", instance["id"], payloads.automation_put(data.get("name"), configuration, data.get("enabled")))
 
 
+@action("trigger_automation")
+async def trigger_automation(api, snap, data):
+    """The play button of the Hue app: starts or stops a wake up, go to sleep, timer or mimic presence automation, whether or not it is switched on."""
+    if data["action"] not in ("start", "stop"):
+        raise ValueError("The action is start or stop")
+    instance = resolve(snap.behavior_instance, data["automation"], "automation")
+    await api.put("behavior_instance", instance["id"], {"trigger": {data["action"]: True}})
+
+
 @action("delete_automation", destructive=True)
 async def delete_automation(api, snap, data):
     await api.delete("behavior_instance", resolve(snap.behavior_instance, data["automation"], "automation")["id"])
@@ -706,6 +721,11 @@ def _template(snap: models.Snapshot, kind: str) -> dict[str, Any]:
     return found[0]
 
 
+def _group_light_ids(snap: models.Snapshot, kind: str, group_id: str) -> list[str]:
+    """The lights of a room (the lights of its devices) or zone."""
+    return next((g["lights"] for g in models.groups(snap, kind) if g["id"] == group_id), [])
+
+
 def _routine_configuration(snap: models.Snapshot, kind: str, data: dict[str, Any]) -> dict[str, Any]:
     group_type = data.get("group_type", "room")
     group = _group(snap, group_type, data["group"])
@@ -723,6 +743,14 @@ def _routine_configuration(snap: models.Snapshot, kind: str, data: dict[str, Any
         style=data.get("style"),
         turn_off_after_minutes=data.get("turn_off_after_minutes"),
         randomize_minutes=data.get("randomize_minutes"),
+        end_state=data.get("end_state"),
+        mode=data.get("mode"),
+        excluded_lights=data.get("excluded_lights"),
+        when_type=data.get("when_type"),
+        start_type=data.get("start_type") or "time",
+        until_type=data.get("until_type") or "time",
+        action=data.get("action") or "scene",
+        light_ids=_group_light_ids(snap, group_type, group["id"]),
     )
 
 

@@ -5,7 +5,7 @@
 /* What the bridge said, by kind of resource. Everything the menu shows is read once, when the menu opens (one loading screen); after that every page draws at once from here.
    The edits of a device are not written here but kept as a draft (hmdraft.js) until that device is saved. */
 var HM = {};
-var HM_KINDS = ["accessories", "scenes", "rooms", "zones", "entertainment_areas", "motion_areas", "automations", "apps", "bridge", "devices"];
+var HM_KINDS = ["accessories", "scenes", "rooms", "zones", "entertainment_areas", "motion_areas", "automations", "apps", "bridge", "devices", "home_and_away"];
 var HM_READY = false;
 var HM_READING = null;
 
@@ -1129,6 +1129,21 @@ function hmRoutine(b, id) {
             },
           }),
         ])
+      );
+    if (hwRunnable(x))
+      box.appendChild(
+        hmGroup(
+          [["start", "play", "hw_start"], ["stop", "stop", "hw_stop"]].map(function (t) {
+            return hmRow({
+              icon: t[1],
+              title: _T(t[2]),
+              sub: t[0] === "start" ? hwRunText(x) : "",
+              tap: function () {
+                hpDo(again, "trigger_automation", { automation: x.id, action: t[0] });
+              },
+            });
+          })
+        )
       );
     if (x.last_error) box.appendChild(hmCallout(x.last_error));
     box.appendChild(

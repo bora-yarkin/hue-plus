@@ -37,6 +37,7 @@ test("every text of the menu is defined", () => {
     hw_day_: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
     hw_day_long_: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
     hw_style_: ["sunrise", "sunset", "basic_up", "basic_down"],
+    hw_end_: ["turn_off", "minimum_brightness", "nightlight"],
     hw_name_: ["wake_up", "go_to_sleep", "coming_home", "leaving_home", "timer", "schedule"],
     hmw_health_: ["healthy", "unhealthy", "degraded", "recovering", "unrecoverable", "not_running", "unknown"],
   };

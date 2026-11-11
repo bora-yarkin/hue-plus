@@ -505,6 +505,18 @@ update_automation:
       selector:
         boolean: {}
 
+trigger_automation:
+  fields:
+    "automation":
+      required: true
+      selector:
+        text: {}
+    "action":
+      required: true
+      selector:
+        select:
+          options: ["start", "stop"]
+
 delete_automation:
   fields:
     "automation":
@@ -599,7 +611,7 @@ create_routine:
       required: true
       selector:
         select:
-          options: ["wake_up", "go_to_sleep", "timer", "schedule", "coming_home", "leaving_home", "smoke_alarm"]
+          options: ["wake_up", "go_to_sleep", "timer", "schedule", "coming_home", "leaving_home", "smoke_alarm", "mimic_presence"]
     "name":
       required: true
       selector:
@@ -656,6 +668,35 @@ create_routine:
     "scene":
       selector:
         text: {}
+    "end_state":
+      selector:
+        select:
+          options: ["turn_off", "minimum_brightness", "nightlight", "do_nothing"]
+    "mode":
+      selector:
+        select:
+          options: ["24h", "nighttime"]
+    "excluded_lights":
+      selector:
+        select:
+          options: ["do_nothing", "turn_off"]
+    "when_type":
+      selector:
+        select:
+          options: ["always", "nighttime"]
+    "start_type":
+      selector:
+        select:
+          options: ["time", "sunrise", "sunset"]
+    "until_type":
+      selector:
+        select:
+          options: ["time", "sunrise", "sunset"]
+    "action":
+      default: "scene"
+      selector:
+        select:
+          options: ["scene", "on", "off"]
     "enabled":
       default: true
       selector:
@@ -721,6 +762,35 @@ update_routine:
     "scene":
       selector:
         text: {}
+    "end_state":
+      selector:
+        select:
+          options: ["turn_off", "minimum_brightness", "nightlight", "do_nothing"]
+    "mode":
+      selector:
+        select:
+          options: ["24h", "nighttime"]
+    "excluded_lights":
+      selector:
+        select:
+          options: ["do_nothing", "turn_off"]
+    "when_type":
+      selector:
+        select:
+          options: ["always", "nighttime"]
+    "start_type":
+      selector:
+        select:
+          options: ["time", "sunrise", "sunset"]
+    "until_type":
+      selector:
+        select:
+          options: ["time", "sunrise", "sunset"]
+    "action":
+      default: "scene"
+      selector:
+        select:
+          options: ["scene", "on", "off"]
     "enabled":
       selector:
         boolean: {}
