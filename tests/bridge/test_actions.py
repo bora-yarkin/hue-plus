@@ -320,6 +320,19 @@ class ActionTests(unittest.IsolatedAsyncioTestCase):
         calls, _ = await self.go("delete_motion_area", {"area": "a1", "confirm": True}, snap=s, rec=bridge([other, mine]))
         self.assertEqual(calls, [("delete", "behavior_instance", "bi9", None), ("delete", "motion_area_configuration", "a1", None)])
 
+    async def test_the_home_location_goes_to_the_bridge_and_a_place_that_cannot_exist_does_not(self):
+        class Places(Recorder):
+            async def list(self, resource):
+                return [{"id": "g1", "is_configured": False}] if resource == "geolocation" else []
+
+        calls, _ = await self.go("set_home_location", {"latitude": 41.0, "longitude": 29.0}, rec=Places())
+        self.assertEqual(calls, [("put", "geolocation", "g1", {"latitude": 41.0, "longitude": 29.0})])
+        for bad in ({"latitude": 91, "longitude": 0}, {"latitude": 0, "longitude": 181}):
+            with self.assertRaisesRegex(ValueError, "latitude is from"):
+                await self.go("set_home_location", bad, rec=Places())
+        with self.assertRaisesRegex(ValueError, "no location setting"):
+            await self.go("set_home_location", {"latitude": 1, "longitude": 1})
+
     async def test_power_on_converts_kelvin_to_mirek(self):
         calls, _ = await self.go(
             "set_power_on", {"light": "l1", "preset": "custom", "on": "on", "brightness": 70, "color_temperature_kelvin": 2700}

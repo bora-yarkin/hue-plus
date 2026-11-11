@@ -993,6 +993,20 @@
         }
       }
     },
+    "set_home_location": {
+      "name": "Set home location",
+      "description": "Sets the bridge's home location. Sunrise and sunset, Coming home at night and the bridge's other location-based automations need it. The menu's button gives it Home Assistant's own home location.",
+      "fields": {
+        "latitude": {
+          "name": "Latitude",
+          "description": "Degrees north, from -90 to 90."
+        },
+        "longitude": {
+          "name": "Longitude",
+          "description": "Degrees east, from -180 to 180."
+        }
+      }
+    },
     "set_zigbee_channel": {
       "name": "Set zigbee channel",
       "description": "Changes the Zigbee channel of the bridge. Every light and accessory has to find the bridge again, and some may not.",

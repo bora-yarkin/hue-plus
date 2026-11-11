@@ -566,6 +566,21 @@ install_bridge_update:
       selector:
         boolean: {}
 
+set_home_location:
+  fields:
+    "latitude":
+      required: true
+      selector:
+        number:
+          mode: "box"
+          step: "any"
+    "longitude":
+      required: true
+      selector:
+        number:
+          mode: "box"
+          step: "any"
+
 set_zigbee_channel:
   fields:
     "channel":

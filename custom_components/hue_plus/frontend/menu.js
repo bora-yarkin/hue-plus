@@ -568,7 +568,6 @@ var PLUGIN_STRINGS = {
   "hw_at_a_specific_time": "At a specific time",
   "hw_sunrise": "Sunrise",
   "hw_sunset": "Sunset",
-  "hw_sun_needs_home_location": "Sunrise and sunset need the bridge to know where home is. Set the home location in the Hue app (Settings, Location settings).",
   "hw_start": "Start",
   "hw_stop": "Stop",
   "hw_running": "Running now",
@@ -592,6 +591,11 @@ var PLUGIN_STRINGS = {
   "hmw_control_lights_sub": "Your lights will turn on and off when motion is detected.",
   "hmw_choice_footer": "You can always adjust what your MotionAware area controls in Settings, MotionAware areas.",
   "hmw_daylight_hint": "MotionAware areas don’t measure daylight, so they can use sunrise and sunset to decide when to trigger lights. Sunrise/Sunset replaces the times between sunrise and sunset with one that starts at sunset and one at sunrise that triggers no lights.",
+  "hw_sun_needs_home_location": "Sunrise and sunset need the bridge to know where home is. Set it in Settings, Hue Plus, Bridges, Home location.",
+  "hrw_home_location": "Home location",
+  "hrw_set_the_home_location": "Set the bridge’s home location to Home Assistant’s home location? The bridge uses it for sunrise and sunset, and for Coming home and Leaving home.",
+  "hrw_home_location_set": "The bridge knows where home is",
+  "hrw_no_home_location_in_home_assistant": "Home Assistant has no home location set",
 };
 
 /* The styles of the Spotify sync and sync box popups, added to the dashboard's page by the plugin (the dashboard's own styles are for its own parts). */
@@ -1949,6 +1953,13 @@ function hmBridge(b) {
             tap: "hue-zch",
           })
         : null,
+      hmRow({
+        title: _T("hrw_home_location"),
+        val: function () {
+          return HM.home_and_away && HM.home_and_away.configured ? _T("set_up") : _T("not_set_up");
+        },
+        tap: hrwSetHomeLocation,
+      }),
       hmRow({
         title: _T("hm_time_zone"),
         val: function () {
@@ -5436,6 +5447,29 @@ function hrwZigbeeChannel(b) {
       })
     )
   );
+}
+
+/* The bridge's home location, from Home Assistant's own, after asking: the bridge needs it for sunrise and sunset and for the automations that depend on where home is. */
+function hrwSetHomeLocation() {
+  var c = H().config || {};
+  if (typeof c.latitude !== "number" || typeof c.longitude !== "number") {
+    toast(_T("hrw_no_home_location_in_home_assistant"));
+    return;
+  }
+  confirmDlg(_T("hrw_set_the_home_location"), function () {
+    hpCall("hue_plus", "set_home_location", { latitude: c.latitude, longitude: c.longitude }).then(
+      function () {
+        toast(_T("hrw_home_location_set"));
+        hueplus.resources(["home_and_away"]).then(function (r) {
+          HM.home_and_away = r.home_and_away;
+          refresh();
+        });
+      },
+      function () {
+        toast(_T("hrw_couldn_t_save"));
+      }
+    );
+  });
 }
 
 HP_PAGES["hue-groups"] = ["hrw_rooms_and_zones", "home", hrwList];

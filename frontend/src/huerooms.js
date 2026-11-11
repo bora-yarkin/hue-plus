@@ -256,6 +256,29 @@ function hrwZigbeeChannel(b) {
   );
 }
 
+/* The bridge's home location, from Home Assistant's own, after asking: the bridge needs it for sunrise and sunset and for the automations that depend on where home is. */
+function hrwSetHomeLocation() {
+  var c = H().config || {};
+  if (typeof c.latitude !== "number" || typeof c.longitude !== "number") {
+    toast(_T("hrw_no_home_location_in_home_assistant"));
+    return;
+  }
+  confirmDlg(_T("hrw_set_the_home_location"), function () {
+    hpCall("hue_plus", "set_home_location", { latitude: c.latitude, longitude: c.longitude }).then(
+      function () {
+        toast(_T("hrw_home_location_set"));
+        hueplus.resources(["home_and_away"]).then(function (r) {
+          HM.home_and_away = r.home_and_away;
+          refresh();
+        });
+      },
+      function () {
+        toast(_T("hrw_couldn_t_save"));
+      }
+    );
+  });
+}
+
 HP_PAGES["hue-groups"] = ["hrw_rooms_and_zones", "home", hrwList];
 HP_PAGES["hue-group"] = ["hrw_rooms_and_zones", "home", hrwEditor];
 HP_PAGES["hue-gname"] = ["hw_name", "edit", hrwNamePage];

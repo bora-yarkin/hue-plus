@@ -367,3 +367,22 @@ test("an area is calibrated when the bridge calls it and every device of it heal
   assert.equal(w.hmwCalibrated({ health: "not_running", participants: [] }), false);
   assert.equal(w.hmwCalibrated(undefined), false);
 });
+
+test("the home location button gives the bridge Home Assistant's own location, after asking, and says so when there is none", async () => {
+  const w = load();
+  const ctx = w;
+  vm.runInContext(
+    "var asked = null; H = () => ({ config: { latitude: 41.5, longitude: 29.25 } }); confirmDlg = (text, fn) => { asked = text; fn(); }; hueplus.resources = () => Promise.resolve({ home_and_away: { configured: true } }); refresh = () => {};",
+    ctx
+  );
+  w.hrwSetHomeLocation();
+  assert.equal(w.asked, "hrw_set_the_home_location");
+  assert.deepEqual(w.sent[0], ["hue_plus", "set_home_location", { latitude: 41.5, longitude: 29.25 }]);
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  assert.deepEqual(plain(w.HM.home_and_away), { configured: true }, "the menu learns the bridge now knows");
+  vm.runInContext("H = () => ({ config: {} }); toastText = null; toast = (t) => { toastText = t; };", ctx);
+  w.sent.length = 0;
+  w.hrwSetHomeLocation();
+  assert.equal(w.sent.length, 0, "nothing is sent without a location");
+  assert.equal(w.toastText, "hrw_no_home_location_in_home_assistant");
+});

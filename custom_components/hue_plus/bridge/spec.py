@@ -327,6 +327,13 @@ SPEC: dict[str, dict[str, Any]] = {
         "description": "Installs a bridge firmware update that is ready. The bridge restarts, and lights stay as they are.",
         "fields": {},
     },
+    "set_home_location": {
+        "description": "Sets the bridge's home location. Sunrise and sunset, Coming home at night and the bridge's other location-based automations need it. The menu's button gives it Home Assistant's own home location.",
+        "fields": {
+            "latitude": f("number", "Degrees north, from -90 to 90.", True),
+            "longitude": f("number", "Degrees east, from -180 to 180.", True),
+        },
+    },
     "set_zigbee_channel": {
         "description": "Changes the Zigbee channel of the bridge. Every light and accessory has to find the bridge again, and some may not.",
         "fields": {"channel": f("int", "A channel from 11 to 26 (11, 15, 20 and 25 are the ones that avoid Wi-Fi).", True)},

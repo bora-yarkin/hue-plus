@@ -882,6 +882,13 @@ function hmBridge(b) {
           })
         : null,
       hmRow({
+        title: _T("hrw_home_location"),
+        val: function () {
+          return HM.home_and_away && HM.home_and_away.configured ? _T("set_up") : _T("not_set_up");
+        },
+        tap: hrwSetHomeLocation,
+      }),
+      hmRow({
         title: _T("hm_time_zone"),
         val: function () {
           return (HM.bridge && HM.bridge.time_zone) || "";

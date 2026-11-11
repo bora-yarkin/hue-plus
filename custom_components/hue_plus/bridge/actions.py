@@ -607,6 +607,18 @@ async def install_bridge_update(api, snap, data):
     await api.put_config(payloads.INSTALL_BRIDGE_UPDATE)
 
 
+@action("set_home_location")
+async def set_home_location(api, snap, data):
+    """Tells the bridge where home is. Sunrise and sunset, Coming home at night and the other location-based automations need it."""
+    latitude, longitude = float(data["latitude"]), float(data["longitude"])
+    if not (-90 <= latitude <= 90 and -180 <= longitude <= 180):
+        raise ValueError("The latitude is from -90 to 90 and the longitude from -180 to 180")
+    places = await api.list("geolocation")
+    if not places:
+        raise ValueError("This bridge has no location setting")
+    await api.put("geolocation", places[0]["id"], {"latitude": latitude, "longitude": longitude})
+
+
 @action("set_zigbee_channel", destructive=True)
 async def set_zigbee_channel(api, snap, data):
     """Changing the channel makes every light and accessory find the bridge again, and some may not."""
