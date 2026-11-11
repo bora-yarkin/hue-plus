@@ -547,7 +547,9 @@ function hmMotionArea(b, id) {
         hmRow({
           icon: "motion",
           title: _T("hmw_motion_sensitive_devices"),
-          sub: cntS((x.participants || []).length, _T("hm_light"), _T("hm_lights")),
+          sub: function () {
+            return cntS(hmdValue(key, "lights", hmwOwners(x)).length, _T("hm_light"), _T("hm_lights"));
+          },
           tap: "hue-mdev:" + id,
         }),
         svc && svc.sensitivity
@@ -624,29 +626,86 @@ function hmwRename(b, id) {
   );
 }
 
+/* The devices of an area: the owners of its participants (the candidates are keyed by the device they belong to). */
+function hmwOwners(x) {
+  var owner = {};
+  ((HM.motion_areas || {}).candidates || []).forEach(function (c) {
+    owner[c.id] = (c.owner || {}).rid;
+  });
+  return (x.participants || []).map(function (p) {
+    return owner[p.resource.rid];
+  });
+}
+
+/* The devices an area can use: those of its room that the bridge offers, plus the ones it already has. */
+function hmwEligible(x) {
+  var owners = hmwCandidates(),
+    room = hmList("rooms").filter(function (g) {
+      return g.id === (x.group || {}).rid;
+    })[0],
+    have = hmwOwners(x),
+    names = {};
+  hmList("devices").forEach(function (d) {
+    names[d.id] = d.name;
+  });
+  var ids = (room ? room.children.map(function (c) { return c.id; }) : Object.keys(owners)).filter(function (d) {
+    return owners[d];
+  });
+  have.forEach(function (d) {
+    if (ids.indexOf(d) < 0) ids.push(d);
+  });
+  return ids.map(function (d) {
+    return { id: d, name: names[d] || d };
+  });
+}
+
+/* Which devices the area has: three or four, chosen on this page and kept in the area's draft until it is saved. */
 function hmwDevices(b, id) {
   hmBox(b);
-  hmLoad(b, ["motion_areas", "devices"], function (box) {
-    var x = hmMotionArea1(id),
-      owners = {};
-    ((HM.motion_areas || {}).candidates || []).forEach(function (c) {
-      owners[c.id] = (c.owner || {}).rid;
-    });
+  var key = hmdKey("marea", id);
+  hmGuard(key, true);
+  hmLoad(b, ["motion_areas", "devices", "rooms"], function (box) {
+    var x = hmMotionArea1(id);
     if (!x) {
       box.appendChild(hmCallout(_T("nothing_found")));
       return;
     }
-    var names = {};
-    hmList("devices").forEach(function (d) {
-      names[d.id] = d.name;
-    });
-    hwHint(box, _T("hmw_devices_hint"));
+    var actual = hmwOwners(x).slice().sort(),
+      chosen = hmdValue(key, "lights", actual).slice();
+    hwHint(box, _T("hmw_choose_devices_hint"));
     box.appendChild(
       hmGroup(
-        (x.participants || []).map(function (p) {
-          return hmRow({ icon: "lamp", title: names[owners[p.resource.rid]] || p.resource.rid });
+        hmwEligible(x).map(function (c) {
+          return hmRow({
+            icon: "lamp",
+            title: c.name,
+            check: function () {
+              return chosen.indexOf(c.id) >= 0;
+            },
+            tap: function () {
+              var at = chosen.indexOf(c.id);
+              if (at >= 0) chosen.splice(at, 1);
+              else if (chosen.length >= 4) {
+                toast(_T("hmw_three_or_four"));
+                return;
+              } else chosen.push(c.id);
+              refresh();
+            },
+          });
         })
       )
+    );
+    box.appendChild(
+      hmActions([
+        hmButton(_T("hm_done"), "primary", function () {
+          if (chosen.length < 3 || chosen.length > 4) {
+            toast(_T("hmw_three_or_four"));
+            return;
+          }
+          hmdStage(key, "lights", chosen.slice().sort(), actual);
+          popBack();
+        }),
+      ])
     );
   });
 }

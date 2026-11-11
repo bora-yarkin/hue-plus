@@ -408,6 +408,10 @@
           "name": "Name",
           "description": "A new name."
         },
+        "lights": {
+          "name": "Lights",
+          "description": "The devices that sense motion from now on (three or four; names, ids or device ids)."
+        },
         "sensitivity": {
           "name": "Sensitivity",
           "description": "How sensitive it is (0 is the least; the highest value is the area's own maximum)."

@@ -707,12 +707,20 @@ def light_step(brightness_step: float | None, mirek_step: int | None) -> dict[st
 # ---- motion areas and what the lights do when a sync ends ----
 
 
-def motion_area_put(name: str | None, enabled: bool | None) -> dict[str, Any]:
+def _participants(candidate_ids: list[str]) -> list[dict[str, Any]]:
+    if not 3 <= len(candidate_ids) <= 4:
+        raise ValueError("A motion area uses three or four devices")
+    return [{"resource": {"rid": cid, "rtype": "motion_area_candidate"}} for cid in candidate_ids]
+
+
+def motion_area_put(name: str | None, enabled: bool | None, candidate_ids: list[str] | None = None) -> dict[str, Any]:
     body: dict[str, Any] = {}
     if name is not None:
         body["name"] = name
     if enabled is not None:
         body["enabled"] = enabled
+    if candidate_ids is not None:
+        body["participants"] = _participants(candidate_ids)
     if not body:
         raise ValueError("Nothing to change")
     return body
@@ -723,13 +731,7 @@ def motion_area_post(name: str, group_id: str, group_type: str, candidate_ids: l
     (the shape the bridge accepts; the name is at the top level, not in ``metadata``)."""
     if group_type not in ("room", "zone"):
         raise ValueError("A motion area belongs to a room or a zone")
-    if not 3 <= len(candidate_ids) <= 4:
-        raise ValueError("A motion area uses three or four devices")
-    return {
-        "name": name,
-        "group": {"rid": group_id, "rtype": group_type},
-        "participants": [{"resource": {"rid": cid, "rtype": "motion_area_candidate"}} for cid in candidate_ids],
-    }
+    return {"name": name, "group": {"rid": group_id, "rtype": group_type}, "participants": _participants(candidate_ids)}
 
 
 def motion_sensitivity_put(level: int) -> dict[str, Any]:

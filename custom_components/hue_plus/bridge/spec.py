@@ -72,6 +72,7 @@ SPEC: dict[str, dict[str, Any]] = {
             "area": f("text", "The motion area (id or name).", True),
             "enabled": f("bool", "On or off."),
             "name": f("text", "A new name."),
+            "lights": f("list", "The devices that sense motion from now on (three or four; names, ids or device ids).", False),
             "sensitivity": f("int", "How sensitive it is (0 is the least; the highest value is the area's own maximum).", min=0, max=10),
         },
     },

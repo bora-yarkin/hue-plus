@@ -412,7 +412,6 @@ var PLUGIN_STRINGS = {
   "hmw_only_when_dark": "Only when it’s dark",
   "hmw_darker_than": "Darker than",
   "hmw_daylight_hint": "Choose whether the area acts only when it is darker than a light level.",
-  "hmw_devices_hint": "The devices that sense motion in this area.",
   "hmw_low": "Low",
   "hmw_medium": "Medium",
   "hmw_high": "High",

@@ -90,6 +90,9 @@ set_motion_area:
     "name":
       selector:
         text: {}
+    "lights":
+      selector:
+        object: {}
     "sensitivity":
       selector:
         number:

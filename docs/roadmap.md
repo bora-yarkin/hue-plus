@@ -91,21 +91,24 @@ Requirements (owner):
 
 Order: (1) Hue scenes as dashboard scenes; (2) Hue scene creation and editing; (3) Automations; (4) MotionAware; (5) gaps. Each step is deployed to the owner's box for testing before anything is released (owner's rule), and ships its dashboard side in the same piece of work.
 
-### HP-13 status, read from the code on 2026-11-12 (the table above is the plan; this is what exists)
+### HP-13 status (updated 2026-11-12, branch `hue-app-wizards`; dashboard checked in the sealed harness, bridge shapes checked on the real bridge)
 
-Status words: done = in the dashboard menu and wired to a bridge write; backend only = the service exists but nothing in the dashboard calls it; missing = neither. "Live" = tried on the real bridge.
+Status words: done = a page in the menu that writes to the bridge; missing = no page. "Bridge" says what was tried on the owner's Hue Bridge Pro: *request proven* = the exact request was sent with `raw_request` and accepted (throwaway objects, deleted afterwards); *service not tried* = the Hue Plus service that sends it has only run against fakes until the box is restarted onto this code. Details: `docs/bridge-findings.md`.
 
-| Step | What | Dashboard | Backend | Live |
-|---|---|---|---|---|
-| 1 | Hue scenes as dashboard scenes | done (0.14.1) | done | yes |
-| 2 | Create / edit / rename / delete Hue scenes (custom, current settings, all-day, photo palette) | done (`huenewscene.js`) | done | not recorded |
-| 3 | Automations: list, switch on/off, delete | done (`hmRoutines`) | done | not recorded |
-| 3 | Automations: create or edit (Wake up, Go to sleep, Timer, Lighting schedule, Mimic presence) | missing | `create_routine`, `create_automation`, `update_automation` exist | no |
-| 4 | MotionAware: list, on/off, delete | done (`hmMotion`, `hmMotionArea`) | documented by Signify | no |
-| 4 | MotionAware: create (wizard), calibrate, edit (name, nightlight schedule, sensitive devices, sensitivity, daylight) | missing | `create_motion_area` is EXPERIMENTAL (payload guessed, fakes only); rename exists in `set_motion_area`; nothing for the rest | no |
-| 5 | Rooms and zones: create / edit / delete | missing | exist | no |
-| 5 | Bridge settings (name, auto update, Zigbee channel, link button, remove device) | missing | exist | no |
-| 5 | Entertainment area delete and control, identify, power-on behaviour, light step, sensor configure | partly (create/update area, power-on and light setup are in) | exist | no |
+| Step | What | Menu | Bridge |
+|---|---|---|---|
+| 1 | Hue scenes as dashboard scenes | done (0.14.1) | live |
+| 2 | Create / edit / rename / delete Hue scenes | done (`huenewscene.js`) | not recorded |
+| 3 | Automations: list, on/off, delete | done | live (existing) |
+| 3 | Wake up, Go to sleep, Timer, Lighting schedule, Coming home, Leaving home: create and edit (`huewizard.js`) | done | request proven for wake up (style, switch-off delay), go to sleep (style), timer, schedule (end time, randomise); coming home / leaving home from the earlier proof; service not tried |
+| 3 | Mimic presence | **missing**: the template's `excluded_lights` and `mode` values are not known | no |
+| 3 | Go to sleep "With a button press", "End with" other than lights off | **missing**: only `turn_off` is accepted from what was tried | no |
+| 4 | MotionAware: list, create (the app's pages), name, on/off, devices (3 or 4), sensitivity, times and scenes ("Control lights"), daylight, delete (`humotion.js`) | done | create, rename, devices, delete and the Motion Sensor automation: request proven; sensitivity and calibration: see below; service not tried |
+| 4 | MotionAware calibration | **missing**: no request found; a new area stays `not_running` | no |
+| 5 | Rooms and zones: create, rename, devices, delete (`huerooms.js`) | done | service not tried |
+| 5 | Bridge: name, Zigbee channel | done | service not tried |
+| 5 | Remove a light or switch; delete an entertainment area | done | not tried (destructive) |
+| 5 | Sensors: sensitivity, `configure_sensor` | not built into a page | no motion sensor on the bridge |
 
 Known limits: the scene gallery, Coming home / Leaving home (geofence by the phone and Hue's cloud), Custom AI behaviours and Security alerts (subscription) are Signify cloud features; the bridge's local API has no counterpart. Where the local API has part of one (the bridge's `geofence_client`, `behavior_instance` of those templates), Hue Plus shows and edits that part.
 

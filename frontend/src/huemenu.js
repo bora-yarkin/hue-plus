@@ -346,6 +346,7 @@ function hmSaveMotion(id, ch) {
   ["enabled", "name", "sensitivity"].forEach(function (f) {
     if (ch[f] !== undefined) body[f] = ch[f];
   });
+  if (ch.lights !== undefined) body.lights = ch.lights;
   return hpCall("hue_plus", "set_motion_area", body).then(function () {
     return hmReread("motion_areas", id);
   });

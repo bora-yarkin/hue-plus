@@ -249,12 +249,25 @@ def _area_service(area: dict[str, Any], rtype: str) -> str | None:
     return next((s["rid"] for s in area.get("services") or [] if s.get("rtype") == rtype), None)
 
 
+async def _candidates(api: BridgeApi, snap: models.Snapshot, refs: list[str]) -> list[str]:
+    """The ``motion_area_candidate`` of each light (given as a light, the name of its device, or its device id)."""
+    by_owner = {(c.get("owner") or {}).get("rid"): c["id"] for c in await api.list("motion_area_candidate")}
+    candidates = []
+    for ref in refs:
+        owner = ref if ref in by_owner else _light(snap, ref).get("owner", {}).get("rid")
+        if owner not in by_owner:
+            raise ValueError(f"{ref!r} cannot take part in a motion area")
+        candidates.append(by_owner[owner])
+    return candidates
+
+
 @action("set_motion_area")
 async def set_motion_area(api, snap, data):
-    """Switches a MotionAware area on or off, renames it, or sets how sensitive it is (a setting of the area's convenience service)."""
+    """Switches a MotionAware area on or off, renames it, changes its devices, or sets how sensitive it is (a setting of the area's convenience service)."""
     area = _motion_area(await api.list("motion_area_configuration"), data["area"])
-    if data.get("name") is not None or data.get("enabled") is not None:
-        await api.put("motion_area_configuration", area["id"], payloads.motion_area_put(data.get("name"), data.get("enabled")))
+    candidates = await _candidates(api, snap, data["lights"]) if data.get("lights") is not None else None
+    if data.get("name") is not None or data.get("enabled") is not None or candidates is not None:
+        await api.put("motion_area_configuration", area["id"], payloads.motion_area_put(data.get("name"), data.get("enabled"), candidates))
     if data.get("sensitivity") is not None:
         service = _area_service(area, "convenience_area_motion")
         if service is None:
@@ -267,13 +280,7 @@ async def create_motion_area(api, snap, data):
     """A MotionAware area from three or four lights of a room or zone (each given as a light, the name of its device, or its device id)."""
     group_type = data.get("group_type", "room")
     group = _group(snap, group_type, data["group"])
-    by_owner = {(c.get("owner") or {}).get("rid"): c["id"] for c in await api.list("motion_area_candidate")}
-    candidates = []
-    for ref in data["lights"]:
-        owner = ref if ref in by_owner else _light(snap, ref).get("owner", {}).get("rid")
-        if owner not in by_owner:
-            raise ValueError(f"{ref!r} cannot take part in a motion area")
-        candidates.append(by_owner[owner])
+    candidates = await _candidates(api, snap, data["lights"])
     return {"id": await api.post("motion_area_configuration", payloads.motion_area_post(data["name"], group["id"], group_type, candidates))}
 
 

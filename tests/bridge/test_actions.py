@@ -250,6 +250,25 @@ class ActionTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(calls[0], ("put", "motion_area_configuration", "a1", {"name": "Entrance"}))
         self.assertEqual(calls[1], ("put", "convenience_area_motion", "cv1", {"sensitivity": {"sensitivity": 2}}))
 
+    async def test_the_devices_of_a_motion_area_are_replaced_by_three_or_four_candidates(self):
+        s, bridge = self._area_world()
+        s.device = [{"id": f"d{i}", "metadata": {"name": f"Lamp {i}"}} for i in (1, 2, 3, 4, 5)]
+        s.light = [{"id": f"l{i}", "owner": {"rid": f"d{i}"}} for i in (1, 2, 3, 4, 5)]
+
+        class WithCandidates(bridge):
+            async def list(self, resource):
+                if resource == "motion_area_candidate":
+                    return [{"id": f"c{i}", "owner": {"rid": f"d{i}"}} for i in (1, 2, 3, 4)]
+                return await super().list(resource)
+
+        calls, _ = await self.go("set_motion_area", {"area": "a1", "lights": ["d1", "Lamp 2", "l3"]}, snap=s, rec=WithCandidates([]))
+        self.assertEqual(calls[0][:3], ("put", "motion_area_configuration", "a1"))
+        self.assertEqual([p["resource"]["rid"] for p in calls[0][3]["participants"]], ["c1", "c2", "c3"])
+        with self.assertRaisesRegex(ValueError, "three or four"):
+            await self.go("set_motion_area", {"area": "a1", "lights": ["d1", "d2"]}, snap=s, rec=WithCandidates([]))
+        with self.assertRaisesRegex(ValueError, "cannot take part"):
+            await self.go("set_motion_area", {"area": "a1", "lights": ["d1", "d2", "l5"]}, snap=s, rec=WithCandidates([]))
+
     async def test_what_a_motion_area_does_replaces_its_automation_or_makes_it(self):
         s, bridge = self._area_world()
         data = {
