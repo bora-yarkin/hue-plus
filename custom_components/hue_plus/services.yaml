@@ -696,7 +696,6 @@ update_routine:
           mode: "box"
           step: "any"
     "end_brightness":
-      default: 100
       selector:
         number:
           mode: "box"
@@ -723,7 +722,6 @@ update_routine:
       selector:
         text: {}
     "enabled":
-      default: true
       selector:
         boolean: {}
 

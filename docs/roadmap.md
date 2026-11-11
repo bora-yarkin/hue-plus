@@ -103,9 +103,9 @@ Status words: done = a page in the menu that writes to the bridge; missing = no 
 | 3 | Wake up, Go to sleep, Timer, Lighting schedule, Coming home, Leaving home: create and edit (`huewizard.js`) | done | request proven for wake up (style, switch-off delay), go to sleep (style), timer, schedule (end time, randomise); coming home / leaving home from the earlier proof; service not tried |
 | 3 | Mimic presence | **missing**: the template's `excluded_lights` and `mode` values are not known | no |
 | 3 | Go to sleep "With a button press", "End with" other than lights off | **missing**: only `turn_off` is accepted from what was tried | no |
-| 4 | MotionAware: list, create (the app's pages), name, on/off, devices (3 or 4), sensitivity, times and scenes ("Control lights"), daylight, delete (`humotion.js`) | done | create, rename, devices, delete and the Motion Sensor automation: request proven; sensitivity and calibration: see below; service not tried |
-| 4 | MotionAware calibration | **missing**: no request found; a new area stays `not_running` | no |
-| 5 | Rooms and zones: create, rename, devices, delete (`huerooms.js`) | done | service not tried |
+| 4 | MotionAware: list, create (the app's pages, with calibration), name, on/off, devices (3 or 4), sensitivity (0 to 4), times and scenes ("Control lights"), daylight, delete (`humotion.js`) | done | create, rename, devices, sensitivity, "Control lights" and delete tried through the services; calibration: request proven (enable the area's motion service), wizard step not tried on the real bridge |
+| 4 | MotionAware: algorithm mode (`mimic_pir` / `mimic_radar`) | not built: the app hides it behind a setting and I have no screen of it | read only |
+| 5 | Rooms and zones: create, rename, devices, delete (`huerooms.js`) | done | services tried (zone with lights; an empty room) |
 | 5 | Bridge: name, Zigbee channel | done | service not tried |
 | 5 | Remove a light or switch; delete an entertainment area | done | not tried (destructive) |
 | 5 | Sensors: sensitivity, `configure_sensor` | not built into a page | no motion sensor on the bridge |

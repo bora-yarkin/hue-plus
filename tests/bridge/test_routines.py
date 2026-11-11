@@ -175,6 +175,12 @@ class AppWizardRoutineTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(body["metadata"], {"name": "Early"})
         self.assertFalse(body["enabled"])
         self.assertEqual(body["configuration"]["when"]["time_point"]["time"], {"hour": 6, "minute": 0})
+        spec = load("bridge.spec").SPEC["update_routine"]["fields"]
+        self.assertNotIn("default", spec["enabled"], "a routine that is off must not be switched on by a change that did not say so")
+        self.assertNotIn("default", spec["end_brightness"])
+        again = Recorder()
+        await actions.run("update_routine", again, snap, {"automation": "Morning", "group": "Bedroom", "time": time(6, 0)})
+        self.assertNotIn("enabled", again.calls[0][3], "a change that does not say enabled sends nothing for it")
         snap.behavior_instance = [{"id": "bi2", "script_id": "other", "metadata": {"name": "Buttons"}}]
         with self.assertRaisesRegex(ValueError, "Only a routine made from"):
             await actions.run("update_routine", Recorder(), snap, {"automation": "Buttons", "group": "Bedroom"})

@@ -335,7 +335,11 @@ SPEC: dict[str, dict[str, Any]] = {
         "fields": {
             "automation": f("text", "The routine (id or name).", True),
             "name": f("text", "A new name."),
-            **ROUTINE_FIELDS,
+            # No defaults when changing: a routine that is off stays off unless it is switched on here.
+            **{
+                k: {a: b for a, b in v.items() if a != "default"} if k in ("enabled", "end_brightness") else v
+                for k, v in ROUTINE_FIELDS.items()
+            },
         },
     },
     "configure_button": {
