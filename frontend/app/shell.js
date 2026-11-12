@@ -3,6 +3,9 @@
  it here. Nothing is kept in Home Assistant: the panel shows the bridge and writes to it. */
 
 HOST_ICONS.bolt = "<path d='M13 2L5 14h6l-1 8 8-12h-6z'/>";
+HOST_ICONS.tabhome = "<path d='M12 2.6 2.4 11.4h2.8v8.8h5.3v-5.6h3v5.6h5.3v-8.8h2.8z'/>";
+HOST_ICONS.tabbolt = "<path d='M14 1.8 5.2 13.6h5.4L9.2 22.2 18.8 9.6h-5.6z'/>";
+HOST_ICONS.switch = "<rect x='7' y='2.5' width='10' height='19' rx='2.4'/><path d='M10 6.5h4M10 10h4M10 13.5h4M10 17h4'/>";
 HOST_ICONS.dots = "<circle cx='5' cy='12' r='1.7' fill='currentColor'/><circle cx='12' cy='12' r='1.7' fill='currentColor'/><circle cx='19' cy='12' r='1.7' fill='currentColor'/>";
 
 var HPAPP = { tab: "", el: null, bridge: "", modules: null, sigOf: null, lastSig: "" };
@@ -11,8 +14,8 @@ var HPAPI = window.HueHost && window.HueHost.api;
 /* The tabs, in the order of the Hue app's tab bar. */
 function hpTabs() {
   return [
-    { id: "home", title: _T("home"), icon: "home", build: hpHomeTab },
-    { id: "automations", title: _T("automations"), icon: "bolt", build: hpAutomationsTab },
+    { id: "home", title: _T("home"), icon: "tabhome", build: hpHomeTab },
+    { id: "automations", title: _T("automations"), icon: "tabbolt", build: hpAutomationsTab },
     { id: "sync", title: _T("app_sync"), icon: "syncring", build: hpSyncTab },
     { id: "settings", title: _T("app_settings"), icon: "cog", build: hpSettingsTab },
   ];

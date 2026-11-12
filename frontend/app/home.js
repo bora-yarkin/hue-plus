@@ -112,11 +112,18 @@ function hpRgbOf(id) {
   });
 }
 
-/* Gives a card or a tile the two colours of its gradient from the lights that are on in it, and tells whether it is lit. */
+/* Gives a card or a tile the two colours of its gradient from the lights that are on in it, and tells whether it is lit. A white light is the app's gold; a coloured one takes its colour. */
 function hpGold(el, ids) {
   var on = ids.filter(isOn);
   el.classList.toggle("on-gold", on.length > 0);
   if (!on.length) return;
+  var a = A(on[0]),
+    white = a.color_mode === "color_temp" || !a.hs_color;
+  if (white) {
+    el.style.removeProperty("--gold1");
+    el.style.removeProperty("--gold2");
+    return;
+  }
   var rgb = hpRgbOf(on[0]);
   el.style.setProperty("--gold1", "rgb(" + hpMix(rgb, [255, 255, 255], 0.38).join(",") + ")");
   el.style.setProperty("--gold2", "rgb(" + hpMix(rgb, [90, 70, 30], 0.2).join(",") + ")");
@@ -251,7 +258,7 @@ function hpHomeTab(box) {
     return A(id).hue_type === "room";
   });
   var head = mk("div", "hd", "<h1></h1><div class='acts'></div>");
-  head.querySelector("h1").textContent = HPAPP.bridge || _T("home");
+  head.querySelector("h1").textContent = _T("home");
   if (rooms.length)
     head.querySelector(".acts").appendChild(
       hpToggle(
@@ -329,6 +336,20 @@ function hpLightTile(lid, room) {
   return t;
 }
 
+/* When a switch was last pressed: the newest state of the event entities of its device ("Nov 11, 18:33"). */
+function hpLastUsed(deviceName) {
+  var h = H(),
+    newest = 0;
+  Object.keys(h.states).forEach(function (id) {
+    if (id.indexOf("event.") !== 0) return;
+    var e = h.entities[id],
+      dev = e && e.device_id && h.devices[e.device_id],
+      t = Date.parse(h.states[id].state);
+    if (dev && dev.name === deviceName && t > newest) newest = t;
+  });
+  return newest ? new Date(newest).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+}
+
 /* The switches and dials the bridge has in this room: the app lists them under Controls. */
 function hpControls(box, id) {
   if (!hueplus.has(H(), "get_resources")) return;
@@ -351,9 +372,9 @@ function hpControls(box, id) {
       var tiles = mk("div", "ctiles");
       list.forEach(function (x) {
         var c = mk("div", "ctile", "<span class='ic'></span><div><b></b><i></i></div>");
-        c.querySelector(".ic").innerHTML = svg("cog");
+        c.querySelector(".ic").innerHTML = svg("switch");
         c.querySelector("b").textContent = x.name;
-        c.querySelector("i").textContent = cntS((x.buttons || []).length, _T("hm_button"), _T("hm_buttons"));
+        c.querySelector("i").textContent = hpLastUsed(x.name) || cntS((x.buttons || []).length, _T("hm_button"), _T("hm_buttons"));
         hpActive(c, function () {
           showPopup("hue-switch:" + x.id, true);
         });

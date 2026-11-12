@@ -45,7 +45,9 @@ window.HueHost.onHass = function (h) {
 function hpFrameShow(on) {
   if (!HPLF.el) return;
   var bar = document.querySelector(".pg .pbar");
-  HPLF.el.style.top = bar ? bar.offsetHeight + "px" : "0";
+  var top = bar ? bar.offsetHeight : 0;
+  HPLF.el.style.top = top + "px";
+  HPLF.el.style.height = "calc(100% - " + top + "px)";
   HPLF.el.classList.toggle("show", !!on);
 }
 

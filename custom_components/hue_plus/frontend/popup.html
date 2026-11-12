@@ -5,7 +5,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Hue light</title>
 <link rel="stylesheet" href="lights/dashboard.css">
-<style>html,body{background:transparent!important;overflow:hidden}main{padding-top:6px!important}.wrap{max-width:620px}</style>
+<style>
+html,body{background:transparent!important;overflow:hidden}
+/* The colour screen fills the screen as the app's does: the wheel in the middle of what is left, the modes and the brightness button and the tiles of the lights at the bottom. */
+main{position:absolute!important;inset:0;padding:0!important;overflow:hidden}
+.wrap{height:100%;max-width:none}
+#body{height:100%;display:flex;flex-direction:column;padding:0 16px calc(var(--sab,0px) + 16px)}
+.lp-stage{flex:1;display:flex;flex-direction:column;min-height:0}
+.lp-view{flex:0 0 auto;margin:auto 0}
+.lp-bar{margin:0 0 16px}
+.lp-tray{padding-bottom:2px}
+</style>
 </head>
 <body>
 <!-- Home Control's light panel (the colour wheel with the white and effects pages and the brightness button), run as it is: lights/ is a copy of Home Control's dashboard code (scripts/sync_light_popup.py).

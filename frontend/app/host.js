@@ -273,6 +273,8 @@
   }
 
   function refresh() {
+    /* SAVE is dim until what the page shows has been changed. */
+    if (typeof SHEET !== "undefined" && SHEET && CHECK && CHECK.dirty) SHEET.root.querySelector(".ok").disabled = !CHECK.dirty();
     TAB_LIST.concat(SHEET_LIST).forEach(function (f) {
       try {
         f();
@@ -737,7 +739,8 @@
       popBack();
     });
     root.querySelector(".x").addEventListener("click", function () {
-      closeSheet();
+      if (STACK.length) popBack();
+      else closeSheet();
     });
     root.querySelector(".ok").addEventListener("click", function () {
       if (CHECK) CHECK.save(CHECK.done);
@@ -757,7 +760,7 @@
     var p = pageOf(key);
     if (!p.def) return false;
     if (HOST.onRender) HOST.onRender();
-    SHEET.root.classList.remove("roompg", "lightpg", "scenepg");
+    SHEET.root.classList.remove("roompg", "lightpg", "scenepg", "modalpg");
     SHEET.root.querySelector(".lbar").innerHTML = "";
     CURRENT = key;
     POPGUARD = null;
@@ -842,11 +845,14 @@
           if (ok === false) POPGUARD = guard;
         });
     };
+    guard.dirty = o.dirty;
     guard.done = o.done || popBack;
     POPGUARD = guard;
     if (!o.inner && SHEET) {
       CHECK = guard;
+      SHEET.root.classList.add("modalpg");
       SHEET.root.querySelector(".ok").style.display = "";
+      SHEET.root.querySelector(".ok").disabled = true;
     }
   }
 

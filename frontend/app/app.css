@@ -27,11 +27,11 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 #hp nav.tabs button svg{width:25px;height:25px}
 #hp nav.tabs button.on{color:#fff}
 #hp nav.tabs button:focus-visible{outline:2px solid var(--acc);outline-offset:-3px;border-radius:10px}
-.hd{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:6px 0 4px}
-.hd h1{margin:0;font-size:29px;font-weight:700;letter-spacing:-.01em;line-height:1.15}
-.hd .acts{display:flex;align-items:center;gap:10px;margin-left:auto}
+.hd{display:flex;flex-direction:column;gap:14px;margin:0 0 4px}
+.hd .acts{display:flex;align-items:center;gap:10px;justify-content:flex-end;min-height:32px;order:-1}
+.hd h1{margin:0;font-size:31px;font-weight:700;letter-spacing:.01em;line-height:1.1;font-family:"Avenir Next","Montserrat","Century Gothic",Futura,"Segoe UI",system-ui,sans-serif}
 .top{display:flex;justify-content:flex-end;gap:10px;min-height:30px;margin-bottom:10px}
-.lb{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--label);margin:28px 4px 10px}
+.lb{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--label);margin:26px 4px 10px}
 .empty{color:var(--ink2);text-align:center;padding:36px 12px;font-size:var(--fs-l)}
 
 /* ---- round buttons and switches ---- */
@@ -39,10 +39,10 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .rbt svg{width:17px;height:17px}
 .rbt.dk{background:var(--tile)}
 .rbt:focus-visible{outline:2px solid #fff;outline-offset:2px}
-.tg{width:47px;height:29px;border-radius:15px;flex:none;background:#56575c;position:relative;cursor:pointer;border:0;padding:0;transition:background .2s}
-.tg i{position:absolute;left:2px;top:2px;width:25px;height:25px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .2s}
+.tg{width:52px;height:30px;border-radius:15px;flex:none;background:#56575c;position:relative;cursor:pointer;border:0;padding:0;transition:background .2s}
+.tg i{position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .2s}
 .tg.on{background:var(--acc)}
-.tg.on i{transform:translateX(18px)}
+.tg.on i{transform:translateX(22px)}
 .tg:focus-visible{outline:2px solid #fff;outline-offset:2px}
 .sl{position:relative;height:18px;touch-action:pan-y;cursor:pointer;display:flex;align-items:center}
 .sl:before{content:"";position:absolute;left:0;right:0;height:8px;border-radius:4px;background:rgba(255,255,255,.16)}
@@ -50,10 +50,10 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 
 /* ---- Home: the rooms and zones ---- */
 .rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}
-.room{position:relative;background:var(--tile);border-radius:var(--r-l);padding:16px 18px 14px;display:flex;flex-direction:column;gap:14px;cursor:pointer;min-height:92px;transition:background .25s;color:#fff}
-.room .rh{display:flex;align-items:center;gap:20px}
+.room{position:relative;background:var(--tile);border-radius:14px;padding:16px 16px 14px;display:flex;flex-direction:column;gap:14px;cursor:pointer;min-height:92px;transition:background .25s;color:#fff}
+.room .rh{display:flex;align-items:center;gap:22px}
 .room .rh .ic svg{width:28px;height:28px}
-.room .rn{flex:1;min-width:0;font-size:17px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.room .rn{flex:1;min-width:0;font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .room:focus-visible{outline:2px solid #fff;outline-offset:2px}
 .on-gold{color:var(--gold-ink)}
 .on-gold .tg{background:rgba(70,52,12,.38)}
@@ -71,10 +71,10 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .rbody{padding:4px 16px calc(var(--sab) + 40px);max-width:760px;margin:0 auto}
 .ltiles{display:flex;gap:12px;overflow-x:auto;padding:0 0 6px;margin:0 -16px;padding-left:16px;padding-right:16px;scrollbar-width:none}
 .ltiles::-webkit-scrollbar{display:none}
-.ltile{position:relative;flex:none;width:96px;height:150px;border-radius:var(--r-m);background:var(--tile);color:#fff;display:flex;flex-direction:column;overflow:hidden;cursor:pointer;transition:background .25s}
+.ltile{position:relative;flex:none;width:102px;height:158px;border-radius:12px;background:var(--tile);color:#fff;display:flex;flex-direction:column;overflow:hidden;cursor:pointer;transition:background .25s}
 .ltile .up{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px 6px 4px;min-height:0}
 .ltile .up .ic svg{width:28px;height:28px}
-.ltile .up b{font-size:13.5px;font-weight:500;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ltile .up b{font-size:12px;font-weight:500;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ltile .dn{height:52px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.14)}
 .ltile.gone{opacity:.5}
 .ltile:focus-visible{outline:2px solid #fff;outline-offset:2px}
@@ -92,7 +92,7 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .atile:focus-visible{outline:2px solid #fff;outline-offset:2px}
 
 /* ---- a light: the panel of Home Control's colour wheel, in a frame under the bar ---- */
-.lightframe{position:fixed;left:0;right:0;bottom:0;top:0;z-index:55;border:0;width:100%;height:100%;background:transparent;display:none}
+.lightframe{position:fixed;left:0;right:0;bottom:0;top:0;z-index:55;border:0;width:100%;background:transparent;display:none}
 .lightframe.show{display:block}
 
 /* ---- a page: covers the screen, with a bar of an X or an arrow, the title, and SAVE or DONE ---- */
@@ -241,34 +241,34 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .gridl .pill .tx{flex:none}
 
 /* ---- scene folders: two rows that scroll sideways ---- */
-.frows{display:grid;grid-template-columns:repeat(var(--cols,3),96px);grid-auto-rows:126px;gap:12px;overflow-x:auto;margin:0 -16px;padding:0 16px 6px;scrollbar-width:none}
+.frows{display:grid;grid-template-columns:repeat(var(--cols,3),102px);grid-auto-rows:102px;column-gap:12px;row-gap:20px;overflow-x:auto;margin:0 -16px;padding:0 16px 6px;scrollbar-width:none}
 .frows::-webkit-scrollbar{display:none}
-.ftile{position:relative;border-radius:var(--r-m);background:var(--tile);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 6px 12px;cursor:pointer;overflow:hidden;transition:background .3s,transform .12s}
+.ftile{position:relative;border-radius:12px;background:var(--tile);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 6px 11px;cursor:pointer;overflow:hidden;transition:background .3s,transform .12s}
 .ftile:active{transform:scale(.96)}
 .ftile.lit{background:linear-gradient(180deg,var(--gold1),var(--gold2));color:var(--gold-ink)}
-.ftile .dots{position:absolute;left:0;right:0;top:14px;display:flex;flex-wrap:wrap;justify-content:center;gap:8px 8px;padding:0 10px}
+.ftile .dots{position:absolute;left:0;right:0;top:12px;display:flex;flex-wrap:wrap;justify-content:center;gap:7px 9px;padding:0 12px}
 .ftile .dots .disc{width:22px;height:22px}
-.ftile b{font-size:14px;font-weight:500;line-height:1.2;text-align:center}
+.ftile b{font-size:12px;font-weight:500;line-height:1.2;text-align:center}
 .disc{display:block;width:100%;height:100%;border-radius:50%;background:#f9d27a;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
 .ftile:focus-visible,.sitem:focus-visible{outline:2px solid #fff;outline-offset:2px}
 
 /* ---- the card a folder opens ---- */
 .fscrim{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;transition:opacity .22s}
 .fscrim.in{opacity:1}
-.fcard{position:fixed;left:50%;top:50%;z-index:75;width:min(380px,calc(100% - 24px));max-height:80vh;overflow:auto;transform:translate(-50%,-46%) scale(.94);opacity:0;background:var(--head);border-radius:var(--r-xl);padding:20px 18px 22px;box-shadow:0 24px 60px rgba(0,0,0,.55);transition:transform .24s cubic-bezier(.2,.9,.25,1),opacity .2s}
+.fcard{position:fixed;left:50%;top:50%;z-index:75;width:min(520px,calc(100% - 34px));max-height:80vh;overflow:auto;transform:translate(-50%,-46%) scale(.94);opacity:0;background:#26272b;border-radius:18px;padding:20px 17px 20px;box-shadow:0 24px 60px rgba(0,0,0,.55);transition:transform .24s cubic-bezier(.2,.9,.25,1),opacity .2s}
 .fcard.in{transform:translate(-50%,-50%) scale(1);opacity:1}
-.fcard .ft{font-size:15px;font-weight:500;margin:0 2px 16px}
-.fg{display:flex;flex-wrap:wrap;gap:8px}
-.sitem{width:calc(33.333% - 6px);flex:none;border-radius:14px;background:var(--tile);height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:6px;cursor:pointer;color:#fff;transition:background .25s,transform .12s}
+.fcard .ft{font-size:13.5px;font-weight:500;margin:2px 3px 18px}
+.fg{display:flex;flex-wrap:wrap;gap:10px 13px}
+.sitem{width:102px;flex:none;border-radius:11px;background:var(--tile);height:113px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:6px;cursor:pointer;color:#fff;transition:background .25s,transform .12s}
 .sitem:active{transform:scale(.96)}
-.sitem .dc{position:relative;width:48px;height:48px}
+.sitem .dc{position:relative;width:50px;height:50px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.35))}
 .sitem .stop{position:absolute;inset:0;display:none;align-items:center;justify-content:center}
 .sitem .stop i{width:18px;height:18px;border-radius:3px;background:#fff}
 .sitem.moving{background:var(--acc)}
 .sitem.moving .disc{opacity:0}
 .sitem.moving .stop{display:flex}
 .sitem.on:not(.moving){background:linear-gradient(180deg,var(--gold1),var(--gold2));color:var(--gold-ink)}
-.sitem b{font-size:13px;font-weight:500;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.sitem b{font-size:11.5px;font-weight:500;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .sside{display:flex;flex-direction:column;justify-content:center;gap:10px;width:34px;flex:none;animation:hpin .2s}
 .sside .rbt{background:var(--tile)}
 
@@ -325,3 +325,20 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .pg .pbody>*{animation:hpin .3s cubic-bezier(.2,.8,.2,1) backwards}
 .pg .pbody>*:nth-child(2){animation-delay:.03s}.pg .pbody>*:nth-child(3){animation-delay:.06s}.pg .pbody>*:nth-child(4){animation-delay:.09s}
 @media(prefers-reduced-motion:reduce){.view>.in,.pg .pbody>*{animation:none}}
+
+.pg.roompg{z-index:25}
+.pg.roompg .pbody{padding-bottom:calc(var(--tabs) + var(--sab) + 24px)}
+/* the app's tab bar: filled icons, a little larger */
+#hp nav.tabs{background:linear-gradient(180deg,#17181c,#101115)}
+#hp nav.tabs button svg{width:27px;height:27px}
+#hp nav.tabs button[data-tab=home] svg,#hp nav.tabs button[data-tab=automations] svg{fill:currentColor;stroke:none}
+#hp nav.tabs button[data-tab=sync] svg,#hp nav.tabs button[data-tab=settings] svg{stroke-width:2.3}
+/* a page that edits something (it has SAVE) opens with an X, and SAVE is dim until something changed */
+.pg.modalpg .back{display:none!important}
+.pg.modalpg .x{display:flex!important}
+.pg .pbar .act.ok:disabled{opacity:.45}
+/* the scene's round icon over its name */
+.schead{flex-wrap:wrap}
+.schead .big{display:block!important;position:static!important;width:50px;height:50px;flex:none;margin-bottom:4px;order:-1;flex-basis:100%;background:none}
+.schead .big .disc{width:46px;height:46px}
+.ctile .ic svg{width:26px;height:26px}
