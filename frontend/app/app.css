@@ -443,3 +443,4 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .ptile.sm:has(.minus) {padding-bottom:36px}
 .pfield{padding:4px 16px 8px}.pfield input{width:100%;box-sizing:border-box}
 .swhead.named{display:flex;flex-wrap:wrap;align-items:center;gap:0 12px}.swhead.named .ic{flex:0 0 100%}.swhead.named .nm{flex:1;min-width:0}.ltiles.areal{margin:0;padding:0 16px 6px}
+.wheel{-webkit-mask-image:linear-gradient(transparent,#000 32%,#000 68%,transparent);mask-image:linear-gradient(transparent,#000 32%,#000 68%,transparent)}
