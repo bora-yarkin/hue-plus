@@ -394,7 +394,7 @@
     },
     "set_motion_area": {
       "name": "Set motion area",
-      "description": "Switches a motion area on or off, or renames it. A motion area uses the lights themselves as a motion sensor (Bridge Pro).",
+      "description": "Switches a MotionAware area on or off, renames it, or sets how sensitive it is. A MotionAware area uses the lights themselves as a motion sensor (Bridge Pro).",
       "fields": {
         "area": {
           "name": "Area",
@@ -407,24 +407,62 @@
         "name": {
           "name": "Name",
           "description": "A new name."
+        },
+        "lights": {
+          "name": "Lights",
+          "description": "The devices that sense motion from now on (three or four; names, ids or device ids)."
+        },
+        "sensitivity": {
+          "name": "Sensitivity",
+          "description": "How sensitive it is, from 0 (the least) to the area's own maximum (4 on the bridge it was tried on)."
         }
       }
     },
     "create_motion_area": {
       "name": "Create motion area",
-      "description": "Experimental. Creates a motion area from three or more lights of a zone. The bridge's documentation does not describe this, so the request is a guess from what an existing area looks like.",
+      "description": "Creates a MotionAware area from three or four lights of a room or zone. A new area still has to be calibrated before it senses motion (see the Hue app).",
       "fields": {
         "name": {
           "name": "Name",
           "description": "The name."
         },
-        "zone": {
-          "name": "Zone",
-          "description": "The zone (id or name)."
+        "group": {
+          "name": "Group",
+          "description": "The room or zone (id or name)."
+        },
+        "group_type": {
+          "name": "Group type",
+          "description": "Room or zone."
         },
         "lights": {
           "name": "Lights",
-          "description": "The lights (names or ids), at least three."
+          "description": "The lights (names, ids or device ids), three or four."
+        }
+      }
+    },
+    "set_motion_area_lights": {
+      "name": "Set motion area lights",
+      "description": "Sets what a MotionAware area does when it senses motion: from each time, motion recalls a scene and, after some minutes without motion, the lights go off. Replaces what was set before.",
+      "fields": {
+        "area": {
+          "name": "Area",
+          "description": "The motion area (id or name)."
+        },
+        "groups": {
+          "name": "Groups",
+          "description": "The rooms (up to three) or the one zone whose lights it controls (ids or names)."
+        },
+        "slots": {
+          "name": "Slots",
+          "description": "The times: a list. Each has a time (like 07:00) or a sun (sunrise or sunset, with offset_minutes before or after), and may have a scene (a name or id) and off_after_minutes. Leave off_after_minutes out to leave the lights on, and the scene out to leave them alone."
+        },
+        "dark_threshold": {
+          "name": "Dark threshold",
+          "description": "Act only when it is darker than this light level (0 to 65534). Leave out to act in daylight too."
+        },
+        "enabled": {
+          "name": "Enabled",
+          "description": "Whether it runs."
         }
       }
     },
@@ -870,6 +908,20 @@
         }
       }
     },
+    "trigger_automation": {
+      "name": "Trigger automation",
+      "description": "The play button of the Hue app: starts or stops a wake up, go to sleep, timer or mimic presence automation. It works whether or not the automation is switched on, which is how a Go to sleep or a timer that only starts by hand is used.",
+      "fields": {
+        "automation": {
+          "name": "Automation",
+          "description": "The automation (id or name)."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Start or stop it."
+        }
+      }
+    },
     "delete_automation": {
       "name": "Delete automation",
       "description": "Deletes a Hue automation from the bridge.",
@@ -941,6 +993,20 @@
         }
       }
     },
+    "set_home_location": {
+      "name": "Set home location",
+      "description": "Sets the bridge's home location. Sunrise and sunset, Coming home at night and the bridge's other location-based automations need it. The menu's button gives it Home Assistant's own home location.",
+      "fields": {
+        "latitude": {
+          "name": "Latitude",
+          "description": "Degrees north, from -90 to 90."
+        },
+        "longitude": {
+          "name": "Longitude",
+          "description": "Degrees east, from -180 to 180."
+        }
+      }
+    },
     "set_zigbee_channel": {
       "name": "Set zigbee channel",
       "description": "Changes the Zigbee channel of the bridge. Every light and accessory has to find the bridge again, and some may not.",
@@ -991,7 +1057,7 @@
     },
     "create_routine": {
       "name": "Create routine",
-      "description": "Makes a routine for a room or zone from the bridge's own template. Wake-up fades the lights up, go-to-sleep fades them out and turns them off, a timer recalls a scene after a while, a schedule recalls a scene at a time, coming home recalls a scene when you arrive (optionally only between two times; needs Home and Away), leaving home turns the lights off when everyone leaves, the smoke alarm template lights the room when a smoke alarm sounds.",
+      "description": "Makes a routine for a room or zone from the bridge's own template. Wake-up fades the lights up, go-to-sleep fades them out and turns them off, a timer recalls a scene after a while, a schedule recalls a scene at a time (optionally until another time, optionally at randomised times), coming home recalls a scene when you arrive (optionally only between two times; needs Home and Away), leaving home turns the lights off when everyone leaves, the smoke alarm template lights the room when a smoke alarm sounds.",
       "fields": {
         "routine": {
           "name": "Routine",
@@ -1015,7 +1081,7 @@
         },
         "until": {
           "name": "Until",
-          "description": "Coming home: the time it stops (give both or neither)."
+          "description": "Schedule: the time it ends. Coming home: the time it stops (give both or neither)."
         },
         "days": {
           "name": "Days",
@@ -1029,9 +1095,139 @@
           "name": "End brightness",
           "description": "Wake-up: the brightness it ends on, 1 to 100."
         },
+        "style": {
+          "name": "Style",
+          "description": "Wake-up: sunrise or basic (a plain fade). Go-to-sleep: sunset or basic."
+        },
+        "turn_off_after_minutes": {
+          "name": "Turn off after minutes",
+          "description": "Wake-up: switch the lights off this many minutes after it ends."
+        },
+        "randomize_minutes": {
+          "name": "Randomize minutes",
+          "description": "Schedule: shift the times by up to this many minutes."
+        },
         "scene": {
           "name": "Scene",
           "description": "Timer, schedule and coming home: the scene to recall (id or name)."
+        },
+        "end_state": {
+          "name": "End state",
+          "description": "Go to sleep: what the lights end on (turn_off, minimum_brightness, nightlight). Mimic presence: do_nothing or turn_off."
+        },
+        "mode": {
+          "name": "Mode",
+          "description": "Mimic presence: 24h is all day, nighttime only when it is dark."
+        },
+        "excluded_lights": {
+          "name": "Excluded lights",
+          "description": "Mimic presence: what happens to the lights of the rooms that are not chosen."
+        },
+        "when_type": {
+          "name": "When type",
+          "description": "Coming home: always, or only at night (needs the bridge's home location)."
+        },
+        "start_type": {
+          "name": "Start type",
+          "description": "Schedule: start at a time of day, at sunrise or at sunset (those need the bridge's home location)."
+        },
+        "until_type": {
+          "name": "Until type",
+          "description": "Schedule: end at a time of day, at sunrise or at sunset."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Schedule: recall a scene, or switch the lights on or off."
+        },
+        "enabled": {
+          "name": "Enabled",
+          "description": "Whether it runs."
+        }
+      }
+    },
+    "update_routine": {
+      "name": "Update routine",
+      "description": "Changes a routine made from the bridge's wake-up, go-to-sleep, timer, schedule, coming home, leaving home or smoke alarm template. The settings are written again, so give all of them.",
+      "fields": {
+        "automation": {
+          "name": "Automation",
+          "description": "The routine (id or name)."
+        },
+        "name": {
+          "name": "Name",
+          "description": "A new name."
+        },
+        "group": {
+          "name": "Group",
+          "description": "The room or zone (id or name)."
+        },
+        "group_type": {
+          "name": "Group type",
+          "description": "Room or zone."
+        },
+        "time": {
+          "name": "Time",
+          "description": "The time of day (wake-up, go-to-sleep and schedule), or the time coming home starts."
+        },
+        "until": {
+          "name": "Until",
+          "description": "Schedule: the time it ends. Coming home: the time it stops (give both or neither)."
+        },
+        "days": {
+          "name": "Days",
+          "description": "The days. Every day when empty."
+        },
+        "minutes": {
+          "name": "Minutes",
+          "description": "How long the fade or the timer takes, in minutes (a fade: 15 for wake-up and 30 for go-to-sleep when empty)."
+        },
+        "end_brightness": {
+          "name": "End brightness",
+          "description": "Wake-up: the brightness it ends on, 1 to 100."
+        },
+        "style": {
+          "name": "Style",
+          "description": "Wake-up: sunrise or basic (a plain fade). Go-to-sleep: sunset or basic."
+        },
+        "turn_off_after_minutes": {
+          "name": "Turn off after minutes",
+          "description": "Wake-up: switch the lights off this many minutes after it ends."
+        },
+        "randomize_minutes": {
+          "name": "Randomize minutes",
+          "description": "Schedule: shift the times by up to this many minutes."
+        },
+        "scene": {
+          "name": "Scene",
+          "description": "Timer, schedule and coming home: the scene to recall (id or name)."
+        },
+        "end_state": {
+          "name": "End state",
+          "description": "Go to sleep: what the lights end on (turn_off, minimum_brightness, nightlight). Mimic presence: do_nothing or turn_off."
+        },
+        "mode": {
+          "name": "Mode",
+          "description": "Mimic presence: 24h is all day, nighttime only when it is dark."
+        },
+        "excluded_lights": {
+          "name": "Excluded lights",
+          "description": "Mimic presence: what happens to the lights of the rooms that are not chosen."
+        },
+        "when_type": {
+          "name": "When type",
+          "description": "Coming home: always, or only at night (needs the bridge's home location)."
+        },
+        "start_type": {
+          "name": "Start type",
+          "description": "Schedule: start at a time of day, at sunrise or at sunset (those need the bridge's home location)."
+        },
+        "until_type": {
+          "name": "Until type",
+          "description": "Schedule: end at a time of day, at sunrise or at sunset."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Schedule: recall a scene, or switch the lights on or off."
         },
         "enabled": {
           "name": "Enabled",

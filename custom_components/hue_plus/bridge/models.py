@@ -209,6 +209,7 @@ def automations(snap: Snapshot) -> list[dict[str, Any]]:
             "script_id": a.get("script_id"),
             "script": _name(scripts.get(a.get("script_id"), {})) if a.get("script_id") in scripts else None,
             "last_error": a.get("last_error") or None,
+            "state": a.get("state"),
             "configuration": a.get("configuration"),
         }
         for a in snap.behavior_instance

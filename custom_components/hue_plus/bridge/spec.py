@@ -11,6 +11,42 @@ from . import actions as _actions
 
 LIGHT = f("text", "The light: its Hue id, the name of its device, or its Home Assistant entity.", True, example="Floor Light L")
 
+ROUTINE_FIELDS: dict[str, Any] = {
+    "group": f("text", "The room or zone (id or name).", True),
+    "group_type": f("select", "Room or zone.", default="room", options=["room", "zone"]),
+    "time": f("time", "The time of day (wake-up, go-to-sleep and schedule), or the time coming home starts."),
+    "until": f("time", "Schedule: the time it ends. Coming home: the time it stops (give both or neither)."),
+    "days": f(
+        "select_list",
+        "The days. Every day when empty.",
+        options=["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+    ),
+    "minutes": f("number", "How long the fade or the timer takes, in minutes (a fade: 15 for wake-up and 30 for go-to-sleep when empty)."),
+    "end_brightness": f("number", "Wake-up: the brightness it ends on, 1 to 100.", default=100),
+    "style": f("select", "Wake-up: sunrise or basic (a plain fade). Go-to-sleep: sunset or basic.", options=["sunrise", "sunset", "basic"]),
+    "turn_off_after_minutes": f("int", "Wake-up: switch the lights off this many minutes after it ends.", min=1, max=240),
+    "randomize_minutes": f("int", "Schedule: shift the times by up to this many minutes.", min=1, max=120),
+    "scene": f("text", "Timer, schedule and coming home: the scene to recall (id or name)."),
+    "end_state": f(
+        "select",
+        "Go to sleep: what the lights end on (turn_off, minimum_brightness, nightlight). Mimic presence: do_nothing or turn_off.",
+        options=["turn_off", "minimum_brightness", "nightlight", "do_nothing"],
+    ),
+    "mode": f("select", "Mimic presence: 24h is all day, nighttime only when it is dark.", options=["24h", "nighttime"]),
+    "excluded_lights": f(
+        "select", "Mimic presence: what happens to the lights of the rooms that are not chosen.", options=["do_nothing", "turn_off"]
+    ),
+    "when_type": f("select", "Coming home: always, or only at night (needs the bridge's home location).", options=["always", "nighttime"]),
+    "start_type": f(
+        "select",
+        "Schedule: start at a time of day, at sunrise or at sunset (those need the bridge's home location).",
+        options=["time", "sunrise", "sunset"],
+    ),
+    "until_type": f("select", "Schedule: end at a time of day, at sunrise or at sunset.", options=["time", "sunrise", "sunset"]),
+    "action": f("select", "Schedule: recall a scene, or switch the lights on or off.", options=["scene", "on", "off"], default="scene"),
+    "enabled": f("bool", "Whether it runs.", default=True),
+}
+
 SPEC: dict[str, dict[str, Any]] = {
     "get_resources": {
         "description": "Returns what the bridge holds: authorized apps, automations and their templates, rooms, zones, scenes, smart scenes, entertainment areas, Matter fabrics, devices, firmware and bridge status.",
@@ -48,19 +84,40 @@ SPEC: dict[str, dict[str, Any]] = {
         },
     },
     "set_motion_area": {
-        "description": "Switches a motion area on or off, or renames it. A motion area uses the lights themselves as a motion sensor (Bridge Pro).",
+        "description": "Switches a MotionAware area on or off, renames it, or sets how sensitive it is. A MotionAware area uses the lights themselves as a motion sensor (Bridge Pro).",
         "fields": {
             "area": f("text", "The motion area (id or name).", True),
             "enabled": f("bool", "On or off."),
             "name": f("text", "A new name."),
+            "lights": f("list", "The devices that sense motion from now on (three or four; names, ids or device ids).", False),
+            "sensitivity": f(
+                "int", "How sensitive it is, from 0 (the least) to the area's own maximum (4 on the bridge it was tried on).", min=0, max=4
+            ),
         },
     },
     "create_motion_area": {
-        "description": "Experimental. Creates a motion area from three or more lights of a zone. The bridge's documentation does not describe this, so the request is a guess from what an existing area looks like.",
+        "description": "Creates a MotionAware area from three or four lights of a room or zone. A new area still has to be calibrated before it senses motion (see the Hue app).",
         "fields": {
             "name": f("text", "The name.", True),
-            "zone": f("text", "The zone (id or name).", True),
-            "lights": f("list", "The lights (names or ids), at least three.", True),
+            "group": f("text", "The room or zone (id or name).", True),
+            "group_type": f("select", "Room or zone.", default="room", options=["room", "zone"]),
+            "lights": f("list", "The lights (names, ids or device ids), three or four.", True),
+        },
+    },
+    "set_motion_area_lights": {
+        "description": "Sets what a MotionAware area does when it senses motion: from each time, motion recalls a scene and, after some minutes without motion, the lights go off. Replaces what was set before.",
+        "fields": {
+            "area": f("text", "The motion area (id or name).", True),
+            "groups": f("list", "The rooms (up to three) or the one zone whose lights it controls (ids or names).", True),
+            "slots": f(
+                "object",
+                "The times: a list. Each has a time (like 07:00) or a sun (sunrise or sunset, with offset_minutes before or after), and may have a scene (a name or id) and off_after_minutes. Leave off_after_minutes out to leave the lights on, and the scene out to leave them alone.",
+                True,
+            ),
+            "dark_threshold": f(
+                "int", "Act only when it is darker than this light level (0 to 65534). Leave out to act in daylight too.", min=0, max=65534
+            ),
+            "enabled": f("bool", "Whether it runs."),
         },
     },
     "delete_motion_area": {"description": "Deletes a motion area.", "fields": {"area": f("text", "The motion area (id or name).", True)}},
@@ -241,6 +298,13 @@ SPEC: dict[str, dict[str, Any]] = {
             "enabled": f("bool", "Turn it on or off."),
         },
     },
+    "trigger_automation": {
+        "description": "The play button of the Hue app: starts or stops a wake up, go to sleep, timer or mimic presence automation. It works whether or not the automation is switched on, which is how a Go to sleep or a timer that only starts by hand is used.",
+        "fields": {
+            "automation": f("text", "The automation (id or name).", True),
+            "action": f("select", "Start or stop it.", True, options=["start", "stop"]),
+        },
+    },
     "delete_automation": {
         "description": "Deletes a Hue automation from the bridge.",
         "fields": {"automation": f("text", "The automation (id or name).", True)},
@@ -263,6 +327,13 @@ SPEC: dict[str, dict[str, Any]] = {
         "description": "Installs a bridge firmware update that is ready. The bridge restarts, and lights stay as they are.",
         "fields": {},
     },
+    "set_home_location": {
+        "description": "Sets the bridge's home location. Sunrise and sunset, Coming home at night and the bridge's other location-based automations need it. The menu's button gives it Home Assistant's own home location.",
+        "fields": {
+            "latitude": f("number", "Degrees north, from -90 to 90.", True),
+            "longitude": f("number", "Degrees east, from -180 to 180.", True),
+        },
+    },
     "set_zigbee_channel": {
         "description": "Changes the Zigbee channel of the bridge. Every light and accessory has to find the bridge again, and some may not.",
         "fields": {"channel": f("int", "A channel from 11 to 26 (11, 15, 20 and 25 are the ones that avoid Wi-Fi).", True)},
@@ -278,30 +349,28 @@ SPEC: dict[str, dict[str, Any]] = {
     },
     # routines and accessories
     "create_routine": {
-        "description": "Makes a routine for a room or zone from the bridge's own template. Wake-up fades the lights up, go-to-sleep fades them out and turns them off, a timer recalls a scene after a while, a schedule recalls a scene at a time, coming home recalls a scene when you arrive (optionally only between two times; needs Home and Away), leaving home turns the lights off when everyone leaves, the smoke alarm template lights the room when a smoke alarm sounds.",
+        "description": "Makes a routine for a room or zone from the bridge's own template. Wake-up fades the lights up, go-to-sleep fades them out and turns them off, a timer recalls a scene after a while, a schedule recalls a scene at a time (optionally until another time, optionally at randomised times), coming home recalls a scene when you arrive (optionally only between two times; needs Home and Away), leaving home turns the lights off when everyone leaves, the smoke alarm template lights the room when a smoke alarm sounds.",
         "fields": {
             "routine": f(
                 "select",
                 "The kind of routine.",
                 True,
-                options=["wake_up", "go_to_sleep", "timer", "schedule", "coming_home", "leaving_home", "smoke_alarm"],
+                options=["wake_up", "go_to_sleep", "timer", "schedule", "coming_home", "leaving_home", "smoke_alarm", "mimic_presence"],
             ),
             "name": f("text", "The routine's name.", True),
-            "group": f("text", "The room or zone (id or name).", True),
-            "group_type": f("select", "Room or zone.", default="room", options=["room", "zone"]),
-            "time": f("time", "The time of day (wake-up, go-to-sleep and schedule), or the time coming home starts."),
-            "until": f("time", "Coming home: the time it stops (give both or neither)."),
-            "days": f(
-                "select_list",
-                "The days. Every day when empty.",
-                options=["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
-            ),
-            "minutes": f(
-                "number", "How long the fade or the timer takes, in minutes (a fade: 15 for wake-up and 30 for go-to-sleep when empty)."
-            ),
-            "end_brightness": f("number", "Wake-up: the brightness it ends on, 1 to 100.", default=100),
-            "scene": f("text", "Timer, schedule and coming home: the scene to recall (id or name)."),
-            "enabled": f("bool", "Whether it runs.", default=True),
+            **ROUTINE_FIELDS,
+        },
+    },
+    "update_routine": {
+        "description": "Changes a routine made from the bridge's wake-up, go-to-sleep, timer, schedule, coming home, leaving home or smoke alarm template. The settings are written again, so give all of them.",
+        "fields": {
+            "automation": f("text", "The routine (id or name).", True),
+            "name": f("text", "A new name."),
+            # No defaults when changing: a routine that is off stays off unless it is switched on here.
+            **{
+                k: {a: b for a, b in v.items() if a != "default"} if k in ("enabled", "end_brightness") else v
+                for k, v in ROUTINE_FIELDS.items()
+            },
         },
     },
     "configure_button": {

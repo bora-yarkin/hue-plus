@@ -28,11 +28,10 @@ Also verified on the real bridge (2026-10-29, with disabled throwaway routines, 
 the Schedule, Coming home (`always` and `between`), Leaving home and Smoke alarm templates, and the relative brightness and
 colour temperature steps (brightness 30 to 50 to 40, mirek 370 to 420 and back). A schedule can only recall a scene: the way a
 schedule turns lights off was not found (use go-to-sleep). Home and Away must be set up in the Hue app before coming home or
-leaving home do anything. The bridge's `sonos` resource is an empty stub, and MotionAware zones can be listed but not created
-(there is no motion sensor on the author's bridge).
+leaving home do anything. The bridge's `sonos` resource is an empty stub. MotionAware areas were created, edited and deleted on the bridge on 2026-11-12 with `raw_request` (`docs/bridge-findings.md`); the services `create_motion_area`, `set_motion_area` and `set_motion_area_lights` send those requests and had run only against fakes until the box was restarted onto them.
 
 The streaming module (`tests/streaming`) runs a real DTLS-PSK server, `openssl s_server`, and skips itself where that openssl cannot (the macOS system one cannot; Homebrew's and Linux's can). Experimental, not tried on a bridge: the whole streaming module, with the same
-limit as the others below. Also experimental, tested only against fakes: `create_motion_area` (Signify's documentation does not describe creating one; the request copies the shape of an existing area), `set_streaming_end_state` (only `last_state` has been seen; `off`, `pause` and `scene` are guessed names), `configure_light` (the values `forward`/`reversed` and `horizontal`/`vertical` are assumed; only `forward` and `horizontal` have been seen), `configure_sensor` and the motion switch and sensitivity entities (no motion sensor
+limit as the others below. Also experimental, tested only against fakes: `set_streaming_end_state` (only `last_state` has been seen; `off`, `pause` and `scene` are guessed names), `configure_light` (the values `forward`/`reversed` and `horizontal`/`vertical` are assumed; only `forward` and `horizontal` have been seen), `configure_sensor` and the motion switch and sensitivity entities (no motion sensor
 at hand), `create_daily_smart_scene` (the timeslot shape follows Signify's description; the bridge was not asked), and the
 whole Hue Play HDMI Sync Box part (`syncbox/`: client, setup flow, re-registration, entities; written from the box's published API, never tried on a box). Its HA-level tests replace the client with a stand-in (`tests/ha/test_syncbox.py`); the client has its own tests against a fake HTTP box.
 

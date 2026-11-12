@@ -194,7 +194,7 @@ class ActionTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_a_motion_area_is_made_only_from_lights_the_bridge_offers(self):
         s = models.Snapshot()
-        s.zone = [{"id": "z1", "metadata": {"name": "Hall"}}]
+        s.room = [{"id": "r1", "metadata": {"name": "Hall"}}]
         s.device = [{"id": f"d{i}", "metadata": {"name": f"Lamp {i}"}} for i in (1, 2, 3, 4)]
         s.light = [{"id": f"l{i}", "owner": {"rid": f"d{i}"}} for i in (1, 2, 3, 4)]
 
@@ -204,14 +204,134 @@ class ActionTests(unittest.IsolatedAsyncioTestCase):
                     return [{"id": f"c{i}", "owner": {"rid": f"d{i}"}} for i in (1, 2, 3)]
                 return []
 
-        calls, _ = await self.go(
-            "create_motion_area", {"name": "Hall", "zone": "Hall", "lights": ["Lamp 1", "Lamp 2", "l3"]}, snap=s, rec=Offers()
+        calls, result = await self.go(
+            "create_motion_area", {"name": "Hall", "group": "Hall", "lights": ["Lamp 1", "Lamp 2", "l3"]}, snap=s, rec=Offers()
         )
-        self.assertEqual([c["rid"] for c in calls[0][3]["motion_sensors"]], ["c1", "c2", "c3"])
+        self.assertEqual(result, {"id": "new-id"})
+        self.assertEqual(calls[0][3]["name"], "Hall")
+        self.assertEqual(calls[0][3]["group"], {"rid": "r1", "rtype": "room"})
+        self.assertEqual([p["resource"]["rid"] for p in calls[0][3]["participants"]], ["c1", "c2", "c3"])
         with self.assertRaisesRegex(ValueError, "cannot take part"):
-            await self.go("create_motion_area", {"name": "Hall", "zone": "Hall", "lights": ["l1", "l2", "l4"]}, snap=s, rec=Offers())
+            await self.go("create_motion_area", {"name": "Hall", "group": "Hall", "lights": ["l1", "l2", "l4"]}, snap=s, rec=Offers())
         with self.assertRaisesRegex(ValueError, "This cannot be undone"):
             await self.go("delete_motion_area", {"area": "x"})
+
+    def _area_world(self):
+        s = models.Snapshot()
+        s.room = [{"id": "r1", "metadata": {"name": "Hall"}}]
+        s.scene = [{"id": "s1", "metadata": {"name": "Read"}}, {"id": "s2", "metadata": {"name": "Nightlight"}}]
+        s.behavior_script = [{"id": "ms", "metadata": {"name": "Motion Sensor"}}]
+
+        class Bridge(Recorder):
+            def __init__(self, instances):
+                super().__init__()
+                self.instances = instances
+
+            async def list(self, resource):
+                return {
+                    "motion_area_configuration": [
+                        {
+                            "id": "a1",
+                            "name": "Hall area",
+                            "services": [
+                                {"rid": "cv1", "rtype": "convenience_area_motion"},
+                                {"rid": "sc1", "rtype": "security_area_motion"},
+                            ],
+                        }
+                    ],
+                    "behavior_instance": self.instances,
+                }.get(resource, [])
+
+        return s, Bridge
+
+    async def test_a_motion_area_is_renamed_and_its_sensitivity_goes_to_its_motion_service(self):
+        s, bridge = self._area_world()
+        calls, _ = await self.go("set_motion_area", {"area": "Hall area", "name": "Entrance", "sensitivity": 2}, snap=s, rec=bridge([]))
+        self.assertEqual(calls[0], ("put", "motion_area_configuration", "a1", {"name": "Entrance"}))
+        self.assertEqual(calls[1], ("put", "convenience_area_motion", "cv1", {"sensitivity": {"sensitivity": 2}}))
+
+    async def test_switching_an_area_on_switches_its_motion_service_on_which_calibrates_it(self):
+        s, bridge = self._area_world()
+        calls, _ = await self.go("set_motion_area", {"area": "a1", "enabled": True}, snap=s, rec=bridge([]))
+        self.assertEqual(calls[0], ("put", "motion_area_configuration", "a1", {"enabled": True}))
+        self.assertEqual(calls[1], ("put", "convenience_area_motion", "cv1", {"enabled": True}))
+
+    async def test_the_devices_of_a_motion_area_are_replaced_by_three_or_four_candidates(self):
+        s, bridge = self._area_world()
+        s.device = [{"id": f"d{i}", "metadata": {"name": f"Lamp {i}"}} for i in (1, 2, 3, 4, 5)]
+        s.light = [{"id": f"l{i}", "owner": {"rid": f"d{i}"}} for i in (1, 2, 3, 4, 5)]
+
+        class WithCandidates(bridge):
+            async def list(self, resource):
+                if resource == "motion_area_candidate":
+                    return [{"id": f"c{i}", "owner": {"rid": f"d{i}"}} for i in (1, 2, 3, 4)]
+                return await super().list(resource)
+
+        calls, _ = await self.go("set_motion_area", {"area": "a1", "lights": ["d1", "Lamp 2", "l3"]}, snap=s, rec=WithCandidates([]))
+        self.assertEqual(calls[0][:3], ("put", "motion_area_configuration", "a1"))
+        self.assertEqual([p["resource"]["rid"] for p in calls[0][3]["participants"]], ["c1", "c2", "c3"])
+        with self.assertRaisesRegex(ValueError, "three or four"):
+            await self.go("set_motion_area", {"area": "a1", "lights": ["d1", "d2"]}, snap=s, rec=WithCandidates([]))
+        with self.assertRaisesRegex(ValueError, "cannot take part"):
+            await self.go("set_motion_area", {"area": "a1", "lights": ["d1", "d2", "l5"]}, snap=s, rec=WithCandidates([]))
+
+    async def test_what_a_motion_area_does_replaces_its_automation_or_makes_it(self):
+        s, bridge = self._area_world()
+        data = {
+            "area": "a1",
+            "groups": ["Hall"],
+            "slots": [{"time": "07:00", "scene": "Read", "off_after_minutes": 10}, {"time": "23:00", "scene": "Nightlight"}],
+            "dark_threshold": 3000,
+        }
+        calls, _ = await self.go("set_motion_area_lights", data, snap=s, rec=bridge([]))
+        self.assertEqual((calls[0][0], calls[0][1], calls[0][3]["script_id"]), ("post", "behavior_instance", "ms"))
+        configuration = calls[0][3]["configuration"]
+        self.assertEqual(configuration["source"], {"rid": "a1", "rtype": "motion_area_configuration"})
+        self.assertEqual(
+            [t["on_motion"]["recall_single"][0]["action"]["recall"]["rid"] for t in configuration["when"]["timeslots"]], ["s1", "s2"]
+        )
+        mine = {"id": "bi9", "configuration": {"source": {"rid": "a1", "rtype": "motion_area_configuration"}}}
+        other = {"id": "bi8", "configuration": {"source": {"rid": "other", "rtype": "motion"}}}
+        calls, _ = await self.go("set_motion_area_lights", data, snap=s, rec=bridge([other, mine]))
+        self.assertEqual((calls[0][0], calls[0][1], calls[0][2]), ("put", "behavior_instance", "bi9"))
+        with self.assertRaisesRegex(ValueError, "No scene called"):
+            await self.go("set_motion_area_lights", {**data, "slots": [{"time": "07:00", "scene": "Nope"}]}, snap=s, rec=bridge([]))
+
+    async def test_an_area_time_can_start_at_sunset_and_a_time_without_a_scene_leaves_the_lights_alone(self):
+        s, bridge = self._area_world()
+        data = {
+            "area": "a1",
+            "groups": ["Hall"],
+            "slots": [{"sun": "sunrise", "offset_minutes": 15}, {"sun": "sunset", "scene": "Read", "off_after_minutes": 10}],
+        }
+        calls, _ = await self.go("set_motion_area_lights", data, snap=s, rec=bridge([]))
+        slots = calls[0][3]["configuration"]["when"]["timeslots"]
+        self.assertEqual(slots[0]["start_time"], {"type": "sunrise", "offset": {"minutes": 15}})
+        self.assertEqual(slots[0]["on_motion"], {"recall_single": [{"action": "do_nothing"}]})
+        self.assertEqual(slots[1]["start_time"], {"type": "sunset"})
+        for bad in ({"time": "07:00", "sun": "sunset"}, {"scene": "Read"}):
+            with self.assertRaisesRegex(ValueError, "Each time is"):
+                await self.go("set_motion_area_lights", {**data, "slots": [bad]}, snap=s, rec=bridge([]))
+
+    async def test_deleting_a_motion_area_deletes_the_automation_that_uses_it_first(self):
+        s, bridge = self._area_world()
+        mine = {"id": "bi9", "configuration": {"source": {"rid": "a1", "rtype": "motion_area_configuration"}}}
+        other = {"id": "bi8", "configuration": {"source": {"rid": "other", "rtype": "motion"}}}
+        calls, _ = await self.go("delete_motion_area", {"area": "a1", "confirm": True}, snap=s, rec=bridge([other, mine]))
+        self.assertEqual(calls, [("delete", "behavior_instance", "bi9", None), ("delete", "motion_area_configuration", "a1", None)])
+
+    async def test_the_home_location_goes_to_the_bridge_and_a_place_that_cannot_exist_does_not(self):
+        class Places(Recorder):
+            async def list(self, resource):
+                return [{"id": "g1", "is_configured": False}] if resource == "geolocation" else []
+
+        calls, _ = await self.go("set_home_location", {"latitude": 41.0, "longitude": 29.0}, rec=Places())
+        self.assertEqual(calls, [("put", "geolocation", "g1", {"latitude": 41.0, "longitude": 29.0})])
+        for bad in ({"latitude": 91, "longitude": 0}, {"latitude": 0, "longitude": 181}):
+            with self.assertRaisesRegex(ValueError, "latitude is from"):
+                await self.go("set_home_location", bad, rec=Places())
+        with self.assertRaisesRegex(ValueError, "no location setting"):
+            await self.go("set_home_location", {"latitude": 1, "longitude": 1})
 
     async def test_power_on_converts_kelvin_to_mirek(self):
         calls, _ = await self.go(

@@ -145,14 +145,75 @@ class PayloadTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 bad()
 
-    def test_motion_areas_need_three_lights_and_streaming_end_states_a_scene_only_for_scene(self):
-        self.assertEqual(p.motion_area_put("Hall", False), {"metadata": {"name": "Hall"}, "enabled": False})
+    def test_motion_areas_use_the_shape_the_bridge_accepted(self):
+        self.assertEqual(p.motion_area_put("Hall", False), {"name": "Hall", "enabled": False})
         with self.assertRaises(ValueError):
             p.motion_area_put(None, None)
-        body = p.motion_area_post("Hall", "z1", ["c1", "c2", "c3"])
-        self.assertEqual((body["group"], len(body["motion_sensors"])), ({"rid": "z1", "rtype": "zone"}, 3))
-        with self.assertRaises(ValueError):
-            p.motion_area_post("Hall", "z1", ["c1", "c2"])
+        body = p.motion_area_post("Hall", "r1", "room", ["c1", "c2", "c3"])
+        self.assertEqual(
+            body,
+            {
+                "name": "Hall",
+                "group": {"rid": "r1", "rtype": "room"},
+                "participants": [{"resource": {"rid": c, "rtype": "motion_area_candidate"}} for c in ("c1", "c2", "c3")],
+            },
+        )
+        for bad in (
+            lambda: p.motion_area_post("Hall", "r1", "room", ["c1", "c2"]),
+            lambda: p.motion_area_post("Hall", "r1", "room", ["c1", "c2", "c3", "c4", "c5"]),
+            lambda: p.motion_area_post("Hall", "r1", "home", ["c1", "c2", "c3"]),
+        ):
+            with self.assertRaises(ValueError):
+                bad()
+
+    def test_a_motion_area_controls_lights_through_the_motion_sensor_template(self):
+        slots = [
+            {"at": time(23, 0), "scene": "s3", "off_after_minutes": 10},
+            {"at": time(7, 0), "scene": "s1", "off_after_minutes": None},
+        ]
+        config = p.motion_area_configuration("a1", [("r1", "room")], slots, 4000)
+        self.assertEqual(config["source"], {"rid": "a1", "rtype": "motion_area_configuration"})
+        self.assertEqual(config["where"], [{"group": {"rid": "r1", "rtype": "room"}}])
+        first, second = config["when"]["timeslots"]
+        self.assertEqual(first["start_time"], {"type": "time", "time": {"hour": 7, "minute": 0}})
+        self.assertNotIn("on_no_motion", first)
+        self.assertEqual(second["on_no_motion"], {"after": {"minutes": 10}, "recall_single": [{"action": "all_off"}]})
+        self.assertEqual(second["on_motion"], {"recall_single": [{"action": {"recall": {"rid": "s3", "rtype": "scene"}}}]})
+        self.assertEqual(config["settings"], {"daylight_sensitivity": {"dark_threshold": 4000, "offset": 7000}})
+        self.assertNotIn("settings", p.motion_area_configuration("a1", [("r1", "room")], slots, None))
+        for bad in (
+            lambda: p.motion_area_configuration("a1", [], slots, None),
+            lambda: p.motion_area_configuration("a1", [("r1", "room")], [], None),
+            lambda: p.motion_area_configuration("a1", [("r1", "room")], [*slots, slots[1]], None),
+            lambda: p.motion_area_configuration("a1", [("r1", "room")], [{"at": time(7, 0), "scene": "s", "off_after_minutes": 0}], None),
+            lambda: p.motion_area_configuration("a1", [("r1", "room")], slots, 70000),
+        ):
+            with self.assertRaises(ValueError):
+                bad()
+        self.assertEqual(p.motion_sensitivity_put(2), {"sensitivity": {"sensitivity": 2}})
+
+    def test_a_motion_area_time_can_start_at_sunrise_or_sunset_and_leave_the_lights_alone(self):
+        slots = [
+            {"at": time(23, 0), "scene": "s3", "off_after_minutes": 10},
+            {"sun": "sunrise", "offset_minutes": -30, "scene": None},
+            {"sun": "sunset", "scene": "s1", "off_after_minutes": 15},
+        ]
+        slots_out = p.motion_area_configuration("a1", [("r1", "room")], slots, None)["when"]["timeslots"]
+        self.assertEqual([t["start_time"]["type"] for t in slots_out], ["sunrise", "sunset", "time"], "in the order of the day")
+        self.assertEqual(slots_out[0]["start_time"], {"type": "sunrise", "offset": {"minutes": -30}})
+        self.assertEqual(slots_out[0]["on_motion"], {"recall_single": [{"action": "do_nothing"}]})
+        self.assertNotIn("on_no_motion", slots_out[0], "no lights, so nothing to switch off")
+        self.assertEqual(slots_out[1]["start_time"], {"type": "sunset"}, "no offset is not written")
+        self.assertIn("on_no_motion", slots_out[1])
+        for bad in (
+            [{"sun": "noon", "scene": "s"}],
+            [{"sun": "sunset", "offset_minutes": 500, "scene": "s"}],
+            [{"sun": "sunset", "scene": "s"}, {"sun": "sunset", "scene": "t"}],
+        ):
+            with self.assertRaises(ValueError):
+                p.motion_area_configuration("a1", [("r1", "room")], bad, None)
+
+    def test_streaming_end_states_take_a_scene_only_for_scene(self):
         self.assertEqual(
             p.streaming_end_configuration("a1", "last_state", None),
             {"end_state": "last_state", "where": [{"group": {"rid": "a1", "rtype": "entertainment_configuration"}}]},

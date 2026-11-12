@@ -90,6 +90,16 @@ set_motion_area:
     "name":
       selector:
         text: {}
+    "lights":
+      selector:
+        object: {}
+    "sensitivity":
+      selector:
+        number:
+          mode: "box"
+          min: 0
+          max: 4
+          step: 1
 
 create_motion_area:
   fields:
@@ -97,14 +107,44 @@ create_motion_area:
       required: true
       selector:
         text: {}
-    "zone":
+    "group":
       required: true
       selector:
         text: {}
+    "group_type":
+      default: "room"
+      selector:
+        select:
+          options: ["room", "zone"]
     "lights":
       required: true
       selector:
         object: {}
+
+set_motion_area_lights:
+  fields:
+    "area":
+      required: true
+      selector:
+        text: {}
+    "groups":
+      required: true
+      selector:
+        object: {}
+    "slots":
+      required: true
+      selector:
+        object: {}
+    "dark_threshold":
+      selector:
+        number:
+          mode: "box"
+          min: 0
+          max: 65534
+          step: 1
+    "enabled":
+      selector:
+        boolean: {}
 
 delete_motion_area:
   fields:
@@ -465,6 +505,18 @@ update_automation:
       selector:
         boolean: {}
 
+trigger_automation:
+  fields:
+    "automation":
+      required: true
+      selector:
+        text: {}
+    "action":
+      required: true
+      selector:
+        select:
+          options: ["start", "stop"]
+
 delete_automation:
   fields:
     "automation":
@@ -514,6 +566,21 @@ install_bridge_update:
       selector:
         boolean: {}
 
+set_home_location:
+  fields:
+    "latitude":
+      required: true
+      selector:
+        number:
+          mode: "box"
+          step: "any"
+    "longitude":
+      required: true
+      selector:
+        number:
+          mode: "box"
+          step: "any"
+
 set_zigbee_channel:
   fields:
     "channel":
@@ -559,7 +626,7 @@ create_routine:
       required: true
       selector:
         select:
-          options: ["wake_up", "go_to_sleep", "timer", "schedule", "coming_home", "leaving_home", "smoke_alarm"]
+          options: ["wake_up", "go_to_sleep", "timer", "schedule", "coming_home", "leaving_home", "smoke_alarm", "mimic_presence"]
     "name":
       required: true
       selector:
@@ -595,11 +662,151 @@ create_routine:
         number:
           mode: "box"
           step: "any"
+    "style":
+      selector:
+        select:
+          options: ["sunrise", "sunset", "basic"]
+    "turn_off_after_minutes":
+      selector:
+        number:
+          mode: "box"
+          min: 1
+          max: 240
+          step: 1
+    "randomize_minutes":
+      selector:
+        number:
+          mode: "box"
+          min: 1
+          max: 120
+          step: 1
     "scene":
       selector:
         text: {}
+    "end_state":
+      selector:
+        select:
+          options: ["turn_off", "minimum_brightness", "nightlight", "do_nothing"]
+    "mode":
+      selector:
+        select:
+          options: ["24h", "nighttime"]
+    "excluded_lights":
+      selector:
+        select:
+          options: ["do_nothing", "turn_off"]
+    "when_type":
+      selector:
+        select:
+          options: ["always", "nighttime"]
+    "start_type":
+      selector:
+        select:
+          options: ["time", "sunrise", "sunset"]
+    "until_type":
+      selector:
+        select:
+          options: ["time", "sunrise", "sunset"]
+    "action":
+      default: "scene"
+      selector:
+        select:
+          options: ["scene", "on", "off"]
     "enabled":
       default: true
+      selector:
+        boolean: {}
+
+update_routine:
+  fields:
+    "automation":
+      required: true
+      selector:
+        text: {}
+    "name":
+      selector:
+        text: {}
+    "group":
+      required: true
+      selector:
+        text: {}
+    "group_type":
+      default: "room"
+      selector:
+        select:
+          options: ["room", "zone"]
+    "time":
+      selector:
+        time: {}
+    "until":
+      selector:
+        time: {}
+    "days":
+      selector:
+        select:
+          options: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+          multiple: true
+    "minutes":
+      selector:
+        number:
+          mode: "box"
+          step: "any"
+    "end_brightness":
+      selector:
+        number:
+          mode: "box"
+          step: "any"
+    "style":
+      selector:
+        select:
+          options: ["sunrise", "sunset", "basic"]
+    "turn_off_after_minutes":
+      selector:
+        number:
+          mode: "box"
+          min: 1
+          max: 240
+          step: 1
+    "randomize_minutes":
+      selector:
+        number:
+          mode: "box"
+          min: 1
+          max: 120
+          step: 1
+    "scene":
+      selector:
+        text: {}
+    "end_state":
+      selector:
+        select:
+          options: ["turn_off", "minimum_brightness", "nightlight", "do_nothing"]
+    "mode":
+      selector:
+        select:
+          options: ["24h", "nighttime"]
+    "excluded_lights":
+      selector:
+        select:
+          options: ["do_nothing", "turn_off"]
+    "when_type":
+      selector:
+        select:
+          options: ["always", "nighttime"]
+    "start_type":
+      selector:
+        select:
+          options: ["time", "sunrise", "sunset"]
+    "until_type":
+      selector:
+        select:
+          options: ["time", "sunrise", "sunset"]
+    "action":
+      default: "scene"
+      selector:
+        select:
+          options: ["scene", "on", "off"]
+    "enabled":
       selector:
         boolean: {}
 
@@ -727,7 +934,7 @@ raw_request:
       required: true
       selector:
         select:
-          options: ["light", "grouped_light", "scene", "smart_scene", "room", "zone", "device", "behavior_instance", "entertainment_configuration", "matter", "matter_fabric", "bridge", "button", "relative_rotary", "motion", "geofence_client", "geolocation", "motion_area_candidate", "motion_area_configuration", "clip", "sonos", "device_power", "light_level", "temperature", "contact", "tamper"]
+          options: ["behavior_instance", "behavior_script", "behavior_script_formula", "bell_button", "bridge", "bridge_home", "button", "camera_motion", "clip", "contact", "convenience_area_motion", "device", "device_power", "device_software_update", "entertainment", "entertainment_configuration", "geofence_client", "geolocation", "grouped_light", "grouped_light_level", "grouped_motion", "light", "light_level", "matter", "matter_fabric", "motion", "motion_area_candidate", "motion_area_configuration", "power_output_configuration", "private_group", "private_scene", "relative_rotary", "room", "scene", "security_area_motion", "service_group", "smart_scene", "sonos", "sonos_connectivity", "speaker", "switch_input_configuration", "tamper", "temperature", "zgp_connectivity", "zigbee_connectivity", "zigbee_device_discovery", "zone"]
     "id":
       selector:
         text: {}

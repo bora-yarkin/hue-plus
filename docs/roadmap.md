@@ -91,6 +91,30 @@ Requirements (owner):
 
 Order: (1) Hue scenes as dashboard scenes; (2) Hue scene creation and editing; (3) Automations; (4) MotionAware; (5) gaps. Each step is deployed to the owner's box for testing before anything is released (owner's rule), and ships its dashboard side in the same piece of work.
 
+### HP-13 status (updated 2026-11-12, branch `hue-app-wizards`; dashboard checked in the sealed harness, bridge shapes checked on the real bridge)
+
+Status words: done = a page in the menu that writes to the bridge; missing = no page. "Bridge" says what was tried on the owner's Hue Bridge Pro: *request proven* = the exact request was sent with `raw_request` and accepted (throwaway objects, deleted afterwards); *service not tried* = the Hue Plus service that sends it has only run against fakes until the box is restarted onto this code. Details: `docs/bridge-findings.md`.
+
+| Step | What | Menu | Bridge |
+|---|---|---|---|
+| 1 | Hue scenes as dashboard scenes | done (0.14.1) | live |
+| 2 | Create / edit / rename / delete Hue scenes | done (`huenewscene.js`) | not recorded |
+| 3 | Automations: list, on/off, delete | done | live (existing) |
+| 3 | Wake up, Go to sleep, Timer, Lighting schedule, Coming home, Leaving home: create and edit (`huewizard.js`) | done | `create_routine` and `update_routine` tried on the real bridge for wake up, go to sleep, timer, schedule, coming home and leaving home (disabled, read back as sent, deleted) |
+| 3 | Mimic presence (`PM` template, one per bridge: where, all day or only when dark, end with) | done | request proven (as a disabled throwaway); service not tried |
+| 3 | Go to sleep: "At a certain time" or "With a button press", End with lights off / dimmed lights / warm nightlight | done | requests proven; the play button is `trigger_automation` (start / stop), tried on a throwaway routine for the bathroom light |
+| 3 | Play and stop for wake up, go to sleep, timer and Mimic presence | done | request proven |
+| 3 | Lighting schedule: start at a time, sunrise or sunset, optional end, on / off / scene | done | `create_routine` tried for time, sunset to sunrise, on and off, and a scene |
+| 3 | Coming home: always or at night | done | `always` and `nighttime` tried (the bridge's home location is now set) |
+| 4 | MotionAware: list, create (the app's pages, with calibration, four areas at most, a device in one area), name, on/off, devices (3 or 4), sensitivity (Very low to Very high), times (a time, sunrise or sunset) and scenes or no lights ("Control lights"), daylight (sunrise/sunset), delete (`humotion.js`) | done | create, rename, devices, sensitivity, "Control lights" and delete tried through the services; calibration: request proven (enable the area's motion service), wizard step not tried on the real bridge |
+| 4 | MotionAware: "Area activity" (high / low) and the algorithm mode (`mimic_pir` / `mimic_radar`) | not built: no writable field found for activity, and which mode it means is a guess | read only |
+| 4 | MotionAware: "Group with other sensors", "Send alerts" | not built: a sensor group needs other sensors; alerts are a Signify subscription | no |
+| 5 | Rooms and zones: create, rename, devices, delete (`huerooms.js`) | done | clicked through in the real dashboard (a zone: create, rename, change lights, delete) |
+| 5 | Bridge home location: a row on the Bridges page, "Set the bridge's home location to Home Assistant's" (`set_home_location`) | done | the request was proven earlier; the button's service loads at the next restart |
+| 5 | Bridge: name, Zigbee channel | done | service not tried |
+| 5 | Remove a light or switch; delete an entertainment area | done | not tried (destructive) |
+| 5 | Sensors: sensitivity, `configure_sensor` | not built into a page | no motion sensor on the bridge |
+
 Known limits: the scene gallery, Coming home / Leaving home (geofence by the phone and Hue's cloud), Custom AI behaviours and Security alerts (subscription) are Signify cloud features; the bridge's local API has no counterpart. Where the local API has part of one (the bridge's `geofence_client`, `behavior_instance` of those templates), Hue Plus shows and edits that part.
 
 2026-11-10 check: 54 services; 19 are used by the dashboard menu. Not on the dashboard yet: create/update/delete scene, smart scene (create, set), room and zone create/update/delete, create automation and routine, create daily smart scene, motion area create, bridge settings (set name, auto update, check for update, install bridge update, Zigbee channel, link button, search for devices, remove device), entertainment area delete and control, identify signal, power-on behaviour, light step, sensor configure, raw request, effect and gradient setters. The bridge-side gaps are the 11 rows of `analysis/gap-analysis.md` (after-streaming behaviour, gradient orientation and order, light function, minimum dim level and gamut, battery state, scene last recall, Matter pairing code, Zigbee diagnostics, motion area candidates, Contact Sensor and PM scripts).

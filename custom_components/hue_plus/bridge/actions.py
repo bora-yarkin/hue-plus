@@ -193,6 +193,7 @@ async def get_resources(api: BridgeApi, snap: models.Snapshot, data: dict[str, A
         result["motion_areas"] = {
             "candidates": await api.list("motion_area_candidate"),
             "areas": await api.list("motion_area_configuration"),
+            "services": await api.list("convenience_area_motion"),
         }
     if "supported_resources" in kinds:
         result["supported_resources"] = ((await api.list("clip")) or [{}])[0].get("resources", [])
@@ -240,29 +241,103 @@ async def configure_light(api, snap, data):
     )
 
 
+def _motion_area(areas: list[dict[str, Any]], ref: str) -> dict[str, Any]:
+    return resolve(areas, ref, "motion area")
+
+
+def _area_service(area: dict[str, Any], rtype: str) -> str | None:
+    return next((s["rid"] for s in area.get("services") or [] if s.get("rtype") == rtype), None)
+
+
+async def _candidates(api: BridgeApi, snap: models.Snapshot, refs: list[str]) -> list[str]:
+    """The ``motion_area_candidate`` of each light (given as a light, the name of its device, or its device id)."""
+    by_owner = {(c.get("owner") or {}).get("rid"): c["id"] for c in await api.list("motion_area_candidate")}
+    candidates = []
+    for ref in refs:
+        owner = ref if ref in by_owner else _light(snap, ref).get("owner", {}).get("rid")
+        if owner not in by_owner:
+            raise ValueError(f"{ref!r} cannot take part in a motion area")
+        candidates.append(by_owner[owner])
+    return candidates
+
+
 @action("set_motion_area")
 async def set_motion_area(api, snap, data):
-    area = resolve(await api.list("motion_area_configuration"), data["area"], "motion area")
-    await api.put("motion_area_configuration", area["id"], payloads.motion_area_put(data.get("name"), data.get("enabled")))
+    """Switches a MotionAware area on or off, renames it, changes its devices, or sets how sensitive it is.
+
+    An area only senses motion while its convenience service is on: switching that on is also what calibrates a new area (the bridge reports the
+    area ``healthy`` after about 25 seconds), so ``enabled`` is written to both the area and that service."""
+    area = _motion_area(await api.list("motion_area_configuration"), data["area"])
+    candidates = await _candidates(api, snap, data["lights"]) if data.get("lights") is not None else None
+    service = _area_service(area, "convenience_area_motion")
+    if (data.get("sensitivity") is not None or data.get("enabled") is not None) and service is None:
+        raise ValueError("This area has no motion service")
+    if data.get("name") is not None or data.get("enabled") is not None or candidates is not None:
+        await api.put("motion_area_configuration", area["id"], payloads.motion_area_put(data.get("name"), data.get("enabled"), candidates))
+    if data.get("enabled") is not None:
+        await api.put("convenience_area_motion", service, {"enabled": bool(data["enabled"])})
+    if data.get("sensitivity") is not None:
+        await api.put("convenience_area_motion", service, payloads.motion_sensitivity_put(int(data["sensitivity"])))
 
 
 @action("create_motion_area")
 async def create_motion_area(api, snap, data):
-    """Experimental: the way to create a motion area is not documented; see ``payloads.motion_area_post``."""
-    zone = resolve(snap.zone, data["zone"], "zone")
-    by_owner = {(c.get("owner") or {}).get("rid"): c["id"] for c in await api.list("motion_area_candidate")}
-    sensors = []
-    for ref in data["lights"]:
-        owner = _light(snap, ref).get("owner", {}).get("rid")
-        if owner not in by_owner:
-            raise ValueError(f"{ref!r} cannot take part in a motion area")
-        sensors.append(by_owner[owner])
-    return {"id": await api.post("motion_area_configuration", payloads.motion_area_post(data["name"], zone["id"], sensors))}
+    """A MotionAware area from three or four lights of a room or zone (each given as a light, the name of its device, or its device id)."""
+    group_type = data.get("group_type", "room")
+    group = _group(snap, group_type, data["group"])
+    candidates = await _candidates(api, snap, data["lights"])
+    return {"id": await api.post("motion_area_configuration", payloads.motion_area_post(data["name"], group["id"], group_type, candidates))}
+
+
+async def _area_automations(api: BridgeApi, area_id: str) -> list[dict[str, Any]]:
+    """The automations that use a MotionAware area as their motion source, read from the bridge now (not from the periodic read)."""
+    return [a for a in await api.list("behavior_instance") if ((a.get("configuration") or {}).get("source") or {}).get("rid") == area_id]
+
+
+def _motion_slot(snap: models.Snapshot, slot: dict[str, Any]) -> dict[str, Any]:
+    """One time of an area: ``{"time": "07:00"}`` or ``{"sun": "sunset", "offset_minutes": -30}``, a ``scene`` (none leaves the lights alone)."""
+    if not isinstance(slot, dict) or ("time" in slot) == ("sun" in slot):
+        raise ValueError('Each time is {"time": "07:00"} or {"sun": "sunset"}, with a scene and optionally off_after_minutes')
+    return {
+        "at": time.fromisoformat(str(slot["time"])) if "time" in slot else None,
+        "sun": slot.get("sun"),
+        "offset_minutes": slot.get("offset_minutes"),
+        "scene": resolve(snap.scene, slot["scene"], "scene")["id"] if slot.get("scene") else None,
+        "off_after_minutes": slot.get("off_after_minutes"),
+    }
+
+
+@action("set_motion_area_lights")
+async def set_motion_area_lights(api, snap, data):
+    """What a MotionAware area does when it senses motion: the scenes by time of day, when the lights go off again, and in which rooms.
+    Replaces the area's automation, or makes it."""
+    area = _motion_area(await api.list("motion_area_configuration"), data["area"])
+    groups = []
+    for ref in data["groups"]:
+        kind = "zone" if any(z["id"] == ref or models._name(z).casefold() == str(ref).casefold() for z in snap.zone) else "room"
+        groups.append((_group(snap, kind, ref)["id"], kind))
+    slots = [_motion_slot(snap, slot) for slot in data["slots"]]
+    configuration = payloads.motion_area_configuration(area["id"], groups, slots, data.get("dark_threshold"))
+    existing = await _area_automations(api, area["id"])
+    if existing:
+        await api.put("behavior_instance", existing[0]["id"], payloads.automation_put(None, configuration, data.get("enabled")))
+        return
+    script = next((x for x in snap.behavior_script if models._name(x) == payloads.MOTION_SENSOR_SCRIPT), None)
+    if script is None:
+        raise ValueError(f"This bridge has no {payloads.MOTION_SENSOR_SCRIPT!r} template")
+    await api.post(
+        "behavior_instance",
+        payloads.automation_post(script["id"], f"{models._name(area)} lights", configuration, data.get("enabled", True)),
+    )
 
 
 @action("delete_motion_area", destructive=True)
 async def delete_motion_area(api, snap, data):
-    await api.delete("motion_area_configuration", resolve(await api.list("motion_area_configuration"), data["area"], "motion area")["id"])
+    """Deletes the area and the automation that uses it as its motion source (the bridge keeps the automation otherwise)."""
+    area = _motion_area(await api.list("motion_area_configuration"), data["area"])
+    for automation in await _area_automations(api, area["id"]):
+        await api.delete("behavior_instance", automation["id"])
+    await api.delete("motion_area_configuration", area["id"])
 
 
 @action("set_streaming_end_state")
@@ -484,6 +559,15 @@ async def update_automation(api, snap, data):
     await api.put("behavior_instance", instance["id"], payloads.automation_put(data.get("name"), configuration, data.get("enabled")))
 
 
+@action("trigger_automation")
+async def trigger_automation(api, snap, data):
+    """The play button of the Hue app: starts or stops a wake up, go to sleep, timer or mimic presence automation, whether or not it is switched on."""
+    if data["action"] not in ("start", "stop"):
+        raise ValueError("The action is start or stop")
+    instance = resolve(snap.behavior_instance, data["automation"], "automation")
+    await api.put("behavior_instance", instance["id"], {"trigger": {data["action"]: True}})
+
+
 @action("delete_automation", destructive=True)
 async def delete_automation(api, snap, data):
     await api.delete("behavior_instance", resolve(snap.behavior_instance, data["automation"], "automation")["id"])
@@ -523,6 +607,18 @@ async def install_bridge_update(api, snap, data):
     await api.put_config(payloads.INSTALL_BRIDGE_UPDATE)
 
 
+@action("set_home_location")
+async def set_home_location(api, snap, data):
+    """Tells the bridge where home is. Sunrise and sunset, Coming home at night and the other location-based automations need it."""
+    latitude, longitude = float(data["latitude"]), float(data["longitude"])
+    if not (-90 <= latitude <= 90 and -180 <= longitude <= 180):
+        raise ValueError("The latitude is from -90 to 90 and the longitude from -180 to 180")
+    places = await api.list("geolocation")
+    if not places:
+        raise ValueError("This bridge has no location setting")
+    await api.put("geolocation", places[0]["id"], {"latitude": latitude, "longitude": longitude})
+
+
 @action("set_zigbee_channel", destructive=True)
 async def set_zigbee_channel(api, snap, data):
     """Changing the channel makes every light and accessory find the bridge again, and some may not."""
@@ -559,32 +655,53 @@ async def remove_matter_fabric(api, snap, data):
 # ---- anything else the bridge can do ----
 
 RAW_RESOURCES = (
-    "light",
-    "grouped_light",
-    "scene",
-    "smart_scene",
-    "room",
-    "zone",
-    "device",
     "behavior_instance",
-    "entertainment_configuration",
-    "matter",
-    "matter_fabric",
+    "behavior_script",
+    "behavior_script_formula",
+    "bell_button",
     "bridge",
+    "bridge_home",
     "button",
-    "relative_rotary",
-    "motion",
+    "camera_motion",
+    "clip",
+    "contact",
+    "convenience_area_motion",
+    "device",
+    "device_power",
+    "device_software_update",
+    "entertainment",
+    "entertainment_configuration",
     "geofence_client",
     "geolocation",
+    "grouped_light",
+    "grouped_light_level",
+    "grouped_motion",
+    "light",
+    "light_level",
+    "matter",
+    "matter_fabric",
+    "motion",
     "motion_area_candidate",
     "motion_area_configuration",
-    "clip",
+    "power_output_configuration",
+    "private_group",
+    "private_scene",
+    "relative_rotary",
+    "room",
+    "scene",
+    "security_area_motion",
+    "service_group",
+    "smart_scene",
     "sonos",
-    "device_power",
-    "light_level",
-    "temperature",
-    "contact",
+    "sonos_connectivity",
+    "speaker",
+    "switch_input_configuration",
     "tamper",
+    "temperature",
+    "zgp_connectivity",
+    "zigbee_connectivity",
+    "zigbee_device_discovery",
+    "zone",
 )
 
 
@@ -616,14 +733,16 @@ def _template(snap: models.Snapshot, kind: str) -> dict[str, Any]:
     return found[0]
 
 
-@action("create_routine", response=True)
-async def create_routine(api, snap, data):
-    """A wake-up, go-to-sleep or timer routine for a room or zone, made from the bridge's own template."""
-    kind = data["routine"]
+def _group_light_ids(snap: models.Snapshot, kind: str, group_id: str) -> list[str]:
+    """The lights of a room (the lights of its devices) or zone."""
+    return next((g["lights"] for g in models.groups(snap, kind) if g["id"] == group_id), [])
+
+
+def _routine_configuration(snap: models.Snapshot, kind: str, data: dict[str, Any]) -> dict[str, Any]:
     group_type = data.get("group_type", "room")
     group = _group(snap, group_type, data["group"])
     scene = resolve(snap.scene, data["scene"], "scene")["id"] if data.get("scene") else None
-    configuration = payloads.routine_configuration(
+    return payloads.routine_configuration(
         kind,
         group_id=group["id"],
         group_type=group_type,
@@ -633,9 +752,41 @@ async def create_routine(api, snap, data):
         end_brightness=data.get("end_brightness"),
         scene_id=scene,
         until=data.get("until"),
+        style=data.get("style"),
+        turn_off_after_minutes=data.get("turn_off_after_minutes"),
+        randomize_minutes=data.get("randomize_minutes"),
+        end_state=data.get("end_state"),
+        mode=data.get("mode"),
+        excluded_lights=data.get("excluded_lights"),
+        when_type=data.get("when_type"),
+        start_type=data.get("start_type") or "time",
+        until_type=data.get("until_type") or "time",
+        action=data.get("action") or "scene",
+        light_ids=_group_light_ids(snap, group_type, group["id"]),
     )
-    body = payloads.routine_post(_template(snap, kind)["id"], data["name"], configuration, data.get("enabled", True))
+
+
+@action("create_routine", response=True)
+async def create_routine(api, snap, data):
+    """A wake-up, go-to-sleep, timer, lighting schedule or home routine for a room or zone, made from the bridge's own template."""
+    kind = data["routine"]
+    body = payloads.routine_post(
+        _template(snap, kind)["id"], data["name"], _routine_configuration(snap, kind, data), data.get("enabled", True)
+    )
     return {"id": await api.post("behavior_instance", body)}
+
+
+@action("update_routine")
+async def update_routine(api, snap, data):
+    """Changes a routine made from one of the bridge's templates: the settings are written again as the template wants them."""
+    instance = resolve(snap.behavior_instance, data["automation"], "automation")
+    kinds = {name: kind for kind, name in payloads.ROUTINE_TEMPLATES.items()}
+    script = next((x for x in snap.behavior_script if x["id"] == instance.get("script_id")), None)
+    kind = kinds.get(models._name(script or {}))
+    if kind is None:
+        raise ValueError("Only a routine made from a wake-up, go-to-sleep, timer, schedule or home template can be changed this way")
+    configuration = _routine_configuration(snap, kind, data)
+    await api.put("behavior_instance", instance["id"], payloads.automation_put(data.get("name"), configuration, data.get("enabled")))
 
 
 def _time_slots(snap: models.Snapshot, given: Any, groups: list[str]) -> list[tuple[time, str]]:

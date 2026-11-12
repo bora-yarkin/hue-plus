@@ -4,6 +4,24 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-11-12
+
+### Added
+- **MotionAware areas, as in the Hue app** (Settings, Hue Plus, MotionAware areas; needs a Bridge Pro): *Create area* walks through the app's pages (advice, the room, three or four devices, *Leave the area*, calibrating, a name, what the area does, which lights, the default times). Calibration is switching the area's motion service on (the bridge reports the area healthy after about 25 seconds). An area's page has its name, on or off, its status, **Control lights** (times that start at a time of day, sunrise or sunset, each with a scene or no lights and an optional switch-off delay), **Motion-sensitive devices** (three or four; the bridge recalibrates), **Motion sensitivity** (Very low to Very high) and **Daylight settings** (Disabled, or Sunrise/Sunset with minutes before or after each), and *Delete* (which also deletes the area's automation). A bridge takes four areas and a device can be in one.
+- **Automations, as in the Hue app** (Routines and automations, *New automation*): Wake up (style, maximum brightness, fade, turn lights off after), Go to sleep (at a time or only by the play button; style, fade; ends with lights off, dimmed lights or a warm nightlight), Coming home (always or only at night), Leaving home, Mimic presence (one per bridge; all day or only when dark; ends with do nothing or lights off; rooms that were not chosen are switched off, as the app says), Timer and Lighting schedule (starts at a time, sunrise or sunset; optional end; On, Off or a scene; randomised times). They can be changed with the same pages (*Edit settings*), and wake up, go to sleep, timer and Mimic presence have **Start** and **Stop**, the app's play button.
+- **Rooms and zones** (Devices, Rooms and zones): create, rename, choose the devices or lights, delete.
+- **Bridges**: change the bridge's name and its Zigbee channel; a **Home location** row gives the bridge Home Assistant's home location (sunrise and sunset, and Coming home at night, need it).
+- Remove a light or a switch from the bridge, and delete an entertainment area.
+- Services `set_motion_area_lights`, `update_routine`, `trigger_automation` and `set_home_location`; `create_routine` takes `style`, `turn_off_after_minutes`, `end_state`, `mode`, `excluded_lights`, `when_type`, `start_type`, `until_type`, `action`, `until` and `randomize_minutes` and can make a Mimic presence routine; `set_motion_area` takes `lights` and `sensitivity`; `raw_request` accepts every resource the bridge lists. The requests are in `docs/bridge-findings.md`.
+
+### Fixed
+- Renaming a MotionAware area did nothing: the bridge wants `name`, not `metadata.name`. Creating one used a request the bridge does not accept.
+- Switching a MotionAware area on now switches its motion service on, which is what makes it run.
+
+### Changed
+- `create_motion_area` takes `group` (a room or zone) instead of `zone`, and the lights as devices; `update_routine` leaves `enabled` alone unless it is given.
+- The MotionAware area's page no longer has a light-level daylight setting (an area has no light sensor).
+
 ## [0.14.1] - 2026-11-10
 
 ### Fixed
