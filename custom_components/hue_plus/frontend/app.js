@@ -1,10 +1,10 @@
 /* The Hue dashboard panel. Built by scripts/build_menu.py from frontend/app and frontend/src; edit those files, not this one. */
 var HOST_ICONS = {"ac":"<path d='M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9'/>","alert":"<path d='M12 4l9 16H3z'/><path d='M12 10v4M12 17v.5'/>","apple":"<g transform='translate(2.4 2.4) scale(.8)' stroke-width='2'><path d='M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701'/></g>","apps":"<rect x='4' y='4' width='6.500' height='6.500' rx='1.500'/><rect x='13.500' y='4' width='6.500' height='6.500' rx='1.500'/><rect x='4' y='13.500' width='6.500' height='6.500' rx='1.500'/><rect x='13.500' y='13.500' width='6.500' height='6.500' rx='1.500'/>","axis":"<path d='M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3'/>","back":"<path d='M19 12H5M11 6l-6 6 6 6'/>","battery":"<rect x='7' y='6' width='10' height='15' rx='2'/><path d='M10 3h4v3h-4z'/>","bed":"<path d='M3 18V8M3 14h18v4M21 14v-3a3 3 0 0 0-3-3h-7v6'/>","bedking":"<path d='M3 19V6M21 19V6M3 14h18M6 14v-3h5v3M13 14v-3h5v3'/>","bedsingle":"<path d='M4 19V7M4 14h16v5M20 14v-2a3 3 0 0 0-3-3H9v5'/>","bell":"<path d='M6 17h12l-1.500-2V11a4.500 4.500 0 0 0-9 0v4z'/><path d='M10 20a2 2 0 0 0 4 0'/>","bright":"<circle cx='12' cy='12' r='4'/><path d='M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2'/>","broom":"<path d='M14 4l6 6M12 6l6 6-8 8H4v-6z'/>","cam":"<rect x='3' y='7' width='13' height='10' rx='2'/><path d='M16 11l5-3v8l-5-3'/>","camoff":"<path d='M4 7h11v10H4zM15 11l5-3v8l-5-3M3 3l18 18'/>","cctv":"<path d='M3 8l12-3 2 6-12 3zM17 10l4-1M9 15v4h6'/>","ceiling":"<path d='M12 3v4'/><path d='M4 14l3-7h10l3 7z'/><path d='M9 18v1M12 18v2M15 18v1'/>","chdown":"<path d='M6 9l6 6 6-6'/>","check":"<path d='M5 12l5 5 9-10'/>","chev":"<path d='M6 9l6 6 6-6'/>","chup":"<path d='M6 15l6-6 6 6'/>","clock":"<circle cx='12' cy='12' r='9'/><path d='M12 7v5l3 2'/>","close":"<path d='M6 6l12 12M18 6L6 18'/>","cog":"<circle cx='12' cy='12' r='3'/><path d='M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z'/>","down":"<path d='M12 5v14M6 13l6 6 6-6'/>","drag":"<path d='M5 8h14M5 12h14M5 16h14'/>","drop":"<path d='M12 3s6 6 6 10a6 6 0 0 1-12 0c0-4 6-10 6-10z'/>","edit":"<path d='M4 20l4-1 11-11-3-3L5 16z'/><path d='M14 6l3 3'/>","eq":"<path d='M4 10v4M8 6v12M12 3v18M16 7v10M20 10v4'/>","expand":"<path d='M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5'/>","eye":"<path d='M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z'/><circle cx='12' cy='12' r='3'/>","eyeoff":"<path d='M3 3l18 18'/><path d='M10.6 6.2A9.5 9.5 0 0 1 12 6c6.5 0 10 6 10 6a17 17 0 0 1-3.2 3.9M6.4 7.9A16.6 16.6 0 0 0 2 12s3.5 6 10 6a9.7 9.7 0 0 0 4-.9'/><path d='M9.9 9.9a3 3 0 0 0 4.2 4.2'/>","fan":"<circle cx='12' cy='12' r='1.8'/><path d='M12 10.2C12 6 14.5 4 17 5.2c-.8 2.6-2.4 4-5 5zM13.8 12c4.2 0 6 2.5 4.8 5-2.6-.8-4-2.4-4.8-5zM12 13.8c0 4.2-2.5 6-5 4.8.8-2.6 2.4-4 5-4.8zM10.2 12c-4.2 0-6-2.5-4.8-5 2.6.8 4 2.4 4.8 5z'/>","filter":"<path d='M4 6h16l-6 7v6l-4-2v-4z'/>","flood":"<path d='M4 6h16v4H4zM8 14l-2 6M12 14v6M16 14l2 6'/>","floor":"<path d='M12 21v-9M9 21h6'/><path d='M7 12l2-8h6l2 8z'/>","home":"<path d='M4 11l8-7 8 7v9H4z'/>","info":"<circle cx='12' cy='12' r='9'/><path d='M12 11v6M12 7.500v.5'/>","keyboard":"<rect x='2' y='6' width='20' height='12' rx='2'/><path d='M6 10h1M10 10h1M14 10h1M18 10h1M7 14h10'/>","lamp":"<path d='M8 21h8M12 21v-6'/><path d='M7 15h10l-2-9H9z'/>","leave":"<path d='M14 4h5v16h-5M10 8l-4 4 4 4M6 12h10'/>","left":"<path d='M19 12H5M11 6l-6 6 6 6'/>","light":"<path d='M9 18h6M10 21h4'/><path d='M8 14a6 6 0 1 1 8 0c-1 1-1.5 2-1.5 3h-5c0-1-.5-2-1.5-3z'/>","lights":"<path d='M9 18h6M10 21h4'/><path d='M8 14a6 6 0 1 1 8 0c-1 1-1.5 2-1.5 3h-5c0-1-.5-2-1.5-3z'/>","lock":"<rect x='5' y='11' width='14' height='9' rx='2'/><path d='M8 11V8a4 4 0 0 1 8 0v3'/>","media":"<rect x='3' y='5' width='18' height='12' rx='2'/><path d='M8 21h8'/>","mic":"<rect x='9' y='3' width='6' height='11' rx='3'/><path d='M5 11a7 7 0 0 0 14 0M12 18v3'/>","minus":"<path d='M5 12h14'/>","moon":"<path d='M20 14A8 8 0 1 1 10 4a6.500 6.500 0 0 0 10 10z'/>","motion":"<circle cx='12' cy='12' r='2'/><path d='M6 12a6 6 0 0 1 12 0M3 12a9 9 0 0 1 18 0'/>","movie":"<rect x='3' y='6' width='18' height='12' rx='2'/><path d='M3 10h18M8 6l-2 4M13 6l-2 4M18 6l-2 4'/>","mute":"<path d='M4 9v6h4l5 4V5L8 9z'/><path d='M17 9l5 6M22 9l-5 6'/>","next":"<path d='M18 5v14M6 5l10 7-10 7z'/>","note":"<path d='M9 18V5l11-2v13'/><circle cx='6' cy='18' r='3'/><circle cx='17' cy='16' r='3'/>","padlock":"<path class='shk' d='M8 11V8a4 4 0 0 1 8 0v3'/><rect x='5' y='11' width='14' height='9' rx='2'/><circle class='key' cx='12' cy='15.500' r='1' fill='currentColor' stroke='none'/>","palette":"<path d='M12 3a9 9 0 1 0 0 18c1.500 0 2-1 1.500-2s0-2 1.500-2h2a4 4 0 0 0 4-4c0-5-4-10-9-10z'/><circle cx='8' cy='10' r='1'/><circle cx='12' cy='7' r='1'/><circle cx='16' cy='10' r='1'/>","pause":"<path d='M8 5v14M16 5v14'/>","person":"<circle cx='12' cy='8' r='4'/><path d='M4 20c1-4 4-6 8-6s7 2 8 6'/>","phone":"<path d='M22 16.920v3a2 2 0 0 1-2.180 2 19.790 19.790 0 0 1-8.630-3.070 19.500 19.500 0 0 1-6-6 19.790 19.790 0 0 1-3.070-8.670A2 2 0 0 1 4.110 2h3a2 2 0 0 1 2 1.720 12.840 12.840 0 0 0 .7 2.810 2 2 0 0 1-.45 2.110L8.090 9.910a16 16 0 0 0 6 6l1.270-1.270a2 2 0 0 1 2.110-.45 12.840 12.840 0 0 0 2.810.7A2 2 0 0 1 22 16.920z'/>","pin":"<circle cx='12' cy='10' r='3'/><path d='M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z'/>","play":"<path d='M7 5l12 7-12 7z'/>","playc":"<circle cx='12' cy='12' r='9'/><path d='M10 8l6 4-6 4z'/>","playpause":"<path d='M4 5l6 7-6 7zM14 5v14M19 5v14'/>","plug":"<rect x='6' y='5' width='12' height='14' rx='3'/><path d='M10 9v2M14 9v2M10 15h4'/>","plus":"<path d='M12 5v14M5 12h14'/>","power":"<path d='M12 3v8'/><path d='M7 6.500a8 8 0 1 0 10 0'/>","powerset":"<path d='M12 3v8'/><path d='M7 6.500a8 8 0 1 0 10 0'/>","prev":"<path d='M6 5v14M18 5L8 12l10 7z'/>","printer":"<rect x='5' y='9' width='14' height='8' rx='2'/><path d='M8 9V4h8v5M8 17v3h8v-3'/>","pulsebars":"<path d='M4 12h.01M8 9v6M12 12h.01M16 6v12M20 12h.01'/>","purifier":"<rect x='5' y='3' width='14' height='18' rx='3'/><circle cx='12' cy='12' r='3'/>","rec":"<circle cx='12' cy='12' r='6'/>","repeat":"<path d='M17 3l3 3-3 3M20 6H8a4 4 0 0 0-4 4M7 21l-3-3 3-3M4 18h12a4 4 0 0 0 4-4'/>","restart":"<path d='M20 12a8 8 0 1 1-3-6.200M20 4v5h-5'/>","right":"<path d='M5 12h14M13 6l6 6-6 6'/>","rug":"<rect x='3' y='7' width='18' height='10' rx='1'/><path d='M3 10h18M3 14h18'/>","scene":"<circle cx='12' cy='12' r='9'/><circle cx='9' cy='10' r='1.4'/><circle cx='14.5' cy='8.8' r='1.4'/><circle cx='15.5' cy='14.5' r='1.4'/>","sd":"<path d='M7 3h8l4 4v14H7z'/><path d='M10 7v3M13 7v3'/>","search":"<circle cx='11' cy='11' r='7'/><path d='M20 20l-4-4'/>","sofa":"<path d='M4 12V9a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M3 12h18v6H3z'/>","sparkle":"<path d='M9 3l1.8 4.7L15.5 9.5l-4.7 1.8L9 16l-1.8-4.7L2.5 9.5l4.7-1.8z'/><path d='M18 13l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9z'/>","speaker":"<rect x='6' y='3' width='12' height='18' rx='3'/><circle cx='12' cy='14' r='3'/><path d='M10 7h4'/>","stop":"<rect x='6' y='6' width='12' height='12' rx='1'/>","strip":"<path d='M3 8h18v8H3z'/><path d='M6 11v2M10 11v2M14 11v2M18 11v2'/>","swap":"<path d='M7 7h12l-3-3M17 17H5l3 3'/>","syncring":"<path d='M17.500 6.500a8 8 0 1 0 2.300 5.500'/><circle cx='12' cy='12' r='3'/>","target":"<circle cx='12' cy='12' r='8'/><circle cx='12' cy='12' r='3'/>","thermo":"<path d='M10 14V5a2 2 0 0 1 4 0v9a4 4 0 1 1-4 0z'/>","trash":"<path d='M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13'/>","tune":"<path d='M4 7h10M18 7h2M4 17h4M12 17h8'/><circle cx='16' cy='7' r='2'/><circle cx='10' cy='17' r='2'/>","tv":"<rect x='3' y='5' width='18' height='12' rx='2'/><path d='M8 21h8'/>","undo":"<path d='M9 14 4 9l5-5'/><path d='M4 9h10.5a5.5 5.5 0 0 1 0 11H11'/>","up":"<path d='M12 19V5M6 11l6-6 6 6'/>","vac":"<circle cx='12' cy='12' r='8'/><circle cx='12' cy='12' r='3'/>","voldown":"<path d='M4 9v6h4l5 4V5L8 9z'/><path d='M16 9a4 4 0 0 1 0 6'/>","volup":"<path d='M4 9v6h4l5 4V5L8 9z'/><path d='M16 9a4 4 0 0 1 0 6M18.500 6.500a8 8 0 0 1 0 11'/>","walk":"<circle cx='13' cy='5' r='2'/><path d='M12 21l2-7-3-3 2-3 3 3h3M9 14l-2 7'/>","wave1":"<path d='M2 12c2.500-1.500 4.500-1.500 7 0s4.500 1.500 7 0 4.500-1.500 6 0'/>","wave2":"<path d='M2 12c2.500-3 4.500-3 7 0s4.500 3 7 0 4.500-3 6 0'/>","wave3":"<path d='M2 12c2.500-5 4.500-5 7 0s4.500 5 7 0 4.500-5 6 0'/>","wave4":"<path d='M2 12c1.200-8 2.300-8 3.500 0s2.300 8 3.500 0 2.300-8 3.500 0 2.300 8 3.500 0 2.300-8 3.500 0'/>","wrench":"<path d='M14 6a4 4 0 0 0 5 5l-9 9a2 2 0 0 1-3-3l9-9a4 4 0 0 0-2-2z'/>"};
-var HOST_CSS = ".hm .hm-bigi{width:48px;height:48px;border-radius:15px;display:flex;align-items:center;justify-content:center;flex:none;background:var(--f-raise)}.hm .hm-bigi svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.hm .hm-tt{min-width:0}.hm .hm-tt b{display:block;font-size:26px;font-weight:700;line-height:1.12;overflow-wrap:anywhere}.hm .hm-tt i{display:block;font-style:normal;font-size:var(--fs-m);color:var(--ink2);margin-top:3px}.hm .hm-label{font-size:var(--fs-xs);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);padding:16px 8px 8px}.hm .hm-group{background:var(--f-card);border:1px solid var(--f-line);border-radius:var(--r-m);overflow:hidden;margin-bottom:var(--sp)}.hm .hm-row{display:flex;align-items:center;gap:14px;min-height:62px;padding:10px 16px;transition:background .2s}.hm .hm-row+.hm-row{border-top:1px solid var(--f-line)}.hm .hm-row.tap{cursor:pointer;user-select:none}.hm .hm-row.tap:hover{background:var(--f-raise)}.hm .hm-row.tap:active{background:var(--f-line)}.hm .hm-row:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}.hm .hm-i{width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex:none;color:var(--ink)}.hm .hm-i svg,.hm .hm-c svg,.hm .hm-ck svg,.hm .hm-ni svg,.hm .hm-ti svg,.hm .hm-gear svg{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.hm .hm-i svg{width:24px;height:24px}.hm .hm-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.hm .hm-n{font-size:16px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hm .hm-s{font-size:var(--fs-s);color:var(--ink2);overflow-wrap:anywhere}.hm .hm-v{font-size:var(--fs-m);color:var(--ink2);white-space:nowrap;font-variant-numeric:tabular-nums}.hm .hm-c{width:20px;height:20px;flex:none;color:var(--ink2);display:flex;align-items:center}.hm .hm-c svg{width:18px;height:18px;transform:rotate(-90deg)}.hm .hm-row.stack{min-height:58px}.hm .hm-row.stack .hm-n{font-size:var(--fs-m);font-weight:600}.hm .hm-row.stack .hm-s{font-size:var(--fs-m)}.hm .hm-row.good .hm-s{color:#4ad07a}.hm .hm-row.danger .hm-n{color:#ff6b62}.hm .hm-ck{width:22px;height:22px;flex:none;color:var(--acc);opacity:0;transition:opacity .2s}.hm .hm-ck svg{width:22px;height:22px;stroke-width:2.2}.hm .hm-row.checked .hm-ck,.hm .hm-row.good .hm-ck{opacity:1}.hm .hm-row.good .hm-ck{color:#4ad07a}.hm .hm-sw{width:48px;height:28px;border-radius:14px;flex:none;background:var(--f-line2);position:relative;transition:background .2s}.hm .hm-sw i{position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35);transition:transform .2s}.hm .hm-row.on .hm-sw{background:var(--acc)}.hm .hm-row.on .hm-sw i{transform:translateX(20px)}.hm .hm-note{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;margin:var(--sp) 0;border-radius:var(--r-row);font-size:var(--fs-m);line-height:1.4;color:var(--ink2);background:color-mix(in srgb,var(--acc) 9%,var(--f-card));border:1px solid color-mix(in srgb,var(--acc) 32%,transparent)}.hm .hm-ni{width:20px;height:20px;flex:none;color:var(--acc);margin-top:1px}.hm .hm-ni svg{width:20px;height:20px}.hm .hm-actions{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 0 6px}.hm .hm-btn{min-width:min(260px,100%);padding:13px 28px;border-radius:999px;border:1px solid transparent;font:inherit;font-size:var(--fs-l);font-weight:600;cursor:pointer;color:var(--ink);transition:transform .1s,filter .2s}.hm .hm-btn:active{transform:scale(.97)}.hm .hm-btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}.hm .hm-btn.primary{background:var(--acc);color:var(--ckfg,#0e1013)}.hm .hm-btn.ghost{background:var(--f-raise);border-color:var(--f-line2)}.hm .hm-btn.danger{background:transparent;color:#ff6b62;border:1.5px solid #e5484d}.hm .hm-chips{display:flex;gap:8px;margin:0 0 var(--sp)}.hm .hm-chip{flex:1;padding:10px 0;border-radius:999px;border:1px solid var(--f-line2);background:var(--f-card);color:var(--ink);font:inherit;font-size:var(--fs-m);font-weight:600;cursor:pointer;transition:background .2s,color .2s}.hm .hm-chip.on{background:var(--acc);color:var(--ckfg,#0e1013);border-color:transparent}.hm .hm-tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp)}.hm .hm-tile{position:relative;min-height:116px;padding:14px;border-radius:var(--r-m);display:flex;flex-direction:column;justify-content:flex-end;gap:2px;background:var(--f-card);border:1px solid var(--f-line);cursor:pointer;user-select:none;transition:background .25s,border-color .25s}.hm .hm-tile b{font-size:var(--fs-l);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hm .hm-tile i{font-style:normal;font-size:var(--fs-s);color:var(--ink2)}.hm .hm-ti{position:absolute;left:14px;top:14px;width:30px;height:30px;color:var(--ink2)}.hm .hm-ti svg{width:28px;height:28px}.hm .hm-tile.on{background:color-mix(in srgb,#ffc15a 20%,var(--f-card));border-color:color-mix(in srgb,#ffc15a 60%,transparent)}.hm .hm-tile.on .hm-ti{color:#ffc15a}.hm .hm-gear{position:absolute;right:10px;top:10px;width:36px;height:36px;border-radius:50%;border:0;background:transparent;color:var(--ink2);display:flex;align-items:center;justify-content:center;cursor:pointer}.hm .hm-gear:hover{background:var(--f-raise)}.hm .hm-gear svg{width:20px;height:20px}.hm .hm-time{flex:1;min-height:44px;padding:8px 12px;border-radius:var(--r-row);border:1px solid var(--f-line2);background:var(--f-raise);color:var(--ink);font:inherit;font-size:var(--fs-l);font-variant-numeric:tabular-nums}.hm .hm-time:focus-visible{outline:2px solid var(--acc);outline-offset:1px}:root{--bg:#0b0d12;--bg2:#10131b;--f-card:#1a1d25;--f-raise:#252933;--f-line:#2a2f3a;--f-line2:#3b4252;--ink:#f4f6fa;--ink2:#9aa3b2;--acc:#2f6bff;--ckfg:#fff;--warm:#ffc15a;--r-s:12px;--r-m:16px;--r-l:20px;--r-xl:26px;--r-row:14px;--sp:10px;--sp-s:8px;--sp-l:12px;--sp-head:14px 6px 8px;--fs-xs:11px;--fs-s:12.5px;--fs-m:13.5px;--fs-l:15px;--sab:max(var(--safe-area-inset-bottom,0px),env(safe-area-inset-bottom,0px));--sat:max(var(--safe-area-inset-top,0px),env(safe-area-inset-top,0px));--tabs:64px}*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.35 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}hue-plus-panel{display:block;min-height:100vh}button{font:inherit;color:inherit}svg{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.ic{display:flex;align-items:center;justify-content:center;flex:none}.ic svg{width:24px;height:24px}#hp{min-height:100vh;display:flex;flex-direction:column;background:radial-gradient(120% 60% at 50% -10%,#16204a 0%,var(--bg) 60%)}#hp .top{padding:calc(var(--sat,0px) + 22px) 20px 6px;width:100%;max-width:760px;margin:0 auto;box-sizing:border-box;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}#hp .top h1{margin:0;font-size:32px;font-weight:700;letter-spacing:-.01em}#hp .top .sub{font-size:var(--fs-m);color:var(--ink2);margin-top:2px}#hp main{flex:1;padding:8px 16px calc(var(--tabs) + var(--sab,0px) + 28px);width:100%;max-width:760px;margin:0 auto}#hp nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;justify-content:center;background:rgba(14,16,22,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--f-line);padding-bottom:var(--sab,0px)}#hp nav.tabs .in{display:flex;width:100%;max-width:760px}#hp nav.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px 8px;background:none;border:0;color:var(--ink2);cursor:pointer;font-size:10px;letter-spacing:.06em;text-transform:uppercase}#hp nav.tabs button svg{width:25px;height:25px}#hp nav.tabs button.on{color:var(--ink)}#hp nav.tabs button:focus-visible{outline:2px solid var(--acc);outline-offset:-3px;border-radius:10px}.hp-label{font-size:var(--fs-xs);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);padding:18px 6px 8px}.hp-empty{color:var(--ink2);text-align:center;padding:36px 12px;font-size:var(--fs-l)}.hp-rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:var(--sp-l)}.rcard{position:relative;background:var(--f-card);border:1px solid var(--f-line);border-radius:var(--r-l);padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px;cursor:pointer;min-height:118px;transition:background .2s,border-color .2s}.rcard.on{background:linear-gradient(180deg,color-mix(in srgb,var(--warm) 16%,var(--f-card)),var(--f-card));border-color:color-mix(in srgb,var(--warm) 38%,var(--f-line))}.rcard .rh{display:flex;align-items:center;gap:12px}.rcard .rh .ic{width:44px;height:44px;border-radius:14px;background:var(--f-raise);color:var(--ink2)}.rcard.on .rh .ic{background:color-mix(in srgb,var(--warm) 30%,var(--f-raise));color:var(--warm)}.rcard .rn{flex:1;min-width:0}.rcard .rn b{display:block;font-size:17px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rcard .rn i{display:block;font-style:normal;font-size:var(--fs-s);color:var(--ink2)}.rcard:focus-visible{outline:2px solid var(--acc);outline-offset:2px}.sw{width:50px;height:30px;border-radius:15px;flex:none;background:var(--f-line2);position:relative;cursor:pointer;border:0;padding:0;transition:background .2s}.sw i{position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .2s}.sw.on{background:var(--acc)}.sw.on i{transform:translateX(20px)}.sw:focus-visible{outline:2px solid var(--acc);outline-offset:2px}.bar{position:relative;height:38px;border-radius:19px;background:var(--f-raise);overflow:hidden;touch-action:pan-y;cursor:pointer}.bar .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,color-mix(in srgb,var(--warm) 60%,#fff),var(--warm));border-radius:inherit;transition:width .12s}.bar .vl{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:var(--fs-s);font-weight:600;color:#fff;text-shadow:0 0 3px rgba(0,0,0,.55);pointer-events:none}.bar.off .fill{width:0!important}.hp-big{position:relative;height:60px;border-radius:30px;background:var(--f-raise);overflow:hidden;touch-action:pan-y;cursor:pointer}.hp-big .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,color-mix(in srgb,var(--warm) 55%,#fff),var(--warm));transition:width .12s}.hp-big .vl{position:absolute;left:22px;top:50%;transform:translateY(-50%);font-weight:600;color:#1a1306}.hp-big.dim .vl{color:var(--ink)}.stiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:var(--sp)}.stile{position:relative;border-radius:var(--r-m);background:var(--f-card);border:1px solid var(--f-line);aspect-ratio:1.05;display:flex;flex-direction:column;justify-content:flex-end;padding:10px 12px;cursor:pointer;overflow:hidden;text-align:left;color:inherit}.stile .sw2{position:absolute;left:12px;top:12px;display:flex}.stile .sw2 i{width:22px;height:22px;border-radius:50%;border:2px solid var(--f-card);margin-right:-7px;background:var(--c,#888)}.stile b{font-size:var(--fs-m);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}.stile.add{align-items:center;justify-content:center;color:var(--ink2);border-style:dashed}.stile.add .ic svg{width:28px;height:28px}.stile.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset}.stile:focus-visible{outline:2px solid var(--acc);outline-offset:2px}.ltiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:var(--sp)}.ltile{position:relative;border-radius:var(--r-m);background:var(--f-card);border:1px solid var(--f-line);min-height:132px;padding:12px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;transition:background .2s}.ltile .top2{display:flex;align-items:flex-start;justify-content:space-between}.ltile .ic{color:var(--ink2)}.ltile b{font-size:var(--fs-m);font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ltile>div>i{font-style:normal;font-size:var(--fs-s);color:var(--ink2)}.ltile.on{background:color-mix(in srgb,var(--warm) 18%,var(--f-card));border-color:color-mix(in srgb,var(--warm) 45%,var(--f-line))}.ltile.on .ic{color:var(--warm)}.ltile.gone{opacity:.5}.ltile:focus-visible{outline:2px solid var(--acc);outline-offset:2px}.hp-wheel{display:flex;justify-content:center;padding:6px 0 14px}.hp-wheel canvas{width:min(300px,78vw);height:min(300px,78vw);border-radius:50%;touch-action:none;cursor:crosshair}.hp-chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 var(--sp)}.hp-chip{padding:9px 16px;border-radius:999px;border:1px solid var(--f-line2);background:var(--f-card);color:var(--ink);cursor:pointer;font-size:var(--fs-m);font-weight:600}.hp-chip.on{background:var(--acc);border-color:transparent;color:var(--ckfg)}.hp-chip:focus-visible{outline:2px solid var(--acc);outline-offset:2px}.hp-track{height:34px;border-radius:17px;position:relative;touch-action:pan-y;margin:8px 0 14px;cursor:pointer}.hp-track .knob{position:absolute;top:3px;bottom:3px;width:28px;margin-left:-14px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.5)}.hp-track.kel{background:linear-gradient(90deg,#ffb35c,#fff3e0,#bfd9ff)}.pill{position:relative;display:flex;align-items:center;gap:12px;min-height:58px;padding:8px 16px;background:var(--f-card);border:1px solid var(--f-line);border-radius:var(--r-row);margin-bottom:var(--sp);cursor:pointer;overflow:hidden;color:var(--ink)}.pill.static{cursor:default}.pill .tx{flex:1;min-width:0;display:flex;flex-direction:column;position:relative;z-index:1}.pill .nm{font-size:16px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pill .sb{font-size:var(--fs-s);color:var(--ink2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pill .vl{font-size:var(--fs-m);color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap;position:relative;z-index:1}.pill .ic{position:relative;z-index:1;color:var(--ink)}.pill.on{background:color-mix(in srgb,var(--warm) 14%,var(--f-card))}.pill .ck{width:22px;height:22px;flex:none;color:var(--acc);opacity:0;display:flex}.pill .ck svg{width:22px;height:22px;stroke-width:2.2}.pill.checked .ck{opacity:1}.pill .chev{width:20px;height:20px;color:var(--ink2);display:flex}.pill .chev svg{width:18px;height:18px;transform:rotate(-90deg)}.pill:focus-visible{outline:2px solid var(--acc);outline-offset:2px}.pill.slide{touch-action:pan-y}.pill.slide .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:color-mix(in srgb,var(--acc) 45%,var(--f-card));transition:width .15s;z-index:0}.pill.slide .fill:after{content:\"\";position:absolute;right:0;top:12px;bottom:12px;width:3px;border-radius:3px;background:rgba(255,255,255,.7)}.sep{display:flex;align-items:center;gap:10px;font-size:var(--fs-xs);letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--ink2);margin:var(--sp-head)}.sep svg{width:17px;height:17px}.sep:after{content:\"\";flex:1;height:1px;background:var(--f-line)}.hint{font-size:var(--fs-s);color:var(--ink2);margin:0 6px var(--sp)}.notec.pane.dim{font-size:var(--fs-m);color:var(--ink2);line-height:1.45;padding:2px 6px 14px}.sqw.pane{background:var(--f-card);border:1px solid var(--f-line);border-radius:var(--r-row);padding:4px 14px;margin-bottom:var(--sp)}.sq{width:100%;min-height:48px;background:none;border:0;color:var(--ink);font:inherit;font-size:var(--fs-l);outline:none}.gridl{display:grid;gap:var(--sp)}.gridl.g2{grid-template-columns:1fr 1fr}.chev{display:flex}.scrim{position:fixed;inset:0;opacity:0;transition:opacity .25s;z-index:40;background:rgba(0,0,0,.6)}.scrim.in{opacity:1}.dlg{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:70;width:min(380px,88%);border-radius:var(--r-xl);padding:22px;text-align:center;background:var(--f-raise);border:1px solid var(--f-line2)}.dlg p{margin:0 0 18px;font-size:var(--fs-l)}.dlg .rrow{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp)}.rbtn{min-height:48px;display:flex;align-items:center;justify-content:center;border-radius:999px;background:var(--f-card);border:1px solid var(--f-line2);cursor:pointer;font-weight:600;user-select:none}.rbtn.go{background:var(--acc);border-color:transparent;color:var(--ckfg)}.toast{position:fixed;left:50%;bottom:calc(var(--tabs) + var(--sab,0px) + 20px);transform:translate(-50%,10px);padding:10px 18px;border-radius:999px;font-size:var(--fs-m);z-index:90;opacity:0;transition:opacity .25s,transform .25s;background:var(--f-raise);border:1px solid var(--f-line2);max-width:90vw;text-align:center}.toast.in{opacity:1;transform:translate(-50%,0)}.sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;max-height:94vh;display:flex;flex-direction:column;background:var(--bg2);border-radius:26px 26px 0 0;border:1px solid var(--f-line);border-bottom:0;transform:translateY(24px);opacity:0;transition:transform .28s,opacity .28s;padding-bottom:var(--sab,0px)}.sheet.in{transform:none;opacity:1}@media(min-width:760px){.sheet{left:50%;right:auto;width:600px;transform:translate(-50%,24px)}.sheet.in{transform:translate(-50%,0)}}.sheet .shead{display:flex;align-items:center;gap:10px;padding:14px 14px 8px}.sheet .shead .ttl{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:999px;background:var(--f-card);font-weight:600;font-size:var(--fs-l)}.sheet .shead .ttl span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sheet .shead .ttl .ic svg{width:20px;height:20px}.sheet .rb{width:42px;height:42px;border-radius:50%;border:0;background:var(--f-card);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}.sheet .rb svg{width:20px;height:20px}.sheet .rb:focus-visible{outline:2px solid var(--acc);outline-offset:2px}.sheet .sbody{overflow:auto;padding:4px 14px 24px;flex:1;-webkit-overflow-scrolling:touch}@media(prefers-reduced-motion:reduce){*{transition:none!important}}";
+var HOST_CSS = ":root{--bg:#1b1c20;--bg-warm:#2b2926;--bar:#14151a;--head:#232429;--row:#25262a;--row-hi:#2d2e33;--tile:#3a3b3e;--tile-low:#2c2d30;--line:#33343a;--ink:#f4f4f6;--ink2:#a9a9af;--label:#8f8f95;--acc:#2e68f7;--gold1:#fbdb90;--gold2:#d6ab5b;--gold-ink:#2a2116;--f-card:var(--row);--f-raise:var(--row-hi);--f-line:var(--line);--f-line2:#45464d;--ckfg:#fff;--warm:#f6cd72;--r-s:10px;--r-m:14px;--r-l:18px;--r-xl:22px;--r-row:12px;--sp:10px;--sp-s:8px;--sp-l:12px;--sp-head:14px 6px 8px;--fs-xs:11px;--fs-s:13px;--fs-m:14px;--fs-l:16px;--sab:max(var(--safe-area-inset-bottom,0px),env(safe-area-inset-bottom,0px));--sat:max(var(--safe-area-inset-top,0px),env(safe-area-inset-top,0px));--tabs:58px}*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.35 -apple-system,BlinkMacSystemFont,\"SF Pro Text\",\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}hue-plus-panel{display:block;height:100vh}button{font:inherit;color:inherit}svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.ic{display:flex;align-items:center;justify-content:center;flex:none}.ic svg{width:24px;height:24px}#hp{position:fixed;inset:0;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--bg-warm) 0,var(--bg) 420px)}#hp .view{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:calc(var(--sat) + 14px) 16px calc(var(--tabs) + var(--sab) + 28px)}#hp .view>.in{max-width:760px;margin:0 auto}#hp nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;justify-content:center;background:var(--bar);padding-bottom:var(--sab)}#hp nav.tabs .in{display:flex;width:100%;max-width:760px}#hp nav.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 2px 8px;background:none;border:0;color:#5d5e66;cursor:pointer;font-size:9.5px;letter-spacing:.03em;text-transform:uppercase}#hp nav.tabs button svg{width:25px;height:25px}#hp nav.tabs button.on{color:#fff}#hp nav.tabs button:focus-visible{outline:2px solid var(--acc);outline-offset:-3px;border-radius:10px}.hd{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:6px 0 4px}.hd h1{margin:0;font-size:29px;font-weight:700;letter-spacing:-.01em;line-height:1.15}.hd .acts{display:flex;align-items:center;gap:10px;margin-left:auto}.top{display:flex;justify-content:flex-end;gap:10px;min-height:30px;margin-bottom:10px}.lb{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--label);margin:28px 4px 10px}.empty{color:var(--ink2);text-align:center;padding:36px 12px;font-size:var(--fs-l)}.rbt{width:30px;height:30px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0}.rbt svg{width:17px;height:17px}.rbt.dk{background:var(--tile)}.rbt:focus-visible{outline:2px solid #fff;outline-offset:2px}.tg{width:47px;height:29px;border-radius:15px;flex:none;background:#56575c;position:relative;cursor:pointer;border:0;padding:0;transition:background .2s}.tg i{position:absolute;left:2px;top:2px;width:25px;height:25px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .2s}.tg.on{background:var(--acc)}.tg.on i{transform:translateX(18px)}.tg:focus-visible{outline:2px solid #fff;outline-offset:2px}.sl{position:relative;height:18px;touch-action:pan-y;cursor:pointer;display:flex;align-items:center}.sl:before{content:\"\";position:absolute;left:0;right:0;height:8px;border-radius:4px;background:rgba(255,255,255,.16)}.sl .kn{position:absolute;top:0;width:18px;height:18px;margin-left:-9px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.45);left:0}.rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}.room{position:relative;background:var(--tile);border-radius:var(--r-l);padding:16px 18px 14px;display:flex;flex-direction:column;gap:14px;cursor:pointer;min-height:92px;transition:background .25s;color:#fff}.room .rh{display:flex;align-items:center;gap:20px}.room .rh .ic svg{width:28px;height:28px}.room .rn{flex:1;min-width:0;font-size:17px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.room:focus-visible{outline:2px solid #fff;outline-offset:2px}.on-gold{background:linear-gradient(180deg,var(--gold1) 0,var(--gold2) 100%);color:var(--gold-ink)}.on-gold .tg{background:rgba(70,52,12,.38)}.on-gold .tg.on{background:rgba(70,52,12,.38)}.on-gold .sl:before{background:rgba(70,52,12,.22)}.rhead{padding:calc(var(--sat) + 10px) 16px 16px;border-radius:0 0 22px 22px;background:linear-gradient(180deg,var(--tile) 0,var(--tile-low) 100%);color:#fff;transition:background .25s}.rhead.on-gold{box-shadow:0 8px 24px rgba(0,0,0,.35)}.rhead .rr{display:flex;align-items:center;gap:10px}.rhead .rr .nm{flex:1;min-width:0;font-size:17px;font-weight:500;margin-left:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rhead .rr .tg{margin-left:4px}.rhead .sl{margin-top:20px}.rhead.on-gold .rbt{background:rgba(255,255,255,.34);color:#fff}.rbody{padding:4px 16px calc(var(--sab) + 40px);max-width:760px;margin:0 auto}.stiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px}.stile{position:relative;border-radius:var(--r-m);background:var(--tile);height:104px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 6px 12px;cursor:pointer;overflow:hidden;color:#fff;text-align:center}.stile .dots{position:absolute;left:0;right:0;top:12px;display:flex;flex-wrap:wrap;justify-content:center;gap:5px 6px;padding:0 10px}.stile .dots i{width:20px;height:20px;border-radius:50%;background:var(--c,#888)}.stile b{font-size:14px;font-weight:500;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}.stile .gear{position:absolute;right:6px;top:6px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:inherit;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}.stile .gear svg{width:14px;height:14px}.stile.add{background:transparent;border:2px dashed #4a4b50;color:var(--ink2);justify-content:center;padding:0}.stile.add svg{width:28px;height:28px}.stile:focus-visible{outline:2px solid #fff;outline-offset:2px}.ltiles{display:flex;gap:12px;overflow-x:auto;padding:0 0 6px;margin:0 -16px;padding-left:16px;padding-right:16px;scrollbar-width:none}.ltiles::-webkit-scrollbar{display:none}.ltile{flex:none;width:96px;height:150px;border-radius:var(--r-m);background:var(--tile);color:#fff;display:flex;flex-direction:column;overflow:hidden;cursor:pointer;transition:background .25s}.ltile .up{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px 6px 4px;min-height:0}.ltile .up .ic svg{width:28px;height:28px}.ltile .up b{font-size:13.5px;font-weight:500;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ltile .dn{height:52px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.14)}.ltile.on-gold{background:linear-gradient(180deg,var(--gold1) 0,var(--gold2) 100%)}.ltile.gone{opacity:.5}.ltile:focus-visible{outline:2px solid #fff;outline-offset:2px}.ctiles{display:flex;flex-wrap:wrap;gap:12px}.ctile{width:calc(50% - 6px);max-width:150px;min-height:104px;border-radius:var(--r-m);background:var(--tile);padding:12px 12px 12px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;color:#fff}.ctile .ic{justify-content:flex-start}.ctile .ic svg{width:26px;height:26px}.ctile b{display:block;font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ctile i{display:block;font-style:normal;font-size:13px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ctile:focus-visible{outline:2px solid #fff;outline-offset:2px}.addgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:6px 16px 24px}.addgrid .atile{aspect-ratio:1.5;border-radius:var(--r-m);background:var(--tile);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;font-size:14px;font-weight:500;color:#fff}.atile .ci{width:48px;height:48px;border-radius:50%;background:#101114;display:flex;align-items:center;justify-content:center}.atile .ci svg{width:24px;height:24px}.atile:focus-visible{outline:2px solid #fff;outline-offset:2px}.lightframe{position:fixed;left:0;right:0;bottom:0;top:0;z-index:55;border:0;width:100%;height:100%;background:transparent;display:none}.lightframe.show{display:block}.pg{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:var(--bg);transform:translateX(24px);opacity:0;transition:transform .22s cubic-bezier(.2,.8,.2,1),opacity .18s}.pg.in{transform:none;opacity:1}.pg .pbar{display:flex;align-items:center;gap:14px;background:var(--head);padding:calc(var(--sat) + 10px) 16px 12px;flex:none}.pg .pbar .rbt{background:var(--tile);width:32px;height:32px}.pg .pbar .rbt svg{width:17px;height:17px;stroke-width:2.2}.pg .pbar .ttl{flex:1;min-width:0;font-size:15.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pg .pbar .ttl .ic{display:none}.pg .pbar .act{border:0;background:var(--tile);color:#fff;border-radius:16px;padding:8px 17px;font-size:13px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;cursor:pointer}.pg .pbar .act:disabled{opacity:.5;cursor:default}.pg .pbody{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 0 calc(var(--sab) + 32px)}.pg .pbody>*{max-width:760px;margin-left:auto;margin-right:auto}.pg.bare .pbar{background:transparent}@media(prefers-reduced-motion:reduce){*{transition:none!important}}.pill{position:relative;display:flex;align-items:center;gap:14px;min-height:62px;padding:10px 18px;background:var(--row);cursor:pointer;overflow:hidden}.pill+.pill{border-top:1px solid var(--line)}.pill.static{cursor:default}.pill .tx{flex:1;min-width:0;display:flex;flex-direction:column;position:relative;z-index:1}.pill .nm{font-size:16px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pill .sb{font-size:var(--fs-s);color:var(--ink2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pill .vl{font-size:var(--fs-m);color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap;position:relative;z-index:1}.pill>.ic{position:relative;z-index:1;width:40px;height:40px;border-radius:50%;background:#101114;color:#fff}.pill>.ic svg{width:21px;height:21px}.pill.on>.ic{background:var(--gold1);color:var(--gold-ink)}.pill .ck{width:22px;height:22px;flex:none;color:var(--acc);opacity:0;display:flex}.pill .ck svg{width:22px;height:22px;stroke-width:2.4}.pill.checked .ck{opacity:1}.pill:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}.pill.slide{touch-action:pan-y}.pill.slide .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(46,104,247,.38);transition:width .15s;z-index:0}.pill.slide .fill:after{content:\"\";position:absolute;right:0;top:12px;bottom:12px;width:3px;border-radius:3px;background:rgba(255,255,255,.75)}.sep{display:flex;align-items:center;gap:8px;font-size:var(--fs-xs);letter-spacing:.18em;text-transform:uppercase;color:var(--label);margin:26px 18px 10px}.sep svg{display:none}.hint{font-size:var(--fs-s);color:var(--ink2);margin:10px 18px}.notec.pane.dim{font-size:var(--fs-m);color:var(--ink2);line-height:1.45;padding:14px 18px}.sqw.pane{background:var(--row);padding:4px 18px}.sq{width:100%;min-height:52px;background:none;border:0;color:var(--ink);font:inherit;font-size:var(--fs-l);outline:none}.gridl{display:grid;gap:var(--sp);padding:0 16px}.gridl.g2{grid-template-columns:1fr 1fr}.chev{display:flex}.pane{position:relative}.scrim{position:fixed;inset:0;opacity:0;transition:opacity .25s;z-index:80;background:rgba(0,0,0,.6)}.scrim.in{opacity:1}.dlg{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:90;width:min(360px,88%);border-radius:var(--r-xl);padding:22px;text-align:center;background:var(--head);box-shadow:0 20px 50px rgba(0,0,0,.5)}.dlg p{margin:0 0 20px;font-size:var(--fs-l);line-height:1.4}.dlg .rrow{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp)}.rbtn{min-height:46px;display:flex;align-items:center;justify-content:center;border-radius:999px;background:var(--tile);cursor:pointer;font-weight:600;user-select:none}.rbtn.go{background:var(--acc);color:#fff}.toast{position:fixed;left:50%;bottom:calc(var(--tabs) + var(--sab) + 18px);transform:translate(-50%,10px);padding:11px 18px;border-radius:999px;font-size:var(--fs-m);z-index:95;opacity:0;transition:opacity .25s,transform .25s;background:var(--tile);max-width:90vw;text-align:center}.toast.in{opacity:1;transform:translate(-50%,0)}.hm{padding:0 0 24px}.hm .hm-bigi{width:40px;height:40px;display:flex;align-items:center;justify-content:center;flex:none;color:#fff}.hm .hm-bigi svg{width:34px;height:34px}.hm .hm-title{padding:18px 18px 8px}.hm .hm-tt{min-width:0;display:block;margin-top:6px}.hm .hm-tt b{display:block;font-size:30px;font-weight:700;line-height:1.1;overflow-wrap:anywhere}.hm .hm-tt i{display:block;font-style:normal;font-size:var(--fs-m);color:var(--ink2);margin-top:6px}.hm .hm-label{font-size:var(--fs-xs);letter-spacing:.18em;text-transform:uppercase;color:var(--label);padding:26px 18px 10px}.hm .hm-group{background:var(--row);margin:0;border:0;border-radius:0}.hm .hm-row{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 18px;transition:background .2s}.hm .hm-row+.hm-row{border-top:1px solid var(--line)}.hm .hm-row.tap{cursor:pointer;user-select:none}.hm .hm-row.tap:active{background:var(--row-hi)}.hm .hm-row:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}.hm .hm-i{width:40px;height:40px;border-radius:50%;background:#101114;display:flex;align-items:center;justify-content:center;flex:none;color:#fff}.hm .hm-i svg,.hm .hm-c svg,.hm .hm-ck svg,.hm .hm-ni svg,.hm .hm-ti svg,.hm .hm-gear svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.hm .hm-i svg{width:21px;height:21px}.hm .hm-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.hm .hm-n{font-size:16px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hm .hm-s{font-size:var(--fs-s);color:var(--ink2);overflow-wrap:anywhere}.hm .hm-v{font-size:var(--fs-m);color:var(--ink2);white-space:nowrap;font-variant-numeric:tabular-nums}.hm .hm-c{width:20px;height:20px;flex:none;color:var(--ink2);display:flex;align-items:center}.hm .hm-c svg{width:18px;height:18px;transform:rotate(-90deg)}.hm .hm-row.stack{min-height:58px}.hm .hm-row.good .hm-s{color:#6dd58c}.hm .hm-row.danger .hm-n{color:#ff6b62}.hm .hm-ck{width:22px;height:22px;flex:none;color:var(--acc);opacity:0;transition:opacity .2s}.hm .hm-ck svg{width:22px;height:22px;stroke-width:2.4}.hm .hm-row.checked .hm-ck,.hm .hm-row.good .hm-ck{opacity:1}.hm .hm-row.good .hm-ck{color:#6dd58c}.hm .hm-sw{width:47px;height:29px;border-radius:15px;flex:none;background:#56575c;position:relative;transition:background .2s}.hm .hm-sw i{position:absolute;left:2px;top:2px;width:25px;height:25px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .2s}.hm .hm-row.on .hm-sw{background:var(--acc)}.hm .hm-row.on .hm-sw i{transform:translateX(18px)}.hm .hm-note{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;margin:16px 16px;border-radius:var(--r-row);font-size:var(--fs-m);line-height:1.4;color:var(--ink2);background:rgba(46,104,247,.1);border:1px solid rgba(46,104,247,.4)}.hm .hm-ni{width:20px;height:20px;flex:none;color:var(--acc);margin-top:1px}.hm .hm-ni svg{width:20px;height:20px}.hm .hm-actions{display:flex;flex-direction:column;align-items:center;gap:12px;padding:26px 0 6px}.hm .hm-btn{min-width:120px;padding:10px 26px;border-radius:999px;border:1px solid transparent;font:inherit;font-size:var(--fs-m);font-weight:600;cursor:pointer;color:#fff;transition:transform .1s,filter .2s}.hm .hm-btn:active{transform:scale(.97)}.hm .hm-btn:focus-visible{outline:2px solid #fff;outline-offset:2px}.hm .hm-btn.primary{background:var(--acc)}.hm .hm-btn.ghost{background:var(--tile)}.hm .hm-btn.danger{background:transparent;color:#ff6b62;border:1.5px solid #e5484d}.hm .hm-chips{display:flex;gap:8px;margin:0 16px 10px}.hm .hm-chip{flex:1;padding:10px 0;border-radius:999px;border:0;background:var(--tile);color:#fff;font:inherit;font-size:var(--fs-m);font-weight:600;cursor:pointer;transition:background .2s}.hm .hm-chip.on{background:var(--acc)}.hm .hm-tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:0 16px}.hm .hm-tile{position:relative;min-height:116px;padding:14px;border-radius:var(--r-m);display:flex;flex-direction:column;justify-content:flex-end;gap:2px;background:var(--tile);cursor:pointer;user-select:none;transition:background .2s}.hm .hm-tile b{font-size:var(--fs-l);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hm .hm-tile i{font-style:normal;font-size:var(--fs-s);color:var(--ink2)}.hm .hm-ti{position:absolute;left:14px;top:14px;width:30px;height:30px}.hm .hm-ti svg{width:28px;height:28px}.hm .hm-tile.on{background:linear-gradient(180deg,var(--gold1),var(--gold2));color:var(--gold-ink)}.hm .hm-tile.on i{color:rgba(42,33,22,.7)}.hm .hm-gear{position:absolute;right:10px;top:10px;width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.1);color:inherit;display:flex;align-items:center;justify-content:center;cursor:pointer}.hm .hm-gear svg{width:18px;height:18px}.hm .hm-time{flex:1;min-height:44px;padding:8px 12px;border-radius:var(--r-row);border:0;background:var(--tile);color:#fff;font:inherit;font-size:var(--fs-l);font-variant-numeric:tabular-nums}.hm .hm-time:focus-visible{outline:2px solid var(--acc);outline-offset:1px}.bar{position:relative;height:40px;border-radius:20px;background:var(--tile);overflow:hidden;touch-action:pan-y;cursor:pointer}.bar .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,var(--gold1),var(--gold2));border-radius:inherit;transition:width .12s}.bar .vl{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:var(--fs-s);font-weight:600;color:#fff;text-shadow:0 0 3px rgba(0,0,0,.6);pointer-events:none}.bar.off .fill{width:0!important}.asheet{position:fixed;left:8px;right:8px;bottom:calc(var(--sab) + 8px);z-index:90;max-width:520px;margin:0 auto;background:var(--head);border-radius:var(--r-xl);overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.5)}.arow{display:block;width:100%;min-height:56px;border:0;background:none;color:#fff;font-size:17px;cursor:pointer;border-top:1px solid var(--line)}.arow:first-child{border-top:0}.arow.danger{color:#ff6b62}.arow.cancel{font-weight:600}.pg.roompg .pbar{display:none}.pg.roompg .pbody{padding:0 0 calc(var(--sab) + 24px)}.pg.roompg .pbody>*{max-width:none}.pg.roompg .rhead{position:sticky;top:0;z-index:5}.pg.roompg .rbody{max-width:760px}#hp .view .hm .hm-group{margin-left:-16px;margin-right:-16px}#hp .view .hm .hm-label{padding-left:20px}.room.on-gold,.stile.on-gold,.ltile.on-gold,.rhead.on-gold{background:linear-gradient(180deg,var(--gold1) 0,var(--gold2) 100%);color:var(--gold-ink)}.rhead.on-gold{color:#fff;text-shadow:0 1px 2px rgba(60,45,15,.35)}.rhead.on-gold .sl:before{background:rgba(70,52,12,.25)}.ltile.on-gold .dn{background:rgba(70,52,12,.16)}.gridl .pill{flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:12px;min-height:118px;padding:14px;background:var(--tile);border-radius:var(--r-m)}.gridl .pill+.pill{border-top:0}.gridl .pill .nm,.gridl .pill .sb{white-space:normal;overflow:visible}.gridl .pill .tx{flex:none}";
 /* The host of the Hue dashboard panel: what the Hue Plus pages expect of the dashboard they run in (the plugin API, version 1, which Home Control also offers), made for this panel.
  It gives them Home Assistant's states and registries, service calls, rows and sliders, sheets that open over the tab (with the "unsaved changes" question), dialogs and toasts, in the Hue app's look.
  The pages themselves (the Hue Plus menu, the wizards, the Spotify sync and the sync box) are the very same files Home Control loads; nothing here knows about them except the registration they make.
- Nothing of Home Control is loaded or used. */
+ Home Control's dashboard is not loaded here: its light panel runs in a frame of its own (light.js, popup.html). */
 (function () {
   var EN = {
     brightness: "Brightness",
@@ -207,6 +207,7 @@ var HOST_CSS = ".hm .hm-bigi{width:48px;height:48px;border-radius:15px;display:f
       REGISTRIES_READY = Promise.all(REGISTRY_SOURCES.map(loadRegistry)).then(function () {
         REGISTRY_SOURCES.forEach(watchRegistry);
       });
+    if (HOST.onHass) HOST.onHass(h);
     schedule();
   }
 
@@ -699,7 +700,7 @@ var HOST_CSS = ".hm .hm-bigi{width:48px;height:48px;border-radius:15px;display:f
   /* ---- sheets: pages that open over the tab ---- */
 
   var PAGES = {};
-  var SHEET = null; /* {root, scrim, head, body} while one is open */
+  var SHEET = null; /* {root, body}: the page that is open, while there is one */
   var SESSION = {}; /* what the pages ask HC.sheet for: it changes whenever the sheet closes or the tab changes, which is when what they read is read again */
   var STACK = [];
   var CURRENT = null;
@@ -711,26 +712,24 @@ var HOST_CSS = ".hm .hm-bigi{width:48px;height:48px;border-radius:15px;display:f
     return { def: PAGES[name], id: String(key).slice(name.length + 1) };
   }
 
+  /* A page of the Hue app: it covers the screen, with a bar of an X (or an arrow when it was opened from another page), the title, and SAVE when what it shows is to be saved. */
   function buildSheet() {
-    var scrim = mk("div", "scrim"),
-      root = mk("div", "sheet");
+    var root = mk("div", "pg");
     root.setAttribute("role", "dialog");
     root.setAttribute("aria-modal", "true");
     root.innerHTML =
-      "<div class='shead'><button type='button' class='rb back' aria-label='" +
+      "<div class='pbar'><button type='button' class='rbt back' aria-label='" +
       T("back") +
       "'>" +
       svg("back") +
-      "</button><div class='ttl'><span class='ic'></span><span class='tt'></span></div><button type='button' class='rb ok' aria-label='" +
-      T("save") +
-      "' style='display:none'>" +
-      svg("check") +
-      "</button><button type='button' class='rb x' aria-label='" +
+      "</button><button type='button' class='rbt x' aria-label='" +
       T("close") +
       "'>" +
       svg("close") +
-      "</button></div><div class='sbody'></div>";
-    var s = { root: root, scrim: scrim, body: root.querySelector(".sbody") };
+      "</button><div class='ttl'><span class='tt'></span></div><button type='button' class='act ok' style='display:none'>" +
+      T("save") +
+      "</button></div><div class='pbody'></div>";
+    var s = { root: root, body: root.querySelector(".pbody") };
     root.querySelector(".back").addEventListener("click", function () {
       popBack();
     });
@@ -740,13 +739,8 @@ var HOST_CSS = ".hm .hm-bigi{width:48px;height:48px;border-radius:15px;display:f
     root.querySelector(".ok").addEventListener("click", function () {
       if (CHECK) CHECK.save(CHECK.done);
     });
-    scrim.addEventListener("click", function () {
-      closeSheet();
-    });
-    document.body.appendChild(scrim);
     document.body.appendChild(root);
     requestAnimationFrame(function () {
-      scrim.classList.add("in");
       root.classList.add("in");
     });
     return s;
@@ -759,14 +753,16 @@ var HOST_CSS = ".hm .hm-bigi{width:48px;height:48px;border-radius:15px;display:f
   function render(key) {
     var p = pageOf(key);
     if (!p.def) return false;
+    if (HOST.onRender) HOST.onRender();
+    SHEET.root.classList.remove("roompg");
     CURRENT = key;
     POPGUARD = null;
     CHECK = null;
     SHEET_LIST.length = 0;
     SHEET.root.querySelector(".ok").style.display = "none";
-    SHEET.root.querySelector(".ttl .ic").innerHTML = svg(p.def[1]);
     SHEET.root.querySelector(".tt").textContent = title(p.def, p.id);
-    SHEET.root.querySelector(".back").style.visibility = STACK.length ? "visible" : "hidden";
+    SHEET.root.querySelector(".back").style.display = STACK.length ? "" : "none";
+    SHEET.root.querySelector(".x").style.display = STACK.length ? "none" : "";
     SHEET.body.innerHTML = "";
     SHEET.body.scrollTop = 0;
     p.def[2](SHEET.body, p.id);
@@ -802,12 +798,10 @@ var HOST_CSS = ".hm .hm-bigi{width:48px;height:48px;border-radius:15px;display:f
     STACK = [];
     CURRENT = null;
     SHEET_LIST.length = 0;
-    s.scrim.classList.remove("in");
     s.root.classList.remove("in");
     setTimeout(function () {
-      s.scrim.remove();
       s.root.remove();
-    }, 300);
+    }, 250);
     SESSION = {};
     if (HOST.onSheetClosed) HOST.onSheetClosed();
   }
@@ -861,6 +855,8 @@ var HOST_CSS = ".hm .hm-bigi{width:48px;height:48px;border-radius:15px;display:f
     registered: REGISTERED,
     onUpdate: null,
     onSheetClosed: null,
+    onRender: null,
+    onHass: null,
     editLights: function () {
       toast(T("unavailable"));
     },
@@ -1019,6 +1015,9 @@ var HOST_CSS = ".hm .hm-bigi{width:48px;height:48px;border-radius:15px;display:f
   /* What the application uses besides the plugin API. */
   HOST.api = {
     attach: attach,
+    hass: function () {
+      return HASS;
+    },
     ws: function (msg) {
       return HASS.callWS(msg);
     },
@@ -1655,10 +1654,20 @@ var PLUGIN_STRINGS = {
   "app_scene_settings": "Scene settings",
   "app_edit_room": "Edit room",
   "app_edit_zone": "Edit zone",
-  "app_white": "White",
-  "app_effects": "Effects",
   "app_edit_the_lights": "Edit the lights",
-  "app_edit_hint": "Tap lights to change only those. The lights follow every change; the checkmark keeps what they show.",
+  "app_light_panel": "Light colour and brightness",
+  "app_all_lights": "All lights",
+  "app_my_scenes": "My scenes",
+  "app_controls": "Controls",
+  "app_add": "Add",
+  "app_more": "More",
+  "app_delete_room": "Delete room",
+  "app_delete_zone": "Delete zone",
+  "app_add_scene": "Add scene",
+  "app_add_devices": "Add devices",
+  "app_add_automation": "Add automation",
+  "app_add_motionaware": "Add MotionAware area",
+  "app_tap_to_add": "Tap the item you want to add to ",
   "app_music": "Music",
   "app_tv_and_games": "TV and games",
   "app_no_spotify_sync": "The Spotify sync is off. Switch on its module in the Hue Plus options.",
@@ -8311,16 +8320,17 @@ function lpStylePopup(b, id) {
   });
 }
 
-/* The Hue dashboard panel (Hue Plus, dashboard module): a heading, the tab, and a tab bar like the Hue app's. Home and its light pages are in home.js and light.js, Sync in
- syncpage.js; Automations and Settings are the Hue Plus menu pages themselves, drawn in the tab instead of in a sheet. Everything sits inside the plugin's scope, so it uses the
- same pages and helpers as the menu. */
+/* The Hue dashboard panel (Hue Plus, dashboard module): the Hue app's tabs and tab bar. Home and its pages are in home.js and light.js, Sync in syncpage.js; Automations and Settings are the Hue Plus menu
+ pages themselves, drawn in the tab. Everything sits inside the plugin's scope, so it uses the same pages and helpers as the menu. The Explore tab of the app (a gallery from Signify's cloud) has nothing behind
+ it here. Nothing is kept in Home Assistant: the panel shows the bridge and writes to it. */
 
 HOST_ICONS.bolt = "<path d='M13 2L5 14h6l-1 8 8-12h-6z'/>";
+HOST_ICONS.dots = "<circle cx='5' cy='12' r='1.7' fill='currentColor'/><circle cx='12' cy='12' r='1.7' fill='currentColor'/><circle cx='19' cy='12' r='1.7' fill='currentColor'/>";
 
 var HPAPP = { tab: "", el: null, bridge: "", modules: null, sigOf: null, lastSig: "" };
 var HPAPI = window.HueHost && window.HueHost.api;
 
-/* The tabs, in the order of the Hue app's tab bar (its Explore tab, a gallery from Signify's cloud, has nothing behind it here). */
+/* The tabs, in the order of the Hue app's tab bar. */
 function hpTabs() {
   return [
     { id: "home", title: _T("home"), icon: "home", build: hpHomeTab },
@@ -8330,12 +8340,22 @@ function hpTabs() {
   ];
 }
 
+/* A tab that is a page of the Hue Plus menu: the heading of the app's tab, then the page. */
+function hpMenuTab(box, title, page) {
+  var head = mk("div", "hd", "<h1></h1>");
+  head.querySelector("h1").textContent = title;
+  box.appendChild(head);
+  var inner = mk("div");
+  box.appendChild(inner);
+  HP_PAGES[page][2](inner);
+}
+
 function hpAutomationsTab(box) {
-  HP_PAGES["hue-routines"][2](box);
+  hpMenuTab(box, _T("automations"), "hue-routines");
 }
 
 function hpSettingsTab(box) {
-  HP_PAGES["stg-hue"][2](box);
+  hpMenuTab(box, _T("app_settings"), "stg-hue");
 }
 
 function hpShowTab(id) {
@@ -8348,8 +8368,7 @@ function hpShowTab(id) {
   HPAPI.tabList.length = 0;
   HPAPI.resetSession();
   HPAPP.main.innerHTML = "";
-  HPAPP.title.textContent = tab.title;
-  HPAPP.sub.textContent = HPAPP.bridge;
+  HPAPP.view.scrollTop = 0;
   Array.prototype.forEach.call(HPAPP.nav.querySelectorAll("button"), function (b) {
     var on = b.dataset.tab === id;
     b.classList.toggle("on", on);
@@ -8377,12 +8396,11 @@ function hpStart() {
       var b = ((r && r.bridges) || [])[0];
       HPAPP.bridge = b ? b.name : "";
       HPAPP.modules = b ? b.modules : null;
-      HPAPP.sub.textContent = HPAPP.bridge;
+      if (HPAPP.tab === "home") hpShowTab("home");
     },
     function () {}
   );
-  var tabs = hpTabs();
-  tabs.forEach(function (t) {
+  hpTabs().forEach(function (t) {
     var b = mk("button", "", svg(t.icon) + "<span></span>");
     b.type = "button";
     b.dataset.tab = t.id;
@@ -8394,7 +8412,9 @@ function hpStart() {
     HPAPP.nav.querySelector(".in").appendChild(b);
   });
   window.HueHost.onUpdate = hpWatch;
+  var closed = window.HueHost.onSheetClosed;
   window.HueHost.onSheetClosed = function () {
+    if (closed) closed();
     hpShowTab(HPAPP.tab);
   };
   hpShowTab("home");
@@ -8407,16 +8427,12 @@ window.HuePlusApp = {
   mount: function (el, hass) {
     HPAPI.attach(hass);
     HC.addStyles(HOST_CSS);
-    el.innerHTML =
-      "<div id='hp'><header class='top'><div><h1></h1><div class='sub'></div></div></header><main></main><nav class='tabs' aria-label='" +
-      _T("app_tabs") +
-      "'><div class='in'></div></nav></div>";
+    el.innerHTML = "<div id='hp'><div class='view'><div class='in'></div></div><nav class='tabs' aria-label='" + _T("app_tabs") + "'><div class='in'></div></nav></div>";
     HPAPP.el = el;
-    HPAPP.title = el.querySelector("h1");
-    HPAPP.sub = el.querySelector(".sub");
-    HPAPP.main = el.querySelector("main");
+    HPAPP.view = el.querySelector(".view");
+    HPAPP.main = el.querySelector(".view>.in");
     HPAPP.nav = el.querySelector("nav");
-    HPAPP.main.appendChild(hmCallout(_T("loading")));
+    HPAPP.main.appendChild(mk("div", "empty")).textContent = _T("loading");
     /* The panel starts when the registries are in, or after a short wait; the lists fill in by themselves. */
     Promise.race([
       HPAPI.ready(),
@@ -8427,8 +8443,9 @@ window.HuePlusApp = {
   },
 };
 
-/* The Home tab: the bridge's rooms and zones as cards (on or off, how bright), and a room's page with its scenes and lights, as in the Hue app. The Hue scenes are played, stopped and
- adjusted with the same functions the dashboard's scene rows use (huescenes.js); making one is the Hue app's "Add a scene" (huenewscene.js). */
+/* The Home tab and a room's page, as in the Hue app: the home's name over a card for each room and zone (its icon, name, a switch and a brightness bar, gold while the lights are on), and a room's page with
+ its coloured header, its scenes, its lights and its controls. The scenes are played, stopped and adjusted with the functions the dashboard's scene rows use (huescenes.js); making one is the app's "Add a scene"
+ (huenewscene.js); a light opens as the colour screen (light.js). Everything shown is what the bridge says; nothing is kept in Home Assistant. */
 
 var HP_ROOM_ICONS = {
   bedroom: "bed",
@@ -8471,10 +8488,6 @@ function hpGroupLights(id) {
   });
 }
 
-function hpLightsOn(id) {
-  return hpGroupLights(id).filter(isOn).length;
-}
-
 function hpGroupIcon(id) {
   var kind = HP_ROOM_ARCHETYPES[A(id).hue_type + "|" + A(id).friendly_name];
   return A(id).hue_type === "zone" ? "target" : HP_ROOM_ICONS[kind] || "home";
@@ -8485,98 +8498,176 @@ var HP_ROOM_ARCHETYPES = {};
 
 function hpLoadArchetypes() {
   if (!hueplus.has(H(), "get_resources")) return;
-  hueplus.resources(["rooms", "zones"]).then(function (r) {
-    (r.rooms || []).forEach(function (g) {
-      HP_ROOM_ARCHETYPES["room|" + g.name] = g.archetype;
-    });
-    (r.zones || []).forEach(function (g) {
-      HP_ROOM_ARCHETYPES["zone|" + g.name] = g.archetype;
-    });
-    refresh();
-  }, function () {});
+  hueplus.resources(["rooms", "zones"]).then(
+    function (r) {
+      (r.rooms || []).forEach(function (g) {
+        HP_ROOM_ARCHETYPES["room|" + g.name] = g.archetype;
+      });
+      (r.zones || []).forEach(function (g) {
+        HP_ROOM_ARCHETYPES["zone|" + g.name] = g.archetype;
+      });
+      refresh();
+    },
+    function () {}
+  );
 }
 
 function hpPct(id) {
   return isOn(id) ? Math.max(1, Math.round((A(id).brightness || 0) / 2.55)) : 0;
 }
 
-function hpSub(id) {
-  var n = hpLightsOn(id),
-    all = hpGroupLights(id).length;
-  if (!n) return _T("off");
-  return all > 1 ? n + " " + _T("app_of") + " " + all + " " + _T("app_lights_on") : cntS(n, _T("app_light_on"), _T("app_lights_on"));
+/* ---- the colour a lit card takes: the light's own, lightened at the top and deepened at the bottom, as the app draws it ---- */
+
+function hpMix(a, b, t) {
+  return [0, 1, 2].map(function (i) {
+    return Math.round(a[i] + (b[i] - a[i]) * t);
+  });
 }
 
-/* A switch that turns a light or a group on or off. */
-function hpSwitch(id, label) {
-  var s = mk("button", "sw", "<i></i>");
-  s.type = "button";
-  s.setAttribute("role", "switch");
-  s.setAttribute("aria-label", label);
+function hpRgbOf(id) {
+  var a = A(id);
+  if (a.color_mode === "color_temp" || !a.hs_color) return a.color_temp_kelvin ? HC.ui.kelvinRgb(a.color_temp_kelvin) : [246, 205, 114];
+  var hs = a.hs_color,
+    c = (hs[1] / 100) * 0.8,
+    h = hs[0] / 60,
+    x = c * (1 - Math.abs((h % 2) - 1)),
+    t = [
+      [c, x, 0],
+      [x, c, 0],
+      [0, c, x],
+      [0, x, c],
+      [x, 0, c],
+      [c, 0, x],
+    ][Math.floor(h) % 6],
+    m = 0.95 - c;
+  return t.map(function (v) {
+    return Math.round((v + m) * 255);
+  });
+}
+
+/* Gives a card or a tile the two colours of its gradient from the lights that are on in it, and tells whether it is lit. */
+function hpGold(el, ids) {
+  var on = ids.filter(isOn);
+  el.classList.toggle("on-gold", on.length > 0);
+  if (!on.length) return;
+  var rgb = hpRgbOf(on[0]);
+  el.style.setProperty("--gold1", "rgb(" + hpMix(rgb, [255, 255, 255], 0.38).join(",") + ")");
+  el.style.setProperty("--gold2", "rgb(" + hpMix(rgb, [90, 70, 30], 0.2).join(",") + ")");
+}
+
+/* ---- the parts ---- */
+
+function hpToggle(label, get, set) {
+  var t = mk("button", "tg", "<i></i>");
+  t.type = "button";
+  t.setAttribute("role", "switch");
+  t.setAttribute("aria-label", label);
+  t.addEventListener("click", function (e) {
+    e.stopPropagation();
+    set();
+  });
+  t.refresh = function () {
+    var on = get();
+    t.classList.toggle("on", on);
+    t.setAttribute("aria-checked", on ? "true" : "false");
+  };
+  reg(t.refresh);
+  return t;
+}
+
+function hpLightToggle(id, label) {
+  return hpToggle(
+    label,
+    function () {
+      return isOn(id);
+    },
+    function () {
+      call("light", "toggle", { entity_id: id });
+    }
+  );
+}
+
+/* A light's or a group's brightness: a drag sets it, a tap on the bar sets that brightness. */
+function hpSlider(id) {
+  var s = mk("div", "sl", "<span class='kn'></span>"),
+    kn = s.querySelector(".kn"),
+    drag = false,
+    at = 0;
+  s.setAttribute("role", "slider");
+  s.setAttribute("aria-label", _T("brightness"));
+  s.tabIndex = 0;
+  function put(p) {
+    kn.style.left = p + "%";
+    s.setAttribute("aria-valuenow", Math.round(p));
+  }
+  attachSlide(s, {
+    onMove: function (f) {
+      drag = true;
+      var v = Math.max(1, Math.round(f * 100));
+      put(v);
+      if (Date.now() - at > 150) {
+        at = Date.now();
+        callLive("hp-bri-" + id, "light", "turn_on", { entity_id: id, brightness_pct: v });
+      }
+    },
+    onCommit: function (f) {
+      var v = Math.max(1, Math.round(f * 100));
+      put(v);
+      call("light", "turn_on", { entity_id: id, brightness_pct: v });
+      setTimeout(function () {
+        drag = false;
+      }, 600);
+    },
+    onCancel: function () {
+      drag = false;
+    },
+  });
   s.addEventListener("click", function (e) {
     e.stopPropagation();
-    call("light", "toggle", { entity_id: id });
   });
   s.refresh = function () {
-    var on = isOn(id);
-    s.classList.toggle("on", on);
-    s.setAttribute("aria-checked", on ? "true" : "false");
+    if (!drag) put(hpPct(id));
   };
   reg(s.refresh);
   return s;
 }
 
-/* The brightness of a light or a group as a bar: a drag sets it, a tap on it sets that brightness. */
-function hpBrightness(id) {
-  var bar = briControl({
-    pct: function () {
-      return hpPct(id);
-    },
-    lit: function () {
-      return isOn(id);
-    },
-    live: function (v) {
-      callLive("hp-bri-" + id, "light", "turn_on", { entity_id: id, brightness_pct: v });
-    },
-    commit: function (v) {
-      call("light", "turn_on", { entity_id: id, brightness_pct: v });
-    },
-    stage: function () {
-      return bar;
-    },
-  });
-  bar.addEventListener("click", function (e) {
-    e.stopPropagation();
-  });
-  return bar;
+/* A round button of the page's top: an icon, a label for the screen reader, and what it does. */
+function hpRound(icon, label, fn) {
+  var b = mk("button", "rbt", svg(icon));
+  b.type = "button";
+  b.setAttribute("aria-label", label);
+  b.addEventListener("click", fn);
+  return b;
 }
 
-function hpRoomCard(id) {
-  var card = mk("div", "rcard", "<div class='rh'><span class='ic'></span><span class='rn'><b></b><i></i></span></div>");
-  card.tabIndex = 0;
-  card.setAttribute("role", "button");
-  card.querySelector(".ic").innerHTML = svg(hpGroupIcon(id));
-  card.querySelector("b").textContent = A(id).friendly_name;
-  card.setAttribute("aria-label", A(id).friendly_name);
-  card.querySelector(".rh").appendChild(hpSwitch(id, A(id).friendly_name));
-  card.appendChild(hpBrightness(id));
-  var sub = card.querySelector("i"),
-    ico = card.querySelector(".ic");
-  function open() {
-    showPopup("app-room:" + id, true);
-  }
-  card.addEventListener("click", function (e) {
-    if (!e.target.closest(".bar,.sw")) open();
-  });
-  card.addEventListener("keydown", function (e) {
-    if ((e.key === "Enter" || e.key === " ") && e.target === card) {
+function hpActive(el, open) {
+  el.tabIndex = 0;
+  el.setAttribute("role", "button");
+  el.addEventListener("click", open);
+  el.addEventListener("keydown", function (e) {
+    if ((e.key === "Enter" || e.key === " ") && e.target === el) {
       e.preventDefault();
       open();
     }
   });
+}
+
+/* ---- Home ---- */
+
+function hpRoomCard(id) {
+  var name = A(id).friendly_name,
+    card = mk("div", "room", "<div class='rh'><span class='ic'></span><span class='rn'></span></div>"),
+    ico = card.querySelector(".ic");
+  card.querySelector(".rn").textContent = name;
+  card.setAttribute("aria-label", name);
+  card.querySelector(".rh").appendChild(hpLightToggle(id, name));
+  card.appendChild(hpSlider(id));
+  hpActive(card, function () {
+    showPopup("app-room:" + id, true);
+  });
   card.refresh = function () {
-    card.classList.toggle("on", isOn(id));
-    sub.textContent = hpSub(id);
+    hpGold(card, [id]);
     ico.innerHTML = svg(hpGroupIcon(id));
   };
   reg(card.refresh);
@@ -8589,17 +8680,38 @@ function hpHomeTab(box) {
   HPAPP.sigOf = function () {
     return hpGroups().join("|");
   };
+  var rooms = groups.filter(function (id) {
+    return A(id).hue_type === "room";
+  });
+  var head = mk("div", "hd", "<h1></h1><div class='acts'></div>");
+  head.querySelector("h1").textContent = HPAPP.bridge || _T("home");
+  if (rooms.length)
+    head.querySelector(".acts").appendChild(
+      hpToggle(
+        _T("app_all_lights"),
+        function () {
+          return rooms.some(isOn);
+        },
+        function () {
+          call("light", rooms.some(isOn) ? "turn_off" : "turn_on", { entity_id: rooms });
+        }
+      )
+    );
+  box.appendChild(head);
   if (!groups.length) {
-    box.appendChild(mk("div", "hp-empty")).textContent = _T("app_no_rooms");
+    box.appendChild(mk("div", "empty")).textContent = _T("app_no_rooms");
     return;
   }
-  [["room", "rooms"], ["zone", "hn_zones"]].forEach(function (t) {
+  [
+    ["room", "rooms"],
+    ["zone", "hn_zones"],
+  ].forEach(function (t) {
     var list = groups.filter(function (id) {
       return A(id).hue_type === t[0];
     });
     if (!list.length) return;
-    box.appendChild(mk("div", "hp-label")).textContent = _T(t[1]);
-    var grid = mk("div", "hp-rooms");
+    box.appendChild(mk("div", "lb")).textContent = _T(t[1]);
+    var grid = mk("div", "rooms");
     list.forEach(function (id) {
       grid.appendChild(hpRoomCard(id));
     });
@@ -8623,73 +8735,31 @@ function hpScenesOf(id) {
 }
 
 function hpSceneTile(sid) {
-  var t = mk("div", "stile", "<div class='sw2'></div><b></b>");
-  t.tabIndex = 0;
-  t.setAttribute("role", "button");
+  var t = mk("div", "stile", "<div class='dots'></div><b></b>");
   t.querySelector("b").textContent = A(sid).name || sid;
   t.setAttribute("aria-label", A(sid).name || sid);
-  var dots = t.querySelector(".sw2");
+  var dots = t.querySelector(".dots");
   hueScenePalette(sid, function (cols) {
     dots.innerHTML = "";
-    cols.slice(0, 3).forEach(function (c) {
+    cols.slice(0, 6).forEach(function (c) {
       var d = mk("i");
       d.style.setProperty("--c", c);
       dots.appendChild(d);
     });
   });
-  var more = mk("button", "rb more", svg("tune"));
-  more.type = "button";
-  more.setAttribute("aria-label", _T("app_scene_settings"));
-  more.style.cssText = "position:absolute;right:8px;top:8px;width:30px;height:30px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer";
-  more.querySelector("svg").style.cssText = "width:16px;height:16px";
-  more.addEventListener("click", function (e) {
+  var gear = mk("button", "gear", svg("tune"));
+  gear.type = "button";
+  gear.setAttribute("aria-label", _T("app_scene_settings"));
+  gear.addEventListener("click", function (e) {
     e.stopPropagation();
     showPopup("hue-scene:" + sid + "~", true);
   });
-  t.appendChild(more);
-  function play() {
+  t.appendChild(gear);
+  hpActive(t, function () {
     hueSceneToggle(sid);
-  }
-  t.addEventListener("click", play);
-  t.addEventListener("keydown", function (e) {
-    if ((e.key === "Enter" || e.key === " ") && e.target === t) {
-      e.preventDefault();
-      play();
-    }
   });
   t.refresh = function () {
-    t.classList.toggle("on", HUESCENES.active(H(), sid));
-  };
-  reg(t.refresh);
-  return t;
-}
-
-function hpLightTile(lid) {
-  var t = mk("div", "ltile", "<div class='top2'><span class='ic'></span></div><div><b></b><i></i></div>");
-  t.tabIndex = 0;
-  t.setAttribute("role", "button");
-  t.querySelector(".ic").innerHTML = svg(hpLightIcon(lid));
-  t.querySelector("b").textContent = A(lid).friendly_name || lid;
-  t.setAttribute("aria-label", A(lid).friendly_name || lid);
-  t.querySelector(".top2").appendChild(hpSwitch(lid, A(lid).friendly_name || lid));
-  var sub = t.querySelector("i");
-  function open() {
-    showPopup("app-light:" + lid, true);
-  }
-  t.addEventListener("click", function (e) {
-    if (!e.target.closest(".sw")) open();
-  });
-  t.addEventListener("keydown", function (e) {
-    if ((e.key === "Enter" || e.key === " ") && e.target === t) {
-      e.preventDefault();
-      open();
-    }
-  });
-  t.refresh = function () {
-    var gone = V_(lid) === "unavailable";
-    t.classList.toggle("on", isOn(lid));
-    t.classList.toggle("gone", gone);
-    sub.textContent = gone ? _T("hm_unreachable") : isOn(lid) ? hpPct(lid) + "%" : _T("off");
+    t.classList.toggle("on-gold", HUESCENES.active(H(), sid));
   };
   reg(t.refresh);
   return t;
@@ -8705,93 +8775,239 @@ function hpLightIcon(lid) {
   return "light";
 }
 
+function hpLightTile(lid) {
+  var name = A(lid).friendly_name || lid,
+    t = mk("div", "ltile", "<div class='up'><span class='ic'></span><b></b></div><div class='dn'></div>");
+  t.querySelector(".ic").innerHTML = svg(hpLightIcon(lid));
+  t.querySelector("b").textContent = name;
+  t.setAttribute("aria-label", name);
+  t.querySelector(".dn").appendChild(hpLightToggle(lid, name));
+  hpActive(t, function () {
+    showPopup("app-light:" + lid, true);
+  });
+  t.refresh = function () {
+    hpGold(t, [lid]);
+    t.classList.toggle("gone", V_(lid) === "unavailable");
+  };
+  reg(t.refresh);
+  return t;
+}
+
+/* The switches and dials the bridge has in this room: the app lists them under Controls. */
+function hpControls(box, id) {
+  if (!hueplus.has(H(), "get_resources")) return;
+  hueplus.resources(["accessories", "rooms", "zones"]).then(
+    function (r) {
+      var type = A(id).hue_type,
+        group = (type === "zone" ? r.zones : r.rooms || []).filter(function (x) {
+          return x.name === A(id).friendly_name;
+        })[0],
+        inside = {};
+      if (group)
+        (group.children || []).forEach(function (c) {
+          inside[c.id] = true;
+        });
+      var list = (r.accessories || []).filter(function (x) {
+        return inside[x.id];
+      });
+      if (!list.length || !box.isConnected) return;
+      box.appendChild(mk("div", "lb")).textContent = _T("app_controls");
+      var tiles = mk("div", "ctiles");
+      list.forEach(function (x) {
+        var c = mk("div", "ctile", "<span class='ic'></span><div><b></b><i></i></div>");
+        c.querySelector(".ic").innerHTML = svg("cog");
+        c.querySelector("b").textContent = x.name;
+        c.querySelector("i").textContent = cntS((x.buttons || []).length, _T("hm_button"), _T("hm_buttons"));
+        hpActive(c, function () {
+          showPopup("hue-switch:" + x.id, true);
+        });
+        tiles.appendChild(c);
+      });
+      box.appendChild(tiles);
+    },
+    function () {}
+  );
+}
+
+/* The list under the three dots of the room's page, as the app's: a sheet from the bottom with its choices and Cancel. */
+function hpActions(items) {
+  var scrim = mk("div", "scrim"),
+    sheet = mk("div", "asheet");
+  items.concat([{ label: _T("cancel") }]).forEach(function (it, i, all) {
+    var b = mk("button", "arow" + (it.danger ? " danger" : "") + (i === all.length - 1 ? " cancel" : ""));
+    b.type = "button";
+    b.textContent = it.label;
+    b.addEventListener("click", function () {
+      scrim.remove();
+      sheet.remove();
+      if (it.fn) it.fn();
+    });
+    sheet.appendChild(b);
+  });
+  scrim.addEventListener("click", function () {
+    scrim.remove();
+    sheet.remove();
+  });
+  document.body.appendChild(scrim);
+  document.body.appendChild(sheet);
+  requestAnimationFrame(function () {
+    scrim.classList.add("in");
+  });
+}
+
 function hpRoomPage(body, id) {
   if (!H().states[id]) {
-    body.appendChild(mk("div", "hp-empty")).textContent = _T("nothing_found");
+    body.appendChild(mk("div", "empty")).textContent = _T("nothing_found");
     return;
   }
-  hmBox(body);
-  body.appendChild(hmTitle(hpGroupIcon(id), function () {
-    return A(id).friendly_name || id;
-  }, function () {
-    return hpSub(id);
-  }));
-  var big = hmGroup([
-    hmRow({
-      title: function () {
-        return isOn(id) ? _T("on_2") : _T("off");
-      },
-      toggle: {
-        get: function () {
-          return isOn(id);
-        },
-        set: function () {
-          call("light", "toggle", { entity_id: id });
-        },
-      },
-    }),
-  ]);
-  body.appendChild(big);
-  var barBox = mk("div");
-  barBox.style.margin = "0 0 8px";
-  barBox.appendChild(hpBrightness(id));
-  body.appendChild(barBox);
+  body.parentNode.classList.add("roompg");
+  var name = A(id).friendly_name,
+    zone = A(id).hue_type === "zone",
+    admin = isAdmin(),
+    head = mk("div", "rhead", "<div class='rr'><span class='nm'></span></div>"),
+    row = head.querySelector(".rr");
+  head.querySelector(".nm").textContent = name;
+  row.insertBefore(hpRound("back", _T("back"), popBack), row.firstChild);
+  if (admin) {
+    row.appendChild(
+      hpRound("plus", _T("app_add"), function () {
+        showPopup("app-add:" + id, true);
+      })
+    );
+    row.appendChild(
+      hpRound("dots", _T("app_more"), function () {
+        hpActions([
+          {
+            label: _T(zone ? "app_edit_zone" : "app_edit_room"),
+            fn: function () {
+              hpEditGroup(id);
+            },
+          },
+          {
+            label: _T(zone ? "app_delete_zone" : "app_delete_room"),
+            danger: true,
+            fn: function () {
+              hpDeleteGroup(id);
+            },
+          },
+        ]);
+      })
+    );
+  }
+  row.appendChild(hpLightToggle(id, name));
+  head.appendChild(hpSlider(id));
+  head.refresh = function () {
+    hpGold(head, [id]);
+  };
+  reg(head.refresh);
+  body.appendChild(head);
+
+  var page = mk("div", "rbody");
+  body.appendChild(page);
 
   var scenes = hpScenesOf(id),
-    canMake = hueplus.has(H(), "create_scene") && isAdmin();
-  body.appendChild(hmLabel(_T("scenes")));
+    canMake = admin && hueplus.has(H(), "create_scene");
+  page.appendChild(mk("div", "lb")).textContent = _T("app_my_scenes");
   var grid = mk("div", "stiles");
   scenes.forEach(function (sid) {
     grid.appendChild(hpSceneTile(sid));
   });
-  if (canMake) {
-    var add = mk("button", "stile add", ic("plus") + "<b></b>");
-    add.type = "button";
-    add.querySelector("b").textContent = _T("hn_add_a_scene");
-    add.addEventListener("click", function () {
-      hueStartMaker("app:" + id);
-    });
-    grid.appendChild(add);
-  }
-  if (!scenes.length && !canMake) grid.appendChild(mk("div", "hp-empty")).textContent = _T("hw_no_scenes_here");
-  body.appendChild(grid);
+  if (!scenes.length && !canMake) grid.appendChild(mk("div", "empty")).textContent = _T("hw_no_scenes_here");
+  page.appendChild(grid);
 
-  body.appendChild(hmLabel(_T("lights")));
+  page.appendChild(mk("div", "lb")).textContent = _T("lights");
   var tiles = mk("div", "ltiles");
   hpGroupLights(id).forEach(function (lid) {
     tiles.appendChild(hpLightTile(lid));
   });
-  body.appendChild(tiles);
+  page.appendChild(tiles);
 
-  if (isAdmin() && hueplus.has(H(), "update_room"))
-    body.appendChild(
-      hmGroup([
-        hmRow({
-          icon: "edit",
-          title: _T(A(id).hue_type === "zone" ? "app_edit_zone" : "app_edit_room"),
-          tap: function () {
-            hpEditGroup(id);
-          },
-        }),
-      ])
-    );
+  hpControls(page, id);
 }
 
-/* The room's or zone's own page for changing its name, devices or lights, and deleting it (the Hue Plus menu's, huerooms.js). */
-function hpEditGroup(id) {
+/* What can be added to a room, as the app asks it: a scene, devices, an automation, a MotionAware area. */
+function hpAddPage(body, id) {
+  var items = [
+    [
+      "palette",
+      _T("app_add_scene"),
+      function () {
+        hueStartMaker("app:" + id);
+      },
+    ],
+    [
+      "plus",
+      _T("app_add_devices"),
+      function () {
+        showPopup("hue-devices", true);
+      },
+    ],
+    [
+      "bolt",
+      _T("app_add_automation"),
+      function () {
+        showPopup("hue-newauto", true);
+      },
+    ],
+    [
+      "motion",
+      _T("app_add_motionaware"),
+      function () {
+        showPopup("hue-mw-intro", true);
+      },
+    ],
+  ];
+  var title = mk("div", "lb");
+  title.textContent = _T("app_tap_to_add") + A(id).friendly_name;
+  title.style.margin = "22px 20px 12px";
+  body.appendChild(title);
+  var grid = mk("div", "addgrid");
+  items.forEach(function (it) {
+    var t = mk("div", "atile", "<span class='ci'></span><span></span>");
+    t.querySelector(".ci").innerHTML = svg(it[0]);
+    t.lastChild.textContent = it[1];
+    hpActive(t, it[2]);
+    grid.appendChild(t);
+  });
+  body.appendChild(grid);
+}
+
+/* The room's or zone's own page for changing its name, devices or lights (the Hue Plus menu's, huerooms.js). */
+function hpFindGroup(id, then) {
   hueplus.resources(["rooms", "zones"]).then(
     function (r) {
       var type = A(id).hue_type,
         g = (type === "zone" ? r.zones : r.rooms || []).filter(function (x) {
           return x.name === A(id).friendly_name;
         })[0];
-      if (g) hrwStart(type, g);
+      if (g) then(type, g);
       else toast(_T("nothing_found"));
     },
     function () {
       toast(_T("hn_couldn_t_read_the_hue_bridge"));
     }
   );
+}
+
+function hpEditGroup(id) {
+  hpFindGroup(id, hrwStart);
+}
+
+function hpDeleteGroup(id) {
+  hpFindGroup(id, function (type, g) {
+    confirmDlg(_T(type === "zone" ? "hrw_delete_this_zone" : "hrw_delete_this_room"), function () {
+      var data = { confirm: true };
+      data[type] = g.id;
+      callRaw("hue_plus", "delete_" + type, data).then(
+        function () {
+          closeSheet();
+        },
+        function () {
+          toast(_T("hrw_couldn_t_save"));
+        }
+      );
+    });
+  });
 }
 
 HC.registerPage(
@@ -8802,468 +9018,138 @@ HC.registerPage(
   "home",
   hpRoomPage
 );
+HC.registerPage(
+  "app-add",
+  function (id) {
+    return A(id).friendly_name || _T("home");
+  },
+  "plus",
+  hpAddPage
+);
 
-/* A light's page (on or off, brightness, white or colour, effects, a gradient light's style) and the editor the Hue app's "Add a scene" opens: the lights follow every change, and the
- checkmark records what they show. Home Assistant's own light services do everything here; the bridge-only settings of a light are the Hue Plus menu's page for it. */
+/* The light screens of the Hue app: a light's or a room's colour wheel, the white and effects pages and the brightness button, and the scene editor (the same screen with SAVE).
+ The panel itself is Home Control's, run as it is in a frame of its own (popup.html, with a copy of Home Control's dashboard code in lights/); this file only gives it a page: the bar above it, and the
+ frame under the bar. Nothing is kept in Home Assistant: what a change does goes to the lights, which are the bridge's. */
 
-function hpModes(id) {
-  return A(id).supported_color_modes || [];
-}
+var HP_BASE = document.currentScript ? new URL(".", document.currentScript.src).href : "/hue_plus_static/";
+var HP_VERSION = document.currentScript ? new URL(document.currentScript.src).searchParams.get("v") || "" : "";
 
-function hpCanColour(id) {
-  return hpModes(id).some(function (m) {
-    return m === "xy" || m === "hs" || m === "rgb" || m === "rgbw" || m === "rgbww";
-  });
-}
+var HPLF = { el: null, win: null, ready: false, waiting: [] };
 
-function hpCanWhite(id) {
-  return hpModes(id).indexOf("color_temp") >= 0;
-}
-
-function hpCanDim(id) {
-  return hpModes(id).some(function (m) {
-    return m !== "onoff";
-  });
-}
-
-/* The lights a control acts on: a function that gives entity ids, and a function called after each change. */
-function hpTargets(t) {
-  return typeof t === "function" ? t() : [].concat(t);
-}
-
-function hpTurnOn(t, data, live, changed) {
-  var d = Object.assign({ entity_id: hpTargets(t) }, data);
-  if (live) callLive("hp-light", "light", "turn_on", d);
-  else call("light", "turn_on", d);
-  if (changed) changed();
-}
-
-/* A track that is dragged for a value from 0 to 1. `paint(fraction)` places the knob. */
-function hpTrack(cls, label, get, set, commit) {
-  var tr = mk("div", "hp-track " + cls, "<div class='knob'></div>"),
-    knob = tr.querySelector(".knob"),
-    drag = false;
-  tr.tabIndex = 0;
-  tr.setAttribute("role", "slider");
-  tr.setAttribute("aria-label", label);
-  function paint(f) {
-    knob.style.left = Math.max(0, Math.min(1, f)) * 100 + "%";
-    tr.setAttribute("aria-valuenow", Math.round(f * 100));
-  }
-  attachSlide(tr, {
-    onMove: function (f) {
-      drag = true;
-      paint(f);
-      set(f);
-    },
-    onCommit: function (f) {
-      paint(f);
-      commit(f);
-      setTimeout(function () {
-        drag = false;
-      }, 600);
-    },
-    onCancel: function () {
-      drag = false;
-    },
-  });
-  tr.addEventListener("keydown", function (e) {
-    var d = e.key === "ArrowRight" ? 0.05 : e.key === "ArrowLeft" ? -0.05 : 0;
-    if (!d) return;
-    e.preventDefault();
-    var f = Math.max(0, Math.min(1, get() + d));
-    paint(f);
-    commit(f);
-  });
-  tr.refresh = function () {
-    if (!drag) paint(get());
-  };
-  reg(tr.refresh);
-  return tr;
-}
-
-/* White: a track from warm to cool in the kelvin range of the light (the lights it acts on follow the first one's range). */
-function hpWhite(id, targets, changed) {
-  var a = A(id),
-    lo = a.min_color_temp_kelvin || 2000,
-    hi = a.max_color_temp_kelvin || 6500;
-  function kelvin(f) {
-    return Math.round(lo + f * (hi - lo));
-  }
-  return hpTrack(
-    "kel",
-    _T("app_white"),
-    function () {
-      return ((A(id).color_temp_kelvin || lo) - lo) / (hi - lo);
-    },
-    function (f) {
-      hpTurnOn(targets, { color_temp_kelvin: kelvin(f) }, true);
-    },
-    function (f) {
-      hpTurnOn(targets, { color_temp_kelvin: kelvin(f) }, false, changed);
-    }
-  );
-}
-
-/* Colour: a wheel; the angle is the hue and the distance from the middle is the saturation. */
-function hpWheel(id, targets, changed) {
-  var wrap = mk("div", "hp-wheel"),
-    size = 300,
-    canvas = mk("canvas");
-  canvas.width = canvas.height = size;
-  canvas.setAttribute("role", "img");
-  canvas.setAttribute("aria-label", _T("colour"));
-  var ctx = canvas.getContext && canvas.getContext("2d");
-  if (ctx) {
-    var img = ctx.createImageData(size, size),
-      r = size / 2;
-    for (var y = 0; y < size; y++)
-      for (var x = 0; x < size; x++) {
-        var dx = x - r + 0.5,
-          dy = y - r + 0.5,
-          d = Math.sqrt(dx * dx + dy * dy),
-          i = (y * size + x) * 4;
-        if (d > r) continue;
-        var rgb = hpHsv(((Math.atan2(dy, dx) * 180) / Math.PI + 360) % 360, d / r);
-        img.data[i] = rgb[0];
-        img.data[i + 1] = rgb[1];
-        img.data[i + 2] = rgb[2];
-        img.data[i + 3] = 255;
-      }
-    ctx.putImageData(img, 0, 0);
-  }
-  var mark = mk("i");
-  mark.style.cssText = "position:absolute;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.5);pointer-events:none";
-  wrap.style.position = "relative";
-  wrap.style.width = "fit-content";
-  wrap.style.margin = "0 auto";
-  wrap.appendChild(canvas);
-  wrap.appendChild(mark);
-  function at(e) {
-    var b = canvas.getBoundingClientRect(),
-      dx = e.clientX - (b.left + b.width / 2),
-      dy = e.clientY - (b.top + b.height / 2),
-      rad = b.width / 2,
-      d = Math.min(1, Math.sqrt(dx * dx + dy * dy) / rad);
-    return [Math.round(((Math.atan2(dy, dx) * 180) / Math.PI + 360) % 360), Math.round(d * 100)];
-  }
-  function place(hs) {
-    var rad = canvas.getBoundingClientRect().width / 2 || size / 2,
-      a = (hs[0] * Math.PI) / 180,
-      d = (hs[1] / 100) * rad;
-    mark.style.left = canvas.offsetLeft + rad + Math.cos(a) * d + "px";
-    mark.style.top = canvas.offsetTop + rad + Math.sin(a) * d + "px";
-    var c = hpHsv(hs[0], hs[1] / 100);
-    mark.style.background = cssRgb(c);
-  }
-  var down = false;
-  canvas.addEventListener("pointerdown", function (e) {
-    down = true;
-    try {
-      canvas.setPointerCapture(e.pointerId);
-    } catch (x) {}
-    var hs = at(e);
-    place(hs);
-    hpTurnOn(targets, { hs_color: hs }, true);
-  });
-  canvas.addEventListener("pointermove", function (e) {
-    if (!down) return;
-    var hs = at(e);
-    place(hs);
-    hpTurnOn(targets, { hs_color: hs }, true);
-  });
-  canvas.addEventListener("pointerup", function (e) {
-    if (!down) return;
-    down = false;
-    var hs = at(e);
-    place(hs);
-    hpTurnOn(targets, { hs_color: hs }, false, changed);
-  });
-  wrap.refresh = function () {
-    if (down) return;
-    var hs = A(id).hs_color;
-    if (hs) place(hs);
-    else mark.style.display = "none";
-  };
-  reg(wrap.refresh);
-  setTimeout(wrap.refresh, 0);
-  return wrap;
-}
-
-/* The colour at a hue (degrees) and a saturation (0 to 1) at full value. */
-function hpHsv(h, s) {
-  var c = s,
-    x = c * (1 - Math.abs(((h / 60) % 2) - 1)),
-    m = 1 - c,
-    rgb = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
-  return rgb.map(function (v) {
-    return Math.round((v + m) * 255);
-  });
-}
-
-/* White or colour, as two buttons that show the matching control; the light's own mode is where it starts. */
-function hpColourBox(id, targets, changed) {
-  var box = mk("div"),
-    can = { white: hpCanWhite(id), colour: hpCanColour(id) };
-  if (!can.white && !can.colour) return box;
-  var mode = A(id).color_mode === "color_temp" || !can.colour ? "white" : "colour",
-    chips = mk("div", "hp-chips"),
-    area = mk("div");
-  function draw() {
-    area.innerHTML = "";
-    Array.prototype.forEach.call(chips.children, function (c) {
-      c.classList.toggle("on", c.dataset.mode === mode);
-      c.setAttribute("aria-pressed", c.dataset.mode === mode ? "true" : "false");
-    });
-    area.appendChild(mode === "white" ? hpWhite(id, targets, changed) : hpWheel(id, targets, changed));
-    refresh();
-  }
-  [["white", "app_white"], ["colour", "colour"]].forEach(function (m) {
-    if (!can[m[0]]) return;
-    var c = mk("button", "hp-chip");
-    c.type = "button";
-    c.dataset.mode = m[0];
-    c.textContent = _T(m[1]);
-    c.addEventListener("click", function () {
-      mode = m[0];
-      draw();
-    });
-    chips.appendChild(c);
-  });
-  if (can.white && can.colour) box.appendChild(chips);
-  box.appendChild(area);
-  draw();
-  return box;
-}
-
-function hpEffects(id) {
-  var list = (A(id).effect_list || []).filter(function (e) {
-    return e && e !== "no_effect";
-  });
-  if (!list.length) return null;
-  var box = mk("div"),
-    chips = mk("div", "hp-chips");
-  box.appendChild(hmLabel(_T("app_effects")));
-  ["no_effect"].concat(list).forEach(function (e) {
-    var c = mk("button", "hp-chip");
-    c.type = "button";
-    c.textContent = e === "no_effect" ? _T("no_effect") : cap(String(e).replace(/_/g, " "));
-    c.addEventListener("click", function () {
-      call("light", "turn_on", { entity_id: id, effect: e });
-    });
-    c.refresh = function () {
-      var cur = A(id).effect || "no_effect";
-      c.classList.toggle("on", cur === e || (e === "no_effect" && (cur === "off" || cur === "none")));
-    };
-    reg(c.refresh);
-    chips.appendChild(c);
-  });
-  box.appendChild(chips);
-  return box;
-}
-
-function hpLightPage(body, id) {
-  if (!H().states[id]) {
-    body.appendChild(mk("div", "hp-empty")).textContent = _T("nothing_found");
+/* The frame starts when the first light screen is asked for and stays, so the next one opens at once. */
+function hpLightFrame(then) {
+  if (HPLF.ready) {
+    then(HPLF.win);
     return;
   }
-  hmBox(body);
-  body.appendChild(
-    hmTitle(
-      hpLightIcon(id),
-      function () {
-        return A(id).friendly_name || id;
-      },
-      function () {
-        return V_(id) === "unavailable" ? _T("hm_unreachable") : isOn(id) ? hpPct(id) + "%" : _T("off");
-      }
-    )
-  );
-  body.appendChild(
-    hmGroup([
-      hmRow({
-        title: function () {
-          return isOn(id) ? _T("on_2") : _T("off");
-        },
-        toggle: {
-          get: function () {
-            return isOn(id);
-          },
-          set: function () {
-            call("light", "toggle", { entity_id: id });
-          },
-        },
-      }),
-    ])
-  );
-  if (hpCanDim(id)) {
-    var bar = mk("div");
-    bar.style.margin = "0 0 8px";
-    bar.appendChild(hpBrightness(id));
-    body.appendChild(bar);
-  }
-  body.appendChild(hpColourBox(id, [id]));
-  var st = hpStyleOf(id);
-  if (st)
-    body.appendChild(
-      hmGroup([
-        hmRow({
-          title: _T("style"),
-          tap: "app-style:" + id,
-        }),
-      ])
-    );
-  var fx = hpEffects(id);
-  if (fx) body.appendChild(fx);
-  if (isAdmin() && A(id).hue_light_id)
-    body.appendChild(
-      hmGroup([
-        hmRow({
-          icon: "tune",
-          title: _T("light_setup"),
-          tap: "hue-light:" + id,
-        }),
-      ])
-    );
+  HPLF.waiting.push(then);
+  if (HPLF.el) return;
+  var f = mk("iframe", "lightframe");
+  f.title = _T("app_light_panel");
+  f.src = new URL("popup.html", HP_BASE).href + (HP_VERSION ? "?v=" + encodeURIComponent(HP_VERSION) : "");
+  document.body.appendChild(f);
+  HPLF.el = f;
+  var wait = setInterval(function () {
+    var w = f.contentWindow;
+    if (!w || !w.HuePopup) return;
+    if (!HPLF.win) {
+      HPLF.win = w;
+      w.HuePopup.attach(HPAPI.hass());
+    }
+    if (w.HuePopup.isReady()) {
+      clearInterval(wait);
+      HPLF.ready = true;
+      HPLF.waiting.splice(0).forEach(function (fn) {
+        fn(w);
+      });
+    }
+  }, 60);
 }
 
-/* A gradient light's style, from the style the Hue Plus menu registered (huestyle.js). */
-function hpStyleOf(id) {
-  var list = (window.HueHost && window.HueHost.registered.lightStyles) || [];
-  for (var i = 0; i < list.length; i++) if (list[i].applies(id)) return list[i];
-  return null;
+/* The frame gets Home Assistant's hass whenever the panel does, so the lights in it follow their states. */
+window.HueHost.onHass = function (h) {
+  if (HPLF.win && HPLF.win.HuePopup) HPLF.win.HuePopup.attach(h);
+};
+
+function hpFrameShow(on) {
+  if (!HPLF.el) return;
+  var bar = document.querySelector(".pg .pbar");
+  HPLF.el.style.top = bar ? bar.offsetHeight + "px" : "0";
+  HPLF.el.classList.toggle("show", !!on);
 }
 
-function hpStylePage(body, id) {
-  var st = hpStyleOf(id);
-  if (st) st.popup(body, id);
-  else body.appendChild(mk("div", "hp-empty")).textContent = _T("nothing_found");
+/* Every page that is drawn takes the frame away; a light screen puts it back. */
+window.HueHost.onRender = function () {
+  hpFrameShow(false);
+};
+
+function hpLightScreen(body, ids, name) {
+  var wait = mk("div", "empty");
+  wait.textContent = _T("loading");
+  body.appendChild(wait);
+  var token = (HC.sheet.light = {});
+  hpLightFrame(function (win) {
+    if (HC.sheet.light !== token) return;
+    wait.remove();
+    win.HuePopup.panel(ids, name);
+    hpFrameShow(true);
+  });
 }
 
-/* ---- the editor of the Hue app's "Add a scene": the lights follow each change, the checkmark records them ---- */
+/* A light or a group: its page is the panel. */
+function hpLightPage(body, id) {
+  hpLightScreen(body, [id], A(id).friendly_name || id);
+}
 
+/* The editor of a scene's lights (the Hue app's "New scene" and a scene's lights): the same screen, with SAVE. The lights show what is set while it is open; leaving after a change asks, and discarding
+ puts them back as they were. o = { name, lights, onSave(acts), after }; onSave answers true (or a promise of true) when it kept the scene. */
 var HPEDIT = null;
 
-function hpSnapshot(lights) {
-  return lights.map(function (id) {
-    var a = A(id);
-    return { entity_id: id, on: isOn(id), brightness: a.brightness || null, k: a.color_mode === "color_temp" ? a.color_temp_kelvin || null : null, xy: a.color_mode !== "color_temp" ? a.xy_color || null : null, hs: a.hs_color || null };
-  });
-}
-
-/* Puts the lights back as they were when the editor opened. */
-function hpRestore(snap) {
-  snap.forEach(function (s) {
-    if (!s.on) {
-      call("light", "turn_off", { entity_id: s.entity_id, transition: 0 });
-      return;
-    }
-    var d = { entity_id: s.entity_id, transition: 0 };
-    if (s.brightness) d.brightness = s.brightness;
-    if (s.k) d.color_temp_kelvin = s.k;
-    else if (s.xy) d.xy_color = s.xy;
-    else if (s.hs) d.hs_color = s.hs;
-    call("light", "turn_on", d);
-  });
-}
-
 function hpEditLights(o) {
-  HPEDIT = { o: o, snap: hpSnapshot(o.lights), sel: {}, dirty: false };
+  HPEDIT = { o: o, snap: null };
   call("light", "turn_on", { entity_id: o.lights });
   showPopup("app-edit", true);
 }
 
-function hpEditTargets() {
-  var chosen = HPEDIT.o.lights.filter(function (id) {
-    return HPEDIT.sel[id];
-  });
-  return chosen.length ? chosen : HPEDIT.o.lights;
-}
-
 function hpEditPage(body) {
   if (!HPEDIT) {
-    body.appendChild(mk("div", "hp-empty")).textContent = _T("nothing_found");
+    body.appendChild(mk("div", "empty")).textContent = _T("nothing_found");
     return;
   }
-  hmBox(body);
   var E = HPEDIT,
     o = E.o,
-    lead = o.lights[0];
+    token = (HC.sheet.light = {}),
+    wait = mk("div", "empty");
+  wait.textContent = _T("loading");
+  body.appendChild(wait);
+  hpLightFrame(function (win) {
+    if (HC.sheet.light !== token) return;
+    wait.remove();
+    /* The lights were just switched on: the picture is taken when they have settled, so that "changed" means changed by the person. */
+    setTimeout(function () {
+      if (HC.sheet.light !== token) return;
+      E.snap = win.HuePopup.snapshot(o.lights);
+      win.HuePopup.panel(o.lights, o.name);
+      hpFrameShow(true);
+    }, 700);
+  });
   guardUnsaved({
     dirty: function () {
-      return E.dirty;
+      return !!(E.snap && HPLF.win && HPLF.win.HuePopup.snapshot(o.lights) !== E.snap);
     },
     discard: function () {
-      hpRestore(E.snap);
+      if (E.snap) HPLF.win.HuePopup.restore(E.snap);
     },
     save: function (leave) {
-      var acts = hpSnapshot(o.lights);
-      return Promise.resolve(o.onSave(acts)).then(function (ok) {
+      return Promise.resolve(o.onSave(HPLF.win.HuePopup.acts(o.lights))).then(function (ok) {
         if (ok === false) return false;
-        E.dirty = false;
-        POPGUARD_CLEAR();
+        E.snap = null;
         if (o.after) o.after();
         else leave();
         return true;
       });
     },
   });
-  body.appendChild(hmTitle(o.icon || "palette", o.name || _T("hn_add_a_scene"), cntS(o.lights.length, _T("hm_light"), _T("hm_lights"))));
-  var changed = function () {
-    E.dirty = true;
-  };
-  var bright = briControl({
-    pct: function () {
-      var on = hpEditTargets().filter(isOn);
-      return on.length ? Math.max(1, Math.round((A(on[0]).brightness || 0) / 2.55)) : 0;
-    },
-    lit: function () {
-      return hpEditTargets().some(isOn);
-    },
-    live: function (v) {
-      callLive("hp-edit", "light", "turn_on", { entity_id: hpEditTargets(), brightness_pct: v });
-      changed();
-    },
-    commit: function (v) {
-      call("light", "turn_on", { entity_id: hpEditTargets(), brightness_pct: v });
-      changed();
-    },
-    stage: function () {
-      return body;
-    },
-  });
-  var barBox = mk("div");
-  barBox.style.margin = "0 0 8px";
-  barBox.appendChild(bright);
-  body.appendChild(barBox);
-  body.appendChild(hpColourBox(lead, hpEditTargets, changed));
-  body.appendChild(hmLabel(_T("lights")));
-  body.appendChild(
-    hmGroup(
-      o.lights.map(function (id) {
-        return hmRow({
-          icon: hpLightIcon(id),
-          title: A(id).friendly_name || id,
-          sub: function () {
-            return isOn(id) ? hpPct(id) + "%" : _T("off");
-          },
-          check: function () {
-            return !!E.sel[id];
-          },
-          tap: function () {
-            E.sel[id] = !E.sel[id];
-            refresh();
-          },
-        });
-      })
-    )
-  );
-  body.appendChild(hmCallout(_T("app_edit_hint")));
-}
-
-/* The page's guard is cleared before the sheet closes, or the question would come up for a change that has just been saved. */
-function POPGUARD_CLEAR() {
-  HC.popGuard = null;
 }
 
 window.HueHost.editLights = hpEditLights;
@@ -9276,8 +9162,14 @@ HC.registerPage(
   "lamp",
   hpLightPage
 );
-HC.registerPage("app-style", "style", "palette", hpStylePage);
-HC.registerPage("app-edit", "app_edit_the_lights", "palette", hpEditPage);
+HC.registerPage(
+  "app-edit",
+  function () {
+    return HPEDIT && HPEDIT.o.name ? HPEDIT.o.name : _T("app_edit_the_lights");
+  },
+  "palette",
+  hpEditPage
+);
 
 /* The Sync tab: what the Hue app's Sync tab has that Hue Plus can do: the Spotify sync (music), the Hue Play HDMI Sync Box (TV and games), and the bridge's entertainment areas.
  The rows and their pages are the ones the Hue Plus menu already has (huesync.js, huemenu.js). */
@@ -9292,7 +9184,13 @@ function hpSyncEntities(test) {
     .sort();
 }
 
-function hpSyncTab(box) {
+function hpSyncTab(outer) {
+  var head = mk("div", "hd", "<h1></h1>");
+  head.querySelector("h1").textContent = _T("app_sync");
+  outer.appendChild(head);
+  var box = mk("div");
+  outer.appendChild(box);
+  hmBox(box);
   var sync = hpSyncEntities(function (h, id) {
       return HUESYNC.isSync(h, id);
     }),

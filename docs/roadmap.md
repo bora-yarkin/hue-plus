@@ -127,6 +127,8 @@ Acceptance:
 - AC1 With the module off nothing is registered; on, one panel (`/hue-plus`, administrators only) however many bridges, removed when the last stops. Test: `tests/ha/test_dashboard.py`.
 - AC2 The panel has Home, Automations, Sync and Settings tabs; Home lists rooms and zones, a room has scenes, lights and *Edit room*, a light has brightness, white or colour, effects and light setup. Check: `tests/frontend/panel` in a browser, `tests/frontend/app.test.mjs`.
 - AC3 Home Control's Hue Plus menu is unchanged (`menu.js` built from the same sources; `tests/test_menu_built.py`).
-- AC4 Not included: the Explore tab (Signify's cloud gallery).
+- AC4 Not included: the Explore tab (Signify's cloud gallery), scene folders and search.
+- AC5 The panel keeps nothing in Home Assistant. Test: `tests/frontend/app.test.mjs`.
+- AC6 A light is a full page with Home Control's colour wheel panel, a room is a full page with a header, scenes, lights and controls. Check: `tests/frontend/panel` in a browser.
 
 Status: built and checked in the test page; to be checked on the owner's box (needs a restart to register the panel).

@@ -45,3 +45,11 @@ test("the panel does not write to the bridge except through Hue Plus services an
   const calls = [...APP_FILES.join("\n").matchAll(/\bcall(?:Raw|Live)?\("([a-z_]+)",\s*"([a-z_]+)"/g)].map((m) => `${m[1]}.${m[2]}`);
   for (const call of calls) assert.ok(/^(light\.|hue_plus\.|scene\.)/.test(call), `${call} is not a service the panel should call`);
 });
+
+test("nothing is kept in Home Assistant: the panel and the frame of the light panel do not read or write its saved data", () => {
+  const popup = read("custom_components/hue_plus/frontend/popup.html");
+  for (const code of [...APP_FILES, host, popup]) assert.ok(!/set_user_data|set_system_data|get_user_data|get_system_data|subscribe_system_data/.test(code.replace(/\/\*[\s\S]*?\*\//g, "")), "a call that saves data in Home Assistant");
+  // Home Control's dashboard saves its layout, theme and colours there; the frame turns all of that into nothing.
+  assert.ok(/HA\.data = \{ get: nothing, set: nothing, subscribe: nothing, unsubscribe: nothing \}/.test(popup));
+  assert.ok(/window\.savedRoomOf = function \(\) \{\s*return null;/.test(popup));
+});

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Hue light</title>
+<link rel="stylesheet" href="lights/dashboard.css">
+<style>html,body{background:transparent!important;overflow:hidden}main{padding-top:6px!important}.wrap{max-width:620px}</style>
+</head>
+<body>
+<!-- Home Control's light panel (the colour wheel with the white and effects pages and the brightness button), run as it is: lights/ is a copy of Home Control's dashboard code (scripts/sync_light_popup.py).
+ It is a frame of its own, so that its stylesheet and its global names never meet the panel's. The panel (app.js) draws it with HuePopup.panel(ids, name) and gives it Home Assistant's `hass` through
+ HuePopup.attach(hass). Nothing is kept in Home Assistant. -->
+<main><div class="wrap"><div id="body"></div></div></main>
+<script>
+(function () {
+  "use strict";
+  var FILES = ["camera-stream.js", "integrations.js", "app/strings.js", "app/core.js", "app/icons.js", "app/widgets.js", "app/lights.js", "app/lightpanel.js", "app/effects.js", "app/media.js", "app/climate.js", "app/vacuum.js", "app/camera.js", "app/advanced.js", "app/kinds.js", "app/popups.js", "app/model.js", "app/devices.js", "app/status.js", "app/sections.js", "app/rules.js", "app/editor.js", "app/pages.js", "app/header.js", "app/glance.js", "app/pins.js", "app/appearance.js", "app/search.js", "app/store.js", "app/scenes.js", "app/livescenes.js", "app/areas.js", "app/wall.js", "app/backups.js", "app/security.js", "app/conditions.js", "app/access.js", "app/settings.js", "app/pluginapi.js", "app/saved.js", "app/lighteditor.js", "app/scenenew.js", "app/staticmaker.js", "app/vlights.js", "app/livemaker.js", "app/history.js", "app/notifications.js", "app/roomoff.js", "app/remote.js", "app/appliance.js", "app/profiles.js", "app/manage.js", "app/doorcall.js"];
+  var query = new URLSearchParams(location.search);
+  window.appFile = function (name) {
+    return new URL("lights/app/" + name, location.href).href;
+  };
+  /* The dashboard's refresh loop is main.js, which is not run here: this does what it does for a popup. */
+  window.refresh = function () {
+    try {
+      lpTrackTick();
+      runUpdates(LIVE, "live update");
+      runUpdates(SLIVE, "live update");
+    } catch (e) {
+      console.error("[hue-light]", e);
+    }
+  };
+
+  function load(src) {
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = src + (query.get("v") ? "?v=" + encodeURIComponent(query.get("v")) : "");
+      s.onload = resolve;
+      s.onerror = function () {
+        reject(new Error("Unable to load " + src));
+      };
+      document.body.appendChild(s);
+    });
+  }
+
+  var gotHass;
+  var firstHass = new Promise(function (resolve) {
+    gotHass = resolve;
+  });
+  var pending = [];
+  var ready = false;
+
+  function body() {
+    var b = document.getElementById("body");
+    b.innerHTML = "";
+    return b;
+  }
+
+  /* The panel is the page (the Hue app's colour wheel screen), not a popup: it is drawn straight into the page of this frame, which the panel shows under its own bar. */
+  window.HuePopup = {
+    /* The panel's `hass`, now and whenever Home Assistant sends a new one. */
+    attach: function (hass) {
+      gotHass();
+      if (!window.HA) {
+        pending.push(hass);
+        return;
+      }
+      window.HA.attach(hass);
+    },
+    isReady: function () {
+      return ready;
+    },
+    /* Draws the colour, white and effects panel of one light or group, or of several lights (a room's, a scene's) with a tile for each. */
+    panel: function (ids, name) {
+      if (!ready) return false;
+      var b = body();
+      if (ids.length === 1) {
+        lightPanel(b, lpNodeOf(ids[0], null), { id: ids[0], room: null, sliders: LWHEEL[ids[0]] === false });
+      } else {
+        LMASTER.hue = ids;
+        LMASTER_NAME.hue = name;
+        LMASTER_ALL.hue = true;
+        LWHEEL["m:hue"] = undefined;
+        lightsMasterPopup(b, "hue");
+      }
+      window.refresh();
+      return true;
+    },
+    clear: function () {
+      body();
+    },
+    /* What the lights are doing now, so that what a change did to them can be undone, and what a scene should make each of them do. */
+    snapshot: function (ids) {
+      return JSON.stringify(lightSnapshot(ids));
+    },
+    restore: function (snapshot) {
+      lightRestore(JSON.parse(snapshot));
+    },
+    acts: function (ids) {
+      return lightUnits(ids).map(lightAct);
+    },
+  };
+
+  function start() {
+    return load("lights/ha-adapter.js")
+      .then(function () {
+        pending.splice(0).forEach(function (hass) {
+          window.HA.attach(hass);
+        });
+        return firstHass;
+      })
+      .then(function () {
+        return window.HA.ready();
+      })
+      .then(function () {
+        return FILES.reduce(function (chain, f) {
+          return chain.then(function () {
+            return load("lights/" + f);
+          });
+        }, Promise.resolve());
+      })
+      .then(function () {
+        /* What main.js sets up, without anything being kept in Home Assistant: the Hue panel is a window onto the bridge, so what Home Control's dashboard saves in Home Assistant (its layout, the
+           theme, saved colours) is not read and not written here, and the saved-colours rows of the light popup are left out. */
+        UI = { on: {}, caps: {}, rooms: [], devs: {}, layout: { home: [], rooms: {}, cols: {} }, meta: {} };
+        ISADMIN = true;
+        STORE_READY = true;
+        var nothing = function () {
+          return Promise.resolve(null);
+        };
+        window.HA.data = { get: nothing, set: nothing, subscribe: nothing, unsubscribe: nothing };
+        window.lightScenesRow = function () {};
+        window.savedRoomOf = function () {
+          return null;
+        };
+        window.HA.onUpdate(function () {
+          window.refresh();
+        });
+        setInterval(window.refresh, 1500);
+      })
+      .then(function () {
+        window.BOOTED = true;
+        return load("menu.js");
+      })
+      .then(function () {
+        ready = true;
+      })
+      .catch(function (e) {
+        console.error("[hue-light]", e);
+      });
+  }
+
+  start();
+})();
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 /* The host of the Hue dashboard panel: what the Hue Plus pages expect of the dashboard they run in (the plugin API, version 1, which Home Control also offers), made for this panel.
  It gives them Home Assistant's states and registries, service calls, rows and sliders, sheets that open over the tab (with the "unsaved changes" question), dialogs and toasts, in the Hue app's look.
  The pages themselves (the Hue Plus menu, the wizards, the Spotify sync and the sync box) are the very same files Home Control loads; nothing here knows about them except the registration they make.
- Nothing of Home Control is loaded or used. */
+ Home Control's dashboard is not loaded here: its light panel runs in a frame of its own (light.js, popup.html). */
 (function () {
   var EN = {
     brightness: "Brightness",
@@ -204,6 +204,7 @@
       REGISTRIES_READY = Promise.all(REGISTRY_SOURCES.map(loadRegistry)).then(function () {
         REGISTRY_SOURCES.forEach(watchRegistry);
       });
+    if (HOST.onHass) HOST.onHass(h);
     schedule();
   }
 
@@ -696,7 +697,7 @@
   /* ---- sheets: pages that open over the tab ---- */
 
   var PAGES = {};
-  var SHEET = null; /* {root, scrim, head, body} while one is open */
+  var SHEET = null; /* {root, body}: the page that is open, while there is one */
   var SESSION = {}; /* what the pages ask HC.sheet for: it changes whenever the sheet closes or the tab changes, which is when what they read is read again */
   var STACK = [];
   var CURRENT = null;
@@ -708,26 +709,24 @@
     return { def: PAGES[name], id: String(key).slice(name.length + 1) };
   }
 
+  /* A page of the Hue app: it covers the screen, with a bar of an X (or an arrow when it was opened from another page), the title, and SAVE when what it shows is to be saved. */
   function buildSheet() {
-    var scrim = mk("div", "scrim"),
-      root = mk("div", "sheet");
+    var root = mk("div", "pg");
     root.setAttribute("role", "dialog");
     root.setAttribute("aria-modal", "true");
     root.innerHTML =
-      "<div class='shead'><button type='button' class='rb back' aria-label='" +
+      "<div class='pbar'><button type='button' class='rbt back' aria-label='" +
       T("back") +
       "'>" +
       svg("back") +
-      "</button><div class='ttl'><span class='ic'></span><span class='tt'></span></div><button type='button' class='rb ok' aria-label='" +
-      T("save") +
-      "' style='display:none'>" +
-      svg("check") +
-      "</button><button type='button' class='rb x' aria-label='" +
+      "</button><button type='button' class='rbt x' aria-label='" +
       T("close") +
       "'>" +
       svg("close") +
-      "</button></div><div class='sbody'></div>";
-    var s = { root: root, scrim: scrim, body: root.querySelector(".sbody") };
+      "</button><div class='ttl'><span class='tt'></span></div><button type='button' class='act ok' style='display:none'>" +
+      T("save") +
+      "</button></div><div class='pbody'></div>";
+    var s = { root: root, body: root.querySelector(".pbody") };
     root.querySelector(".back").addEventListener("click", function () {
       popBack();
     });
@@ -737,13 +736,8 @@
     root.querySelector(".ok").addEventListener("click", function () {
       if (CHECK) CHECK.save(CHECK.done);
     });
-    scrim.addEventListener("click", function () {
-      closeSheet();
-    });
-    document.body.appendChild(scrim);
     document.body.appendChild(root);
     requestAnimationFrame(function () {
-      scrim.classList.add("in");
       root.classList.add("in");
     });
     return s;
@@ -756,14 +750,16 @@
   function render(key) {
     var p = pageOf(key);
     if (!p.def) return false;
+    if (HOST.onRender) HOST.onRender();
+    SHEET.root.classList.remove("roompg");
     CURRENT = key;
     POPGUARD = null;
     CHECK = null;
     SHEET_LIST.length = 0;
     SHEET.root.querySelector(".ok").style.display = "none";
-    SHEET.root.querySelector(".ttl .ic").innerHTML = svg(p.def[1]);
     SHEET.root.querySelector(".tt").textContent = title(p.def, p.id);
-    SHEET.root.querySelector(".back").style.visibility = STACK.length ? "visible" : "hidden";
+    SHEET.root.querySelector(".back").style.display = STACK.length ? "" : "none";
+    SHEET.root.querySelector(".x").style.display = STACK.length ? "none" : "";
     SHEET.body.innerHTML = "";
     SHEET.body.scrollTop = 0;
     p.def[2](SHEET.body, p.id);
@@ -799,12 +795,10 @@
     STACK = [];
     CURRENT = null;
     SHEET_LIST.length = 0;
-    s.scrim.classList.remove("in");
     s.root.classList.remove("in");
     setTimeout(function () {
-      s.scrim.remove();
       s.root.remove();
-    }, 300);
+    }, 250);
     SESSION = {};
     if (HOST.onSheetClosed) HOST.onSheetClosed();
   }
@@ -858,6 +852,8 @@
     registered: REGISTERED,
     onUpdate: null,
     onSheetClosed: null,
+    onRender: null,
+    onHass: null,
     editLights: function () {
       toast(T("unavailable"));
     },
@@ -1016,6 +1012,9 @@
   /* What the application uses besides the plugin API. */
   HOST.api = {
     attach: attach,
+    hass: function () {
+      return HASS;
+    },
     ws: function (msg) {
       return HASS.callWS(msg);
     },

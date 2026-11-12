@@ -48,7 +48,7 @@ APP_INSIDE = ("shell.js", "home.js", "light.js", "syncpage.js")
 
 
 def _css() -> str:
-    text = "".join((APP_SOURCES / name).read_text(encoding="utf-8") for name in ("hm.css", "app.css"))
+    text = "".join((APP_SOURCES / name).read_text(encoding="utf-8") for name in ("app.css",))
     text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
     return re.sub(r"\s*([{};:,>])\s*", r"\1", re.sub(r"\s+", " ", text)).strip()
 

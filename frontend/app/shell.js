@@ -1,13 +1,14 @@
-/* The Hue dashboard panel (Hue Plus, dashboard module): a heading, the tab, and a tab bar like the Hue app's. Home and its light pages are in home.js and light.js, Sync in
- syncpage.js; Automations and Settings are the Hue Plus menu pages themselves, drawn in the tab instead of in a sheet. Everything sits inside the plugin's scope, so it uses the
- same pages and helpers as the menu. */
+/* The Hue dashboard panel (Hue Plus, dashboard module): the Hue app's tabs and tab bar. Home and its pages are in home.js and light.js, Sync in syncpage.js; Automations and Settings are the Hue Plus menu
+ pages themselves, drawn in the tab. Everything sits inside the plugin's scope, so it uses the same pages and helpers as the menu. The Explore tab of the app (a gallery from Signify's cloud) has nothing behind
+ it here. Nothing is kept in Home Assistant: the panel shows the bridge and writes to it. */
 
 HOST_ICONS.bolt = "<path d='M13 2L5 14h6l-1 8 8-12h-6z'/>";
+HOST_ICONS.dots = "<circle cx='5' cy='12' r='1.7' fill='currentColor'/><circle cx='12' cy='12' r='1.7' fill='currentColor'/><circle cx='19' cy='12' r='1.7' fill='currentColor'/>";
 
 var HPAPP = { tab: "", el: null, bridge: "", modules: null, sigOf: null, lastSig: "" };
 var HPAPI = window.HueHost && window.HueHost.api;
 
-/* The tabs, in the order of the Hue app's tab bar (its Explore tab, a gallery from Signify's cloud, has nothing behind it here). */
+/* The tabs, in the order of the Hue app's tab bar. */
 function hpTabs() {
   return [
     { id: "home", title: _T("home"), icon: "home", build: hpHomeTab },
@@ -17,12 +18,22 @@ function hpTabs() {
   ];
 }
 
+/* A tab that is a page of the Hue Plus menu: the heading of the app's tab, then the page. */
+function hpMenuTab(box, title, page) {
+  var head = mk("div", "hd", "<h1></h1>");
+  head.querySelector("h1").textContent = title;
+  box.appendChild(head);
+  var inner = mk("div");
+  box.appendChild(inner);
+  HP_PAGES[page][2](inner);
+}
+
 function hpAutomationsTab(box) {
-  HP_PAGES["hue-routines"][2](box);
+  hpMenuTab(box, _T("automations"), "hue-routines");
 }
 
 function hpSettingsTab(box) {
-  HP_PAGES["stg-hue"][2](box);
+  hpMenuTab(box, _T("app_settings"), "stg-hue");
 }
 
 function hpShowTab(id) {
@@ -35,8 +46,7 @@ function hpShowTab(id) {
   HPAPI.tabList.length = 0;
   HPAPI.resetSession();
   HPAPP.main.innerHTML = "";
-  HPAPP.title.textContent = tab.title;
-  HPAPP.sub.textContent = HPAPP.bridge;
+  HPAPP.view.scrollTop = 0;
   Array.prototype.forEach.call(HPAPP.nav.querySelectorAll("button"), function (b) {
     var on = b.dataset.tab === id;
     b.classList.toggle("on", on);
@@ -64,12 +74,11 @@ function hpStart() {
       var b = ((r && r.bridges) || [])[0];
       HPAPP.bridge = b ? b.name : "";
       HPAPP.modules = b ? b.modules : null;
-      HPAPP.sub.textContent = HPAPP.bridge;
+      if (HPAPP.tab === "home") hpShowTab("home");
     },
     function () {}
   );
-  var tabs = hpTabs();
-  tabs.forEach(function (t) {
+  hpTabs().forEach(function (t) {
     var b = mk("button", "", svg(t.icon) + "<span></span>");
     b.type = "button";
     b.dataset.tab = t.id;
@@ -81,7 +90,9 @@ function hpStart() {
     HPAPP.nav.querySelector(".in").appendChild(b);
   });
   window.HueHost.onUpdate = hpWatch;
+  var closed = window.HueHost.onSheetClosed;
   window.HueHost.onSheetClosed = function () {
+    if (closed) closed();
     hpShowTab(HPAPP.tab);
   };
   hpShowTab("home");
@@ -94,16 +105,12 @@ window.HuePlusApp = {
   mount: function (el, hass) {
     HPAPI.attach(hass);
     HC.addStyles(HOST_CSS);
-    el.innerHTML =
-      "<div id='hp'><header class='top'><div><h1></h1><div class='sub'></div></div></header><main></main><nav class='tabs' aria-label='" +
-      _T("app_tabs") +
-      "'><div class='in'></div></nav></div>";
+    el.innerHTML = "<div id='hp'><div class='view'><div class='in'></div></div><nav class='tabs' aria-label='" + _T("app_tabs") + "'><div class='in'></div></nav></div>";
     HPAPP.el = el;
-    HPAPP.title = el.querySelector("h1");
-    HPAPP.sub = el.querySelector(".sub");
-    HPAPP.main = el.querySelector("main");
+    HPAPP.view = el.querySelector(".view");
+    HPAPP.main = el.querySelector(".view>.in");
     HPAPP.nav = el.querySelector("nav");
-    HPAPP.main.appendChild(hmCallout(_T("loading")));
+    HPAPP.main.appendChild(mk("div", "empty")).textContent = _T("loading");
     /* The panel starts when the registries are in, or after a short wait; the lists fill in by themselves. */
     Promise.race([
       HPAPI.ready(),

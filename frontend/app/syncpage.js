@@ -11,7 +11,13 @@ function hpSyncEntities(test) {
     .sort();
 }
 
-function hpSyncTab(box) {
+function hpSyncTab(outer) {
+  var head = mk("div", "hd", "<h1></h1>");
+  head.querySelector("h1").textContent = _T("app_sync");
+  outer.appendChild(head);
+  var box = mk("div");
+  outer.appendChild(box);
+  hmBox(box);
   var sync = hpSyncEntities(function (h, id) {
       return HUESYNC.isSync(h, id);
     }),
