@@ -115,19 +115,6 @@ function hpAutomationsTab(box) {
       g.appendChild(cards);
       inner.appendChild(g);
     });
-    /* An automation of a kind the app has no group for (the bridge's own) is listed under its own name. */
-    var rest = list.filter(function (x) {
-      return !hwKindOf(x);
-    });
-    if (rest.length) {
-      var g2 = mk("div", "agroup", "<div class='ahead'><span class='ic'></span><b></b><i></i></div><div class='acards'></div>");
-      g2.querySelector(".ic").innerHTML = svg("clock");
-      g2.querySelector("b").textContent = _T("other");
-      g2.querySelector("i").textContent = String(rest.length);
-      rest.forEach(function (x) {
-        g2.querySelector(".acards").appendChild(hpAutoCard(x, again));
-      });
-      inner.appendChild(g2);
-    }
+    /* The bridge's own automations (its dimmer switches, the light state after streaming) are not in the app's list. */
   });
 }

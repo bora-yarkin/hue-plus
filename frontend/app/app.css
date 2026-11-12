@@ -101,9 +101,9 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .pg .pbar{display:flex;align-items:center;gap:14px;background:var(--head);padding:calc(var(--sat) + 10px) 16px 12px;flex:none}
 .pg .pbar .rbt{background:var(--tile);width:32px;height:32px}
 .pg .pbar .rbt svg{width:17px;height:17px;stroke-width:2.2}
-.pg .pbar .ttl{flex:1;min-width:0;font-size:15.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg .pbar .ttl{flex:1;min-width:0;font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pg .pbar .ttl .ic{display:none}
-.pg .pbar .act{border:0;background:var(--tile);color:#fff;border-radius:16px;padding:8px 17px;font-size:13px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;cursor:pointer}
+.pg .pbar .act{border:0;background:var(--tile);color:#fff;border-radius:16px;padding:8px 16px;font-size:12px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;cursor:pointer}
 .pg .pbar .act:disabled{opacity:.5;cursor:default}
 .pg .pbody{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 0 calc(var(--sab) + 32px)}
 .pg .pbody>*{max-width:760px;margin-left:auto;margin-right:auto}
@@ -115,9 +115,9 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .pill+.pill{border-top:1px solid var(--line)}
 .pill.static{cursor:default}
 .pill .tx{flex:1;min-width:0;display:flex;flex-direction:column;position:relative;z-index:1}
-.pill .nm{font-size:16px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pill .sb{font-size:var(--fs-s);color:var(--ink2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pill .vl{font-size:var(--fs-m);color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap;position:relative;z-index:1}
+.pill .nm{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill .sb{font-size:11px;color:var(--ink2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill .vl{font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap;position:relative;z-index:1}
 .pill>.ic{position:relative;z-index:1;width:40px;height:40px;border-radius:50%;background:#101114;color:#fff}
 .pill>.ic svg{width:21px;height:21px}
 .pill.on>.ic{background:var(--gold1);color:var(--gold-ink)}
@@ -132,7 +132,7 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .pill.slide .trk:before{content:"";position:absolute;left:0;right:0;top:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.16)}
 .pill.slide .fill{position:absolute;left:0;top:6px;height:6px;width:0;border-radius:3px;background:rgba(255,255,255,.55)}
 .pill.slide .kn{position:absolute;top:0;left:0;width:18px;height:18px;margin-left:-9px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.45)}
-.sep{display:flex;align-items:center;gap:8px;font-size:var(--fs-xs);letter-spacing:.18em;text-transform:uppercase;color:var(--label);margin:26px 18px 10px}
+.sep{display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--label);margin:26px 18px 10px}
 .sep svg{display:none}
 .hint{font-size:var(--fs-s);color:var(--ink2);margin:10px 18px}
 .notec.pane.dim{font-size:var(--fs-m);color:var(--ink2);line-height:1.45;padding:14px 18px}
@@ -160,9 +160,9 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .hm .hm-bigi svg{width:34px;height:34px}
 .hm .hm-title{padding:18px 18px 8px}
 .hm .hm-tt{min-width:0;display:block;margin-top:6px}
-.hm .hm-tt b{display:block;font-size:30px;font-weight:700;line-height:1.1;overflow-wrap:anywhere}
+.hm .hm-tt b{display:block;font-size:26px;font-weight:700;line-height:1.1;overflow-wrap:anywhere}
 .hm .hm-tt i{display:block;font-style:normal;font-size:var(--fs-m);color:var(--ink2);margin-top:6px}
-.hm .hm-label{font-size:var(--fs-xs);letter-spacing:.18em;text-transform:uppercase;color:var(--label);padding:26px 18px 10px}
+.hm .hm-label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--label);padding:26px 18px 10px}
 .hm .hm-group{background:var(--row);margin:0;border:0;border-radius:0}
 .hm .hm-row{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 18px;transition:background .2s}
 .hm .hm-row+.hm-row{border-top:1px solid var(--line)}
@@ -173,9 +173,9 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .hm .hm-i svg,.hm .hm-c svg,.hm .hm-ck svg,.hm .hm-ni svg,.hm .hm-ti svg,.hm .hm-gear svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .hm .hm-i svg{width:21px;height:21px}
 .hm .hm-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.hm .hm-n{font-size:16px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hm .hm-s{font-size:var(--fs-s);color:var(--ink2);overflow-wrap:anywhere}
-.hm .hm-v{font-size:var(--fs-m);color:var(--ink2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.hm .hm-n{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hm .hm-s{font-size:11px;color:var(--ink2);overflow-wrap:anywhere}
+.hm .hm-v{font-size:12px;color:var(--ink2);white-space:nowrap;font-variant-numeric:tabular-nums}
 .hm .hm-c{width:20px;height:20px;flex:none;color:var(--ink2);display:flex;align-items:center}
 .hm .hm-c svg{width:18px;height:18px;transform:rotate(-90deg)}
 .hm .hm-row.stack{min-height:58px}
@@ -296,18 +296,18 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .agroup{margin-top:16px}
 .ahead{display:flex;align-items:center;gap:16px;padding:6px 2px 10px}
 .ahead .ic svg{width:30px;height:30px}
-.ahead b{flex:1;font-size:15px;font-weight:600}
-.ahead i{font-style:normal;color:var(--ink2);font-size:13px}
+.ahead b{flex:1;font-size:13px;font-weight:500}
+.ahead i{font-style:normal;color:var(--ink2);font-size:11px}
 .ahead .fold{background:var(--tile);width:34px;height:34px}
 .ahead .fold svg{transition:transform .2s;transform:rotate(180deg)}
 .agroup.folded .fold svg{transform:none}
 .agroup.folded .acards{display:none}
 .acards{display:flex;flex-direction:column;gap:10px}
-.acard{display:flex;align-items:center;gap:12px;background:var(--row);border-radius:var(--r-m);padding:14px 16px;cursor:pointer;transition:background .2s,transform .12s}
+.acard{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.085);border-radius:var(--r-m);padding:14px 16px;cursor:pointer;transition:background .2s,transform .12s}
 .acard:active{transform:scale(.985)}
 .acard .tx{flex:1;min-width:0}
-.acard b{display:block;font-size:15.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.acard i{display:block;font-style:normal;font-size:13px;color:var(--ink2);margin-top:2px}
+.acard b{display:block;font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acard i{display:block;font-style:normal;font-size:10.5px;color:var(--ink2);margin-top:2px}
 .acard:focus-visible{outline:2px solid #fff;outline-offset:2px}
 
 /* ---- movement: what changes, changes ---- */
@@ -342,3 +342,7 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .schead .big{display:block!important;position:static!important;width:50px;height:50px;flex:none;margin-bottom:4px;order:-1;flex-basis:100%;background:none}
 .schead .big .disc{width:46px;height:46px}
 .ctile .ic svg{width:26px;height:26px}
+
+/* what is written on a lit card or tile is dark on the app's gold, white on the header */
+.room.on-gold,.ltile.on-gold,.ftile.lit{color:var(--gold-ink);text-shadow:none}
+.rhead.on-gold{color:#fff;text-shadow:0 1px 2px rgba(60,45,15,.35)}
