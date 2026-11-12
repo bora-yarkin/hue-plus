@@ -214,7 +214,8 @@ function hpFolderRows(box, room) {
     },
     function (ids) {
       hpOrderSet("folders:" + room, ids);
-    }
+    },
+    { live: false }
   );
   box.appendChild(grid);
 }
@@ -264,20 +265,36 @@ function hpFolderCard(folder, room, from) {
   }
   card.setAttribute("role", "dialog");
   card.setAttribute("aria-label", folder.name);
-  /* The card opens out of the folder it was on and closes back into it. */
-  function shrinkTo(tile) {
-    var cr = card.getBoundingClientRect(),
-      tr = tile.getBoundingClientRect();
-    return "translate(" + (tr.left - cr.left) + "px," + (tr.top - cr.top) + "px) scale(" + tr.width / cr.width + "," + tr.height / cr.height + ")";
+  /* The card opens out of the folder it was on and closes back into it, as the app does it (read from a screen recording): the whole card, its content too, is scaled about the middle of the folder and fades in over about a sixth of a second while
+   the page behind blurs; closing is that backwards. The card is never stretched: only a uniform scale and its opacity change. */
+  var OPEN = ".17s cubic-bezier(.3,0,.3,1)",
+    SHUT = ".17s cubic-bezier(.7,0,.7,1)",
+    pulse = null;
+  function aim() {
+    card.style.transition = "none";
+    card.style.transform = "none";
+    card.style.opacity = "1";
+    var cr = card.getBoundingClientRect();
+    if (!from || !from.isConnected) {
+      card.style.transformOrigin = "50% 50%";
+      return 0.9;
+    }
+    var tr = from.getBoundingClientRect();
+    card.style.transformOrigin = tr.left + tr.width / 2 - cr.left + "px " + (tr.top + tr.height / 2 - cr.top) + "px";
+    return Math.max(0.3, Math.min(0.6, (tr.width * 1.6) / cr.width));
   }
   function close() {
+    var s = aim();
+    void card.offsetHeight;
     scrim.classList.remove("in");
-    card.classList.remove("in");
-    if (from && from.isConnected) card.style.transform = shrinkTo(from);
+    card.style.transition = "transform " + SHUT + ",opacity .12s .05s";
+    card.style.transform = "scale(" + s + ")";
+    card.style.opacity = "0";
+    if (pulse) pulse.cancel();
     setTimeout(function () {
       scrim.remove();
       wrap.remove();
-    }, 460);
+    }, 200);
   }
   hpOrdered(folder.scenes, "scenes:" + room + ":" + folder.key, function (s) {
     return s;
@@ -349,16 +366,16 @@ function hpFolderCard(folder, room, from) {
   document.body.appendChild(scrim);
   document.body.appendChild(wrap);
   refresh();
-  if (from) {
-    card.style.transition = "none";
-    card.style.transform = shrinkTo(from);
-    void card.offsetHeight;
-  }
+  var s0 = aim();
+  card.style.transform = "scale(" + s0 + ")";
+  card.style.opacity = "0";
+  void card.offsetHeight;
+  if (from && from.isConnected && from.animate) pulse = from.animate([{ transform: "scale(1)" }, { transform: "scale(1.1)" }], { duration: 110, fill: "forwards" });
   requestAnimationFrame(function () {
     scrim.classList.add("in");
-    card.style.transition = "";
-    card.style.transform = "";
-    card.classList.add("in");
+    card.style.transition = "transform " + OPEN + ",opacity .12s";
+    card.style.transform = "none";
+    card.style.opacity = "1";
     card.refresh();
   });
 }

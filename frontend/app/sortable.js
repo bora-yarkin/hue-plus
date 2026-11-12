@@ -48,13 +48,15 @@ function hpSortable(box, selector, idOf, done, opts) {
     function place(ev) {
       el.style.transform = "none";
       var base = el.getBoundingClientRect();
-      el.style.transform = "translate(" + (ev.clientX - grab.x - base.left) + "px," + (ev.clientY - grab.y - base.top) + "px) scale(1.06)";
+      el.style.transform = "translate(" + (ev.clientX - grab.x - base.left) + "px," + (ev.clientY - grab.y - base.top) + "px) scale(1.03)";
     }
     function lift() {
       lifted = true;
       var r = el.getBoundingClientRect();
       grab = { x: sx - r.left, y: sy - r.top };
       el.classList.add("lifting");
+      /* The tile is carried over the whole page, not only over its own row. */
+      box.style.overflow = "visible";
       try {
         el.setPointerCapture(e.pointerId);
       } catch (x) {}
@@ -78,12 +80,41 @@ function hpSortable(box, selector, idOf, done, opts) {
         if (opts.merge && middle) {
           target = other;
           other.classList.add("mergeable");
-        } else if (inside && !(opts.merge && middle)) {
+        } else if (inside && !(opts.merge && middle) && opts.live !== false) {
           var all = items();
           box.insertBefore(el, all.indexOf(other) > all.indexOf(el) ? other.nextSibling : other);
         }
       });
       place(ev);
+    }
+    /* The tile was carried over the others without them moving; where it is let go is its new place, and the tiles in between slide to theirs. */
+    function dropAt(x, y) {
+      var others = items().filter(function (o) {
+          return o !== el;
+        }),
+        before = others.map(function (o) {
+          return o.getBoundingClientRect();
+        }),
+        best = null,
+        bestD = Infinity;
+      others.forEach(function (o, i) {
+        var r = before[i],
+          d = Math.hypot(x - (r.left + r.width / 2), y - (r.top + r.height / 2));
+        if (d < bestD) {
+          bestD = d;
+          best = { o: o, r: r };
+        }
+      });
+      if (!best) return;
+      var after = x > best.r.left + best.r.width / 2 && y > best.r.top - 1 ? best.o.nextSibling : best.o;
+      if (y > best.r.bottom) after = best.o.nextSibling;
+      box.insertBefore(el, after);
+      others.forEach(function (o, i) {
+        var r = o.getBoundingClientRect(),
+          dx = before[i].left - r.left,
+          dy = before[i].top - r.top;
+        if ((dx || dy) && o.animate) o.animate([{ transform: "translate(" + dx + "px," + dy + "px)" }, { transform: "none" }], { duration: 220, easing: "cubic-bezier(.2,.8,.2,1)" });
+      });
     }
     function stop(commit) {
       clearTimeout(timer);
@@ -91,6 +122,7 @@ function hpSortable(box, selector, idOf, done, opts) {
       document.removeEventListener("pointerup", up, true);
       document.removeEventListener("pointercancel", cancel, true);
       if (lifted) {
+        box.style.overflow = "";
         el.classList.remove("lifting");
         el.style.transform = "";
         /* The click that ends a drag is not a tap. */
@@ -107,7 +139,10 @@ function hpSortable(box, selector, idOf, done, opts) {
         });
         if (commit && target && opts.merge) opts.merge(idOf(el), idOf(target));
         else if (commit && opts.outside && !inside(opts.bounds ? opts.bounds() : box, endX, endY)) opts.outside(idOf(el));
-        else if (commit) done(items().map(idOf));
+        else if (commit) {
+          if (opts.live === false) dropAt(endX, endY);
+          done(items().map(idOf));
+        }
       }
     }
     function up(ev) {

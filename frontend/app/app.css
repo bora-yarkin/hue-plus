@@ -254,12 +254,10 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .ftile:focus-visible,.sitem:focus-visible{outline:2px solid #fff;outline-offset:2px}
 
 /* ---- the card a folder opens ---- */
-.fscrim{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;transition:opacity .22s}
-.fscrim.in{opacity:1}
+.fscrim{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);transition:background-color .17s,backdrop-filter .17s,-webkit-backdrop-filter .17s}
+.fscrim.in{background:rgba(0,0,0,.45);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .fwrap{position:fixed;inset:0;z-index:75;display:flex;align-items:center;justify-content:center;pointer-events:none}
-.fcard{position:relative;pointer-events:auto;width:min(520px,calc(100% - 34px));max-height:80vh;overflow:auto;transform-origin:0 0;background:#26272b;border-radius:18px;padding:20px 17px 20px;box-shadow:0 24px 60px rgba(0,0,0,.55);transition:transform .46s cubic-bezier(.2,.9,.25,1)}
-.fcard>*{opacity:0;transition:opacity .2s}
-.fcard.in>*{opacity:1;transition:opacity .3s .16s}
+.fcard{position:relative;pointer-events:auto;width:min(520px,calc(100% - 34px));max-height:80vh;overflow:auto;background:#26272b;border-radius:18px;padding:20px 17px 20px;box-shadow:0 24px 60px rgba(0,0,0,.55);opacity:0}
 .fcard .ft{font-size:13.5px;font-weight:500;margin:2px 3px 18px}
 .fg{display:flex;flex-wrap:wrap;gap:10px 13px}
 .sitem{width:102px;flex:none;border-radius:11px;background:var(--tile);height:113px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:6px;cursor:pointer;color:#fff;transition:background .25s,transform .12s}
@@ -351,7 +349,7 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .rhead.on-gold{color:#fff;text-shadow:0 1px 2px rgba(60,45,15,.35)}
 
 /* a popup page: it slides up over the page behind, which is dimmed; the screen above it stays */
-.pg.modalpg{top:46px;border-radius:18px 18px 0 0;box-shadow:0 0 0 100vmax rgba(0,0,0,0);transform:translateY(calc(100% + 46px));opacity:1}
+.pg.modalpg{top:66px;border-radius:18px 18px 0 0;box-shadow:0 0 0 100vmax rgba(0,0,0,0);transform:translateY(calc(100% + 66px));opacity:1;transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s}
 .pg.modalpg.in{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.55)}
 .pg.modalpg .pbar{border-radius:18px 18px 0 0;padding-top:14px}
 .pg.modalpg .pbody{overflow-x:hidden}
@@ -401,7 +399,7 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .lbrow .hm-label{flex:1}
 .hm-group.cyc .hm-row{touch-action:pan-y}
 /* what is held and dragged */
-.lifting{position:relative;z-index:60;box-shadow:0 14px 30px rgba(0,0,0,.5);transition:none!important}
+.lifting{position:relative;z-index:60;box-shadow:0 10px 28px rgba(0,0,0,.45);filter:brightness(1.22);transition:none!important}
 .frows .ftile,.fg .sitem,.hm-group.cyc .hm-row{user-select:none;-webkit-user-select:none}
 
 /* dropping a scene on another makes a folder: the one it is over lights up */

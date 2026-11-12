@@ -857,9 +857,17 @@
   }
 
   /* Takes the top layer away, sliding it out the way it came in, and shows the one under it. */
+  function leaveStyle(root) {
+    root.style.transition = root.classList.contains("modalpg")
+      ? "transform .3s cubic-bezier(.8,0,.8,.2),box-shadow .3s"
+      : "transform .42s cubic-bezier(.75,0,.8,.1),box-shadow .42s,opacity .25s";
+  }
+
   function dropTop() {
     var gone = LAYERS.pop(),
       below = LAYERS[LAYERS.length - 1];
+    /* A layer leaves the way it came, backwards: the curve it came in on, mirrored. */
+    leaveStyle(gone.root);
     gone.root.classList.remove("in");
     setTimeout(function () {
       gone.root.remove();
@@ -914,6 +922,7 @@
     activate(null);
     SHEET_LIST = [];
     all.forEach(function (l, i) {
+      leaveStyle(l.root);
       l.root.classList.remove("in");
       setTimeout(function () {
         l.root.remove();
