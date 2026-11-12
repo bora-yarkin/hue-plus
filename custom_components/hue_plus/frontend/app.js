@@ -709,7 +709,7 @@ var HOST_CSS = ":root{--bg:#1b1c20;--bg-warm:#2b2926;--bar:#14151a;--head:#23242
 
   var PAGES = {};
   /* The pages the app opens as a popup over the page behind (it slides up, with an X and DONE or SAVE): a switch and what its buttons do, a light's settings, a scene's. The rest are pushed, with an arrow. */
-  var MODAL = { "hue-switch": 1, "hue-button": 1, "hue-press": 1, "hue-cycle": 1, "hue-time": 1, "hue-tslot": 1, "hue-cslot": 1, "hue-pick-scene": 1, "hue-light": 1, "hue-pw": 1, "hue-fn": 1, "hue-or": 1, "hue-od": 1, "hue-perf": 1, "hue-end": 1, "hue-escene": 1, "app-scene": 1, "app-press": 1, "app-smart": 1, "hue-bridge": 1, "hue-area": 1, "hue-marea": 1, "hue-group": 1, "hue-routine": 1, "hue-bname": 1, "hue-gname": 1, "hue-mname": 1, "hue-zch": 1 };
+  var MODAL = { "hue-switch": 1, "hue-button": 1, "hue-press": 1, "hue-cycle": 1, "hue-time": 1, "hue-tslot": 1, "hue-cslot": 1, "hue-pick-scene": 1, "hue-light": 1, "hue-pw": 1, "hue-fn": 1, "hue-or": 1, "hue-od": 1, "hue-perf": 1, "hue-end": 1, "hue-escene": 1, "app-scene": 1, "app-press": 1, "app-smart": 1, "hue-bridge": 1, "hue-area": 1, "hue-marea": 1, "hue-group": 1, "hue-routine": 1, "hue-bname": 1, "hue-gname": 1, "hue-mname": 1, "hue-zch": 1, "app-devinfo": 1 };
   var SHEET = null; /* {root, body}: the page that is open, while there is one */
   var SESSION = {}; /* what the pages ask HC.sheet for: it changes whenever the sheet closes or the tab changes, which is when what they read is read again */
   var STACK = [];
@@ -1706,6 +1706,8 @@ var PLUGIN_STRINGS = {
   "app_edit_zone": "Edit zone",
   "app_edit_the_lights": "Edit the lights",
   "app_light_panel": "Light colour and brightness",
+  "app_light_settings": "Light settings",
+  "app_support": "Support",
   "app_new_folder": "New folder",
   "app_group_name": "Group name",
   "app_drag_to_order": "Drag items to set preferred order.",
@@ -10288,6 +10290,89 @@ function hpCyclePage(b, id) {
 }
 
 HP_PAGES["hue-cycle"] = ["hm_scene_cycle", "swap", hpCyclePage];
+
+/* A light's settings, as the app has them: the light and its name, the room it is in (the bridge's), General (function, power on, orientation), and Support, with the light's device info one tap away. What
+ this adds to the app's page, Hue Plus's own timed effects, stays at the end. It is the menu's page (hmLight) with those parts changed, so what is edited and saved is the same. */
+
+function hpRoomOfLight(id) {
+  var hue = A(id).hue_light_id,
+    found = null;
+  (HM.rooms || []).concat(HM.zones || []).forEach(function (g) {
+    if (hue && (g.lights || []).indexOf(hue) >= 0) found = found || g;
+  });
+  return found;
+}
+
+function hpDeviceInfoRows(id) {
+  var a = function () {
+      return A(id);
+    },
+    X = hueplus.forLight(H(), id),
+    rows = [];
+  if (a().hue_min_brightness !== undefined)
+    rows.push(
+      hmRow({
+        title: _T("lowest_brightness"),
+        val: function () {
+          return Math.round(a().hue_min_brightness * 100) / 100 + "%";
+        },
+      })
+    );
+  if (X.update)
+    rows.push(
+      hmRow({
+        title: _T("firmware"),
+        sub: function () {
+          return A(X.update).installed_version || "";
+        },
+        val: function () {
+          return hmUpdateText(X.update);
+        },
+        tap:
+          V_(X.update) === "on"
+            ? function () {
+                confirmDlg(_T("install_this_update"), function () {
+                  call("update", "install", { entity_id: X.update });
+                });
+              }
+            : null,
+      })
+    );
+  return rows;
+}
+
+function hpLightSettings(b, id) {
+  hmLight(b, id);
+  var kids = [].slice.call(b.children);
+  /* The room of the light comes from the bridge, as the app shows it. */
+  var title = b.querySelector(".hm-title"),
+    room = hpRoomOfLight(id);
+  if (title && room && !b.querySelector(".hm-group .hm-i svg + *") && !kids.some(function (k) { return /^Room\b/.test(k.textContent || ""); })) {
+    var g = hmGroup([hmRow({ title: _T("hm_room"), val: room.name })]);
+    b.insertBefore(g, title.nextSibling);
+  }
+  /* The device info is a row under Support, as in the app, and opens the details. */
+  var label = [].filter.call(b.querySelectorAll(".hm-label"), function (l) {
+    return l.textContent === _T("hm_device_info");
+  })[0];
+  if (label) {
+    var group = label.nextSibling;
+    label.textContent = _T("app_support");
+    group.parentNode.replaceChild(
+      hmGroup([hmRow({ icon: "info", title: _T("hm_device_info"), tap: "app-devinfo:" + id })]),
+      group
+    );
+  }
+}
+
+function hpDeviceInfoPage(b, id) {
+  hmBox(b);
+  b.appendChild(hmTitle("lamp", hpName(id)));
+  b.appendChild(hmGroup(hpDeviceInfoRows(id)));
+}
+
+HP_PAGES["hue-light"] = ["app_light_settings", "lamp", hpLightSettings];
+HP_PAGES["app-devinfo"] = ["hm_device_info", "info", hpDeviceInfoPage];
 
 /* The Automations tab, as the Hue app draws it: a blue top, the title with a round plus, and the bridge's automations in a group for each kind (its icon, its name, how many, and a button that folds it), each automation a card with
  its time and name, the days it repeats, and a switch. A card opens the automation's own page (the Hue Plus menu's); the plus is the new-automation wizard. */

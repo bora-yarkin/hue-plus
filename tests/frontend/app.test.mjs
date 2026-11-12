@@ -8,7 +8,7 @@ import vm from "node:vm";
 
 const root = new URL("../../", import.meta.url);
 const read = (path) => readFileSync(new URL(path, root), "utf8");
-const APP_FILES = ["shell.js", "home.js", "sortable.js", "scenes.js", "switchpages.js", "cyclepage.js", "autotab.js", "light.js", "syncpage.js"].map((f) => read(`frontend/app/${f}`));
+const APP_FILES = ["shell.js", "home.js", "sortable.js", "scenes.js", "switchpages.js", "cyclepage.js", "lightsettings.js", "autotab.js", "light.js", "syncpage.js"].map((f) => read(`frontend/app/${f}`));
 const host = read("frontend/app/host.js");
 const bundle = read("custom_components/hue_plus/frontend/app.js");
 const plugin = [...APP_FILES, ...["huemenu.js", "huewizard.js", "humotion.js", "huerooms.js", "huesync.js", "huescenes.js", "huestyle.js"].map((f) => read(`frontend/src/${f}`))].join("\n");
@@ -41,9 +41,9 @@ test("nothing a bridge or a device names is put into the page as markup", () => 
   }
 });
 
-test("the panel does not write to the bridge except through Hue Plus services and the light and scene services", () => {
+test("the panel does not write to the bridge except through Hue Plus services, the light and scene services and a device's firmware update", () => {
   const calls = [...APP_FILES.join("\n").matchAll(/\bcall(?:Raw|Live)?\("([a-z_]+)",\s*"([a-z_]+)"/g)].map((m) => `${m[1]}.${m[2]}`);
-  for (const call of calls) assert.ok(/^(light\.|hue_plus\.|scene\.)/.test(call), `${call} is not a service the panel should call`);
+  for (const call of calls) assert.ok(/^(light\.|hue_plus\.|scene\.|update\.install)/.test(call), `${call} is not a service the panel should call`);
 });
 
 test("nothing is kept in Home Assistant: the panel and the frame of the light panel do not read or write its saved data", () => {
