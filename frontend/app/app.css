@@ -353,3 +353,32 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .pg.modalpg .pbar{border-radius:18px 18px 0 0;padding-top:14px}
 .pg.modalpg .pbody{overflow-x:hidden}
 .pg.lightpg{transform:none;transition:opacity .25s}
+
+/* ---- a switch's pages ---- */
+.swhead{padding:14px 18px 18px;background:var(--bg)}
+.swhead .ic{display:block;margin-bottom:12px}
+.swhead .ic svg{width:30px;height:30px;stroke-width:1.9}
+.swhead .nm{font-size:27px;font-weight:700;line-height:1.1;overflow-wrap:anywhere;font-family:"Avenir Next","Montserrat","Century Gothic",Futura,"Segoe UI",system-ui,sans-serif}
+.btiles{display:flex;gap:12px;overflow-x:auto;padding:18px 16px;scrollbar-width:none;background:#17181b}
+.btiles::-webkit-scrollbar{display:none}
+.btile{flex:none;width:102px;height:120px;border-radius:12px;background:var(--tile);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;cursor:pointer;color:#fff;transition:transform .12s,box-shadow .2s}
+.btile:active{transform:scale(.96)}
+.btile.sel{box-shadow:0 0 0 2.5px var(--acc)}
+.btile .ic svg{width:24px;height:24px}
+.btile b{font-size:12px;font-weight:500;text-align:center;padding:0 6px}
+.selroom{display:flex;flex-direction:column;gap:14px;margin:0 16px 8px;width:154px;padding:14px;border-radius:12px;background:var(--tile)}
+.selroom .ic svg{width:26px;height:26px}
+.selroom b{display:block;font-size:12px;font-weight:600}
+.selroom i{display:block;font-style:normal;font-size:11px;color:var(--ink2)}
+.hm-row .rend{flex:none;display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;margin-left:6px}
+.hm-row .rend .disc{width:42px;height:42px}
+.hm-row .rend.ico{background:#0e0f12;color:#fff}
+.hm-row .rend.ico svg{width:22px;height:22px}
+.pintro{padding:20px 18px 6px;font-size:13px;line-height:1.5;color:var(--ink2)}
+.pintro b{color:#fff;font-weight:600}
+.pgrid{display:flex;flex-wrap:wrap;gap:10px 12px;padding:0 16px}
+.pgrid .sitem{width:calc(25% - 9px);min-width:76px;height:98px}
+.pgrid .sitem .dc{width:46px;height:46px}
+.disc.dark{display:flex;align-items:center;justify-content:center;background:#0e0f12;color:#fff}
+.disc.dark svg{width:22px;height:22px}
+.hm .hm-row.nochev .hm-c{display:none}
