@@ -246,7 +246,7 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .ftile{position:relative;border-radius:12px;background:var(--tile);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 6px 11px;cursor:pointer;overflow:hidden;transition:background .3s,transform .12s}
 .ftile:active{transform:scale(.96)}
 .ftile.lit{background:linear-gradient(180deg,var(--gold1),var(--gold2));color:var(--gold-ink)}
-.ftile .dots{position:absolute;left:0;right:0;top:12px;display:flex;flex-wrap:wrap;justify-content:center;gap:7px 9px;padding:0 12px}
+.ftile .dots{position:absolute;left:0;right:0;top:12px;display:flex;flex-wrap:wrap;justify-content:center;gap:7px 6px;padding:0 8px}
 .ftile .dots .disc{width:22px;height:22px}
 .ftile b{font-size:12px;font-weight:500;line-height:1.2;text-align:center}
 .disc{display:block;width:100%;height:100%;border-radius:50%;background:#f9d27a;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}

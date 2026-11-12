@@ -347,7 +347,7 @@ function hpLastUsed(deviceName) {
       t = Date.parse(h.states[id].state);
     if (dev && dev.name === deviceName && t > newest) newest = t;
   });
-  return newest ? new Date(newest).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+  return newest ? new Date(newest).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }) : "";
 }
 
 /* The switches and dials the bridge has in this room: the app lists them under Controls. */
