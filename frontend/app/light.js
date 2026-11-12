@@ -6,6 +6,18 @@ var HP_BASE = document.currentScript ? new URL(".", document.currentScript.src).
 var HP_VERSION = document.currentScript ? new URL(document.currentScript.src).searchParams.get("v") || "" : "";
 
 var HPLF = { el: null, win: null, ready: false, waiting: [] };
+var HPLIGHTS = null;
+
+/* What the bridge says each light was last set to; read again whenever a room is opened. */
+function hpLoadLightStates() {
+  if (!hueplus.has(H(), "get_resources")) return;
+  hueplus.resources(["lights"]).then(
+    function (r) {
+      HPLIGHTS = r.lights || null;
+    },
+    function () {}
+  );
+}
 
 /* The frame starts when the first light screen is asked for and stays, so the next one opens at once. */
 function hpLightFrame(then) {
@@ -44,7 +56,8 @@ window.HueHost.onHass = function (h) {
 
 function hpFrameShow(on) {
   if (!HPLF.el) return;
-  var bar = document.querySelector(".pg .pbar");
+  var layers = document.querySelectorAll(".pg"),
+    bar = layers.length ? layers[layers.length - 1].querySelector(".pbar") : null;
   var top = bar ? bar.offsetHeight : 0;
   HPLF.el.style.top = top + "px";
   HPLF.el.style.height = "calc(100% - " + top + "px)";
@@ -54,6 +67,10 @@ function hpFrameShow(on) {
 /* Every page that is drawn takes the frame away; a light screen puts it back. */
 window.HueHost.onRender = function () {
   hpFrameShow(false);
+};
+/* Coming back to a colour screen (from a page opened over it) puts the frame back. */
+window.HueHost.onResume = function (key) {
+  if (/^(app-lights|app-edit)\b/.test(String(key))) hpFrameShow(true);
 };
 
 function hpLightScreen(body, ids, name, focus, from) {
@@ -65,6 +82,7 @@ function hpLightScreen(body, ids, name, focus, from) {
     if (HC.sheet.light !== token) return;
     wait.remove();
     win.HuePopup.hide();
+    if (HPLIGHTS) win.HuePopup.seed(HPLIGHTS);
     hpFrameShow(true);
     var top = parseFloat(HPLF.el.style.top) || 0;
     win.HuePopup.panel(ids, name, focus, typeof from === "number" ? from - top : undefined);

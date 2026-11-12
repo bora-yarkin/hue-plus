@@ -275,7 +275,14 @@
   function refresh() {
     /* SAVE is dim until what the page shows has been changed. */
     if (typeof SHEET !== "undefined" && SHEET && CHECK && CHECK.dirty) SHEET.root.querySelector(".ok").disabled = !CHECK.dirty();
-    TAB_LIST.concat(SHEET_LIST).forEach(function (f) {
+    var layers = [],
+      own = false;
+    LAYERS.forEach(function (l) {
+      layers = layers.concat(l.list);
+      if (l.list === SHEET_LIST) own = true;
+    });
+    /* What was drawn after its tab, or with no page open, is in the list the host kept for it. */
+    TAB_LIST.concat(own ? [] : SHEET_LIST, layers).forEach(function (f) {
       try {
         f();
       } catch (e) {
@@ -702,25 +709,30 @@
     return String(id).split(".")[0];
   }
 
-  /* ---- sheets: pages that open over the tab ---- */
+  /* ---- pages: each one is a layer over the page it was opened from, which stays under it ---- */
 
   var PAGES = {};
-  /* The pages the app opens as a popup over the page behind (it slides up, with an X and DONE or SAVE): a switch and what its buttons do, a light's settings, a scene's. The rest are pushed, with an arrow. */
+  /* The pages the app opens as a popup over the page behind (it slides up from the bottom, with an X and DONE or SAVE): a switch and what its buttons do, a light's settings, a scene's. The rest are pushed from the right, with an arrow. */
   var MODAL = { "hue-switch": 1, "hue-button": 1, "hue-press": 1, "hue-cycle": 1, "hue-time": 1, "hue-tslot": 1, "hue-cslot": 1, "hue-pick-scene": 1, "hue-light": 1, "hue-pw": 1, "hue-fn": 1, "hue-or": 1, "hue-od": 1, "hue-perf": 1, "hue-end": 1, "hue-escene": 1, "app-scene": 1, "app-press": 1, "app-smart": 1, "hue-bridge": 1, "hue-area": 1, "hue-marea": 1, "hue-group": 1, "hue-routine": 1, "hue-bname": 1, "hue-gname": 1, "hue-mname": 1, "hue-zch": 1, "app-devinfo": 1 };
-  var SHEET = null; /* {root, body}: the page that is open, while there is one */
-  var SESSION = {}; /* what the pages ask HC.sheet for: it changes whenever the sheet closes or the tab changes, which is when what they read is read again */
-  var STACK = [];
+  var LAYERS = []; /* {root, body, key, list, popguard, check, done}, the first opened first */
+  var SHEET = null; /* the layer on top, while there is one */
+  var SESSION = {}; /* what the pages ask HC.sheet for: it changes whenever the pages close or the tab changes, which is when what they read is read again */
   var CURRENT = null;
   var POPGUARD = null;
-  var CHECK = null; /* the guard whose checkmark the header shows */
+  var CHECK = null; /* the guard whose SAVE the bar shows */
+  var DONEFN = null;
 
   function pageOf(key) {
     var name = String(key).split(":")[0];
     return { def: PAGES[name], id: String(key).slice(name.length + 1) };
   }
 
-  /* A page of the Hue app: it covers the screen, with a bar of an X (or an arrow when it was opened from another page), the title, and SAVE when what it shows is to be saved. */
-  function buildSheet() {
+  function isModalKey(key) {
+    return !!MODAL[String(key).split(":")[0]];
+  }
+
+  /* A page of the Hue app: it covers the screen, with a bar of an X (a popup) or an arrow, the title, and SAVE or DONE. */
+  function newLayer() {
     var root = mk("div", "pg");
     root.setAttribute("role", "dialog");
     root.setAttribute("aria-modal", "true");
@@ -736,7 +748,7 @@
       "</button><div class='ttl'><span class='tt'></span></div><button type='button' class='act ok' style='display:none'>" +
       T("save") +
       "</button><div class='lbar'></div></div><div class='pbody'></div>";
-    var s = { root: root, body: root.querySelector(".pbody") };
+    var layer = { root: root, body: root.querySelector(".pbody"), key: null, list: [], popguard: null, check: null, done: null };
     root.querySelector(".back").addEventListener("click", function () {
       popBack();
     });
@@ -750,42 +762,60 @@
       else closePopup();
     });
     document.body.appendChild(root);
-    requestAnimationFrame(function () {
-      root.classList.add("in");
-    });
-    return s;
+    return layer;
   }
 
   function title(def, id) {
     return typeof def[0] === "function" ? def[0](id) : T(def[0]);
   }
 
-  function render(key) {
+  /* Makes a layer the one that is worked with: its guard, its SAVE, its DONE. */
+  function activate(layer) {
+    SHEET = layer;
+    CURRENT = layer ? layer.key : null;
+    POPGUARD = layer ? layer.popguard : null;
+    CHECK = layer ? layer.check : null;
+    DONEFN = layer ? layer.done : null;
+  }
+
+  function stash() {
+    if (!SHEET) return;
+    SHEET.popguard = POPGUARD;
+    SHEET.check = CHECK;
+    SHEET.done = DONEFN;
+  }
+
+  function render(key, layer) {
     var p = pageOf(key);
     if (!p.def) return false;
     if (HOST.onRender) HOST.onRender();
+    var root = layer.root;
     DONEFN = null;
-    SHEET.root.classList.remove("roompg", "lightpg", "scenepg", "modalpg", "wizpg");
+    root.classList.remove("roompg", "lightpg", "scenepg", "modalpg", "wizpg");
     /* The wizards (a new automation, a MotionAware area, a scene) have the app's blue top and a Next at the bottom. */
-    if (/^(hue-(wz|mw)-|hue-newauto$|hue-add-scene$)/.test(String(key).split(":")[0])) SHEET.root.classList.add("wizpg");
-    var okb = SHEET.root.querySelector(".ok");
-    if (MODAL[String(key).split(":")[0]]) {
-      SHEET.root.classList.add("modalpg");
+    if (/^(hue-(wz|mw)-|hue-newauto$|hue-add-scene$)/.test(String(key).split(":")[0])) root.classList.add("wizpg");
+    var okb = root.querySelector(".ok"),
+      modal = isModalKey(key);
+    if (modal) {
+      root.classList.add("modalpg");
       okb.textContent = T("done");
       okb.disabled = false;
     } else okb.textContent = T("save");
-    SHEET.root.querySelector(".lbar").innerHTML = "";
+    root.querySelector(".lbar").innerHTML = "";
+    layer.key = key;
     CURRENT = key;
     POPGUARD = null;
     CHECK = null;
-    SHEET_LIST.length = 0;
-    SHEET.root.querySelector(".ok").style.display = MODAL[String(key).split(":")[0]] ? "" : "none";
-    SHEET.root.querySelector(".tt").textContent = title(p.def, p.id);
-    SHEET.root.querySelector(".back").style.display = STACK.length ? "" : "none";
-    SHEET.root.querySelector(".x").style.display = STACK.length ? "none" : "";
-    SHEET.body.innerHTML = "";
-    SHEET.body.scrollTop = 0;
-    p.def[2](SHEET.body, p.id);
+    layer.list.length = 0;
+    SHEET_LIST = layer.list;
+    okb.style.display = modal ? "" : "none";
+    root.querySelector(".tt").textContent = title(p.def, p.id);
+    root.querySelector(".back").style.display = LAYERS.length > 1 ? "" : "none";
+    root.querySelector(".x").style.display = LAYERS.length > 1 ? "none" : "";
+    layer.body.innerHTML = "";
+    layer.body.scrollTop = 0;
+    p.def[2](layer.body, p.id);
+    stash();
     refresh();
     return true;
   }
@@ -793,39 +823,69 @@
   function showPopup(key, push) {
     var p = pageOf(key);
     if (!p.def) return;
-    if (!SHEET) SHEET = buildSheet();
-    else if (push && CURRENT) STACK.push(CURRENT);
-    else if (!push) {
-      /* replaces the page; the pages before it stay */
+    if (!SHEET || (push && !CURRENT && !LAYERS.length)) {
+      var first = newLayer();
+      LAYERS = [first];
+      activate(first);
+      render(key, first);
+      requestAnimationFrame(function () {
+        first.root.classList.add("in");
+      });
+      return;
     }
-    render(key);
+    if (push) {
+      stash();
+      var below = SHEET,
+        layer = newLayer();
+      /* A page pushed from the right takes the one under it a little way along; a popup leaves it where it is. */
+      if (!isModalKey(key)) below.root.classList.add("under");
+      LAYERS.push(layer);
+      activate(layer);
+      render(key, layer);
+      requestAnimationFrame(function () {
+        layer.root.classList.add("in");
+      });
+      return;
+    }
+    /* A page that replaces itself (it was changed) is drawn again where it is. */
+    render(key, SHEET);
   }
 
-  var DONEFN = null;
-
-  function isModalKey(key) {
-    return !!MODAL[String(key).split(":")[0]];
+  /* Takes the top layer away, sliding it out the way it came in, and shows the one under it. */
+  function dropTop() {
+    var gone = LAYERS.pop(),
+      below = LAYERS[LAYERS.length - 1];
+    gone.root.classList.remove("in");
+    setTimeout(function () {
+      gone.root.remove();
+    }, 460);
+    below.root.classList.remove("under");
+    activate(below);
+    SHEET_LIST = below.list;
+    if (HOST.onRender) HOST.onRender();
+    if (HOST.onResume) HOST.onResume(below.key);
+    refresh();
   }
 
   /* Closes the popup that is open: back through its pages to the page it was opened from, or all the way when it was the first. */
   function closePopup() {
     if (!isModalKey(CURRENT)) {
-      if (STACK.length) popBack();
+      if (LAYERS.length > 1) popBack();
       else closeSheet();
       return;
     }
     if (POPGUARD && POPGUARD(closePopup)) return;
-    while (STACK.length && isModalKey(CURRENT)) {
-      var prev = STACK.pop();
-      render(prev);
+    POPGUARD = null;
+    while (LAYERS.length > 1 && isModalKey(SHEET.key)) {
+      dropTop();
+      if (POPGUARD && POPGUARD !== null) break;
     }
-    if (isModalKey(CURRENT)) closeSheet();
+    if (LAYERS.length === 1 && isModalKey(SHEET.key)) closeSheet();
   }
 
   function popBack() {
     if (POPGUARD && POPGUARD(popBack)) return;
-    var prev = STACK.pop();
-    if (prev) render(prev);
+    if (LAYERS.length > 1) dropTop();
     else closeSheet();
   }
 
@@ -834,20 +894,21 @@
     POPGUARD = null;
     CHECK = null;
     if (!SHEET) return;
-    var s = SHEET;
-    SHEET = null;
-    STACK = [];
-    CURRENT = null;
-    SHEET_LIST.length = 0;
-    s.root.classList.remove("in");
-    setTimeout(function () {
-      s.root.remove();
-    }, 250);
+    var all = LAYERS;
+    LAYERS = [];
+    activate(null);
+    SHEET_LIST = [];
+    all.forEach(function (l, i) {
+      l.root.classList.remove("in");
+      setTimeout(function () {
+        l.root.remove();
+      }, 460);
+    });
     SESSION = {};
     if (HOST.onSheetClosed) HOST.onSheetClosed();
   }
 
-  /* An editor that asks before it is left with changes that are not saved: o = {dirty(), save(leave), discard(), inner, done}. The checkmark of the header saves. */
+  /* An editor that asks before it is left with changes that are not saved: o = {dirty(), save(leave), discard(), inner, done}. SAVE in the bar saves. */
   function guardUnsaved(o) {
     function guard(leave) {
       if (!o.dirty()) return false;
@@ -889,6 +950,7 @@
       SHEET.root.querySelector(".ok").textContent = T("save");
       SHEET.root.querySelector(".ok").disabled = true;
     }
+    stash();
   }
 
   /* ---- what the pages register: kept, for the parts of this panel that use them ---- */
@@ -901,6 +963,7 @@
     onUpdate: null,
     onSheetClosed: null,
     onRender: null,
+    onResume: null,
     onHass: null,
     editLights: function () {
       toast(T("unavailable"));

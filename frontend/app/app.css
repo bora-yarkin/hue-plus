@@ -96,8 +96,9 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .lightframe.show{display:block}
 
 /* ---- a page: covers the screen, with a bar of an X or an arrow, the title, and SAVE or DONE ---- */
-.pg{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:var(--bg);transform:translateX(24px);opacity:0;transition:transform .22s cubic-bezier(.2,.8,.2,1),opacity .18s}
-.pg.in{transform:none;opacity:1}
+.pg{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:var(--bg);transform:translateX(100%);transition:transform .42s cubic-bezier(.2,.9,.25,1),box-shadow .42s,opacity .25s}
+.pg.in{transform:none}
+.pg.under{transform:translateX(-26%)}
 .pg .pbar{display:flex;align-items:center;gap:14px;background:var(--head);padding:calc(var(--sat) + 10px) 16px 12px;flex:none}
 .pg .pbar .rbt{background:var(--tile);width:32px;height:32px}
 .pg .pbar .rbt svg{width:17px;height:17px;stroke-width:2.2}
@@ -255,8 +256,10 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 /* ---- the card a folder opens ---- */
 .fscrim{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;transition:opacity .22s}
 .fscrim.in{opacity:1}
-.fcard{position:fixed;left:50%;top:50%;z-index:75;width:min(520px,calc(100% - 34px));max-height:80vh;overflow:auto;transform:translate(-50%,-46%) scale(.94);opacity:0;background:#26272b;border-radius:18px;padding:20px 17px 20px;box-shadow:0 24px 60px rgba(0,0,0,.55);transition:transform .24s cubic-bezier(.2,.9,.25,1),opacity .2s}
-.fcard.in{transform:translate(-50%,-50%) scale(1);opacity:1}
+.fwrap{position:fixed;inset:0;z-index:75;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.fcard{position:relative;pointer-events:auto;width:min(520px,calc(100% - 34px));max-height:80vh;overflow:auto;transform-origin:0 0;background:#26272b;border-radius:18px;padding:20px 17px 20px;box-shadow:0 24px 60px rgba(0,0,0,.55);transition:transform .46s cubic-bezier(.2,.9,.25,1)}
+.fcard>*{opacity:0;transition:opacity .2s}
+.fcard.in>*{opacity:1;transition:opacity .3s .16s}
 .fcard .ft{font-size:13.5px;font-weight:500;margin:2px 3px 18px}
 .fg{display:flex;flex-wrap:wrap;gap:10px 13px}
 .sitem{width:102px;flex:none;border-radius:11px;background:var(--tile);height:113px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:6px;cursor:pointer;color:#fff;transition:background .25s,transform .12s}
@@ -348,11 +351,12 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .rhead.on-gold{color:#fff;text-shadow:0 1px 2px rgba(60,45,15,.35)}
 
 /* a popup page: it slides up over the page behind, which is dimmed; the screen above it stays */
-.pg.modalpg{top:46px;border-radius:18px 18px 0 0;box-shadow:0 0 0 100vmax rgba(0,0,0,.55);transform:translateY(100%);opacity:1;transition:transform .34s cubic-bezier(.2,.9,.25,1)}
-.pg.modalpg.in{transform:none}
+.pg.modalpg{top:46px;border-radius:18px 18px 0 0;box-shadow:0 0 0 100vmax rgba(0,0,0,0);transform:translateY(calc(100% + 46px));opacity:1}
+.pg.modalpg.in{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.55)}
 .pg.modalpg .pbar{border-radius:18px 18px 0 0;padding-top:14px}
 .pg.modalpg .pbody{overflow-x:hidden}
-.pg.lightpg{transform:none;transition:opacity .25s}
+.pg.lightpg{transform:none;opacity:0;transition:opacity .3s}
+.pg.lightpg.in{opacity:1}
 
 /* ---- a switch's pages ---- */
 .swhead{padding:14px 18px 18px;background:var(--bg)}

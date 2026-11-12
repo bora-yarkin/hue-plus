@@ -72,6 +72,7 @@ function hpWatch() {
 function hpStart() {
   /* What the room pages need (their controls, the colours of their scenes) is read now, while Home is looked at. */
   hmReady().then(function () {}, function () {});
+  hpLoadLightStates();
   HPAPI.ws({ type: "hue_plus/capabilities" }).then(
     function (r) {
       var b = ((r && r.bridges) || [])[0];

@@ -182,7 +182,7 @@ function hpFolderTile(folder, room) {
     dots.appendChild(hpDisc(sid));
   });
   hpActive(t, function () {
-    hpFolderCard(folder, room);
+    hpFolderCard(folder, room, t);
   });
   t.refresh = function () {
     t.classList.toggle(
@@ -241,8 +241,9 @@ function hpSceneItem(sid, room, close) {
   return it;
 }
 
-function hpFolderCard(folder, room) {
+function hpFolderCard(folder, room, from) {
   var scrim = mk("div", "fscrim"),
+    wrap = mk("div", "fwrap"),
     card = mk("div", "fcard", "<div class='ft'></div><div class='fg'></div>"),
     grid = card.querySelector(".fg");
   card.querySelector(".ft").textContent = folder.name;
@@ -263,13 +264,20 @@ function hpFolderCard(folder, room) {
   }
   card.setAttribute("role", "dialog");
   card.setAttribute("aria-label", folder.name);
+  /* The card opens out of the folder it was on and closes back into it. */
+  function shrinkTo(tile) {
+    var cr = card.getBoundingClientRect(),
+      tr = tile.getBoundingClientRect();
+    return "translate(" + (tr.left - cr.left) + "px," + (tr.top - cr.top) + "px) scale(" + tr.width / cr.width + "," + tr.height / cr.height + ")";
+  }
   function close() {
     scrim.classList.remove("in");
     card.classList.remove("in");
+    if (from && from.isConnected) card.style.transform = shrinkTo(from);
     setTimeout(function () {
       scrim.remove();
-      card.remove();
-    }, 220);
+      wrap.remove();
+    }, 460);
   }
   hpOrdered(folder.scenes, "scenes:" + room + ":" + folder.key, function (s) {
     return s;
@@ -337,11 +345,19 @@ function hpFolderCard(folder, room) {
   };
   reg(card.refresh);
   scrim.addEventListener("click", close);
+  wrap.appendChild(card);
   document.body.appendChild(scrim);
-  document.body.appendChild(card);
+  document.body.appendChild(wrap);
   refresh();
+  if (from) {
+    card.style.transition = "none";
+    card.style.transform = shrinkTo(from);
+    void card.offsetHeight;
+  }
   requestAnimationFrame(function () {
     scrim.classList.add("in");
+    card.style.transition = "";
+    card.style.transform = "";
     card.classList.add("in");
     card.refresh();
   });

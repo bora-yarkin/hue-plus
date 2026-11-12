@@ -289,6 +289,27 @@ class ModelTests(unittest.TestCase):
         )
         self.assertEqual(out["st"], [{"mirek": 300}], "a light that sets no colour adds none")
 
+    def test_a_light_keeps_its_last_settings_while_it_is_off(self):
+        s = snap(
+            light=[
+                {
+                    "id": "a",
+                    "on": {"on": False},
+                    "dimming": {"brightness": 42.5},
+                    "color": {"xy": {"x": 0.31234, "y": 0.3}},
+                    "color_temperature": {"mirek_valid": False, "mirek": 300},
+                },
+                {"id": "b", "on": {"on": True}, "dimming": {"brightness": 80}, "color_temperature": {"mirek_valid": True, "mirek": 366}},
+            ]
+        )
+        self.assertEqual(
+            models.light_states(s),
+            [
+                {"id": "a", "on": False, "brightness": 42.5, "xy": [0.3123, 0.3], "mirek": None},
+                {"id": "b", "on": True, "brightness": 80, "xy": None, "mirek": 366},
+            ],
+        )
+
     def test_scenes_and_search_status(self):
         s = snap(
             scene=[

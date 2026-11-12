@@ -3,7 +3,7 @@ get_resources:
     "kinds":
       selector:
         select:
-          options: ["apps", "automations", "automation_templates", "rooms", "zones", "scenes", "smart_scenes", "entertainment_areas", "matter_fabrics", "accessories", "home_and_away", "motion_sensors", "motion_areas", "supported_resources", "devices", "firmware", "bridge"]
+          options: ["apps", "automations", "automation_templates", "rooms", "zones", "scenes", "lights", "smart_scenes", "entertainment_areas", "matter_fabrics", "accessories", "home_and_away", "motion_sensors", "motion_areas", "supported_resources", "devices", "firmware", "bridge"]
           multiple: true
 
 timed_effect:

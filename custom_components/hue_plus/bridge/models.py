@@ -403,6 +403,24 @@ def scenes(snap: Snapshot) -> list[dict[str, Any]]:
     ]
 
 
+def light_states(snap: Snapshot) -> list[dict[str, Any]]:
+    """What every light was last set to, which the bridge keeps while it is off: the app shows an off light at those settings."""
+    out = []
+    for light in snap.light:
+        xy = (light.get("color") or {}).get("xy") or {}
+        temperature = light.get("color_temperature") or {}
+        out.append(
+            {
+                "id": light["id"],
+                "on": bool((light.get("on") or {}).get("on")),
+                "brightness": (light.get("dimming") or {}).get("brightness"),
+                "xy": [round(xy["x"], 4), round(xy["y"], 4)] if "x" in xy and "y" in xy else None,
+                "mirek": temperature.get("mirek") if temperature.get("mirek_valid") else None,
+            }
+        )
+    return out
+
+
 def search_status(snap: Snapshot) -> str | None:
     return next((d.get("status") for d in snap.zigbee_device_discovery), None)
 

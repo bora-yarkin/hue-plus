@@ -9,8 +9,10 @@
 html{background:transparent!important}
 body{background:linear-gradient(180deg,#2a1f1d 0,#16171a 62%)!important;overflow:hidden;opacity:0;transition:opacity .35s}
 body.rise{opacity:1}
-body.rise .lp-view,body.rise .lp-bar{animation:lpin .42s cubic-bezier(.2,.7,.2,1) backwards}
-@keyframes lpin{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:none}}
+body.rise .lp-view{animation:lpwheel .85s cubic-bezier(.16,.8,.2,1) backwards}
+body.rise .lp-bar{animation:lpbar .55s cubic-bezier(.2,.8,.2,1) .05s backwards}
+@keyframes lpwheel{from{opacity:0;transform:translate(38%,-78%) scale(.5)}35%{opacity:1}to{opacity:1;transform:none}}
+@keyframes lpbar{from{opacity:0;transform:translateY(-34px)}to{opacity:1;transform:none}}
 /* Colour, white and effects follow each other by fading, not by sliding across the screen */
 .lp-track{transition:none!important}
 .lp-pane:not(.off){animation:lpfade .3s ease-out}
@@ -70,6 +72,7 @@ main{position:absolute!important;inset:0;padding:0!important;overflow:hidden}
   });
   var pending = [];
   var ready = false;
+  var HPLAST = {};
 
   function body() {
     var b = document.getElementById("body");
@@ -106,6 +109,27 @@ main{position:absolute!important;inset:0;padding:0!important;overflow:hidden}
         room: null,
         sliders: false,
         ready: function (S) {
+          /* A tile for every light, always; the markers on the wheel are joined where lights look the same (an off light looks as it was last set). */
+          var root = S.root;
+          if (root.kids) {
+            S.ex[root.key] = true;
+            S.joined.length = 0;
+            var groups = [];
+            root.kids.forEach(function (k) {
+              var look = lpNodeLook(k),
+                g = look
+                  ? groups.filter(function (x) {
+                      return x.look && lpSameLook(x.look, look);
+                    })[0]
+                  : null;
+              if (g) g.kids.push(k);
+              else groups.push({ look: look, kids: [k] });
+            });
+            groups.forEach(function (g) {
+              if (g.kids.length > 1) S.joined.push(S.makeVirtual(g.kids, g.kids[0].icon));
+            });
+            S.rebuild();
+          }
           if (focus && ids.indexOf(focus) >= 0) S.select(focus);
         },
       });
@@ -122,6 +146,29 @@ main{position:absolute!important;inset:0;padding:0!important;overflow:hidden}
       }
       document.body.classList.add("rise");
       return wasHidden;
+    },
+    /* What the bridge says each light was last set to (a list from get_resources "lights"), so that lights that are off are placed on the wheel, and grouped, by their last settings as the app does. */
+    seed: function (list) {
+      var byHue = {};
+      (list || []).forEach(function (l) {
+        byHue[l.id] = l;
+      });
+      Object.keys(H().states).forEach(function (e) {
+        var l = e.indexOf("light.") === 0 && byHue[A(e).hue_light_id];
+        if (!l) return;
+        var o = { b: l.brightness == null ? null : l.brightness };
+        if (l.mirek) {
+          o.k = Math.round(1000000 / l.mirek);
+          o.mode = "color_temp";
+        } else if (l.xy) {
+          o.xy = l.xy;
+          o.mode = "xy";
+        }
+        HPLAST[e] = o;
+        var mem = LPMEM[e] || (LPMEM[e] = {});
+        if (o.xy) mem.hs = liveXyHs(o.xy[0], o.xy[1]) || mem.hs;
+        if (o.k) mem.k = o.k;
+      });
     },
     /* Takes the screen away before another is drawn, so what was there is not seen again. */
     hide: function () {
@@ -183,6 +230,12 @@ main{position:absolute!important;inset:0;padding:0!important;overflow:hidden}
           },
         };
         window.lightScenesRow = function () {};
+        var lookOn = window.lpLook;
+        window.lpLook = function (e) {
+          if (isOn(e)) return lookOn(e);
+          var m = HPLAST[e];
+          return m ? { b: m.b, xy: m.xy || null, k: m.k || null, mode: m.mode } : { off: true };
+        };
         window.savedRoomOf = function () {
           return null;
         };

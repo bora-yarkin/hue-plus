@@ -419,6 +419,7 @@ function hpRoomPage(body, id) {
     return;
   }
   body.parentNode.classList.add("roompg");
+  hpLoadLightStates();
   var name = A(id).friendly_name,
     zone = A(id).hue_type === "zone",
     admin = isAdmin(),
