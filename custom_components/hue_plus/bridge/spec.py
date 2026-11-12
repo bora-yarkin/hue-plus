@@ -111,7 +111,7 @@ SPEC: dict[str, dict[str, Any]] = {
             "groups": f("list", "The rooms (up to three) or the one zone whose lights it controls (ids or names).", True),
             "slots": f(
                 "object",
-                'The times: a list of {"time": "07:00", "scene": "<scene name or id>", "off_after_minutes": 10}, or {"sun": "sunset", "offset_minutes": -30, ...} to start at sunrise or sunset. Leave off_after_minutes out to leave the lights on, and scene out to leave them alone.',
+                'The times: a list of {"time": "07:00", "scene": "a scene name or id", "off_after_minutes": 10}, or {"sun": "sunset", "offset_minutes": -30, ...} to start at sunrise or sunset. Leave off_after_minutes out to leave the lights on, and scene out to leave them alone.',
                 True,
             ),
             "dark_threshold": f(

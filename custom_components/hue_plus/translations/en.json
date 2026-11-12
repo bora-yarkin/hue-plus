@@ -454,7 +454,7 @@
         },
         "slots": {
           "name": "Slots",
-          "description": "The times: a list of {\"time\": \"07:00\", \"scene\": \"<scene name or id>\", \"off_after_minutes\": 10}, or {\"sun\": \"sunset\", \"offset_minutes\": -30, ...} to start at sunrise or sunset. Leave off_after_minutes out to leave the lights on, and scene out to leave them alone."
+          "description": "The times: a list of {\"time\": \"07:00\", \"scene\": \"a scene name or id\", \"off_after_minutes\": 10}, or {\"sun\": \"sunset\", \"offset_minutes\": -30, ...} to start at sunrise or sunset. Leave off_after_minutes out to leave the lights on, and scene out to leave them alone."
         },
         "dark_threshold": {
           "name": "Dark threshold",

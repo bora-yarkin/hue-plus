@@ -17,9 +17,26 @@ FOLDER = ROOT / "custom_components" / "hue_plus"
 KNOWN_TYPES = {"text", "number", "int", "bool", "select", "select_list", "list", "object", "xy", "xy_one", "lights", "time"}
 
 
+def _texts(value):
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _texts(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from _texts(item)
+
+
 class SpecTests(unittest.TestCase):
     def test_no_problems_are_reported(self):
         self.assertEqual(spec.check_spec(), [])
+
+    def test_no_text_of_a_service_looks_like_html(self):
+        # hassfest refuses a translation that contains something like <name>: write "a scene name" instead.
+        strings = json.loads((FOLDER / "strings.json").read_text(encoding="utf-8"))
+        found = [text for text in _texts(strings) if re.search(r"<[^>]*>", text)]
+        self.assertEqual(found, [])
 
     def test_every_bridge_service_has_an_action_and_every_action_a_service(self):
         bridge = {name for name, module in spec.MODULE_OF.items() if module == "bridge"}
