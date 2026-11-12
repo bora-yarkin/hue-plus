@@ -27,9 +27,10 @@ def test_the_declaration_names_the_script_hue_plus_serves():
     url = declaration["menu"]["url"]
     assert url == "/hue_plus_static/menu.js"
     assert (ROOT / "custom_components" / "hue_plus" / "frontend" / "menu.js").is_file()
-    # Only the built scripts, the panel's loader, the frame of the light panel and the copy of Home Control's code it runs are served, never the sources.
+    # Only the built scripts, the panel's loader, the effects catalogue, the frame of the light panel and the copy of Home Control's code it runs are served, never the sources.
     assert sorted(p.name for p in (ROOT / "custom_components" / "hue_plus" / "frontend").iterdir()) == [
         "app.js",
+        "effects.json",
         "lights",
         "menu.js",
         "panel.js",
