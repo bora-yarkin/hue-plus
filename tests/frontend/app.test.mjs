@@ -41,9 +41,9 @@ test("nothing a bridge or a device names is put into the page as markup", () => 
   }
 });
 
-test("the panel does not write to the bridge except through Hue Plus services, the light and scene services and a device's firmware update", () => {
+test("the panel does not write to the bridge except through Hue Plus services, the light and scene services, a device's firmware update and the settings of Hue Plus's own entities", () => {
   const calls = [...APP_FILES.join("\n").matchAll(/\bcall(?:Raw|Live)?\("([a-z_]+)",\s*"([a-z_]+)"/g)].map((m) => `${m[1]}.${m[2]}`);
-  for (const call of calls) assert.ok(/^(light\.|hue_plus\.|scene\.|update\.install)/.test(call), `${call} is not a service the panel should call`);
+  for (const call of calls) assert.ok(/^(light\.|hue_plus\.|scene\.|update\.install|select\.select_option|number\.set_value|time\.set_value|switch\.turn_o(n|ff)|button\.press)/.test(call), `${call} is not a service the panel should call`);
 });
 
 test("nothing is kept in Home Assistant: the panel and the frame of the light panel do not read or write its saved data", () => {
