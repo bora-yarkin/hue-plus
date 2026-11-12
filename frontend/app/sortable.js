@@ -22,16 +22,24 @@ function hpOrdered(list, key, idOf) {
 
 /* Makes the children of `box` that match `selector` movable: press and hold one for a moment, and it lifts; drag it over the others and they make room; let go and done(ids) is called with the new order
  (ids come from idOf(element)). A press that moves before the hold is a scroll or a tap, and is left alone. */
-function hpSortable(box, selector, idOf, done) {
+function hpSortable(box, selector, idOf, done, opts) {
+  opts = opts || {};
   var HOLD = 380;
   box.addEventListener("pointerdown", function (e) {
     var el = e.target.closest(selector);
     if (!el || !box.contains(el) || e.button > 0) return;
     var timer = null,
       lifted = false,
+      target = null,
       sx = e.clientX,
       sy = e.clientY,
-      grab = null;
+      grab = null,
+      endX = 0,
+      endY = 0;
+    function inside(node, x, y) {
+      var r = node.getBoundingClientRect();
+      return x > r.left && x < r.right && y > r.top && y < r.bottom;
+    }
     function items() {
       return [].filter.call(box.children, function (c) {
         return c.matches(selector);
@@ -58,10 +66,19 @@ function hpSortable(box, selector, idOf, done) {
         return;
       }
       ev.preventDefault();
+      target = null;
       items().forEach(function (other) {
+        other.classList.remove("mergeable");
         if (other === el) return;
-        var r = other.getBoundingClientRect();
-        if (ev.clientX > r.left && ev.clientX < r.right && ev.clientY > r.top && ev.clientY < r.bottom) {
+        var r = other.getBoundingClientRect(),
+          inside = ev.clientX > r.left && ev.clientX < r.right && ev.clientY > r.top && ev.clientY < r.bottom,
+          middle =
+            ev.clientX > r.left + r.width * 0.3 && ev.clientX < r.right - r.width * 0.3 && ev.clientY > r.top + r.height * 0.3 && ev.clientY < r.bottom - r.height * 0.3;
+        /* The middle of another item is a drop onto it; its edges make room, as before. */
+        if (opts.merge && middle) {
+          target = other;
+          other.classList.add("mergeable");
+        } else if (inside && !(opts.merge && middle)) {
           var all = items();
           box.insertBefore(el, all.indexOf(other) > all.indexOf(el) ? other.nextSibling : other);
         }
@@ -85,10 +102,17 @@ function hpSortable(box, selector, idOf, done) {
         setTimeout(function () {
           box.removeEventListener("click", eat, true);
         }, 60);
-        if (commit) done(items().map(idOf));
+        items().forEach(function (other) {
+          other.classList.remove("mergeable");
+        });
+        if (commit && target && opts.merge) opts.merge(idOf(el), idOf(target));
+        else if (commit && opts.outside && !inside(opts.bounds ? opts.bounds() : box, endX, endY)) opts.outside(idOf(el));
+        else if (commit) done(items().map(idOf));
       }
     }
-    function up() {
+    function up(ev) {
+      endX = ev.clientX;
+      endY = ev.clientY;
       stop(true);
     }
     function cancel() {

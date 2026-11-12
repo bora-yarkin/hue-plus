@@ -59,11 +59,40 @@ function hpDisc(sid) {
   return d;
 }
 
-/* The scenes of the room grouped as the app groups them; a folder that has none is not there. */
+/* The folders the person makes by dropping a scene on another. The app keeps them in the app, the bridge has no place for them, so here they are kept on this device. */
+function hpUserFolders(room) {
+  var v = deviceGet("db_ufolders_" + room, []);
+  return Array.isArray(v) ? v : [];
+}
+
+function hpSaveUserFolders(room, list) {
+  deviceSet(
+    "db_ufolders_" + room,
+    list.filter(function (f) {
+      return f.scenes.length;
+    })
+  );
+}
+
+/* The scenes of the room grouped as the app groups them, and the person's own folders; a folder that has none is not there. */
 function hpFolders(room) {
+  var all = hpScenesOf(room),
+    mine = hpUserFolders(room)
+      .map(function (f) {
+        return { key: "u:" + f.id, id: f.id, name: f.name, user: true, scenes: f.scenes.filter(function (s) { return all.indexOf(s) >= 0; }) };
+      })
+      .filter(function (f) {
+        return f.scenes.length;
+      }),
+    taken = {};
+  mine.forEach(function (f) {
+    f.scenes.forEach(function (s) {
+      taken[s] = 1;
+    });
+  });
   var by = { lights: [], scenes: [], defaults: [] };
-  hpScenesOf(room).forEach(function (sid) {
-    by[hpFolderOf(sid)].push(sid);
+  all.forEach(function (sid) {
+    if (!taken[sid]) by[hpFolderOf(sid)].push(sid);
   });
   return [
     ["lights", _T("app_folder_lights")],
@@ -75,7 +104,70 @@ function hpFolders(room) {
     })
     .filter(function (f) {
       return f.scenes.length;
-    });
+    })
+    .concat(mine);
+}
+
+/* Dropping a scene on another makes a folder of the two (named by the person), and dropping one outside its folder takes it out again. */
+function hpMakeFolder(room, a, b, close) {
+  var list = hpUserFolders(room).map(function (f) {
+    return { id: f.id, name: f.name, scenes: f.scenes.filter(function (s) { return s !== a && s !== b; }) };
+  });
+  var folder = { id: Date.now().toString(36), name: _T("app_new_folder"), scenes: [b, a] };
+  list.push(folder);
+  hpSaveUserFolders(room, list);
+  close();
+  showPopup("app-room:" + room, false);
+  hpPrompt(_T("app_group_name"), folder.name, function (name) {
+    folder.name = name;
+    hpSaveUserFolders(room, list);
+    showPopup("app-room:" + room, false);
+  });
+}
+
+function hpTakeOut(room, folderId, sid, close) {
+  var list = hpUserFolders(room).map(function (f) {
+    return { id: f.id, name: f.name, scenes: f.id === folderId ? f.scenes.filter(function (s) { return s !== sid; }) : f.scenes };
+  });
+  hpSaveUserFolders(room, list);
+  close();
+  showPopup("app-room:" + room, false);
+}
+
+/* A question with a line to write the answer in, as the app asks a folder's name. */
+function hpPrompt(title, value, done) {
+  var scrim = mk("div", "scrim"),
+    box = mk("div", "dlg", "<p></p><input class='sq pin' type='text' maxlength='40'><div class='rrow'></div>"),
+    input = box.querySelector("input");
+  box.querySelector("p").textContent = title;
+  input.value = value;
+  function close() {
+    scrim.remove();
+    box.remove();
+  }
+  var go = mk("div", "rbtn go");
+  go.textContent = _T("done");
+  go.addEventListener("click", function () {
+    var v = input.value.trim();
+    close();
+    if (v) done(v);
+  });
+  var no = mk("div", "rbtn");
+  no.textContent = _T("cancel");
+  no.addEventListener("click", close);
+  box.querySelector(".rrow").appendChild(no);
+  box.querySelector(".rrow").appendChild(go);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") go.click();
+  });
+  scrim.addEventListener("click", close);
+  document.body.appendChild(scrim);
+  document.body.appendChild(box);
+  requestAnimationFrame(function () {
+    scrim.classList.add("in");
+    input.focus();
+    input.select();
+  });
 }
 
 /* ---- the folders of a room: two rows, scrolling sideways ---- */
@@ -154,6 +246,21 @@ function hpFolderCard(folder, room) {
     card = mk("div", "fcard", "<div class='ft'></div><div class='fg'></div>"),
     grid = card.querySelector(".fg");
   card.querySelector(".ft").textContent = folder.name;
+  if (folder.user) {
+    var pen = hpRound("edit", _T("app_group_name"), function () {
+      hpPrompt(_T("app_group_name"), folder.name, function (name) {
+        var list = hpUserFolders(room).map(function (f) {
+          return { id: f.id, name: f.id === folder.id ? name : f.name, scenes: f.scenes };
+        });
+        hpSaveUserFolders(room, list);
+        folder.name = name;
+        card.querySelector(".ft").textContent = name;
+        showPopup("app-room:" + room, false);
+      });
+    });
+    pen.classList.add("fedit");
+    card.insertBefore(pen, card.firstChild);
+  }
   card.setAttribute("role", "dialog");
   card.setAttribute("aria-label", folder.name);
   function close() {
@@ -179,6 +286,21 @@ function hpFolderCard(folder, room) {
       hpOrderSet("scenes:" + room + ":" + folder.key, ids);
       folder.scenes = ids;
       card.refresh();
+    },
+    {
+      merge: folder.user
+        ? null
+        : function (a, b) {
+            hpMakeFolder(room, a, b, close);
+          },
+      outside: folder.user
+        ? function (sid) {
+            hpTakeOut(room, folder.id, sid, close);
+          }
+        : null,
+      bounds: function () {
+        return card;
+      },
     }
   );
   /* The scene that plays has its pencil and its three dots beside it, as the app draws them. */

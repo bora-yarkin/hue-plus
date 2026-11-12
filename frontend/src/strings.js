@@ -517,6 +517,8 @@ var PLUGIN_STRINGS = {
   "app_edit_zone": "Edit zone",
   "app_edit_the_lights": "Edit the lights",
   "app_light_panel": "Light colour and brightness",
+  "app_new_folder": "New folder",
+  "app_group_name": "Group name",
   "app_drag_to_order": "Drag items to set preferred order.",
   "app_switch_settings": "Switch settings",
   "app_room": "Room",

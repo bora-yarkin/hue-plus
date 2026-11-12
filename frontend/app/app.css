@@ -400,3 +400,21 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 /* what is held and dragged */
 .lifting{position:relative;z-index:60;box-shadow:0 14px 30px rgba(0,0,0,.5);transition:none!important}
 .frows .ftile,.fg .sitem,.hm-group.cyc .hm-row{user-select:none;-webkit-user-select:none}
+
+/* dropping a scene on another makes a folder: the one it is over lights up */
+.sitem.mergeable{box-shadow:0 0 0 3px #fff;transform:scale(1.04)}
+.fcard .fedit{position:absolute;right:14px;top:14px;background:var(--tile)}
+.dlg .pin{margin:0 0 18px;background:var(--tile);border-radius:12px;padding:0 14px;text-align:left}
+
+/* ---- a wizard: the app's blue top, the question as the heading, Next at the bottom ---- */
+.pg.wizpg .pbar{background:linear-gradient(180deg,#0e1b46 0,#15234f 60%,#1a2147 100%);padding-bottom:38px}
+.pg.wizpg .pbar .ttl{visibility:hidden}
+.pg.wizpg .pbar .rbt{background:rgba(255,255,255,.16)}
+.pg.wizpg .pbody{position:relative;margin-top:-24px;border-radius:24px 24px 0 0;background:var(--bg);padding:8px 0 calc(var(--sab) + 96px);overflow-y:auto}
+.pg.wizpg .hm-bigi{display:none}
+.pg.wizpg .hm .hm-tt b,.pg.wizpg .hm-tt b{font-size:21px;font-weight:600;line-height:1.25}
+.pg.wizpg .hm-tt i{font-size:12.5px;line-height:1.45}
+.pg.wizpg .hm-actions{position:fixed;left:0;right:0;bottom:0;z-index:5;flex-direction:row;justify-content:center;padding:14px 16px calc(var(--sab) + 14px);background:var(--bg);border-top:1px solid var(--line);margin:0}
+.pg.wizpg .hm-btn{min-width:88px;padding:9px 24px;font-size:12.5px}
+.pg.wizpg .hm-btn.primary{background:var(--acc)}
+@supports (corner-shape:squircle){.pg.wizpg .pbody{corner-shape:squircle;border-radius:30px 30px 0 0}}
