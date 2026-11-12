@@ -42,8 +42,10 @@ MODULE_DEVICES = "devices"
 MODULE_ZONES = "zones"
 MODULE_SYNC = "sync"
 MODULE_STREAMING = "streaming"
-MODULES = (MODULE_BRIDGE, MODULE_LIGHTS, MODULE_DEVICES, MODULE_ZONES, MODULE_SYNC, MODULE_STREAMING)
-# The Spotify sync and the local streaming need credentials, so they are off until they are given.
+# A sidebar panel of its own that looks like the Hue app (``dashboard.py``). It is off until it is switched on.
+MODULE_DASHBOARD = "dashboard"
+MODULES = (MODULE_BRIDGE, MODULE_LIGHTS, MODULE_DEVICES, MODULE_ZONES, MODULE_SYNC, MODULE_STREAMING, MODULE_DASHBOARD)
+# The Spotify sync and the local streaming need credentials, so they are off until they are given; the dashboard is off until it is chosen.
 DEFAULT_MODULES = (MODULE_BRIDGE, MODULE_LIGHTS, MODULE_DEVICES, MODULE_ZONES)
 
 # Seconds between two reads of the bridge by the bridge module (about 17 requests; the bridge allows three at a time).

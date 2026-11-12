@@ -12,6 +12,7 @@ integrations); the bridge and the Signify sync service (trusted to answer, not t
   look-alike answering that very moment is the one gap (an attacker on the local network at the moment of setup). The Hue integration and aiohue
   do not check the certificate at all, so riding on their connection is the weaker of the two. A changed certificate asks for the link button
   again instead of being accepted. Removing the entry asks the bridge to forget the registration.
+- The Hue panel (dashboard module) is registered `require_admin`, so Home Assistant refuses it to other users; every action in it is a Hue Plus service or Home Assistant's own light and scene service, so the checks of those apply. It runs in an iframe with its own script, apart from Home Control's. Names from the bridge are put in as text, never as markup (a test checks the panel's code).
 - Bridge services are administrator-only; a call with no user (an automation an administrator wrote) is allowed.
 - Twelve destructive actions need `confirm: true`; revoking the key Hue Plus itself uses is refused.
 - `raw_request` is limited to a list of resources; anything but GET needs `confirm`.

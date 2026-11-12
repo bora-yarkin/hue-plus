@@ -26,7 +26,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.typing import ConfigType
 
-from . import follow, forget, services, websocket
+from . import dashboard, follow, forget, services, websocket
 from .bridge.api import BridgeApi
 from .bridge.connect import pin
 from .connection import link_transport
@@ -45,6 +45,7 @@ from .const import (
     DEFAULT_MODULES,
     DOMAIN,
     MODULE_BRIDGE,
+    MODULE_DASHBOARD,
     MODULE_DEVICES,
     MODULE_LIGHTS,
     MODULE_STREAMING,
@@ -137,6 +138,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: HuePlusConfigEntry) -> b
     async_follow_hue_settings(hass, entry)
     if runtime.sync is not None:
         sync_setup.start(hass, entry, runtime.sync)
+    if MODULE_DASHBOARD in runtime.modules:
+        await dashboard.async_enable(hass, entry)
+        entry.async_on_unload(lambda: dashboard.async_disable(hass, entry))
     entry.async_on_unload(entry.add_update_listener(_reload))
     return True
 

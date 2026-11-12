@@ -39,6 +39,12 @@ the Hue integration's scene action `activate_scene` (live, with a speed, a brigh
 own entities since Home Assistant 2026.11 (before, its scene platform registered it for whatever platform ran it), so `devices/scene.py`
 registers `hue_plus.activate_scene` with the same options when the platform has not. The dashboard starts a Hue scene with it.
 
+**Dashboard module (D-30).** `dashboard.py` registers one sidebar panel (`panel_custom`, in an iframe, administrators only) for however many bridges have the module on, and removes it
+when the last stops; Home Assistant's frontend is set up then, not required of every installation. The panel's loader is `frontend/panel.js` (handwritten); `frontend/app.js` is built by
+`scripts/build_menu.py` from `frontend/app/` (the host, which implements the same plugin API Home Control has, the Home, light and Sync pages and the shell) and the same plugin sources
+as `menu.js`, so every page of the Hue Plus menu runs unchanged in the panel. `menu.js` is not touched. The file's fingerprint is in the panel's URL so a changed file is fetched again.
+A test page with a pretend Home Assistant is in `tests/frontend/panel/`.
+
 **Home Control (decision D-25).** The dashboard pages of Hue Plus are Hue Plus's: `frontend/src` (the Hue Plus menu, the bridge-area import and editing, Hue's scenes, the Spotify sync and sync box, the gradient styles, the adapter that reads what Hue Plus offers, the texts and the styles of the sync popups) is built into `custom_components/hue_plus/frontend/menu.js`, served at `/hue_plus_static/menu.js` and loaded by Home Control for administrators.  Live scenes and areas are played by Home Control, for any light. Hue Plus is the expansion pack for Hue lights: `home_control.json`
 declares the Hue lights it owns (their entity platforms, the bridge's command rate) and the native effects it can play, and `hue_plus.play_effect` (an action on
 Hue Plus's light entities, `lights/light.py`) plays one of a light's own effects with a colour through the bridge. Nothing is imported in either direction. The scenes module that

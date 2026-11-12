@@ -290,6 +290,7 @@ SELECTOR_TEXTS = {
             "zones": "Zones: per-zone control of gradient lights",
             "streaming": "Streaming: send colours straight to an entertainment area (experimental; needs a registration with the bridge)",
             "sync": "Spotify sync: start, stop and tune Hue's cloud sync",
+            "dashboard": "Dashboard: a sidebar panel of its own that looks and works like the Hue app (administrators only)",
         }
     },
 }

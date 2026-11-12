@@ -118,3 +118,15 @@ Status words: done = a page in the menu that writes to the bridge; missing = no 
 Known limits: the scene gallery, Coming home / Leaving home (geofence by the phone and Hue's cloud), Custom AI behaviours and Security alerts (subscription) are Signify cloud features; the bridge's local API has no counterpart. Where the local API has part of one (the bridge's `geofence_client`, `behavior_instance` of those templates), Hue Plus shows and edits that part.
 
 2026-11-10 check: 54 services; 19 are used by the dashboard menu. Not on the dashboard yet: create/update/delete scene, smart scene (create, set), room and zone create/update/delete, create automation and routine, create daily smart scene, motion area create, bridge settings (set name, auto update, check for update, install bridge update, Zigbee channel, link button, search for devices, remove device), entertainment area delete and control, identify signal, power-on behaviour, light step, sensor configure, raw request, effect and gradient setters. The bridge-side gaps are the 11 rows of `analysis/gap-analysis.md` (after-streaming behaviour, gradient orientation and order, light function, minimum dim level and gamut, battery state, scene last recall, Matter pairing code, Zigbee diagnostics, motion area candidates, Contact Sensor and PM scripts).
+
+## HP-14 Standalone Hue dashboard (owner's requirement, 2026-11-12, D-30)
+
+Goal: an optional module that registers a Hue-only sidebar panel, as close to the Hue app as possible, with every feature Hue Plus has, independent of Home Control.
+
+Acceptance:
+- AC1 With the module off nothing is registered; on, one panel (`/hue-plus`, administrators only) however many bridges, removed when the last stops. Test: `tests/ha/test_dashboard.py`.
+- AC2 The panel has Home, Automations, Sync and Settings tabs; Home lists rooms and zones, a room has scenes, lights and *Edit room*, a light has brightness, white or colour, effects and light setup. Check: `tests/frontend/panel` in a browser, `tests/frontend/app.test.mjs`.
+- AC3 Home Control's Hue Plus menu is unchanged (`menu.js` built from the same sources; `tests/test_menu_built.py`).
+- AC4 Not included: the Explore tab (Signify's cloud gallery).
+
+Status: built and checked in the test page; to be checked on the owner's box (needs a restart to register the panel).

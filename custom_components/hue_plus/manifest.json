@@ -2,7 +2,9 @@
   "domain": "hue_plus",
   "name": "Philips Hue Plus",
   "after_dependencies": [
-    "hue"
+    "frontend",
+    "hue",
+    "panel_custom"
   ],
   "codeowners": [
     "@bora-yarkin"

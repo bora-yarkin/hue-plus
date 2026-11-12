@@ -4,6 +4,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+### Added
+- **Dashboard module** (off by default; switch it on in Hue Plus's options): a **Hue** panel in Home Assistant's sidebar (administrators only) that looks and works like the Hue app and is independent of Home Control. Tabs: **Home** (rooms and zones as cards with a switch and a brightness bar; a room's page has its scenes, with *Add a scene* and each scene's settings, its lights and *Edit room*), a light's page (brightness, white or colour with a colour wheel, effects, light setup), **Automations** and **Settings** (the Hue Plus menu pages: automations, MotionAware areas, devices, rooms and zones, bridge settings, Matter, updates, apps) and **Sync** (Spotify sync, the Hue Play HDMI Sync Box, entertainment areas). It runs in an iframe from its own `app.js`, so it does not touch Home Control or any other dashboard; the Hue Plus menu in Home Control is unchanged. Not included: the Hue app's Explore tab (a gallery from Signify's cloud).
+
 ## [0.15.0] - 2026-11-12
 
 ### Added

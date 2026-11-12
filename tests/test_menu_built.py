@@ -14,6 +14,8 @@ def test_menu_js_is_built_from_the_sources():
     spec.loader.exec_module(module)
     built = (ROOT / "custom_components" / "hue_plus" / "frontend" / "menu.js").read_text(encoding="utf-8")
     assert built == module.build(), "menu.js is out of date: run scripts/build_menu.py"
+    app = (ROOT / "custom_components" / "hue_plus" / "frontend" / "app.js").read_text(encoding="utf-8")
+    assert app == module.build_app(), "app.js is out of date: run scripts/build_menu.py"
 
 
 def test_the_declaration_names_the_script_hue_plus_serves():
@@ -21,5 +23,5 @@ def test_the_declaration_names_the_script_hue_plus_serves():
     url = declaration["menu"]["url"]
     assert url == "/hue_plus_static/menu.js"
     assert (ROOT / "custom_components" / "hue_plus" / "frontend" / "menu.js").is_file()
-    # Only the built script is served, never the sources.
-    assert [p.name for p in (ROOT / "custom_components" / "hue_plus" / "frontend").iterdir()] == ["menu.js"]
+    # Only the built scripts and the panel's loader are served, never the sources.
+    assert sorted(p.name for p in (ROOT / "custom_components" / "hue_plus" / "frontend").iterdir()) == ["app.js", "menu.js", "panel.js"]
