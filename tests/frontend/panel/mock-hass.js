@@ -26,9 +26,9 @@ export function makeHass(query) {
     light("bed_light", "Bed Light", {}, "off"),
     light("ceiling_light", "Ceiling Light", {}, "off"),
     light("desk_top", "Desk Top"),
-    state("light.living_room", "on", { friendly_name: "Living room", brightness: 150, is_hue_group: true, hue_type: "room", entity_id: ["light.desk_lamp", "light.shelf_strip", "light.floor_lamp"] }),
-    state("light.bedroom", "off", { friendly_name: "Bedroom", is_hue_group: true, hue_type: "room", entity_id: ["light.bed_light", "light.ceiling_light"] }),
-    state("light.desk_area", "on", { friendly_name: "Desk area", brightness: 200, is_hue_group: true, hue_type: "zone", entity_id: ["light.desk_top", "light.desk_lamp"] }),
+    state("light.living_room", "on", { friendly_name: "Living room", brightness: 150, is_hue_group: true, hue_type: "room", entity_id: [], lights: ["Desk Lamp", "Shelf Strip", "Floor Lamp"] }),
+    state("light.bedroom", "off", { friendly_name: "Bedroom", is_hue_group: true, hue_type: "room", entity_id: [], lights: ["Bed Light", "Ceiling Light"] }),
+    state("light.desk_area", "on", { friendly_name: "Desk area", brightness: 200, is_hue_group: true, hue_type: "zone", entity_id: [], lights: ["Desk Top", "Desk Lamp"] }),
     state("scene.living_room_arctic_aurora", "unknown", { friendly_name: "Living room Arctic aurora", name: "Arctic aurora", is_dynamic: true, group_name: "Living room", group_type: "room", speed: 0.5, brightness: 200 }),
     state("scene.living_room_reading", "unknown", { friendly_name: "Living room Reading", name: "Reading", is_dynamic: false, group_name: "Living room", group_type: "room" }),
     state("scene.living_room_relax", "unknown", { friendly_name: "Living room Relax", name: "Relax", is_dynamic: false, group_name: "Living room", group_type: "room" }),
@@ -152,9 +152,15 @@ export function makeHass(query) {
     states[id] = { ...s, state: value === undefined ? s.state : value, attributes: { ...s.attributes, ...patch } };
   }
 
+  /* A room's lights, found by name as the real bridge lists them (its group's entity_id is empty). */
+  function membersOf(group) {
+    const names = states[group].attributes.lights || [];
+    return Object.keys(states).filter((k) => k.startsWith("light.") && !states[k].attributes.is_hue_group && names.includes(states[k].attributes.friendly_name));
+  }
+
   function lightsOf(id) {
     const a = states[id] && states[id].attributes;
-    return a && a.is_hue_group ? a.entity_id : [id];
+    return a && a.is_hue_group ? membersOf(id) : [id];
   }
 
   /* What a light service does to the pretend lights, the way a real light would: a group's members follow it, and a group is on when one of them is. */
@@ -174,8 +180,9 @@ export function makeHass(query) {
       Object.keys(states).forEach((g) => {
         const a = states[g].attributes;
         if (a.is_hue_group) {
-          const on = a.entity_id.some((m) => states[m].state === "on");
-          const lead = states[a.entity_id.find((m) => states[m].state === "on")];
+          const kids = membersOf(g);
+          const on = kids.some((m) => states[m].state === "on");
+          const lead = states[kids.find((m) => states[m].state === "on")];
           set(g, lead ? { brightness: lead.attributes.brightness } : {}, on ? "on" : "off");
         }
       });

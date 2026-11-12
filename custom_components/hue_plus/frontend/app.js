@@ -8482,10 +8482,22 @@ function hpGroups() {
     });
 }
 
+/* The lights of a room or zone. The group lists them by entity when it can; the bridge's rooms list them by name (the `lights` attribute), and then the Hue Plus lights of those names are the room's. */
 function hpGroupLights(id) {
-  return (A(id).entity_id || []).filter(function (m) {
-    return m.indexOf("light.") === 0 && H().states[m];
-  });
+  var h = H(),
+    a = A(id),
+    listed = (a.entity_id || []).filter(function (m) {
+      return m.indexOf("light.") === 0 && h.states[m];
+    });
+  if (listed.length) return listed;
+  var names = Array.isArray(a.lights) ? a.lights : [];
+  return Object.keys(h.states)
+    .filter(function (m) {
+      var b = h.states[m].attributes,
+        e = h.entities[m];
+      return m.indexOf("light.") === 0 && b.hue_light_id && !b.is_hue_group && !(e && e.hidden) && names.indexOf(b.friendly_name) >= 0;
+    })
+    .sort();
 }
 
 function hpGroupIcon(id) {
