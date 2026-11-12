@@ -71,7 +71,6 @@ function hpWatch() {
 function hpStart() {
   /* What the room pages need (their controls, the colours of their scenes) is read now, while Home is looked at. */
   hmReady().then(function () {}, function () {});
-  hpLightFrame(function () {});
   HPAPI.ws({ type: "hue_plus/capabilities" }).then(
     function (r) {
       var b = ((r && r.bridges) || [])[0];
@@ -114,6 +113,8 @@ window.HuePlusApp = {
     HPAPP.main = el.querySelector(".view>.in");
     HPAPP.nav = el.querySelector("nav");
     HPAPP.main.appendChild(mk("div", "empty")).textContent = _T("loading");
+    /* The colour panel takes a few seconds to start (it is Home Control's whole dashboard code), so it starts now, while Home is being read, and is ready when a light is tapped. */
+    hpLightFrame(function () {});
     /* The panel starts when the registries are in, or after a short wait; the lists fill in by themselves. */
     Promise.race([
       HPAPI.ready(),
