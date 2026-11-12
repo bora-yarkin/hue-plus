@@ -317,7 +317,7 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .room,.ltile,.rhead{transition:background-color .35s}
 .room:active,.ltile:active,.ctile:active,.atile:active{transform:scale(.97)}
 .room,.ltile,.ctile,.atile{transition:transform .12s,filter .3s}
-.room::before,.ltile::before,.rhead::before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(180deg,var(--gold1,#fbdb90),var(--gold2,#d6ab5b));opacity:0;transition:opacity .4s;pointer-events:none}
+.room::before,.ltile::before,.rhead::before{content:"";position:absolute;inset:0;border-radius:inherit;corner-shape:inherit;background:linear-gradient(180deg,var(--gold1,#fbdb90),var(--gold2,#d6ab5b));opacity:0;transition:opacity .4s;pointer-events:none}
 .room.on-gold::before,.ltile.on-gold::before,.rhead.on-gold::before{opacity:1}
 .room>*,.ltile>*,.rhead>*{position:relative}
 .rhead{position:relative}
