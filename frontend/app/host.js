@@ -429,7 +429,7 @@
       scrolling = false;
       sx = e.clientX;
       sy = e.clientY;
-      rect = el.getBoundingClientRect();
+      rect = (h.rectOf ? h.rectOf() : el).getBoundingClientRect();
       try {
         el.setPointerCapture(e.pointerId);
       } catch (x) {}
@@ -469,9 +469,11 @@
   /* A row that is a slider: o = {icon, name, min, max, step, get(), fmt(v), on(), live(v), commit(v), readonly}. */
   function sliderRow(o) {
     var r = mk("div", "pill slide");
-    r.innerHTML = "<div class='fill'></div>" + ic(o.icon) + "<span class='tx'><span class='nm'></span><span class='sb'></span></span><span class='vl'></span>";
+    r.innerHTML = (o.icon ? ic(o.icon) : "") + "<span class='tx'><span class='nm'></span><span class='sb'></span></span><span class='vl'></span><div class='trk'><div class='fill'></div><i class='kn'></i></div>";
     r.querySelector(".nm").textContent = o.name;
     var fill = r.querySelector(".fill"),
+      knob = r.querySelector(".kn"),
+      track = r.querySelector(".trk"),
       vl = r.querySelector(".vl"),
       drag = false,
       liveAt = 0;
@@ -491,11 +493,15 @@
     function paint(v) {
       var f = Math.max(0, Math.min(1, (v - o.min) / (o.max - o.min)));
       fill.style.width = f * 100 + "%";
+      knob.style.left = f * 100 + "%";
       vl.textContent = o.fmt ? o.fmt(v) : v;
       r.setAttribute("aria-valuenow", v);
     }
     if (!o.readonly)
       attachSlide(r, {
+        rectOf: function () {
+          return track;
+        },
         onMove: function (f) {
           drag = true;
           var v = snap(f);
@@ -725,7 +731,7 @@
       svg("close") +
       "</button><div class='ttl'><span class='tt'></span></div><button type='button' class='act ok' style='display:none'>" +
       T("save") +
-      "</button></div><div class='pbody'></div>";
+      "</button><div class='lbar'></div></div><div class='pbody'></div>";
     var s = { root: root, body: root.querySelector(".pbody") };
     root.querySelector(".back").addEventListener("click", function () {
       popBack();
@@ -751,7 +757,8 @@
     var p = pageOf(key);
     if (!p.def) return false;
     if (HOST.onRender) HOST.onRender();
-    SHEET.root.classList.remove("roompg");
+    SHEET.root.classList.remove("roompg", "lightpg", "scenepg");
+    SHEET.root.querySelector(".lbar").innerHTML = "";
     CURRENT = key;
     POPGUARD = null;
     CHECK = null;

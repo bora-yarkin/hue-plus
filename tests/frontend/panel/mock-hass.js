@@ -33,7 +33,10 @@ export function makeHass(query) {
     state("scene.living_room_reading", "unknown", { friendly_name: "Living room Reading", name: "Reading", is_dynamic: false, group_name: "Living room", group_type: "room" }),
     state("scene.living_room_relax", "unknown", { friendly_name: "Living room Relax", name: "Relax", is_dynamic: false, group_name: "Living room", group_type: "room" }),
     state("scene.bedroom_nightlight", "unknown", { friendly_name: "Bedroom Nightlight", name: "Nightlight", is_dynamic: false, group_name: "Bedroom", group_type: "room" }),
-    state("select.living_room_scene", "Reading", { friendly_name: "Scene", options: ["Arctic aurora", "Reading", "Relax"] }),
+    state("scene.living_room_nebula", "unknown", { friendly_name: "Living room Nebula", name: "Nebula", is_dynamic: true, group_name: "Living room", group_type: "room", speed: 0.4 }),
+    state("scene.living_room_desk_light", "unknown", { friendly_name: "Living room Desk Light", name: "Desk Light", is_dynamic: false, group_name: "Living room", group_type: "room" }),
+    state("scene.living_room_bright", "unknown", { friendly_name: "Living room Bright", name: "Bright", is_dynamic: false, group_name: "Living room", group_type: "room" }),
+    state("select.living_room_scene", "Reading", { friendly_name: "Scene", options: ["Arctic aurora", "Reading", "Relax", "Nebula", "Desk Light", "Bright"] }),
     state("select.bedroom_scene", "Nightlight", { friendly_name: "Scene", options: ["Nightlight"] }),
     state("switch.hue_spotify_sync", "off", { friendly_name: "Hue Spotify sync" }),
     state("number.hue_spotify_sync_sync_brightness", "80", { friendly_name: "Brightness", min: 1, max: 100, step: 1 }),
@@ -64,6 +67,9 @@ export function makeHass(query) {
     reg("scene.living_room_reading", "hue_plus", "scene-2", "dev-living-group"),
     reg("scene.living_room_relax", "hue_plus", "scene-3", "dev-living-group"),
     reg("scene.bedroom_nightlight", "hue_plus", "scene-4", "dev-bedroom-group"),
+    reg("scene.living_room_nebula", "hue_plus", "scene-5", "dev-living-group"),
+    reg("scene.living_room_desk_light", "hue_plus", "scene-6", "dev-living-group"),
+    reg("scene.living_room_bright", "hue_plus", "scene-7", "dev-living-group"),
     reg("select.living_room_scene", "hue_plus", "group-1_scene", "dev-living-group"),
     reg("select.bedroom_scene", "hue_plus", "group-2_scene", "dev-bedroom-group"),
     reg("switch.hue_spotify_sync", "hue_plus", `${BRIDGE}_sync_sync`, "dev-spotify"),
@@ -93,11 +99,19 @@ export function makeHass(query) {
 
   const resources = {
     automations: [
-      { id: "auto-1", name: "Wake up", enabled: true, script: "Basic wake up routine", status: "running" },
+      { id: "auto-1", name: "Wake up", enabled: true, script: "Basic wake up routine", status: "running", configuration: { when: { time_point: { type: "time", time: { hour: 6, minute: 0 } }, recurrence_days: ["wednesday"] } } },
       { id: "auto-2", name: "Evening timer", enabled: false, script: "Timers", status: "disabled" },
     ],
     rooms: [{ id: "room-1", name: "Living room", children: [{ id: "dev-lamp", name: "Desk lamp" }], lights: ["light-1", "light-2", "light-3"] }],
-    zones: [{ id: "zone-1", name: "Desk area", children: [], lights: ["light-1"] }], smart_scenes: [], scenes: [{ id: "scene-1", name: "Movie", group_id: "room-1", group_type: "room", lights: ["light-1", "light-2"] }, { id: "scene-2", name: "Relax", group_id: "room-1", group_type: "room", lights: ["light-1", "light-2", "light-3"] }, { id: "scene-3", name: "Nightlight", group_id: "room-1", group_type: "room", lights: ["light-2"] }],
+    zones: [{ id: "zone-1", name: "Desk area", children: [], lights: ["light-1"] }], smart_scenes: [], scenes: [
+      { id: "scene-1", name: "Arctic aurora", group_id: "room-1", group_type: "room", lights: ["hl-desk_lamp", "hl-shelf_strip"], speed: 0.6, auto_dynamic: true, colours: [{ xy: [0.17, 0.35] }, { xy: [0.2, 0.2] }, { xy: [0.25, 0.5] }] },
+      { id: "scene-2", name: "Reading", group_id: "room-1", group_type: "room", lights: ["hl-desk_lamp", "hl-shelf_strip"], speed: 0.5, auto_dynamic: false, colours: [{ mirek: 300 }] },
+      { id: "scene-3", name: "Relax", group_id: "room-1", group_type: "room", lights: ["hl-desk_lamp", "hl-shelf_strip", "hl-floor_lamp"], speed: 0.5, auto_dynamic: false, colours: [{ mirek: 400 }, { xy: [0.5, 0.42] }] },
+      { id: "scene-4", name: "Nightlight", group_id: "room-2", group_type: "room", lights: ["light-2"], speed: 0.5, auto_dynamic: false, colours: [{ mirek: 454 }] },
+      { id: "scene-5", name: "Nebula", group_id: "room-1", group_type: "room", lights: ["light-1"], speed: 0.4, auto_dynamic: false, colours: [{ xy: [0.25, 0.1] }, { xy: [0.45, 0.2] }] },
+      { id: "scene-6", name: "Desk Light", group_id: "room-1", group_type: "room", lights: ["light-1"], speed: 0.5, auto_dynamic: false, colours: [{ mirek: 350 }] },
+      { id: "scene-7", name: "Bright", group_id: "room-1", group_type: "room", lights: ["light-1"], speed: 0.5, auto_dynamic: false, colours: [{ mirek: 233 }] },
+    ],
     entertainment_areas: [
       {
         id: "area-1", name: "TV", type: "screen", end_state: "last_state", performance: "auto", performance_light: null,

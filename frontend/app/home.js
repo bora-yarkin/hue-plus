@@ -301,37 +301,6 @@ function hpScenesOf(id) {
     });
 }
 
-function hpSceneTile(sid) {
-  var t = mk("div", "stile", "<div class='dots'></div><b></b>");
-  t.querySelector("b").textContent = A(sid).name || sid;
-  t.setAttribute("aria-label", A(sid).name || sid);
-  var dots = t.querySelector(".dots");
-  hueScenePalette(sid, function (cols) {
-    dots.innerHTML = "";
-    cols.slice(0, 6).forEach(function (c) {
-      var d = mk("i");
-      d.style.setProperty("--c", c);
-      dots.appendChild(d);
-    });
-  });
-  var gear = mk("button", "gear", svg("tune"));
-  gear.type = "button";
-  gear.setAttribute("aria-label", _T("app_scene_settings"));
-  gear.addEventListener("click", function (e) {
-    e.stopPropagation();
-    showPopup("hue-scene:" + sid + "~", true);
-  });
-  t.appendChild(gear);
-  hpActive(t, function () {
-    hueSceneToggle(sid);
-  });
-  t.refresh = function () {
-    t.classList.toggle("on-gold", HUESCENES.active(H(), sid));
-  };
-  reg(t.refresh);
-  return t;
-}
-
 /* The icon of a light from the shape the Hue app draws for its archetype (a name check: the bridge's archetype is not on the entity). */
 function hpLightIcon(lid) {
   var n = String(A(lid).friendly_name || "").toLowerCase();
@@ -342,7 +311,7 @@ function hpLightIcon(lid) {
   return "light";
 }
 
-function hpLightTile(lid) {
+function hpLightTile(lid, room) {
   var name = A(lid).friendly_name || lid,
     t = mk("div", "ltile", "<div class='up'><span class='ic'></span><b></b></div><div class='dn'></div>");
   t.querySelector(".ic").innerHTML = svg(hpLightIcon(lid));
@@ -350,7 +319,7 @@ function hpLightTile(lid) {
   t.setAttribute("aria-label", name);
   t.querySelector(".dn").appendChild(hpLightToggle(lid, name));
   hpActive(t, function () {
-    showPopup("app-light:" + lid, true);
+    showPopup("app-lights:" + room + "~" + lid, true);
   });
   t.refresh = function () {
     hpGold(t, [lid]);
@@ -472,20 +441,14 @@ function hpRoomPage(body, id) {
   var page = mk("div", "rbody");
   body.appendChild(page);
 
-  var scenes = hpScenesOf(id),
-    canMake = admin && hueplus.has(H(), "create_scene");
   page.appendChild(mk("div", "lb")).textContent = _T("app_my_scenes");
-  var grid = mk("div", "stiles");
-  scenes.forEach(function (sid) {
-    grid.appendChild(hpSceneTile(sid));
-  });
-  if (!scenes.length && !canMake) grid.appendChild(mk("div", "empty")).textContent = _T("hw_no_scenes_here");
-  page.appendChild(grid);
+  hpFolderRows(page, id);
+  if (!hpScenesOf(id).length) page.appendChild(mk("div", "empty")).textContent = _T("hw_no_scenes_here");
 
   page.appendChild(mk("div", "lb")).textContent = _T("lights");
   var tiles = mk("div", "ltiles");
   hpGroupLights(id).forEach(function (lid) {
-    tiles.appendChild(hpLightTile(lid));
+    tiles.appendChild(hpLightTile(lid, id));
   });
   page.appendChild(tiles);
 

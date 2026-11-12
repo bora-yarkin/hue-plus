@@ -28,10 +28,6 @@ function hpMenuTab(box, title, page) {
   HP_PAGES[page][2](inner);
 }
 
-function hpAutomationsTab(box) {
-  hpMenuTab(box, _T("automations"), "hue-routines");
-}
-
 function hpSettingsTab(box) {
   hpMenuTab(box, _T("app_settings"), "stg-hue");
 }
@@ -42,6 +38,7 @@ function hpShowTab(id) {
   })[0];
   if (!tab) return;
   HPAPP.tab = id;
+  HPAPP.el.querySelector("#hp").dataset.tab = id;
   HPAPP.sigOf = null;
   HPAPI.tabList.length = 0;
   HPAPI.resetSession();

@@ -8,7 +8,7 @@ import vm from "node:vm";
 
 const root = new URL("../../", import.meta.url);
 const read = (path) => readFileSync(new URL(path, root), "utf8");
-const APP_FILES = ["shell.js", "home.js", "light.js", "syncpage.js"].map((f) => read(`frontend/app/${f}`));
+const APP_FILES = ["shell.js", "home.js", "scenes.js", "autotab.js", "light.js", "syncpage.js"].map((f) => read(`frontend/app/${f}`));
 const host = read("frontend/app/host.js");
 const bundle = read("custom_components/hue_plus/frontend/app.js");
 const plugin = [...APP_FILES, ...["huemenu.js", "huewizard.js", "humotion.js", "huerooms.js", "huesync.js", "huescenes.js", "huestyle.js"].map((f) => read(`frontend/src/${f}`))].join("\n");
@@ -52,4 +52,13 @@ test("nothing is kept in Home Assistant: the panel and the frame of the light pa
   // Home Control's dashboard saves its layout, theme and colours there; the frame turns all of that into nothing.
   assert.ok(/HA\.data = \{ get: nothing, set: nothing, subscribe: nothing, unsubscribe: nothing \}/.test(popup));
   assert.ok(/window\.savedRoomOf = function \(\) \{\s*return null;/.test(popup));
+});
+
+test("a room's scenes are the app's folders and a scene's page has only what the bridge can do", () => {
+  const scenes = read("frontend/app/scenes.js");
+  // The Hue Plus scene page has Home Control's "import as a classic scene" and "hide"; the app has neither, and the panel does not open that page.
+  assert.ok(!/import_as_a|importLiveScene|hue-scene:/.test(APP_FILES.join("\n")));
+  // What the scene's page and its three dots change goes to the bridge with services Hue Plus has.
+  for (const service of scenes.matchAll(/hpCall\("hue_plus", "([a-z_]+)"/g)) assert.ok(read("custom_components/hue_plus/bridge/spec.py").includes(`"${service[1]}"`), `${service[1]} is not a Hue Plus service`);
+  assert.ok(/frows/.test(read("frontend/app/app.css")) && /grid-auto-rows/.test(read("frontend/app/app.css")), "the folders are rows that scroll sideways");
 });

@@ -70,19 +70,26 @@
     isReady: function () {
       return ready;
     },
-    /* Draws the colour, white and effects panel of one light or group, or of several lights (a room's, a scene's) with a tile for each. */
-    panel: function (ids, name) {
+    /* Draws the colour, white and effects panel of the lights of a room or a scene, with a tile for each. */
+    panel: function (ids, name, focus) {
       if (!ready) return false;
       var b = body();
-      if (ids.length === 1) {
-        lightPanel(b, lpNodeOf(ids[0], null), { id: ids[0], room: null, sliders: LWHEEL[ids[0]] === false });
-      } else {
-        LMASTER.hue = ids;
-        LMASTER_NAME.hue = name;
-        LMASTER_ALL.hue = true;
-        LWHEEL["m:hue"] = undefined;
-        lightsMasterPopup(b, "hue");
-      }
+      /* Always the lights master panel, one screen for every light of the room, as in the app; `focus` is the light whose tile is picked when it opens. */
+      LMASTER.hue = ids;
+      LMASTER_NAME.hue = name;
+      LMASTER_ALL.hue = true;
+      LWHEEL["m:hue"] = undefined;
+      lightPanel(b, lpMasterNode("hue", ids), {
+        room: null,
+        sliders: false,
+        ready: function (S) {
+          /* The app gives every light its own tile, whatever its colour: Home Control joins lights that look the same into one marker, and here none is joined. */
+          S.joined.length = 0;
+          S.ex[S.root.key] = true;
+          S.rebuild();
+          if (focus && ids.indexOf(focus) >= 0) S.select(focus);
+        },
+      });
       window.refresh();
       return true;
     },

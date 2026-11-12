@@ -1,4 +1,4 @@
-/* The light screens of the Hue app: a light's or a room's colour wheel, the white and effects pages and the brightness button, and the scene editor (the same screen with SAVE).
+/* The light screen of the Hue app: the colour wheel of a room's lights, the white and effects pages and the brightness button, and the scene editor (the same screen with SAVE).
  The panel itself is Home Control's, run as it is in a frame of its own (popup.html, with a copy of Home Control's dashboard code in lights/); this file only gives it a page: the bar above it, and the
  frame under the bar. Nothing is kept in Home Assistant: what a change does goes to the lights, which are the bridge's. */
 
@@ -54,7 +54,7 @@ window.HueHost.onRender = function () {
   hpFrameShow(false);
 };
 
-function hpLightScreen(body, ids, name) {
+function hpLightScreen(body, ids, name, focus) {
   var wait = mk("div", "empty");
   wait.textContent = _T("loading");
   body.appendChild(wait);
@@ -62,14 +62,40 @@ function hpLightScreen(body, ids, name) {
   hpLightFrame(function (win) {
     if (HC.sheet.light !== token) return;
     wait.remove();
-    win.HuePopup.panel(ids, name);
+    win.HuePopup.panel(ids, name, focus);
     hpFrameShow(true);
   });
 }
 
-/* A light or a group: its page is the panel. */
-function hpLightPage(body, id) {
-  hpLightScreen(body, [id], A(id).friendly_name || id);
+/* The lights of a room on one screen, as in the app: the colour wheel with a marker for each light, the colour, white and effects pages, the brightness button, and a tile for each light (the light that was
+ tapped is picked). The bar has SAVE (the lights as they are now, kept as a scene) and DONE. */
+function hpLightsPage(body, key) {
+  var room = String(key).split("~")[0],
+    focus = String(key).split("~")[1] || "",
+    root = body.parentNode;
+  if (!H().states[room]) {
+    body.appendChild(mk("div", "empty")).textContent = _T("nothing_found");
+    return;
+  }
+  root.classList.add("lightpg");
+  var bar = root.querySelector(".lbar");
+  if (isAdmin() && hueplus.has(H(), "create_scene")) {
+    var save = mk("button", "act", "");
+    save.type = "button";
+    save.textContent = _T("save");
+    save.addEventListener("click", function () {
+      hueStartMaker("app:" + room);
+    });
+    bar.appendChild(save);
+  }
+  var done = mk("button", "act done", "");
+  done.type = "button";
+  done.textContent = _T("done");
+  done.addEventListener("click", function () {
+    popBack();
+  });
+  bar.appendChild(done);
+  hpLightScreen(body, hpGroupLights(room), A(room).friendly_name || room, focus);
 }
 
 /* The editor of a scene's lights (the Hue app's "New scene" and a scene's lights): the same screen, with SAVE. The lights show what is set while it is open; leaving after a change asks, and discarding
@@ -126,12 +152,13 @@ function hpEditPage(body) {
 window.HueHost.editLights = hpEditLights;
 
 HC.registerPage(
-  "app-light",
-  function (id) {
-    return A(id).friendly_name || _T("light");
+  "app-lights",
+  function (key) {
+    var room = String(key).split("~")[0];
+    return A(room).friendly_name || _T("lights");
   },
-  "lamp",
-  hpLightPage
+  "lights",
+  hpLightsPage
 );
 HC.registerPage(
   "app-edit",
