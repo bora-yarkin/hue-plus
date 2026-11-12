@@ -82,6 +82,7 @@ function hpFolders(room) {
 
 function hpFolderTile(folder, room) {
   var t = mk("div", "ftile", "<div class='dots'></div><b></b>");
+  t.dataset.key = folder.key;
   t.querySelector("b").textContent = folder.name;
   t.setAttribute("aria-label", folder.name);
   var dots = t.querySelector(".dots");
@@ -108,9 +109,21 @@ function hpFolderRows(box, room) {
   if (!folders.length) return;
   var grid = mk("div", "frows");
   grid.style.setProperty("--cols", Math.max(3, Math.ceil(folders.length / 2)));
-  folders.forEach(function (f) {
+  hpOrdered(folders, "folders:" + room, function (f) {
+    return f.key;
+  }).forEach(function (f) {
     grid.appendChild(hpFolderTile(f, room));
   });
+  hpSortable(
+    grid,
+    ".ftile",
+    function (el) {
+      return el.dataset.key;
+    },
+    function (ids) {
+      hpOrderSet("folders:" + room, ids);
+    }
+  );
   box.appendChild(grid);
 }
 
@@ -118,6 +131,7 @@ function hpFolderRows(box, room) {
 
 function hpSceneItem(sid, room, close) {
   var it = mk("div", "sitem", "<span class='dc'></span><b></b>");
+  it.dataset.sid = sid;
   it.querySelector("b").textContent = A(sid).name || sid;
   it.querySelector(".dc").appendChild(hpDisc(sid));
   var stop = mk("span", "stop", "<i></i>");
@@ -150,9 +164,23 @@ function hpFolderCard(folder, room) {
       card.remove();
     }, 220);
   }
-  folder.scenes.forEach(function (sid) {
+  hpOrdered(folder.scenes, "scenes:" + room + ":" + folder.key, function (s) {
+    return s;
+  }).forEach(function (sid) {
     grid.appendChild(hpSceneItem(sid, room, close));
   });
+  hpSortable(
+    grid,
+    ".sitem",
+    function (el) {
+      return el.dataset.sid;
+    },
+    function (ids) {
+      hpOrderSet("scenes:" + room + ":" + folder.key, ids);
+      folder.scenes = ids;
+      card.refresh();
+    }
+  );
   /* The scene that plays has its pencil and its three dots beside it, as the app draws them. */
   var side = mk("div", "sside");
   side.appendChild(
@@ -178,7 +206,9 @@ function hpFolderCard(folder, room) {
     var on = folder.scenes.filter(function (s) {
       return HUESCENES.active(H(), s);
     })[0];
-    var item = on && grid.querySelectorAll(".sitem")[folder.scenes.indexOf(on)];
+    var item = on && [].filter.call(grid.querySelectorAll(".sitem"), function (x) {
+      return x.dataset.sid === on;
+    })[0];
     if (item) {
       if (side.previousSibling !== item) grid.insertBefore(side, item.nextSibling);
     } else if (side.parentNode) side.remove();

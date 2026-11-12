@@ -9,8 +9,12 @@
 html{background:transparent!important}
 body{background:linear-gradient(180deg,#2a1f1d 0,#16171a 62%)!important;overflow:hidden;opacity:0;transition:opacity .35s}
 body.rise{opacity:1}
-body.rise .lp-view,body.rise .lp-bar{animation:lpin .5s cubic-bezier(.2,.8,.2,1) backwards}
-@keyframes lpin{from{opacity:0;transform:translateY(-24px) scale(.94)}to{opacity:1;transform:none}}
+body.rise .lp-view,body.rise .lp-bar{animation:lpin .42s cubic-bezier(.2,.7,.2,1) backwards}
+@keyframes lpin{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:none}}
+/* Colour, white and effects follow each other by fading, not by sliding across the screen */
+.lp-track{transition:none!important}
+.lp-pane:not(.off){animation:lpfade .3s ease-out}
+@keyframes lpfade{from{opacity:0}to{opacity:1}}
 /* The colour screen fills the screen as the app's does: the wheel in the middle of what is left, the modes and the brightness button and the tiles of the lights at the bottom. */
 main{position:absolute!important;inset:0;padding:0!important;overflow:hidden}
 .wrap{height:100%;max-width:none}
@@ -102,10 +106,6 @@ main{position:absolute!important;inset:0;padding:0!important;overflow:hidden}
         room: null,
         sliders: false,
         ready: function (S) {
-          /* The app gives every light its own tile, whatever its colour: Home Control joins lights that look the same into one marker, and here none is joined. */
-          S.joined.length = 0;
-          S.ex[S.root.key] = true;
-          S.rebuild();
           if (focus && ids.indexOf(focus) >= 0) S.select(focus);
         },
       });

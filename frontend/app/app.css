@@ -382,3 +382,21 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .disc.dark{display:flex;align-items:center;justify-content:center;background:#0e0f12;color:#fff}
 .disc.dark svg{width:22px;height:22px}
 .hm .hm-row.nochev .hm-c{display:none}
+
+/* ---- smooth corners as the app draws them (a squircle where the browser can, a plain round corner where it cannot), and one gutter ---- */
+@supports (corner-shape:squircle){
+ .room,.ltile,.ftile,.sitem,.btile,.ctile,.acard,.selroom,.atile,.rhead,.fcard,.dlg,.asheet,.pg.modalpg,.pg.modalpg .pbar,.hm .hm-tile,.hm .hm-note{corner-shape:squircle}
+ .room{border-radius:22px}.ltile,.ftile,.btile,.ctile,.selroom,.atile{border-radius:18px}.sitem{border-radius:16px}.acard{border-radius:20px}
+ .rhead{border-radius:0 0 34px 34px}.fcard{border-radius:28px}.pg.modalpg,.pg.modalpg .pbar{border-radius:26px 26px 0 0}
+}
+.hm .hm-chips{margin:14px 16px}
+.hm .hm-note{margin:14px 16px}
+.hm .hm-actions{padding:24px 16px 6px}
+.pintro{padding:16px 18px 8px}
+.pintro.small{padding:10px 18px 4px;font-size:12px;color:var(--ink2)}
+.lbrow{display:flex;align-items:center;justify-content:space-between;padding-right:16px}
+.lbrow .hm-label{flex:1}
+.hm-group.cyc .hm-row{touch-action:pan-y}
+/* what is held and dragged */
+.lifting{position:relative;z-index:60;box-shadow:0 14px 30px rgba(0,0,0,.5);transition:none!important}
+.frows .ftile,.fg .sitem,.hm-group.cyc .hm-row{user-select:none;-webkit-user-select:none}

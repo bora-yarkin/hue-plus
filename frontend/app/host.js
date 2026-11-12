@@ -741,12 +741,13 @@
       popBack();
     });
     root.querySelector(".x").addEventListener("click", function () {
-      if (STACK.length) popBack();
-      else closeSheet();
+      /* The X of a popup closes the popup, with every page that was opened inside it, and shows the page it was opened from. */
+      closePopup();
     });
     root.querySelector(".ok").addEventListener("click", function () {
-      if (CHECK) CHECK.save(CHECK.done);
-      else popBack();
+      if (DONEFN) DONEFN();
+      else if (CHECK) CHECK.save(CHECK.done);
+      else closePopup();
     });
     document.body.appendChild(root);
     requestAnimationFrame(function () {
@@ -763,6 +764,7 @@
     var p = pageOf(key);
     if (!p.def) return false;
     if (HOST.onRender) HOST.onRender();
+    DONEFN = null;
     SHEET.root.classList.remove("roompg", "lightpg", "scenepg", "modalpg");
     var okb = SHEET.root.querySelector(".ok");
     if (MODAL[String(key).split(":")[0]]) {
@@ -795,6 +797,27 @@
       /* replaces the page; the pages before it stay */
     }
     render(key);
+  }
+
+  var DONEFN = null;
+
+  function isModalKey(key) {
+    return !!MODAL[String(key).split(":")[0]];
+  }
+
+  /* Closes the popup that is open: back through its pages to the page it was opened from, or all the way when it was the first. */
+  function closePopup() {
+    if (!isModalKey(CURRENT)) {
+      if (STACK.length) popBack();
+      else closeSheet();
+      return;
+    }
+    if (POPGUARD && POPGUARD(closePopup)) return;
+    while (STACK.length && isModalKey(CURRENT)) {
+      var prev = STACK.pop();
+      render(prev);
+    }
+    if (isModalKey(CURRENT)) closeSheet();
   }
 
   function popBack() {
@@ -999,6 +1022,9 @@
       Object.keys(dict).forEach(function (k) {
         if (EN[k] === undefined) EN[k] = dict[k];
       });
+    },
+    set onDone(fn) {
+      DONEFN = fn;
     },
     registerPage: function (key, titleKey, icon, builder) {
       PAGES[key] = [titleKey, icon, builder];

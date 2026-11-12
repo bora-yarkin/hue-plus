@@ -46,7 +46,7 @@ def build() -> str:
 
 
 # The panel's own tabs run inside the pages' scope (they use the same helpers), just before the registration at the end.
-APP_INSIDE = ("shell.js", "home.js", "scenes.js", "switchpages.js", "autotab.js", "light.js", "syncpage.js")
+APP_INSIDE = ("shell.js", "sortable.js", "home.js", "scenes.js", "switchpages.js", "cyclepage.js", "autotab.js", "light.js", "syncpage.js")
 
 
 def _css() -> str:
