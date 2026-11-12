@@ -506,5 +506,7 @@ body{position:relative;width:min(100vw,calc(100vh * 9 / 16));width:min(100vw,cal
 /* A light's screen is the room's page turned into it, not a page over it: the room's own header, scenes and controls go up and fade, the page takes the colour screen's background, and the row of lights (which the colour screen draws in the same place) slides down. */
 .pg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#2a1f1d 0,#16171a 62%);opacity:0;transition:opacity .45s;pointer-events:none}
 .pg.tolight::after{opacity:1}
-.pg.tolight .pbody,.pg.tolight .pbar{opacity:0;transform:translateY(-28px);transition:opacity .35s,transform .5s cubic-bezier(.2,.8,.2,1)}
-.pg.tolight .ltiles{visibility:hidden}
+.pg .pbody,.pg .pbar{transition:opacity .3s}
+.pg.tolight .pbody,.pg.tolight .pbar{opacity:0}
+.pg.tolight .ltiles,.pg.leaving .ltiles{visibility:hidden}
+.pg.lightpg .lbar{animation:hpin .35s .12s backwards}

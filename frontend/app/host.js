@@ -864,10 +864,19 @@
     setTimeout(function () {
       gone.root.remove();
     }, 460);
+    var wasLight = below.root.classList.contains("tolight");
     below.root.classList.remove("under", "tolight");
     activate(below);
     SHEET_LIST = below.list;
-    if (HOST.onRender) HOST.onRender();
+    if (wasLight && HOST.onLeave) {
+      /* The colour screen goes the way it came, quickly; the page under it fades back in meanwhile and its row of lights waits for the tiles. */
+      var row = below.root.querySelector(".ltiles");
+      below.root.classList.add("leaving");
+      HOST.onLeave(row ? row.getBoundingClientRect().top : undefined, function () {
+        below.root.classList.remove("leaving");
+        if (HOST.onRender) HOST.onRender();
+      });
+    } else if (HOST.onRender) HOST.onRender();
     if (HOST.onResume) HOST.onResume(below.key);
     refresh();
   }
@@ -967,6 +976,7 @@
     registered: REGISTERED,
     onUpdate: null,
     onSheetClosed: null,
+    onLeave: null,
     dirty: false,
     onRender: null,
     onResume: null,
