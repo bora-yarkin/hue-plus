@@ -82,7 +82,14 @@ function hpStart() {
   var closed = window.HueHost.onSheetClosed;
   window.HueHost.onSheetClosed = function () {
     if (closed) closed();
-    hpShowTab(HPAPP.tab);
+    /* The tab behind is kept as it was (it is not drawn again under the eyes of whoever closed the popup) unless the bridge was changed meanwhile. */
+    if (window.HueHost.dirty) {
+      window.HueHost.dirty = false;
+      hpShowTab(HPAPP.tab);
+    } else {
+      hpWatch();
+      refresh();
+    }
   };
   hpShowTab("home");
 }

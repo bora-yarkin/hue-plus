@@ -277,7 +277,7 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 
 /* ---- the colour screen of a room's lights: the frame's own bar, SAVE and DONE ---- */
 .pg .pbar .lbar{display:none}
-.pg.lightpg{background:linear-gradient(180deg,#2a1f1d 0,#16171a 60%)}
+.pg.lightpg{background:transparent}
 .pg.lightpg .pbar{background:transparent}
 .pg.lightpg .pbar>*:not(.lbar){display:none!important}
 .pg.lightpg .lbar{display:flex;flex:1;gap:10px;align-items:center}
@@ -355,8 +355,7 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .pg.modalpg.in{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.55)}
 .pg.modalpg .pbar{border-radius:18px 18px 0 0;padding-top:14px}
 .pg.modalpg .pbody{overflow-x:hidden}
-.pg.lightpg{transform:none;opacity:0;transition:opacity .3s}
-.pg.lightpg.in{opacity:1}
+.pg.lightpg{transform:none;opacity:1;transition:none}
 
 /* ---- a switch's pages ---- */
 .swhead{padding:14px 18px 18px;background:var(--bg)}
@@ -500,12 +499,12 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .sybri .pc{position:absolute;left:50%;top:-36px;transform:translateX(-50%);padding:4px 10px;border-radius:12px;background:#1c1c20;font-size:11px;letter-spacing:.1em}
 .pg.plusbar .pbar .ok{display:none!important}
 
-/* On a wide screen the panel is as wide as a phone, in the middle */
-@media (min-width:431px){
- html,body{background:#0b0b0d}
- #hp,.pg,.lightframe,.sypop,.fscrim,.fwrap{left:0;right:0;margin-left:auto;margin-right:auto;width:430px}
- #hp nav.tabs{left:0;right:0;margin-left:auto;margin-right:auto;width:430px}
- #hp nav.tabs .in,#hp .view>.in{max-width:none}
- .pg{overflow-x:clip}
- .scrim,.toast{max-width:430px;margin-left:auto;margin-right:auto}
-}
+/* The panel is a phone screen (9:16) in the middle of a wide one. The page is the containing block of everything fixed in it (the pages that slide in, the frame, the cards), and clips what slides. */
+html{background:#000;overflow:hidden}
+body{position:relative;width:min(100vw,calc(100vh * 9 / 16));width:min(100vw,calc(100dvh * 9 / 16));height:100vh;height:100dvh;margin:0 auto;overflow:hidden;transform:translateZ(0)}
+
+/* A light's screen is the room's page turned into it, not a page over it: the room's own header, scenes and controls go up and fade, the page takes the colour screen's background, and the row of lights (which the colour screen draws in the same place) slides down. */
+.pg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#2a1f1d 0,#16171a 62%);opacity:0;transition:opacity .45s;pointer-events:none}
+.pg.tolight::after{opacity:1}
+.pg.tolight .pbody,.pg.tolight .pbar{opacity:0;transform:translateY(-28px);transition:opacity .35s,transform .5s cubic-bezier(.2,.8,.2,1)}
+.pg.tolight .ltiles{visibility:hidden}

@@ -109,7 +109,7 @@ function hpAddDevicesTo(b, id) {
 }
 
 /* Lights and smart plugs: each one a row, a tap opens its settings. */
-function hpLightsPage(b) {
+function hpLightsListPage(b) {
   hmBox(b);
   var list = hueplus.lights(H());
   if (!list.length) b.appendChild(hmCallout(_T("nothing_found")));
@@ -690,7 +690,7 @@ function hpBalancePage(b, id) {
 HP_PAGES["hue-devices"] = ["hm_devices", "lights", hpDevicesPage];
 HP_PAGES["app-adddev"] = ["app_add_devices", "plus", hpAddDevicesWhere];
 HP_PAGES["app-adddev2"] = ["app_add_devices", "plus", hpAddDevicesTo];
-HP_PAGES["hue-lights"] = ["hm_lights_and_smart_plugs", "lamp", hpLightsPage];
+HP_PAGES["hue-lights"] = ["hm_lights_and_smart_plugs", "lamp", hpLightsListPage];
 HP_PAGES["hue-updates"] = ["hm_software_update", "restart", hpUpdatesPage];
 HP_PAGES["hue-matter"] = ["hm_smart_home", "scene", hpSmartHomePage];
 HP_PAGES["app-link"] = ["hm_smart_home", "scene", hpLinkPage];

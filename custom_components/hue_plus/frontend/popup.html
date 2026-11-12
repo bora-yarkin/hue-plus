@@ -7,11 +7,11 @@
 <link rel="stylesheet" href="lights/dashboard.css">
 <style>
 html{background:transparent!important}
-body{background:linear-gradient(180deg,#2a1f1d 0,#16171a 62%)!important;overflow:hidden;opacity:0;transition:opacity .35s}
+body{background:transparent!important;overflow:hidden;opacity:0}
 body.rise{opacity:1}
-body.rise .lp-view{animation:lpwheel .85s cubic-bezier(.16,.8,.2,1) backwards}
+body.rise .lp-view{animation:lpwheel .55s cubic-bezier(.2,.8,.2,1) backwards}
 body.rise .lp-bar{animation:lpbar .55s cubic-bezier(.2,.8,.2,1) .05s backwards}
-@keyframes lpwheel{from{opacity:0;transform:translate(38%,-78%) scale(.5)}35%{opacity:1}to{opacity:1;transform:none}}
+@keyframes lpwheel{from{transform:translateY(-115%)}to{transform:none}}
 @keyframes lpbar{from{opacity:0;transform:translateY(-34px)}to{opacity:1;transform:none}}
 /* Colour, white and effects follow each other by fading, not by sliding across the screen */
 .lp-track{transition:none!important}
@@ -161,7 +161,7 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
         tray.style.transition = "none";
         tray.style.transform = "translateY(" + shift + "px)";
         void tray.offsetHeight;
-        tray.style.transition = "transform .5s cubic-bezier(.2,.8,.2,1)";
+        tray.style.transition = "transform .55s cubic-bezier(.2,.8,.2,1)";
         tray.style.transform = "none";
       }
       document.body.classList.add("rise");

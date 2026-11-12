@@ -8,7 +8,7 @@ import vm from "node:vm";
 
 const root = new URL("../../", import.meta.url);
 const read = (path) => readFileSync(new URL(path, root), "utf8");
-const APP_FILES = ["shell.js", "home.js", "sortable.js", "scenes.js", "switchpages.js", "cyclepage.js", "lightsettings.js", "autotab.js", "light.js", "syncpage.js"].map((f) => read(`frontend/app/${f}`));
+const APP_FILES = ["shell.js", "home.js", "sortable.js", "scenes.js", "switchpages.js", "cyclepage.js", "lightsettings.js", "autotab.js", "light.js", "syncpage.js", "menupages.js"].map((f) => read(`frontend/app/${f}`));
 const host = read("frontend/app/host.js");
 const bundle = read("custom_components/hue_plus/frontend/app.js");
 const plugin = [...APP_FILES, ...["huemenu.js", "huewizard.js", "humotion.js", "huerooms.js", "huesync.js", "huescenes.js", "huestyle.js"].map((f) => read(`frontend/src/${f}`))].join("\n");
@@ -27,6 +27,13 @@ test("every text the panel's own pages use is defined", () => {
 test("every page the panel opens is registered by the panel or by the Hue Plus menu", () => {
   const registered = new Set([...plugin.matchAll(/HP_PAGES\["([a-z0-9-]+)"\]\s*=|^\s*"([a-z0-9-]+)": \[/gm)].map((m) => m[1] || m[2]));
   for (const m of APP_FILES.join("\n").matchAll(/(?:showPopup\(|tap: )"([a-z-]+)(?::|")/g)) assert.ok(registered.has(m[1]) || /^app-/.test(m[1]), `${m[1]} is opened but has no page`);
+});
+
+test("no function of the bundle is declared twice (the later one would silently replace the first)", () => {
+  const seen = new Map();
+  for (const m of bundle.matchAll(/^function (\w+)\(/gm)) seen.set(m[1], (seen.get(m[1]) || 0) + 1);
+  const twice = [...seen].filter(([, n]) => n > 1).map(([name]) => name);
+  assert.deepEqual(twice, []);
 });
 
 test("the bundle is plain script that can be loaded as a classic script", () => {

@@ -232,6 +232,8 @@
 
   function callRaw(domain, service, data) {
     if (!HASS) return undefined;
+    /* A Hue Plus service changes the bridge (a scene, a room, an area, a press): the tab behind a popup is drawn again when it closes. */
+    if (domain === "hue_plus") HOST.dirty = true;
     var p = Promise.resolve(HASS.callService(domain, service, data));
     p.catch(function (e) {
       toast(errorText(e));
@@ -732,8 +734,9 @@
   }
 
   /* A page of the Hue app: it covers the screen, with a bar of an X (a popup) or an arrow, the title, and SAVE or DONE. */
-  function newLayer() {
-    var root = mk("div", "pg");
+  function newLayer(key) {
+    /* A popup has its own class before it is in the page, so that it never starts from the side where pages come from. */
+    var root = mk("div", "pg" + (isModalKey(key) ? " modalpg" : ""));
     root.setAttribute("role", "dialog");
     root.setAttribute("aria-modal", "true");
     root.innerHTML =
@@ -825,7 +828,7 @@
     var p = pageOf(key);
     if (!p.def) return;
     if (!SHEET || (push && !CURRENT && !LAYERS.length)) {
-      var first = newLayer();
+      var first = newLayer(key);
       LAYERS = [first];
       activate(first);
       render(key, first);
@@ -837,9 +840,10 @@
     if (push) {
       stash();
       var below = SHEET,
-        layer = newLayer();
+        layer = newLayer(key);
       /* A page pushed from the right takes the one under it a little way along; a popup leaves it where it is. */
-      if (!isModalKey(key)) below.root.classList.add("under");
+      if (/^app-(lights|edit)$/.test(String(key).split(":")[0])) below.root.classList.add("tolight");
+      else if (!isModalKey(key)) below.root.classList.add("under");
       LAYERS.push(layer);
       activate(layer);
       render(key, layer);
@@ -860,7 +864,7 @@
     setTimeout(function () {
       gone.root.remove();
     }, 460);
-    below.root.classList.remove("under");
+    below.root.classList.remove("under", "tolight");
     activate(below);
     SHEET_LIST = below.list;
     if (HOST.onRender) HOST.onRender();
@@ -963,6 +967,7 @@
     registered: REGISTERED,
     onUpdate: null,
     onSheetClosed: null,
+    dirty: false,
     onRender: null,
     onResume: null,
     onHass: null,
