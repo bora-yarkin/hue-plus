@@ -33,6 +33,7 @@ function hpMenuTab(box, title, page) {
 
 function hpSettingsTab(box) {
   hpMenuTab(box, _T("app_settings"), "stg-hue");
+  hpFixBridgesRow(box);
 }
 
 function hpShowTab(id) {

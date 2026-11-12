@@ -608,6 +608,7 @@ var PLUGIN_STRINGS = {
   "app_edit_the_lights": "Edit the lights",
   "app_light_panel": "Light colour and brightness",
   "app_light_settings": "Light settings",
+  "app_bridge_settings": "Bridge settings",
   "app_support": "Support",
   "app_new_folder": "New folder",
   "app_group_name": "Group name",

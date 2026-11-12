@@ -80,3 +80,40 @@ function hpDeviceInfoPage(b, id) {
 
 HP_PAGES["hue-light"] = ["app_light_settings", "lamp", hpLightSettings];
 HP_PAGES["app-devinfo"] = ["hm_device_info", "info", hpDeviceInfoPage];
+
+/* The Bridges list of the app: the bridge, and a tap opens its settings. (The menu's Bridges row goes straight to the settings.) */
+function hpBridgesPage(b) {
+  hmBox(b);
+  hmEnsure();
+  b.appendChild(
+    hmGroup([
+      hmRow({
+        icon: "plug",
+        title: function () {
+          return (HM.bridge && HM.bridge.name) || _T("hue_bridge");
+        },
+        tap: "hue-bridge",
+      }),
+    ])
+  );
+}
+
+HP_PAGES["app-bridges"] = ["hm_bridges", "plug", hpBridgesPage];
+HP_PAGES["hue-bridge"] = ["app_bridge_settings", "plug", hmBridge];
+
+/* In the panel the Settings row for Bridges opens that list. */
+function hpFixBridgesRow(box) {
+  box.addEventListener(
+    "click",
+    function (e) {
+      var row = e.target.closest && e.target.closest(".hm-row");
+      var name = row && row.querySelector(".hm-n");
+      if (row && box.contains(row) && name && name.textContent === _T("hm_bridges")) {
+        e.stopPropagation();
+        e.preventDefault();
+        showPopup("app-bridges", true);
+      }
+    },
+    true
+  );
+}

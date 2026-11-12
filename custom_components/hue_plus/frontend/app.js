@@ -1707,6 +1707,7 @@ var PLUGIN_STRINGS = {
   "app_edit_the_lights": "Edit the lights",
   "app_light_panel": "Light colour and brightness",
   "app_light_settings": "Light settings",
+  "app_bridge_settings": "Bridge settings",
   "app_support": "Support",
   "app_new_folder": "New folder",
   "app_group_name": "Group name",
@@ -8442,6 +8443,7 @@ function hpMenuTab(box, title, page) {
 
 function hpSettingsTab(box) {
   hpMenuTab(box, _T("app_settings"), "stg-hue");
+  hpFixBridgesRow(box);
 }
 
 function hpShowTab(id) {
@@ -10373,6 +10375,43 @@ function hpDeviceInfoPage(b, id) {
 
 HP_PAGES["hue-light"] = ["app_light_settings", "lamp", hpLightSettings];
 HP_PAGES["app-devinfo"] = ["hm_device_info", "info", hpDeviceInfoPage];
+
+/* The Bridges list of the app: the bridge, and a tap opens its settings. (The menu's Bridges row goes straight to the settings.) */
+function hpBridgesPage(b) {
+  hmBox(b);
+  hmEnsure();
+  b.appendChild(
+    hmGroup([
+      hmRow({
+        icon: "plug",
+        title: function () {
+          return (HM.bridge && HM.bridge.name) || _T("hue_bridge");
+        },
+        tap: "hue-bridge",
+      }),
+    ])
+  );
+}
+
+HP_PAGES["app-bridges"] = ["hm_bridges", "plug", hpBridgesPage];
+HP_PAGES["hue-bridge"] = ["app_bridge_settings", "plug", hmBridge];
+
+/* In the panel the Settings row for Bridges opens that list. */
+function hpFixBridgesRow(box) {
+  box.addEventListener(
+    "click",
+    function (e) {
+      var row = e.target.closest && e.target.closest(".hm-row");
+      var name = row && row.querySelector(".hm-n");
+      if (row && box.contains(row) && name && name.textContent === _T("hm_bridges")) {
+        e.stopPropagation();
+        e.preventDefault();
+        showPopup("app-bridges", true);
+      }
+    },
+    true
+  );
+}
 
 /* The Automations tab, as the Hue app draws it: a blue top, the title with a round plus, and the bridge's automations in a group for each kind (its icon, its name, how many, and a button that folds it), each automation a card with
  its time and name, the days it repeats, and a switch. A card opens the automation's own page (the Hue Plus menu's); the plus is the new-automation wizard. */
