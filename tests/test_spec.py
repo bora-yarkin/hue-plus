@@ -32,10 +32,11 @@ class SpecTests(unittest.TestCase):
     def test_no_problems_are_reported(self):
         self.assertEqual(spec.check_spec(), [])
 
-    def test_no_text_of_a_service_looks_like_html(self):
-        # hassfest refuses a translation that contains something like <name>: write "a scene name" instead.
+    def test_no_text_of_a_service_has_html_or_placeholders(self):
+        # hassfest refuses a translation with something like <name> (HTML) or {name} (a placeholder that must be a valid identifier):
+        # describe an example in words. The entity texts are checked by hassfest too, but only the services' texts are written by hand.
         strings = json.loads((FOLDER / "strings.json").read_text(encoding="utf-8"))
-        found = [text for text in _texts(strings) if re.search(r"<[^>]*>", text)]
+        found = [text for text in _texts(strings["services"]) if re.search(r"[<>{}]", text)]
         self.assertEqual(found, [])
 
     def test_every_bridge_service_has_an_action_and_every_action_a_service(self):
