@@ -510,3 +510,4 @@ body{position:relative;width:min(100vw,calc(100vh * 9 / 16));width:min(100vw,cal
 .pg.tolight .pbody,.pg.tolight .pbar{opacity:0}
 .pg.tolight .ltiles,.pg.leaving .ltiles{visibility:hidden}
 .pg.lightpg .lbar{animation:hpin .35s .12s backwards}
+.pg.lightout .lbar{opacity:0;transition:opacity .35s}

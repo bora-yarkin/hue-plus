@@ -872,6 +872,7 @@
       /* The colour screen goes the way it came, quickly; the page under it fades back in meanwhile and its row of lights waits for the tiles. */
       var row = below.root.querySelector(".ltiles");
       below.root.classList.add("leaving");
+      gone.root.classList.add("lightout");
       HOST.onLeave(row ? row.getBoundingClientRect().top : undefined, function () {
         below.root.classList.remove("leaving");
         if (HOST.onRender) HOST.onRender();

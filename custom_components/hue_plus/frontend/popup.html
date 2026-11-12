@@ -209,12 +209,13 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
       } catch (e) {}
       return d ? JSON.stringify(d) : null;
     },
-    /* Closing the colour screen is its opening backwards and quicker: the wheel and the buttons go up out of the top, the tiles go up to where the room page has them (toY, the top of that row), then done(). */
+    /* Closing the colour screen is its opening run backwards (same distances, same time, the mirrored curve): the wheel and the buttons go up out of the top, the tiles go up to where the room page has them (toY, the top of that row), then done(). */
     leave: function (toY, done) {
       var view = document.querySelector(".lp-view"),
         bar = document.querySelector(".lp-bar"),
         tray = document.querySelector(".lp-tray"),
-        ease = "transform .3s cubic-bezier(.5,0,.8,.4)";
+        /* the opening's curve, mirrored: cubic-bezier(.2,.8,.2,1) run backwards is (.8,0,.8,.2) */
+        ease = "transform .42s cubic-bezier(.8,0,.8,.2)";
       document.body.classList.remove("rise");
       [[view, "-36vh"], [bar, "-55vh"]].forEach(function (p) {
         if (!p[0]) return;
@@ -227,7 +228,7 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
         tray.style.transform = "translateY(" + (toY - tray.getBoundingClientRect().top) + "px)";
       }
       document.body.style.opacity = "1";
-      setTimeout(done, 300);
+      setTimeout(done, 420);
     },
     /* Takes the screen away before another is drawn, so what was there is not seen again. */
     hide: function () {
