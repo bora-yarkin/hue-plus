@@ -20,6 +20,8 @@ SOURCES = ROOT / "frontend" / "src"  # not shipped
 BUILT = ROOT / "custom_components" / "hue_plus" / "frontend" / "menu.js"
 APP_SOURCES = ROOT / "frontend" / "app"  # not shipped
 APP_BUILT = ROOT / "custom_components" / "hue_plus" / "frontend" / "app.js"
+EFFECTS_BUILT = ROOT / "custom_components" / "hue_plus" / "frontend" / "effects.json"
+DECLARATION = ROOT / "custom_components" / "hue_plus" / "home_control.json"
 ORDER = (
     "prologue.js",
     "strings.js",
@@ -64,7 +66,24 @@ def build_app() -> str:
     return head + host + "".join(p.read_text(encoding="utf-8").rstrip("\n") + "\n\n" for p in parts).rstrip("\n") + "\n"
 
 
+def build_effects() -> str:
+    """The effects catalogue the light panel's effects page shows (the pictures, speeds and default colours worked out against the Hue app and the bridge), from Hue Plus's declaration for Home Control."""
+    declaration = json.loads(DECLARATION.read_text(encoding="utf-8"))
+    platforms = [name for name, kind in declaration["lights"].items() if kind.get("effects")]
+    source = {
+        "id": "hue_plus",
+        "name": declaration["name"],
+        "kind": "provider",
+        "lights": {"platforms": platforms},
+        "groups": declaration["catalogue"]["groups"],
+        "effects": declaration["catalogue"]["effects"],
+        "set_effect": declaration["set_effect"],
+    }
+    return json.dumps(source, separators=(",", ":"), ensure_ascii=False) + "\n"
+
+
 if __name__ == "__main__":
+    EFFECTS_BUILT.write_text(build_effects(), encoding="utf-8")
     BUILT.write_text(build(), encoding="utf-8")
     APP_BUILT.write_text(build_app(), encoding="utf-8")
     print("menu.js:", len(build().splitlines()), "lines;", "app.js:", len(build_app().splitlines()), "lines")

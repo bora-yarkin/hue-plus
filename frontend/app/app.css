@@ -346,3 +346,10 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 /* what is written on a lit card or tile is dark on the app's gold, white on the header */
 .room.on-gold,.ltile.on-gold,.ftile.lit{color:var(--gold-ink);text-shadow:none}
 .rhead.on-gold{color:#fff;text-shadow:0 1px 2px rgba(60,45,15,.35)}
+
+/* a popup page: it slides up over the page behind, which is dimmed; the screen above it stays */
+.pg.modalpg{top:46px;border-radius:18px 18px 0 0;box-shadow:0 0 0 100vmax rgba(0,0,0,.55);transform:translateY(100%);opacity:1;transition:transform .34s cubic-bezier(.2,.9,.25,1)}
+.pg.modalpg.in{transform:none}
+.pg.modalpg .pbar{border-radius:18px 18px 0 0;padding-top:14px}
+.pg.modalpg .pbody{overflow-x:hidden}
+.pg.lightpg{transform:none;transition:opacity .25s}

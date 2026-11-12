@@ -9,9 +9,9 @@ function hpSceneData(then) {
   if (HPSC.loaded) return then();
   HPSC.waiting.push(then);
   if (HPSC.waiting.length > 1) return;
-  hueplus.resources(["scenes"]).then(
-    function (r) {
-      (r.scenes || []).forEach(function (s) {
+  hmReady().then(
+    function () {
+      (HM.scenes || []).forEach(function (s) {
         HPSC.byId[s.id] = s;
       });
       HPSC.loaded = true;

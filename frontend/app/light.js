@@ -56,7 +56,7 @@ window.HueHost.onRender = function () {
   hpFrameShow(false);
 };
 
-function hpLightScreen(body, ids, name, focus) {
+function hpLightScreen(body, ids, name, focus, from) {
   var wait = mk("div", "empty");
   wait.textContent = _T("loading");
   body.appendChild(wait);
@@ -64,8 +64,10 @@ function hpLightScreen(body, ids, name, focus) {
   hpLightFrame(function (win) {
     if (HC.sheet.light !== token) return;
     wait.remove();
-    win.HuePopup.panel(ids, name, focus);
+    win.HuePopup.hide();
     hpFrameShow(true);
+    var top = parseFloat(HPLF.el.style.top) || 0;
+    win.HuePopup.panel(ids, name, focus, typeof from === "number" ? from - top : undefined);
   });
 }
 
@@ -97,7 +99,9 @@ function hpLightsPage(body, key) {
     popBack();
   });
   bar.appendChild(done);
-  hpLightScreen(body, hpGroupLights(room), A(room).friendly_name || room, focus);
+  var from = HPAPP.lightFrom;
+  HPAPP.lightFrom = undefined;
+  hpLightScreen(body, hpGroupLights(room), A(room).friendly_name || room, focus, from);
 }
 
 /* The editor of a scene's lights (the Hue app's "New scene" and a scene's lights): the same screen, with SAVE. The lights show what is set while it is open; leaving after a change asks, and discarding

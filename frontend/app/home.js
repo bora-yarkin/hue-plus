@@ -326,6 +326,7 @@ function hpLightTile(lid, room) {
   t.setAttribute("aria-label", name);
   t.querySelector(".dn").appendChild(hpLightToggle(lid, name));
   hpActive(t, function () {
+    HPAPP.lightFrom = t.getBoundingClientRect().top;
     showPopup("app-lights:" + room + "~" + lid, true);
   });
   t.refresh = function () {
@@ -353,37 +354,37 @@ function hpLastUsed(deviceName) {
 /* The switches and dials the bridge has in this room: the app lists them under Controls. */
 function hpControls(box, id) {
   if (!hueplus.has(H(), "get_resources")) return;
-  hueplus.resources(["accessories", "rooms", "zones"]).then(
-    function (r) {
-      var type = A(id).hue_type,
-        group = (type === "zone" ? r.zones : r.rooms || []).filter(function (x) {
-          return x.name === A(id).friendly_name;
-        })[0],
-        inside = {};
-      if (group)
-        (group.children || []).forEach(function (c) {
-          inside[c.id] = true;
-        });
-      var list = (r.accessories || []).filter(function (x) {
-        return inside[x.id];
+  /* Read before the room opens (hpStart asks for it), so the controls are there when the page is, not after. */
+  function draw() {
+    var type = A(id).hue_type,
+      group = (type === "zone" ? HM.zones : HM.rooms || []).filter(function (x) {
+        return x.name === A(id).friendly_name;
+      })[0],
+      inside = {};
+    if (group)
+      (group.children || []).forEach(function (c) {
+        inside[c.id] = true;
       });
-      if (!list.length || !box.isConnected) return;
-      box.appendChild(mk("div", "lb")).textContent = _T("app_controls");
-      var tiles = mk("div", "ctiles");
-      list.forEach(function (x) {
-        var c = mk("div", "ctile", "<span class='ic'></span><div><b></b><i></i></div>");
-        c.querySelector(".ic").innerHTML = svg("switch");
-        c.querySelector("b").textContent = x.name;
-        c.querySelector("i").textContent = hpLastUsed(x.name) || cntS((x.buttons || []).length, _T("hm_button"), _T("hm_buttons"));
-        hpActive(c, function () {
-          showPopup("hue-switch:" + x.id, true);
-        });
-        tiles.appendChild(c);
+    var list = (HM.accessories || []).filter(function (x) {
+      return inside[x.id];
+    });
+    if (!list.length) return;
+    box.appendChild(mk("div", "lb")).textContent = _T("app_controls");
+    var tiles = mk("div", "ctiles");
+    list.forEach(function (x) {
+      var c = mk("div", "ctile", "<span class='ic'></span><div><b></b><i></i></div>");
+      c.querySelector(".ic").innerHTML = svg("switch");
+      c.querySelector("b").textContent = x.name;
+      c.querySelector("i").textContent = hpLastUsed(x.name) || cntS((x.buttons || []).length, _T("hm_button"), _T("hm_buttons"));
+      hpActive(c, function () {
+        showPopup("hue-switch:" + x.id, true);
       });
-      box.appendChild(tiles);
-    },
-    function () {}
-  );
+      tiles.appendChild(c);
+    });
+    box.appendChild(tiles);
+  }
+  if (HM_READY) draw();
+  else hmReady().then(draw, function () {});
 }
 
 /* The list under the three dots of the room's page, as the app's: a sheet from the bottom with its choices and Cancel. */

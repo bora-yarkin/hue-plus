@@ -16,6 +16,8 @@ def test_menu_js_is_built_from_the_sources():
     spec.loader.exec_module(module)
     built = (ROOT / "custom_components" / "hue_plus" / "frontend" / "menu.js").read_text(encoding="utf-8")
     assert built == module.build(), "menu.js is out of date: run scripts/build_menu.py"
+    effects = (ROOT / "custom_components" / "hue_plus" / "frontend" / "effects.json").read_text(encoding="utf-8")
+    assert effects == module.build_effects(), "effects.json is out of date: run scripts/build_menu.py"
     app = (ROOT / "custom_components" / "hue_plus" / "frontend" / "app.js").read_text(encoding="utf-8")
     assert app == module.build_app(), "app.js is out of date: run scripts/build_menu.py"
 

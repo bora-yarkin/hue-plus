@@ -6,13 +6,20 @@
 <title>Hue light</title>
 <link rel="stylesheet" href="lights/dashboard.css">
 <style>
-html,body{background:transparent!important;overflow:hidden}
+html{background:transparent!important}
+body{background:linear-gradient(180deg,#2a1f1d 0,#16171a 62%)!important;overflow:hidden;opacity:0;transition:opacity .35s}
+body.rise{opacity:1}
+body.rise .lp-view,body.rise .lp-bar{animation:lpin .5s cubic-bezier(.2,.8,.2,1) backwards}
+@keyframes lpin{from{opacity:0;transform:translateY(-24px) scale(.94)}to{opacity:1;transform:none}}
 /* The colour screen fills the screen as the app's does: the wheel in the middle of what is left, the modes and the brightness button and the tiles of the lights at the bottom. */
 main{position:absolute!important;inset:0;padding:0!important;overflow:hidden}
 .wrap{height:100%;max-width:none}
 #body{height:100%;display:flex;flex-direction:column;padding:0 16px calc(var(--sab,0px) + 16px)}
 .lp-stage{flex:1;display:flex;flex-direction:column;min-height:0}
 .lp-view{flex:0 0 auto;margin:auto 0}
+/* the effects page uses all the room above the bar, as the app's does */
+.lp-view:has(.lp-pane.fx:not(.off)){flex:1 1 0;margin:0;min-height:0;overflow:hidden}
+.lp-view:has(.lp-pane.fx:not(.off)) .lp-track,.lp-view:has(.lp-pane.fx:not(.off)) .lp-pane.fx{height:100%}
 .lp-bar{margin:0 0 16px}
 .lp-tray{padding-bottom:2px}
 </style>
@@ -81,9 +88,11 @@ main{position:absolute!important;inset:0;padding:0!important;overflow:hidden}
       return ready;
     },
     /* Draws the colour, white and effects panel of the lights of a room or a scene, with a tile for each. */
-    panel: function (ids, name, focus) {
+    panel: function (ids, name, focus, fromY) {
       if (!ready) return false;
       var b = body();
+      document.body.classList.remove("rise");
+      var wasHidden = true;
       /* Always the lights master panel, one screen for every light of the room, as in the app; `focus` is the light whose tile is picked when it opens. */
       LMASTER.hue = ids;
       LMASTER_NAME.hue = name;
@@ -101,7 +110,22 @@ main{position:absolute!important;inset:0;padding:0!important;overflow:hidden}
         },
       });
       window.refresh();
-      return true;
+      /* The app opens this screen out of the room page: the row of lights slides down to the bottom while the wheel and its controls come in. */
+      var tray = b.querySelector(".lp-tray");
+      if (tray && typeof fromY === "number") {
+        var shift = fromY - tray.getBoundingClientRect().top;
+        tray.style.transition = "none";
+        tray.style.transform = "translateY(" + shift + "px)";
+        void tray.offsetHeight;
+        tray.style.transition = "transform .5s cubic-bezier(.2,.8,.2,1)";
+        tray.style.transform = "none";
+      }
+      document.body.classList.add("rise");
+      return wasHidden;
+    },
+    /* Takes the screen away before another is drawn, so what was there is not seen again. */
+    hide: function () {
+      document.body.classList.remove("rise");
     },
     clear: function () {
       body();
@@ -146,6 +170,18 @@ main{position:absolute!important;inset:0;padding:0!important;overflow:hidden}
           return Promise.resolve(null);
         };
         window.HA.data = { get: nothing, set: nothing, subscribe: nothing, unsubscribe: nothing };
+        /* The effects page lists what Hue Plus has worked out for its lights (their pictures, speeds, default and other colours), as Home Control gets it from the plus integration. */
+        window.HA.effects = {
+          sources: function () {
+            return fetch(new URL("effects.json", location.href).href + (query.get("v") ? "?v=" + encodeURIComponent(query.get("v")) : ""))
+              .then(function (r) {
+                return r.json();
+              })
+              .then(function (source) {
+                return [source];
+              });
+          },
+        };
         window.lightScenesRow = function () {};
         window.savedRoomOf = function () {
           return null;
@@ -158,6 +194,11 @@ main{position:absolute!important;inset:0;padding:0!important;overflow:hidden}
       .then(function () {
         window.BOOTED = true;
         return load("menu.js");
+      })
+      .then(function () {
+        return new Promise(function (resolve) {
+          fxLoad(resolve);
+        });
       })
       .then(function () {
         ready = true;
