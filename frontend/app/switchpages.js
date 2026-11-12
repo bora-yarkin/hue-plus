@@ -198,7 +198,7 @@ function hpPressPage(b, id) {
             return s.id === sid;
           })[0];
         }),
-        target = k0 === "scene" ? "hue-scene:" : k0 === "cycle" ? "hue-cycle:" : "hue-time:";
+        target = k0 === "scene" ? "hue-pick-scene:" : k0 === "cycle" ? "hue-cycle:" : "hue-time:";
       box.appendChild(
         hmGroup([
           hpDiscRow({
@@ -261,7 +261,7 @@ function hpPressKindPage(b, id) {
                 return kind === c[0];
               },
               tap: function () {
-                if (c[0] === "scene") showPopup("hue-scene:" + id, true);
+                if (c[0] === "scene") showPopup("hue-pick-scene:" + id, true);
                 else if (c[0] === "cycle") showPopup("hue-cycle:" + id, true);
                 else if (c[0] === "time") showPopup("hue-time:" + id, true);
                 else {
@@ -383,6 +383,6 @@ function hpSmartPage(b, id) {
 
 HP_PAGES["hue-switch"] = ["app_switch_settings", "switch", hpSwitchPage];
 HP_PAGES["hue-press"] = ["hm_press", "switch", hpPressKindPage];
-HP_PAGES["hue-scene"] = ["app_my_scenes", "palette", hpPressScenePage];
+HP_PAGES["hue-pick-scene"] = ["app_my_scenes", "palette", hpPressScenePage];
 HP_PAGES["app-press"] = ["hm_press", "switch", hpPressPage];
 HP_PAGES["app-smart"] = ["hm_smart_on_off", "switch", hpSmartPage];

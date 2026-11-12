@@ -148,7 +148,7 @@ function hueChooseLights(mode) {
   HUENEW.sel = {};
   HUENEW.g = null;
   if (g) hueSelectGroup(g);
-  showPopup("hue-lights", true);
+  showPopup("hue-pick-lights", true);
 }
 
 function hueSelectGroup(g) {
@@ -617,7 +617,7 @@ function hueSceneEdit(id) {
       }
       HUENEW = { scope: "", g: g, sel: {}, mode: "edit", name: A(id).name || A(id).friendly_name || "", slots: [], days: [], open: {}, restrict: g.id, target: id, data: data };
       hueSelectGroup(g);
-      showPopup("hue-lights", true);
+      showPopup("hue-pick-lights", true);
     },
     function () {
       toast(_T("hn_couldn_t_read_the_hue_bridge"));

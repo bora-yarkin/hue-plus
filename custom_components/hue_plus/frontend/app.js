@@ -709,7 +709,7 @@ var HOST_CSS = ":root{--bg:#1b1c20;--bg-warm:#2b2926;--bar:#14151a;--head:#23242
 
   var PAGES = {};
   /* The pages the app opens as a popup over the page behind (it slides up, with an X and DONE or SAVE): a switch and what its buttons do, a light's settings, a scene's. The rest are pushed, with an arrow. */
-  var MODAL = { "hue-switch": 1, "hue-button": 1, "hue-press": 1, "hue-cycle": 1, "hue-time": 1, "hue-tslot": 1, "hue-cslot": 1, "hue-scene": 1, "hue-light": 1, "hue-pw": 1, "hue-fn": 1, "hue-or": 1, "hue-od": 1, "hue-perf": 1, "hue-end": 1, "hue-escene": 1, "app-scene": 1, "app-press": 1, "app-smart": 1, "hue-bridge": 1, "hue-area": 1, "hue-marea": 1, "hue-group": 1, "hue-routine": 1, "hue-bname": 1, "hue-gname": 1, "hue-mname": 1, "hue-zch": 1 };
+  var MODAL = { "hue-switch": 1, "hue-button": 1, "hue-press": 1, "hue-cycle": 1, "hue-time": 1, "hue-tslot": 1, "hue-cslot": 1, "hue-pick-scene": 1, "hue-light": 1, "hue-pw": 1, "hue-fn": 1, "hue-or": 1, "hue-od": 1, "hue-perf": 1, "hue-end": 1, "hue-escene": 1, "app-scene": 1, "app-press": 1, "app-smart": 1, "hue-bridge": 1, "hue-area": 1, "hue-marea": 1, "hue-group": 1, "hue-routine": 1, "hue-bname": 1, "hue-gname": 1, "hue-mname": 1, "hue-zch": 1 };
   var SHEET = null; /* {root, body}: the page that is open, while there is one */
   var SESSION = {}; /* what the pages ask HC.sheet for: it changes whenever the sheet closes or the tab changes, which is when what they read is read again */
   var STACK = [];
@@ -3864,7 +3864,7 @@ function hmPress(b, id) {
                 return kind === c[0];
               },
               tap: function () {
-                if (c[0] === "scene") showPopup("hue-scene:" + id, true);
+                if (c[0] === "scene") showPopup("hue-pick-scene:" + id, true);
                 else if (c[0] === "cycle") showPopup("hue-cycle:" + id, true);
                 else if (c[0] === "time") showPopup("hue-time:" + id, true);
                 else {
@@ -4322,7 +4322,7 @@ HP_PAGES["hue-switches"] = ["hm_switches", "cog", hmSwitches];
 HP_PAGES["hue-switch"] = ["hm_switch_one", "cog", hmSwitch];
 HP_PAGES["hue-button"] = ["hm_button_label", "cog", hmButtonPage];
 HP_PAGES["hue-press"] = ["hm_press", "cog", hmPress];
-HP_PAGES["hue-scene"] = ["hm_single_scene", "scene", hmScenePick];
+HP_PAGES["hue-pick-scene"] = ["hm_single_scene", "scene", hmScenePick];
 HP_PAGES["hue-cycle"] = ["hm_scene_cycle", "scene", hmCycle];
 HP_PAGES["hue-time"] = ["hm_time_based_light", "clock", hmTimePage];
 HP_PAGES["hue-tslot"] = ["hm_time", "clock", hmTimeSlot];
@@ -7789,7 +7789,7 @@ function hueChooseLights(mode) {
   HUENEW.sel = {};
   HUENEW.g = null;
   if (g) hueSelectGroup(g);
-  showPopup("hue-lights", true);
+  showPopup("hue-pick-lights", true);
 }
 
 function hueSelectGroup(g) {
@@ -8258,7 +8258,7 @@ function hueSceneEdit(id) {
       }
       HUENEW = { scope: "", g: g, sel: {}, mode: "edit", name: A(id).name || A(id).friendly_name || "", slots: [], days: [], open: {}, restrict: g.id, target: id, data: data };
       hueSelectGroup(g);
-      showPopup("hue-lights", true);
+      showPopup("hue-pick-lights", true);
     },
     function () {
       toast(_T("hn_couldn_t_read_the_hue_bridge"));
@@ -9985,7 +9985,7 @@ function hpPressPage(b, id) {
             return s.id === sid;
           })[0];
         }),
-        target = k0 === "scene" ? "hue-scene:" : k0 === "cycle" ? "hue-cycle:" : "hue-time:";
+        target = k0 === "scene" ? "hue-pick-scene:" : k0 === "cycle" ? "hue-cycle:" : "hue-time:";
       box.appendChild(
         hmGroup([
           hpDiscRow({
@@ -10048,7 +10048,7 @@ function hpPressKindPage(b, id) {
                 return kind === c[0];
               },
               tap: function () {
-                if (c[0] === "scene") showPopup("hue-scene:" + id, true);
+                if (c[0] === "scene") showPopup("hue-pick-scene:" + id, true);
                 else if (c[0] === "cycle") showPopup("hue-cycle:" + id, true);
                 else if (c[0] === "time") showPopup("hue-time:" + id, true);
                 else {
@@ -10170,7 +10170,7 @@ function hpSmartPage(b, id) {
 
 HP_PAGES["hue-switch"] = ["app_switch_settings", "switch", hpSwitchPage];
 HP_PAGES["hue-press"] = ["hm_press", "switch", hpPressKindPage];
-HP_PAGES["hue-scene"] = ["app_my_scenes", "palette", hpPressScenePage];
+HP_PAGES["hue-pick-scene"] = ["app_my_scenes", "palette", hpPressScenePage];
 HP_PAGES["app-press"] = ["hm_press", "switch", hpPressPage];
 HP_PAGES["app-smart"] = ["hm_smart_on_off", "switch", hpSmartPage];
 
@@ -10739,7 +10739,7 @@ function hpSyncTab(outer) {
     palette: hueScenePalette,
   });
   /* The Hue app's "Add a scene", in the new-scene popup of a scenes section. */
-  HC.registerPage("hue-lights", "hn_choose_your_lights", "palette", function (body) {
+  HC.registerPage("hue-pick-lights", "hn_choose_your_lights", "palette", function (body) {
     hueLightsPage(body);
   });
   HC.registerPage("hue-add-scene", "hn_add_a_scene", "palette", function (body) {

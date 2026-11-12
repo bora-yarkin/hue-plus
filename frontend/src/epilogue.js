@@ -90,7 +90,7 @@
     palette: hueScenePalette,
   });
   /* The Hue app's "Add a scene", in the new-scene popup of a scenes section. */
-  HC.registerPage("hue-lights", "hn_choose_your_lights", "palette", function (body) {
+  HC.registerPage("hue-pick-lights", "hn_choose_your_lights", "palette", function (body) {
     hueLightsPage(body);
   });
   HC.registerPage("hue-add-scene", "hn_add_a_scene", "palette", function (body) {

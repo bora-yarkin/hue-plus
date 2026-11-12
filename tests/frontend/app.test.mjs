@@ -62,3 +62,13 @@ test("a room's scenes are the app's folders and a scene's page has only what the
   for (const service of scenes.matchAll(/hpCall\("hue_plus", "([a-z_]+)"/g)) assert.ok(read("custom_components/hue_plus/bridge/spec.py").includes(`"${service[1]}"`), `${service[1]} is not a Hue Plus service`);
   assert.ok(/frows/.test(read("frontend/app/app.css")) && /grid-auto-rows/.test(read("frontend/app/app.css")), "the folders are rows that scroll sideways");
 });
+
+test("no two pages of the Hue Plus menu share a key (one used to hide another: the scene wizard's lights page hid Lights & smart plugs)", () => {
+  const sources = ["huemenu.js", "huewizard.js", "humotion.js", "huerooms.js", "huesync.js", "huescenes.js", "huestyle.js", "huenewscene.js", "hueplus.js", "epilogue.js"].map((f) => read(`frontend/src/${f}`)).join("\n");
+  const keys = [...sources.matchAll(/HP_PAGES\["([a-z0-9-]+)"\]\s*=/g), ...sources.matchAll(/HC\.registerPage\(\s*"([a-z0-9-]+)"/g), ...sources.matchAll(/^\s*"([a-z0-9-]+)": \[$/gm)].map((m) => m[1]);
+  const seen = new Set();
+  for (const key of keys) {
+    assert.ok(!seen.has(key), `${key} is registered twice`);
+    seen.add(key);
+  }
+});
