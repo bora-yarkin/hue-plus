@@ -713,7 +713,7 @@
 
   var PAGES = {};
   /* The pages the app opens as a popup over the page behind (it slides up from the bottom, with an X and DONE or SAVE): a switch and what its buttons do, a light's settings, a scene's. The rest are pushed from the right, with an arrow. */
-  var MODAL = { "hue-switch": 1, "hue-button": 1, "hue-press": 1, "hue-cycle": 1, "hue-time": 1, "hue-tslot": 1, "hue-cslot": 1, "hue-pick-scene": 1, "hue-light": 1, "hue-pw": 1, "hue-fn": 1, "hue-or": 1, "hue-od": 1, "hue-perf": 1, "hue-end": 1, "hue-escene": 1, "app-scene": 1, "app-press": 1, "app-smart": 1, "hue-bridge": 1, "hue-area": 1, "hue-marea": 1, "hue-group": 1, "hue-routine": 1, "hue-bname": 1, "hue-gname": 1, "hue-mname": 1, "hue-zch": 1, "app-devinfo": 1 };
+  var MODAL = { "hue-switch": 1, "hue-button": 1, "hue-press": 1, "hue-cycle": 1, "hue-time": 1, "hue-tslot": 1, "hue-cslot": 1, "hue-pick-scene": 1, "hue-light": 1, "hue-pw": 1, "hue-fn": 1, "hue-or": 1, "hue-od": 1, "hue-perf": 1, "hue-end": 1, "hue-escene": 1, "app-scene": 1, "app-press": 1, "app-smart": 1, "hue-bridge": 1, "hue-area": 1, "hue-marea": 1, "hue-group": 1, "hue-routine": 1, "hue-bname": 1, "hue-gname": 1, "hue-mname": 1, "hue-zch": 1, "app-devinfo": 1, "app-areaadd": 1, "app-place": 1, "app-balance": 1 };
   var LAYERS = []; /* {root, body, key, list, popguard, check, done}, the first opened first */
   var SHEET = null; /* the layer on top, while there is one */
   var SESSION = {}; /* what the pages ask HC.sheet for: it changes whenever the pages close or the tab changes, which is when what they read is read again */
@@ -791,9 +791,9 @@
     if (HOST.onRender) HOST.onRender();
     var root = layer.root;
     DONEFN = null;
-    root.classList.remove("roompg", "lightpg", "scenepg", "modalpg", "wizpg");
+    root.classList.remove("roompg", "lightpg", "scenepg", "modalpg", "wizpg", "plusbar");
     /* The wizards (a new automation, a MotionAware area, a scene) have the app's blue top and a Next at the bottom. */
-    if (/^(hue-(wz|mw)-|hue-newauto$|hue-add-scene$)/.test(String(key).split(":")[0])) root.classList.add("wizpg");
+    if (/^(hue-(wz|mw)-|app-(adddev2?|link2?|newarea)$|hue-newauto$|hue-add-scene$)/.test(String(key).split(":")[0])) root.classList.add("wizpg");
     var okb = root.querySelector(".ok"),
       modal = isModalKey(key);
     if (modal) {
@@ -810,8 +810,9 @@
     SHEET_LIST = layer.list;
     okb.style.display = modal ? "" : "none";
     root.querySelector(".tt").textContent = title(p.def, p.id);
-    root.querySelector(".back").style.display = LAYERS.length > 1 ? "" : "none";
-    root.querySelector(".x").style.display = LAYERS.length > 1 ? "none" : "";
+    var stacked = LAYERS.length > 1 || !modal;
+    root.querySelector(".back").style.display = stacked ? "" : "none";
+    root.querySelector(".x").style.display = stacked ? "none" : "";
     layer.body.innerHTML = "";
     layer.body.scrollTop = 0;
     p.def[2](layer.body, p.id);

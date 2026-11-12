@@ -21,21 +21,6 @@ function hpTabs() {
   ];
 }
 
-/* A tab that is a page of the Hue Plus menu: the heading of the app's tab, then the page. */
-function hpMenuTab(box, title, page) {
-  var head = mk("div", "hd", "<h1></h1>");
-  head.querySelector("h1").textContent = title;
-  box.appendChild(head);
-  var inner = mk("div");
-  box.appendChild(inner);
-  HP_PAGES[page][2](inner);
-}
-
-function hpSettingsTab(box) {
-  hpMenuTab(box, _T("app_settings"), "stg-hue");
-  hpFixBridgesRow(box);
-}
-
 function hpShowTab(id) {
   var tab = hpTabs().filter(function (t) {
     return t.id === id;

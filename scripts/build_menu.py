@@ -57,6 +57,7 @@ APP_INSIDE = (
     "autotab.js",
     "light.js",
     "syncpage.js",
+    "menupages.js",
 )
 
 

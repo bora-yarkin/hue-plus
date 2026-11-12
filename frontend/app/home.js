@@ -492,7 +492,7 @@ function hpAddPage(body, id) {
       "plus",
       _T("app_add_devices"),
       function () {
-        showPopup("hue-devices", true);
+        showPopup("app-adddev2:" + encodeURIComponent(A(id).friendly_name || ""), true);
       },
     ],
     [

@@ -100,20 +100,3 @@ function hpBridgesPage(b) {
 
 HP_PAGES["app-bridges"] = ["hm_bridges", "plug", hpBridgesPage];
 HP_PAGES["hue-bridge"] = ["app_bridge_settings", "plug", hmBridge];
-
-/* In the panel the Settings row for Bridges opens that list. */
-function hpFixBridgesRow(box) {
-  box.addEventListener(
-    "click",
-    function (e) {
-      var row = e.target.closest && e.target.closest(".hm-row");
-      var name = row && row.querySelector(".hm-n");
-      if (row && box.contains(row) && name && name.textContent === _T("hm_bridges")) {
-        e.stopPropagation();
-        e.preventDefault();
-        showPopup("app-bridges", true);
-      }
-    },
-    true
-  );
-}
