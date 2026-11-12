@@ -27,6 +27,25 @@ main{position:absolute!important;inset:0;padding:0!important;overflow:hidden}
 .lp-view:has(.lp-pane.fx:not(.off)){flex:1 1 0;margin:0;min-height:0;overflow:hidden}
 .lp-view:has(.lp-pane.fx:not(.off)) .lp-track,.lp-view:has(.lp-pane.fx:not(.off)) .lp-pane.fx{height:100%}
 .lp-bar{margin:0 0 16px}
+/* The area editor, as the Hue app draws light placement: a dark page, the Location and Height switch in a dark pill, the room in blue-grey, the lights as pins with glowing heads, and the lights as blue tiles below. */
+body.areamode{background:#1b1c20!important}
+body.areamode #body{display:block;overflow-y:auto;padding:0 0 calc(var(--sab,0px) + 24px)}
+body.areamode .sqw,body.areamode .hint,body.areamode .pill{display:none}
+body.areamode #body>.seg{display:flex;gap:0;margin:12px 16px 4px;padding:3px;background:#25262a;border-radius:20px;border:0}
+body.areamode .seg .rbtn{flex:1;min-height:0;padding:8px 0;border:0!important;border-radius:17px;background:transparent!important;color:#a3a4aa!important;box-shadow:none!important;font-size:11px;letter-spacing:.06em;text-transform:uppercase;justify-content:center}
+body.areamode .seg .rbtn.act{background:#fff!important;color:#1b1c20!important;font-weight:600}
+body.areamode .ae-c{margin:0}
+body.areamode .ae-wl{fill:#3f3f4d}body.areamode .ae-wr{fill:#4a4a58}body.areamode .ae-fl{fill:#2f3040}
+body.areamode .ae-ed{stroke:#5b5b6b}
+body.areamode .ae-pole{stroke:#ffffff99;stroke-width:3}
+body.areamode .ae-dot{fill:#7fa7ff;stroke:#fff;stroke-width:3}
+body.areamode .ae-dot.picked{fill:#fff;stroke:#7fa7ff;stroke-width:5}
+body.areamode .ae-tray{gap:10px;padding:12px 16px}
+body.areamode .ae-card{width:92px;height:112px;border-radius:14px;border:0;background:linear-gradient(135deg,#3b6fe0,#2a4fa8)!important;color:#fff!important;gap:12px;opacity:.55}
+body.areamode .ae-card.in{opacity:1}
+body.areamode .ae-card.picked{outline:2.5px solid #fff;outline-offset:-2px}
+body.areamode .ae-card svg{width:24px;height:24px}
+body.areamode .ae-cn{font-size:12px;font-weight:500}
 .lp-tray{padding-bottom:2px}
 </style>
 </head>
@@ -97,6 +116,7 @@ main{position:absolute!important;inset:0;padding:0!important;overflow:hidden}
     /* Draws the colour, white and effects panel of the lights of a room or a scene, with a tile for each. */
     panel: function (ids, name, focus, fromY) {
       if (!ready) return false;
+      document.body.classList.remove("areamode");
       var b = body();
       document.body.classList.remove("rise");
       var wasHidden = true;
@@ -170,11 +190,33 @@ main{position:absolute!important;inset:0;padding:0!important;overflow:hidden}
         if (o.k) mem.k = o.k;
       });
     },
+    /* Home Control's area editor (the room in three dimensions, the lights to drag, their tray), on an area of the bridge, drawn as the Hue app draws it: area is {id, name, lights: [{light_id, x, y, z, balance}]}. */
+    area: function (area) {
+      if (!ready) return false;
+      var draft = window.HuePlusFrame.draft(area);
+      window.EAD = { room: "", isNew: false, sel: null, draft: draft, saved: JSON.stringify(draft), external: { plugin: "hue_plus", id: area.id, after: null, note: "" } };
+      document.body.classList.add("areamode");
+      eaEditor(body());
+      document.body.classList.add("rise");
+      return true;
+    },
+    /* What the editor holds now (name, the lights that are Hue Plus lights with their places, the others as they were), as JSON. The light it was showing is put back. */
+    areaDraft: function () {
+      var d = window.EAD && window.EAD.draft;
+      try {
+        eaIdentifyOff();
+      } catch (e) {}
+      return d ? JSON.stringify(d) : null;
+    },
     /* Takes the screen away before another is drawn, so what was there is not seen again. */
     hide: function () {
       document.body.classList.remove("rise");
     },
     clear: function () {
+      try {
+        eaIdentifyOff();
+      } catch (e) {}
+      document.body.classList.remove("areamode");
       body();
     },
     /* What the lights are doing now, so that what a change did to them can be undone, and what a scene should make each of them do. */

@@ -58,7 +58,8 @@ function hpFrameShow(on) {
   if (!HPLF.el) return;
   var layers = document.querySelectorAll(".pg"),
     bar = layers.length ? layers[layers.length - 1].querySelector(".pbar") : null;
-  var top = bar ? bar.offsetHeight : 0;
+  /* Where the bar ends in its final place (a page that is still sliding in is measured without its movement). */
+  var top = bar ? layers[layers.length - 1].offsetTop + bar.offsetTop + bar.offsetHeight : 0;
   HPLF.el.style.top = top + "px";
   HPLF.el.style.height = "calc(100% - " + top + "px)";
   HPLF.el.classList.toggle("show", !!on);
@@ -70,7 +71,7 @@ window.HueHost.onRender = function () {
 };
 /* Coming back to a colour screen (from a page opened over it) puts the frame back. */
 window.HueHost.onResume = function (key) {
-  if (/^(app-lights|app-edit)\b/.test(String(key))) hpFrameShow(true);
+  if (/^(app-lights|app-edit|app-place)\b/.test(String(key))) hpFrameShow(true);
 };
 
 function hpLightScreen(body, ids, name, focus, from) {

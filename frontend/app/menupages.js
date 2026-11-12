@@ -595,166 +595,54 @@ function hpAreaAddPage(b, id) {
   });
 }
 
-/* Light placement, as the app draws it: the room as a box seen at an angle, each light a pin standing on the floor with its head at its height, Location (drag a pin over the floor) and Height (drag a head up or down)
- above, and the lights as tiles below to pick one. What is placed is staged on the area, and goes to the bridge with SAVE on the area. */
-var HP_ISO = { w: 360, h: 290, cx: 180, cy: 191, a: 80, b: 42, up: 95 };
-
-function hpIso(x, yd, h) {
-  return { x: HP_ISO.cx + (x - yd) * HP_ISO.a, y: HP_ISO.cy + (x + yd) * HP_ISO.b - h * HP_ISO.up };
-}
-
-function hpSvg(tag, attrs, parent) {
-  var n = document.createElementNS("http://www.w3.org/2000/svg", tag);
-  Object.keys(attrs || {}).forEach(function (k) {
-    n.setAttribute(k, attrs[k]);
-  });
-  if (parent) parent.appendChild(n);
-  return n;
-}
+/* Light placement is Home Control's area editor (the room in three dimensions, the lights to drag, their tray), run in the light frame under this page's bar and drawn as the app draws it. DONE takes what it holds
+ back into the area's draft; it goes to the bridge with SAVE on the area, like the rest of the area's changes. */
+var HPPLACE = null;
 
 function hpPlacePage(b, id) {
   hmBox(b);
   hmGuard(hpAreaKey(id), true);
+  var wait = mk("div", "empty"),
+    token = (HPPLACE = {});
+  wait.textContent = _T("loading");
+  b.appendChild(wait);
   hmLoad(b, ["entertainment_areas"], function (box) {
-    var x = hmEntArea(id),
-      mode = "loc",
-      chosen = null;
+    var x = hmEntArea(id);
     if (!x) {
       box.appendChild(hmCallout(_T("nothing_found")));
       return;
     }
-    var seg = mk("div", "seg", "<button type='button' class='on'></button><button type='button'></button>"),
-      stage = mk("div", "pstage"),
-      strip = mk("div", "pstrip");
-    seg.children[0].textContent = _T("app_location");
-    seg.children[1].textContent = _T("app_height");
-    box.appendChild(seg);
-    box.appendChild(stage);
-    box.appendChild(strip);
-    function clamp(v) {
-      return Math.max(-1, Math.min(1, Math.round(v * 100) / 100));
-    }
-    function scene() {
-      return hpAreaLights(x).map(function (l) {
-        return { l: l, yd: hpFlip(l.y), h: (l.z + 1) / 2 };
-      });
-    }
-    function stageLight(light, patch) {
-      hpStageLights(
-        x,
-        hpAreaLights(x).map(function (o) {
-          return o.light === light ? Object.assign({}, o, patch) : o;
-        })
-      );
-    }
-    function choose(light) {
-      chosen = light;
-      [].forEach.call(stage.querySelectorAll(".pin"), function (n) {
-        n.classList.toggle("on", n.dataset.light === String(light));
-      });
-      [].forEach.call(strip.children, function (n) {
-        n.classList.toggle("sel", n.dataset.light === String(light));
-      });
-    }
-    function drag(e, pin, s) {
-      e.preventDefault();
-      choose(s.l.light);
-      var room = stage.firstChild,
-        box = room.getBoundingClientRect(),
-        k = box.width / HP_ISO.w,
-        at = { x: s.l.x, yd: s.yd, h: s.h },
-        start = { px: e.clientX, py: e.clientY, h: s.h };
-      pin.setPointerCapture(e.pointerId);
-      function move(ev) {
-        if (mode === "loc") {
-          var sx = (ev.clientX - box.left) / k,
-            sy = (ev.clientY - box.top) / k + at.h * HP_ISO.up,
-            u = (sx - HP_ISO.cx) / HP_ISO.a,
-            v = (sy - HP_ISO.cy) / HP_ISO.b;
-          at.x = clamp((u + v) / 2);
-          at.yd = clamp((v - u) / 2);
-        } else at.h = Math.max(0, Math.min(1, start.h - (ev.clientY - start.py) / k / HP_ISO.up));
-        var p = hpIso(at.x, at.yd, at.h),
-          f = hpIso(at.x, at.yd, 0);
-        pin.firstChild.setAttribute("x1", f.x);
-        pin.firstChild.setAttribute("y1", f.y);
-        pin.firstChild.setAttribute("x2", p.x);
-        pin.firstChild.setAttribute("y2", p.y);
-        pin.lastChild.setAttribute("cx", p.x);
-        pin.lastChild.setAttribute("cy", p.y);
-      }
-      function up() {
-        pin.removeEventListener("pointermove", move);
-        pin.removeEventListener("pointerup", up);
-        pin.removeEventListener("pointercancel", up);
-        stageLight(s.l.light, { x: clamp(at.x), y: hpFlip(clamp(at.yd)), z: clamp(at.h * 2 - 1) });
-        draw();
-      }
-      pin.addEventListener("pointermove", move);
-      pin.addEventListener("pointerup", up);
-      pin.addEventListener("pointercancel", up);
-    }
-    function draw() {
-      stage.innerHTML = "";
-      var room = hpSvg("svg", { viewBox: "0 0 " + HP_ISO.w + " " + HP_ISO.h, class: "iso" }, stage),
-        t = hpIso(-1, -1, 0),
-        r = hpIso(1, -1, 0),
-        f = hpIso(1, 1, 0),
-        l = hpIso(-1, 1, 0),
-        tt = hpIso(-1, -1, 1),
-        rt = hpIso(1, -1, 1),
-        lt = hpIso(-1, 1, 1),
-        poly = function (pts, cls) {
-          hpSvg("polygon", { points: pts.map(function (p) { return p.x + "," + p.y; }).join(" "), class: cls }, room);
-        };
-      poly([t, r, rt, tt], "wall r");
-      poly([t, l, lt, tt], "wall l");
-      poly([t, r, f, l], "floor");
-      for (var i = 1; i < 4; i++) {
-        var g = -1 + i * 0.5,
-          a = hpIso(g, -1, 0),
-          b2 = hpIso(g, 1, 0),
-          c = hpIso(-1, g, 0),
-          d = hpIso(1, g, 0);
-        hpSvg("line", { x1: a.x, y1: a.y, x2: b2.x, y2: b2.y, class: "gl" }, room);
-        hpSvg("line", { x1: c.x, y1: c.y, x2: d.x, y2: d.y, class: "gl" }, room);
-      }
-      scene()
-        .sort(function (p, q) {
-          return p.yd + p.l.x - (q.yd + q.l.x);
-        })
-        .forEach(function (s) {
-          var foot = hpIso(s.l.x, s.yd, 0),
-            head = hpIso(s.l.x, s.yd, s.h),
-            pin = hpSvg("g", { class: "pin" + (s.l.light === chosen ? " on" : ""), "data-light": String(s.l.light) }, room);
-          hpSvg("line", { x1: foot.x, y1: foot.y, x2: head.x, y2: head.y }, pin);
-          hpSvg("circle", { cx: head.x, cy: head.y, r: 9 }, pin);
-          pin.addEventListener("pointerdown", function (e) {
-            drag(e, pin, s);
-          });
-        });
-      strip.innerHTML = "";
-      hpAreaLights(x).forEach(function (o) {
-        var tile = mk("div", "ptile sm" + (o.light === chosen ? " sel" : ""), "<span class='ic'></span><b></b>");
-        tile.dataset.light = String(o.light);
-        tile.querySelector(".ic").innerHTML = svg("lamp");
-        tile.querySelector("b").textContent = o.name;
-        hpActive(tile, function () {
-          choose(o.light);
-        });
-        strip.appendChild(tile);
-      });
-    }
-    [].forEach.call(seg.children, function (btn, i) {
-      btn.addEventListener("click", function () {
-        mode = i ? "height" : "loc";
-        [].forEach.call(seg.children, function (o, j) {
-          o.classList.toggle("on", j === i);
-        });
-        stage.classList.toggle("height", i === 1);
-      });
+    var area = {
+        id: id,
+        name: hpAreaName(x),
+        lights: hpAreaLights(x).map(function (l) {
+          return { light_id: l.light, name: l.name, x: l.x, y: l.y, z: l.z, balance: l.balance };
+        }),
+      },
+      names = {};
+    area.lights.forEach(function (l) {
+      names[l.light_id] = l.name;
     });
-    draw();
+    hpLightFrame(function (win) {
+      if (HPPLACE !== token) return;
+      wait.remove();
+      win.HuePopup.hide();
+      hpFrameShow(true);
+      win.HuePopup.area(area);
+      HC.onDone = function () {
+        var d = JSON.parse(win.HuePopup.areaDraft() || "null");
+        if (d) {
+          var lights = (d.kept || []).map(function (k) {
+            return { light: k.light, name: names[k.light] || String(k.light), x: k.x, y: k.y, z: k.z, balance: typeof k.balance === "number" ? k.balance : 1 };
+          });
+          (d.lights || []).forEach(function (l) {
+            lights.push({ light: hpHueId(l.id), name: hpName(l.id), x: l.x, y: hpFlip(l.y), z: l.z, balance: typeof l.balance === "number" ? l.balance : 1 });
+          });
+          if (lights.length) hpStageLights(x, lights);
+        }
+        popBack();
+      };
+    });
   });
 }
 

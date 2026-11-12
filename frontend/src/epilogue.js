@@ -165,6 +165,9 @@
     popup: lpStylePopup,
   });
 
+  /* The light panel frame of the Hue dashboard panel opens Home Control's area editor on an area, so it needs the draft in the editor's shape. */
+  window.HuePlusFrame = { draft: hpBridgeDraft };
+
   HC.registerAreaHooks("hue_plus", {
     importRow: hpAreaImport,
     actions: hpAreaActions,

@@ -443,17 +443,3 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .ptile.sm:has(.minus) {padding-bottom:36px}
 .pfield{padding:4px 16px 8px}.pfield input{width:100%;box-sizing:border-box}
 .swhead.named{display:flex;flex-wrap:wrap;align-items:center;gap:0 12px}.swhead.named .ic{flex:0 0 100%}.swhead.named .nm{flex:1;min-width:0}.ltiles.areal{margin:0;padding:0 16px 6px}
-.seg{display:flex;margin:12px 16px;background:var(--row);border-radius:20px;padding:3px}
-.seg button{flex:1;border:0;background:transparent;color:var(--ink2);border-radius:17px;padding:7px 0;font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
-.seg button.on{background:#fff;color:#1b1c20;font-weight:600}
-.pstage{margin:6px 0 0;touch-action:none}
-.pstage svg{display:block;width:100%;height:auto}
-.iso .wall{fill:#4a4a58;stroke:#5b5b6b;stroke-width:1}.iso .wall.l{fill:#3f3f4d}
-.iso .floor{fill:#2f3040;stroke:#5b5b6b;stroke-width:1}
-.iso .gl{stroke:#ffffff14;stroke-width:1}
-.iso .pin{cursor:grab;touch-action:none}.iso .pin line{stroke:#ffffff80;stroke-width:2}.iso .pin circle{fill:#7fa7ff;stroke:#fff;stroke-width:2}
-.iso .pin.on line{stroke:#fff}.iso .pin.on circle{fill:#fff;stroke:#7fa7ff;stroke-width:3}
-.pstage.height .iso .pin circle{fill:#ff8fd0}
-.pstrip{display:flex;gap:10px;overflow-x:auto;padding:12px 16px;scrollbar-width:none}
-.pstrip::-webkit-scrollbar{display:none}
-.pstrip .ptile.sm{height:92px;background:linear-gradient(135deg,#3b6fe0,#2a4fa8)}
