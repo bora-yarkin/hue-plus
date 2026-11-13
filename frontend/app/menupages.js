@@ -424,7 +424,10 @@ function hpAreaKey(id) {
 
 function hpAreaBase(x) {
   return (x.lights || []).map(function (l) {
-    return { light: l.light_id, name: l.name || String(l.light_id), x: l.x || 0, y: l.y || 0, z: l.z || 0, balance: typeof l.balance === "number" ? l.balance : 1 };
+    var o = { light: l.light_id, name: l.name || String(l.light_id), x: l.x || 0, y: l.y || 0, z: l.z || 0, balance: typeof l.balance === "number" ? l.balance : 1 };
+    /* every position the bridge holds (the ends of a strip or tube) */
+    if (Array.isArray(l.positions) && l.positions.length > 1) o.positions = l.positions;
+    return o;
   });
 }
 
@@ -618,7 +621,7 @@ function hpPlacePage(b, id) {
         id: id,
         name: hpAreaName(x),
         lights: hpAreaLights(x).map(function (l) {
-          return { light_id: l.light, name: l.name, x: l.x, y: l.y, z: l.z, balance: l.balance };
+          return { light_id: l.light, name: l.name, x: l.x, y: l.y, z: l.z, positions: l.positions, balance: l.balance };
         }),
       },
       names = {};
