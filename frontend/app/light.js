@@ -59,6 +59,8 @@ window.HueHost.onHass = function (h) {
 
 /* The width the Hue app's screens were measured at, and how much larger or smaller the panel is drawn. */
 var HP_DESIGN_WIDTH = 393;
+/* How long the colour screen takes to close (the Hue app: about 250 ms); the page's fades in app.css are timed to it. */
+var HP_CLOSE_MS = 260;
 
 function hpFrameScale() {
   /* From the root font size (the panel's width / 393 * 16, set in the style sheet), not from a measurement: a measurement is in zoomed units in a zoomed Safari. */
@@ -99,13 +101,22 @@ window.HueHost.onLeave = function (toY, done) {
     return;
   }
   var top = parseFloat(HPLF.el.style.top) || 0,
+    scale = hpFrameScale(),
     shown = HPLF.shown,
     row = document.querySelector(".pg.leaving .ltiles");
   /* The room page's row is where the colour screen's row was left, sideways: it is one row. */
-  if (row) row.scrollLeft = HPLF.win.HuePopup.trayScroll() * hpFrameScale() * hpZoom();
-  HPLF.win.HuePopup.leave(typeof toY === "number" ? (toY / hpZoom() - top) / hpFrameScale() : undefined, function () {
-    done(HPLF.shown !== shown);
-  });
+  if (row) row.scrollLeft = HPLF.win.HuePopup.trayScroll() * scale * hpZoom();
+  /* For the close the frame is as high as the screen (the wheel leaves past the top of the screen, not past the frame's edge); its content is moved down by as much in the same step. */
+  HPLF.win.HuePopup.leave(
+    typeof toY === "number" ? toY / hpZoom() / scale : undefined,
+    function () {
+      done(HPLF.shown !== shown);
+    },
+    top / scale,
+    HP_CLOSE_MS
+  );
+  HPLF.el.style.top = "0px";
+  HPLF.el.style.height = "calc(100% / " + scale + ")";
 };
 
 /* Every page that is drawn takes the frame away; a light screen puts it back. */

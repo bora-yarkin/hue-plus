@@ -299,6 +299,7 @@ class ModelTests(unittest.TestCase):
                     "dimming": {"brightness": 42.5},
                     "color": {"xy": {"x": 0.31234, "y": 0.3}},
                     "color_temperature": {"mirek_valid": False, "mirek": 300},
+                    "metadata": {"name": "Bed", "archetype": "hue_lightstrip"},
                 },
                 {"id": "b", "on": {"on": True}, "dimming": {"brightness": 80}, "color_temperature": {"mirek_valid": True, "mirek": 366}},
             ]
@@ -306,8 +307,8 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(
             models.light_states(s),
             [
-                {"id": "a", "on": False, "brightness": 42.5, "xy": [0.3123, 0.3], "mirek": None},
-                {"id": "b", "on": True, "brightness": 80, "xy": None, "mirek": 366},
+                {"id": "a", "on": False, "brightness": 42.5, "xy": [0.3123, 0.3], "mirek": None, "archetype": "hue_lightstrip"},
+                {"id": "b", "on": True, "brightness": 80, "xy": None, "mirek": 366, "archetype": None},
             ],
         )
 

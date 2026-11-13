@@ -418,6 +418,8 @@ def light_states(snap: Snapshot) -> list[dict[str, Any]]:
                 "brightness": (light.get("dimming") or {}).get("brightness"),
                 "xy": [round(xy["x"], 4), round(xy["y"], 4)] if "x" in xy and "y" in xy else None,
                 "mirek": temperature.get("mirek") if temperature.get("mirek_valid") else None,
+                # The light's icon type, which the app draws the light with and lets the person change.
+                "archetype": (light.get("metadata") or {}).get("archetype"),
             }
         )
     return out
