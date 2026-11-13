@@ -42,11 +42,12 @@ async def test_hue_pluss_copy_of_a_scene_is_read_like_the_scene_it_copies(hass, 
     )
 
 
-async def test_a_copy_whose_hue_scene_is_gone_is_refused_with_the_reason(hass, scene_entities):
+async def test_hue_pluss_scene_is_read_through_its_own_bridge_without_the_hue_integrations_entity(hass, scene_entities):
+    """Hue Plus runs without the Hue integration's entities: its own scene is read through its own entry's connection."""
     hue, mirror = scene_entities
     er.async_get(hass).async_remove(hue)
-    with pytest.raises(ServiceValidationError, match="not a Hue scene"):
-        await call(hass, "import_hue_scene", {"entity_id": mirror}, response=True)
+    scene = await call(hass, "import_hue_scene", {"entity_id": mirror}, response=True)
+    assert scene["name"] == "Relax"
 
 
 async def test_an_entity_that_is_not_a_scene_of_the_bridge_is_refused(hass, scene_entities, hue_entry):

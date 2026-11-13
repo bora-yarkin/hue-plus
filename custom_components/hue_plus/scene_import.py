@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Reads a Hue scene from the bridge, through the connection the core Hue integration already has.
+"""Reads a Hue scene from the bridge, through the connection of the entity's bridge: Hue Plus's own (or the one it rides on), or the core Hue integration's.
 
 Used to import a Hue live scene (its palette, speed and lights) or a static one (what it sets each of its lights to). Reading only; nothing is
 written to the bridge.
@@ -13,7 +13,9 @@ from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import entity_registry as er
 
+from .bridge.api import BridgeError
 from .fieldspec import f
+from .runtime import Runtime
 
 HUE_DOMAIN = "hue"
 HUE_PLUS_DOMAIN = "hue_plus"
@@ -89,21 +91,24 @@ def _palette(scene: dict[str, Any]) -> tuple[list[dict[str, Any]], bool]:
     return out, False
 
 
-def _hue_scene_entry(hass: HomeAssistant, entity_id: str) -> er.RegistryEntry:
-    """The registry entry of the Hue integration's scene behind `entity_id`.
+def _scene_api(hass: HomeAssistant, entity_id: str) -> tuple[Any, str]:
+    """The bridge client to read the scene behind `entity_id` with, and the scene's id on the bridge.
 
-    Hue Plus runs the Hue integration's scenes again as its own entities, with the same unique id, and the dashboard lists those; the connection to the bridge belongs to
-    the Hue integration's entity of that scene."""
-    registry = er.async_get(hass)
-    entry = registry.async_get(entity_id)
-    if entry is not None and entry.domain == "scene" and entry.platform == HUE_PLUS_DOMAIN:
-        entry = next(
-            (e for e in registry.entities.values() if e.platform == HUE_DOMAIN and e.domain == "scene" and e.unique_id == entry.unique_id),
-            None,
-        )
-    if entry is None or entry.platform != HUE_DOMAIN or entry.domain != "scene":
+    A scene of Hue Plus (which runs the bridge's scenes as its own entities, with the bridge's scene id as unique id) is read through its own
+    entry's connection, whether that is Hue Plus's own or the Hue integration's it rides on; a scene of the Hue integration through that one."""
+    entry = er.async_get(hass).async_get(entity_id)
+    if entry is None or entry.domain != "scene" or entry.platform not in (HUE_DOMAIN, HUE_PLUS_DOMAIN):
         raise ServiceValidationError(f"{entity_id} is not a Hue scene")
-    return entry
+    if entry.platform == HUE_DOMAIN:
+        return _api_for(hass, entry.config_entry_id), entry.unique_id
+    owner = hass.config_entries.async_get_entry(entry.config_entry_id) if entry.config_entry_id else None
+    runtime = getattr(owner, "runtime_data", None)
+    if not isinstance(runtime, Runtime):
+        raise ServiceValidationError("The Hue Plus bridge of this scene is not loaded")
+    try:
+        return runtime.link.api, entry.unique_id
+    except BridgeError as err:
+        raise ServiceValidationError(str(err)) from err
 
 
 def _static_states(hass: HomeAssistant, scene: dict[str, Any]) -> list[dict[str, Any]]:
@@ -139,9 +144,8 @@ def _static_states(hass: HomeAssistant, scene: dict[str, Any]) -> list[dict[str,
 
 async def read_scene(hass: HomeAssistant, entity_id: str) -> dict[str, Any]:
     """The palette, speed and lights of the Hue scene behind a Home Assistant scene entity."""
-    entry = _hue_scene_entry(hass, entity_id)
-    api = _api_for(hass, entry.config_entry_id)
-    found = await _read(api, f"clip/v2/resource/scene/{entry.unique_id}")
+    api, scene_id = _scene_api(hass, entity_id)
+    found = await _read(api, f"clip/v2/resource/scene/{scene_id}")
     if not found:
         raise ServiceValidationError("The bridge does not know this scene")
     scene = found[0]
