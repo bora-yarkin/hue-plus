@@ -88,6 +88,18 @@ def _scaled(text: str) -> str:
     return re.sub(r"(?<![\w.#])(\d*\.?\d+)px\b", rem, text)
 
 
+POPUP = ROOT / "custom_components" / "hue_plus" / "frontend" / "popup.html"
+LIGHTS = ROOT / "custom_components" / "hue_plus" / "frontend" / "lights"
+LIGHTS_BUILT = LIGHTS / "bundle.json"
+
+
+def build_lights() -> str:
+    """The files of Home Control's dashboard that the light frame runs (the list FILES in popup.html), in one answer: the frame asks for this instead of
+    some sixty files one after another, which took many seconds through a proxy. Each file is still run as a script of its own, so nothing about it changes."""
+    listed = json.loads(re.search(r"var FILES = (\[.*?\]);", POPUP.read_text(encoding="utf-8"), flags=re.S).group(1))
+    return json.dumps([[name, (LIGHTS / name).read_text(encoding="utf-8")] for name in listed], separators=(",", ":"), ensure_ascii=False) + "\n"
+
+
 def build_effects() -> str:
     """The effects catalogue the light panel's effects page shows (the pictures, speeds and default colours worked out against the Hue app and the bridge), from Hue Plus's declaration for Home Control."""
     declaration = json.loads(DECLARATION.read_text(encoding="utf-8"))
@@ -106,6 +118,7 @@ def build_effects() -> str:
 
 if __name__ == "__main__":
     EFFECTS_BUILT.write_text(build_effects(), encoding="utf-8")
+    LIGHTS_BUILT.write_text(build_lights(), encoding="utf-8")
     BUILT.write_text(build(), encoding="utf-8")
     APP_BUILT.write_text(build_app(), encoding="utf-8")
     print("menu.js:", len(build().splitlines()), "lines;", "app.js:", len(build_app().splitlines()), "lines")

@@ -274,11 +274,19 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
         return window.HA.ready();
       })
       .then(function () {
-        return FILES.reduce(function (chain, f) {
-          return chain.then(function () {
-            return load("lights/" + f);
+        /* Home Control's files come in one answer (lights/bundle.json, built from FILES by scripts/build_menu.py) and each is run as a script of its own, in order, as if it had been asked for by itself. */
+        return fetch("lights/bundle.json" + (query.get("v") ? "?v=" + encodeURIComponent(query.get("v")) : ""))
+          .then(function (r) {
+            if (!r.ok) throw new Error("Unable to load lights/bundle.json");
+            return r.json();
+          })
+          .then(function (files) {
+            files.forEach(function (f) {
+              var s = document.createElement("script");
+              s.textContent = f[1] + "\n//# sourceURL=lights/" + f[0];
+              document.body.appendChild(s);
+            });
           });
-        }, Promise.resolve());
       })
       .then(function () {
         /* What main.js sets up, without anything being kept in Home Assistant: the Hue panel is a window onto the bridge, so what Home Control's dashboard saves in Home Assistant (its layout, the

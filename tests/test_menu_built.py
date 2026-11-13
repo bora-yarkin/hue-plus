@@ -20,6 +20,8 @@ def test_menu_js_is_built_from_the_sources():
     assert effects == module.build_effects(), "effects.json is out of date: run scripts/build_menu.py"
     app = (ROOT / "custom_components" / "hue_plus" / "frontend" / "app.js").read_text(encoding="utf-8")
     assert app == module.build_app(), "app.js is out of date: run scripts/build_menu.py"
+    bundle = (ROOT / "custom_components" / "hue_plus" / "frontend" / "lights" / "bundle.json").read_text(encoding="utf-8")
+    assert bundle == module.build_lights(), "lights/bundle.json is out of date: run scripts/build_menu.py"
 
 
 def test_the_declaration_names_the_script_hue_plus_serves():
