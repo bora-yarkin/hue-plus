@@ -219,12 +219,14 @@ var route={
 
 /* ---- voice ---- */
 
-/* The https address of this Home Assistant (its external URL), where a microphone can be used when the page itself is on plain http. null when there is none. */
-function secureOrigin(){
+/* Opens Home Assistant's own Assist and starts listening, when the phone app that shows this page does it with its own microphone (which works without https). Answers whether it did. */
+function assist(){
  try{
-  var u=new URL(hass&&hass.config&&hass.config.external_url||"");
-  return u.protocol==="https:"?u.origin:null;
- }catch(e){return null}
+  var ext=hass&&hass.auth&&hass.auth.external;
+  if(!ext||!ext.config||!ext.config.hasAssist||!ext.fireMessage)return false;
+  ext.fireMessage({type:"assist/show",payload:{pipeline_id:"preferred",start_listening:true}});
+  return true;
+ }catch(e){return false}
 }
 
 /* The address of the panel, for a notification that opens it. */
@@ -295,7 +297,7 @@ window.HA={
  camera:camera,
  route:route,
  signPath:signPath,
- secureOrigin:secureOrigin,
+ assist:assist,
  panelPath:panelPath,
  automations:automations,
  scripts:scripts,

@@ -54,11 +54,6 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
 .hp-orient svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8}
 .hp-osheet{position:fixed;inset:0;z-index:50;background:#1b1c20;display:flex;flex-direction:column;animation:hpo .3s cubic-bezier(.2,.8,.2,1)}
 @keyframes hpo{from{transform:translateY(100%)}to{transform:none}}
-.hp-obar{display:flex;align-items:center;gap:14px;padding:12px 16px;background:#232429}
-.hp-obar b{flex:1;font-size:13.5px;font-weight:500}
-.hp-ox{width:32px;height:32px;border:0;border-radius:50%;background:#3a3b3e;color:#fff;display:flex;align-items:center;justify-content:center}
-.hp-ox svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2}
-.hp-odone{border:0;background:#3a3b3e;color:#fff;border-radius:16px;padding:8px 16px;font-size:12px;font-weight:600;text-transform:uppercase}
 .hp-osheet p{margin:auto 16px 16px;text-align:center;font-size:14px;font-weight:500}
 .hp-ogrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 10px calc(var(--sab,0px) + 20px)}
 .hp-ochoice{min-height:64px;border:0;border-radius:12px;background:#2d2e33;color:#fff;font:inherit;font-size:12.5px;cursor:pointer}
@@ -279,14 +274,7 @@ body.lg .wrap{zoom:1!important}
     var o = hpOrientOf(l),
       sheet = document.createElement("div");
     sheet.className = "hp-osheet";
-    sheet.innerHTML =
-      "<div class='hp-obar'><button type='button' class='hp-ox' aria-label='" +
-      _T("close") +
-      "'>" +
-      svg("close") +
-      "</button><b></b><button type='button' class='hp-odone'></button></div><p></p><div class='hp-ogrid'></div>";
-    sheet.querySelector("b").textContent = _T("app_orientation_setup");
-    sheet.querySelector(".hp-odone").textContent = _T("done");
+    sheet.innerHTML = "<p></p><div class='hp-ogrid'></div>";
     sheet.querySelector("p").textContent = _T("app_orientation_question").replace("{name}", (EAD.v.byId[key] || {}).name || entName(key));
     var grid = sheet.querySelector(".hp-ogrid"),
       was = { a: l.a, p: l.p };
@@ -318,15 +306,24 @@ body.lg .wrap{zoom:1!important}
       });
     }
     paint();
-    sheet.querySelector(".hp-ox").addEventListener("click", function () {
-      l.a = was.a;
-      l.p = was.p;
-      eaDrawLight(key);
+    /* The page's own bar above the frame becomes this sheet's: its title, X puts the light back as it was, DONE keeps it. */
+    var host = window.parent && window.parent.HueHost,
+      restore = function () {};
+    function shut() {
+      restore();
       sheet.remove();
-    });
-    sheet.querySelector(".hp-odone").addEventListener("click", function () {
-      sheet.remove();
-    });
+    }
+    if (host && host.frameBar)
+      restore = host.frameBar(
+        _T("app_orientation_setup"),
+        shut,
+        function () {
+          l.a = was.a;
+          l.p = was.p;
+          eaDrawLight(key);
+          shut();
+        }
+      );
     document.body.appendChild(sheet);
   }
 
@@ -400,8 +397,12 @@ body.lg .wrap{zoom:1!important}
       return ready;
     },
     /* Draws the colour, white and effects panel of the lights of a room or a scene, with a tile for each. */
-    panel: function (ids, name, focus, fromY, scrollX) {
+    panel: function (ids, name, focus, fromY, scrollX, icons) {
       if (!ready) return false;
+      /* Each light is drawn with the icon the panel gives it (from the bridge's icon type), on its tile and in its marker. */
+      Object.keys(icons || {}).forEach(function (e) {
+        LNAME[e] = [A(e).friendly_name || e, icons[e]];
+      });
       document.body.classList.remove("areamode");
       var b = body();
       document.body.classList.remove("rise");

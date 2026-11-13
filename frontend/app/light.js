@@ -119,6 +119,32 @@ window.HueHost.onLeave = function (toY, done) {
   HPLF.el.style.height = "calc(100% / " + scale + ")";
 };
 
+/* A sheet the light frame opens over its page (Orientation setup) uses the page's own bar: its title, X to cancel and DONE to keep, until `restore` is called. */
+window.HueHost.frameBar = function (title, onDone, onCancel) {
+  var layers = document.querySelectorAll(".pg"),
+    layer = layers[layers.length - 1];
+  if (!layer) return function () {};
+  var bar = layer.querySelector(".pbar"),
+    tt = bar.querySelector(".tt"),
+    was = tt.textContent;
+  tt.textContent = title;
+  layer.classList.add("framebar");
+  function take(e) {
+    var b = e.target.closest ? e.target.closest("button") : null;
+    if (!b || !bar.contains(b)) return;
+    e.stopPropagation();
+    e.preventDefault();
+    if (b.classList.contains("back") || b.classList.contains("x")) onCancel();
+    else onDone();
+  }
+  bar.addEventListener("click", take, true);
+  return function () {
+    bar.removeEventListener("click", take, true);
+    tt.textContent = was;
+    layer.classList.remove("framebar");
+  };
+};
+
 /* Every page that is drawn takes the frame away; a light screen puts it back. */
 window.HueHost.onRender = function () {
   hpFrameShow(false);
@@ -127,6 +153,15 @@ window.HueHost.onRender = function () {
 window.HueHost.onResume = function (key) {
   if (/^(app-lights|app-edit|app-place)\b/.test(String(key))) hpFrameShow(true);
 };
+
+/* The icon of each light, as the room page draws it, for the colour screen. */
+function hpIconsOf(ids) {
+  var out = {};
+  (ids || []).forEach(function (e) {
+    out[e] = hpLightIcon(e);
+  });
+  return out;
+}
 
 function hpLightScreen(body, ids, name, focus, from) {
   var wait = mk("div", "empty");
@@ -140,7 +175,7 @@ function hpLightScreen(body, ids, name, focus, from) {
     if (HPLIGHTS) win.HuePopup.seed(HPLIGHTS);
     hpFrameShow(true);
     var top = parseFloat(HPLF.el.style.top) || 0;
-    win.HuePopup.panel(ids, name, focus, typeof from === "number" ? (from / hpZoom() - top) / hpFrameScale() : undefined, typeof HPAPP.lightScroll === "number" ? HPAPP.lightScroll / hpZoom() / hpFrameScale() : undefined);
+    win.HuePopup.panel(ids, name, focus, typeof from === "number" ? (from / hpZoom() - top) / hpFrameScale() : undefined, typeof HPAPP.lightScroll === "number" ? HPAPP.lightScroll / hpZoom() / hpFrameScale() : undefined, hpIconsOf(ids));
   });
 }
 
@@ -205,7 +240,7 @@ function hpEditPage(body) {
     setTimeout(function () {
       if (HC.sheet.light !== token) return;
       E.snap = win.HuePopup.snapshot(o.lights);
-      win.HuePopup.panel(o.lights, o.name);
+      win.HuePopup.panel(o.lights, o.name, undefined, undefined, undefined, hpIconsOf(o.lights));
       hpFrameShow(true);
     }, 700);
   });

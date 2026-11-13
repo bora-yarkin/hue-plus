@@ -378,7 +378,8 @@ function camTalkButton(box, id, group) {
     if (held) return;
     var path = camTalkPath(id);
     if (path && window.IntercomTalk && !window.IntercomTalk.available()) {
-      toast(_T("dc_talk_needs_https"));
+      /* No microphone for a page on plain http: the phone app's own Assist is the way, when there is one. */
+      if (!window.HA.assist()) toast(_T("dc_talk_needs_https"));
       return;
     }
     held = true;

@@ -603,3 +603,7 @@ body{width:100%;height:100%}
 .rntype .ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .rntype b{font-size:11px;font-weight:500;text-align:center}
 .rntype.on .ic{background:#fff;color:#1b1c20}
+
+/* the page's bar while a sheet of the light frame uses it: an X, as a sheet has */
+.pg.framebar .pbar .back{display:none!important}
+.pg.framebar .pbar .x{display:flex!important}
