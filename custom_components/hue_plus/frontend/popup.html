@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Hue light</title>
+<link rel="stylesheet" href="lights/dashboard.css">
+<style>
+html{background:transparent!important}
+body{background:transparent!important;overflow:hidden;opacity:0}
+body.rise{opacity:1}
+/* As the Hue app moves it (read frame by frame from a screen recording): the wheel drops in from the top, the mode buttons and the brightness button drop further, over the same short time, and the tiles of the lights slide down from where the room page had them. */
+body.rise .lp-view{animation:lpwheel .42s cubic-bezier(.2,.8,.2,1) backwards}
+body.rise .lp-bar{animation:lpchips .42s cubic-bezier(.2,.8,.2,1) backwards}
+@keyframes lpwheel{from{transform:translateY(-36vh)}to{transform:none}}
+@keyframes lpchips{from{transform:translateY(-55vh)}to{transform:none}}
+/* Colour, white and effects follow each other by fading, not by sliding across the screen */
+.lp-track{transition:none!important}
+.lp-pane:not(.off){animation:lpfade .3s ease-out}
+@keyframes lpfade{from{opacity:0}to{opacity:1}}
+/* The colour screen fills the screen as the app's does: the wheel in the middle of what is left, the modes and the brightness button and the tiles of the lights at the bottom. */
+main{position:absolute!important;inset:0;padding:0!important;overflow:hidden}
+.wrap{height:100%;max-width:none}
+#body{height:100%;display:flex;flex-direction:column;padding:0 16px calc(var(--sab,0px) + 16px)}
+.lp-stage{flex:1;display:flex;flex-direction:column;min-height:0}
+.lp-view{flex:0 0 auto;margin:auto 0}
+/* the effects page uses all the room above the bar, as the app's does */
+.lp-view:has(.lp-pane.fx:not(.off)){flex:1 1 0;margin:0;min-height:0;overflow:hidden}
+.lp-view:has(.lp-pane.fx:not(.off)) .lp-track,.lp-view:has(.lp-pane.fx:not(.off)) .lp-pane.fx{height:100%}
+.lp-bar{margin:0 0 16px}
+/* The area editor, as the Hue app draws light placement: a dark page, the Location and Height switch in a dark pill, the room in blue-grey, the lights as pins with glowing heads, and the lights as blue tiles below. */
+body.areamode{background:#1b1c20!important}
+body.areamode #body{display:block;overflow-y:auto;padding:0 0 calc(var(--sab,0px) + 24px)}
+body.areamode .sqw,body.areamode .hint,body.areamode .pill{display:none}
+body.areamode #body>.seg{display:flex;gap:0;margin:12px 16px 4px;padding:3px;background:#25262a;border-radius:20px;border:0}
+body.areamode .seg .rbtn{flex:1;min-height:0;padding:8px 0;border:0!important;border-radius:17px;background:transparent!important;color:#a3a4aa!important;box-shadow:none!important;font-size:11px;letter-spacing:.06em;text-transform:uppercase;justify-content:center}
+body.areamode .seg .rbtn.act{background:#fff!important;color:#1b1c20!important;font-weight:600}
+body.areamode .ae-c{margin:0}
+body.areamode .ae-wl{fill:#3f3f4d}body.areamode .ae-wr{fill:#4a4a58}body.areamode .ae-fl{fill:#2f3040}
+body.areamode .ae-ed{stroke:#5b5b6b}
+body.areamode .ae-pole{stroke:#ffffff99;stroke-width:3}
+body.areamode .ae-dot{fill:#7fa7ff;stroke:#fff;stroke-width:3}
+body.areamode .ae-dot.picked{fill:#fff;stroke:#7fa7ff;stroke-width:5}
+body.areamode .ae-tray{gap:10px;padding:12px 16px}
+body.areamode .ae-card{width:92px;height:112px;border-radius:14px;border:0;background:linear-gradient(135deg,#3b6fe0,#2a4fa8)!important;color:#fff!important;gap:12px;opacity:.55}
+body.areamode .ae-card.in{opacity:1}
+body.areamode .ae-card.picked{outline:2.5px solid #fff;outline-offset:-2px}
+body.areamode .ae-card svg{width:24px;height:24px}
+body.areamode .ae-cn{font-size:12px;font-weight:500}
+.lp-tray{padding-bottom:2px}
+</style>
+</head>
+<body>
+<!-- Home Control's light panel (the colour wheel with the white and effects pages and the brightness button), run as it is: lights/ is a copy of Home Control's dashboard code (scripts/sync_light_popup.py).
+ It is a frame of its own, so that its stylesheet and its global names never meet the panel's. The panel (app.js) draws it with HuePopup.panel(ids, name) and gives it Home Assistant's `hass` through
+ HuePopup.attach(hass). Nothing is kept in Home Assistant. -->
+<main><div class="wrap"><div id="body"></div></div></main>
+<script>
+(function () {
+  "use strict";
+  var FILES = ["camera-stream.js", "integrations.js", "app/strings.js", "app/core.js", "app/icons.js", "app/widgets.js", "app/lights.js", "app/lightpanel.js", "app/effects.js", "app/media.js", "app/climate.js", "app/vacuum.js", "app/camera.js", "app/advanced.js", "app/kinds.js", "app/popups.js", "app/model.js", "app/devices.js", "app/status.js", "app/sections.js", "app/rules.js", "app/editor.js", "app/pages.js", "app/header.js", "app/glance.js", "app/pins.js", "app/appearance.js", "app/search.js", "app/store.js", "app/scenes.js", "app/livescenes.js", "app/areas.js", "app/wall.js", "app/backups.js", "app/security.js", "app/conditions.js", "app/access.js", "app/settings.js", "app/pluginapi.js", "app/saved.js", "app/lighteditor.js", "app/scenenew.js", "app/staticmaker.js", "app/vlights.js", "app/livemaker.js", "app/history.js", "app/notifications.js", "app/roomoff.js", "app/remote.js", "app/appliance.js", "app/profiles.js", "app/manage.js", "app/doorcall.js"];
+  var query = new URLSearchParams(location.search);
+  window.appFile = function (name) {
+    return new URL("lights/app/" + name, location.href).href;
+  };
+  /* The dashboard's refresh loop is main.js, which is not run here: this does what it does for a popup. */
+  window.refresh = function () {
+    try {
+      lpTrackTick();
+      runUpdates(LIVE, "live update");
+      runUpdates(SLIVE, "live update");
+    } catch (e) {
+      console.error("[hue-light]", e);
+    }
+  };
+
+  function load(src) {
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = src + (query.get("v") ? "?v=" + encodeURIComponent(query.get("v")) : "");
+      s.onload = resolve;
+      s.onerror = function () {
+        reject(new Error("Unable to load " + src));
+      };
+      document.body.appendChild(s);
+    });
+  }
+
+  var gotHass;
+  var firstHass = new Promise(function (resolve) {
+    gotHass = resolve;
+  });
+  var pending = [];
+  var ready = false;
+  var HPLAST = {};
+
+  function body() {
+    var b = document.getElementById("body");
+    b.innerHTML = "";
+    return b;
+  }
+
+  /* The panel is the page (the Hue app's colour wheel screen), not a popup: it is drawn straight into the page of this frame, which the panel shows under its own bar. */
+  window.HuePopup = {
+    /* The panel's `hass`, now and whenever Home Assistant sends a new one. */
+    attach: function (hass) {
+      gotHass();
+      if (!window.HA) {
+        pending.push(hass);
+        return;
+      }
+      window.HA.attach(hass);
+    },
+    isReady: function () {
+      return ready;
+    },
+    /* Draws the colour, white and effects panel of the lights of a room or a scene, with a tile for each. */
+    panel: function (ids, name, focus, fromY) {
+      if (!ready) return false;
+      document.body.classList.remove("areamode");
+      var b = body();
+      document.body.classList.remove("rise");
+      var wasHidden = true;
+      /* Always the lights master panel, one screen for every light of the room, as in the app; `focus` is the light whose tile is picked when it opens. */
+      LMASTER.hue = ids;
+      LMASTER_NAME.hue = name;
+      LMASTER_ALL.hue = true;
+      LWHEEL["m:hue"] = undefined;
+      lightPanel(b, lpMasterNode("hue", ids), {
+        room: null,
+        sliders: false,
+        ready: function (S) {
+          /* A tile for every light, always; the markers on the wheel are joined where lights look the same (an off light looks as it was last set). */
+          var root = S.root;
+          if (root.kids) {
+            S.ex[root.key] = true;
+            S.joined.length = 0;
+            var groups = [];
+            root.kids.forEach(function (k) {
+              var look = lpNodeLook(k),
+                g = look
+                  ? groups.filter(function (x) {
+                      return x.look && lpSameLook(x.look, look);
+                    })[0]
+                  : null;
+              if (g) g.kids.push(k);
+              else groups.push({ look: look, kids: [k] });
+            });
+            groups.forEach(function (g) {
+              if (g.kids.length > 1) S.joined.push(S.makeVirtual(g.kids, g.kids[0].icon));
+            });
+            S.rebuild();
+          }
+          if (focus && ids.indexOf(focus) >= 0) S.select(focus);
+        },
+      });
+      window.refresh();
+      /* The app opens this screen out of the room page: the row of lights slides down to the bottom while the wheel and its controls come in. */
+      var tray = b.querySelector(".lp-tray");
+      if (tray && typeof fromY === "number") {
+        var shift = fromY - tray.getBoundingClientRect().top;
+        tray.style.transition = "none";
+        tray.style.transform = "translateY(" + shift + "px)";
+        void tray.offsetHeight;
+        tray.style.transition = "transform .42s cubic-bezier(.2,.8,.2,1)";
+        tray.style.transform = "none";
+      }
+      document.body.classList.add("rise");
+      return wasHidden;
+    },
+    /* What the bridge says each light was last set to (a list from get_resources "lights"), so that lights that are off are placed on the wheel, and grouped, by their last settings as the app does. */
+    seed: function (list) {
+      var byHue = {};
+      (list || []).forEach(function (l) {
+        byHue[l.id] = l;
+      });
+      Object.keys(H().states).forEach(function (e) {
+        var l = e.indexOf("light.") === 0 && byHue[A(e).hue_light_id];
+        if (!l) return;
+        var o = { b: l.brightness == null ? null : l.brightness };
+        if (l.mirek) {
+          o.k = Math.round(1000000 / l.mirek);
+          o.mode = "color_temp";
+        } else if (l.xy) {
+          o.xy = l.xy;
+          o.mode = "xy";
+        }
+        HPLAST[e] = o;
+        var mem = LPMEM[e] || (LPMEM[e] = {});
+        if (o.xy) mem.hs = liveXyHs(o.xy[0], o.xy[1]) || mem.hs;
+        if (o.k) mem.k = o.k;
+      });
+    },
+    /* Home Control's area editor (the room in three dimensions, the lights to drag, their tray), on an area of the bridge, drawn as the Hue app draws it: area is {id, name, lights: [{light_id, x, y, z, balance}]}. */
+    area: function (area) {
+      if (!ready) return false;
+      var draft = window.HuePlusFrame.draft(area);
+      window.EAD = { room: "", isNew: false, sel: null, draft: draft, saved: JSON.stringify(draft), external: { plugin: "hue_plus", id: area.id, after: null, note: "" } };
+      document.body.classList.add("areamode");
+      eaEditor(body());
+      document.body.classList.add("rise");
+      return true;
+    },
+    /* What the editor holds now (name, the lights that are Hue Plus lights with their places, the others as they were), as JSON. The light it was showing is put back. */
+    areaDraft: function () {
+      var d = window.EAD && window.EAD.draft;
+      try {
+        eaIdentifyOff();
+      } catch (e) {}
+      return d ? JSON.stringify(d) : null;
+    },
+    /* Closing the colour screen is its opening run backwards (same distances, same time, the mirrored curve): the wheel and the buttons go up out of the top, the tiles go up to where the room page has them (toY, the top of that row), then done(). */
+    leave: function (toY, done) {
+      var view = document.querySelector(".lp-view"),
+        bar = document.querySelector(".lp-bar"),
+        tray = document.querySelector(".lp-tray"),
+        /* the opening's curve, mirrored: cubic-bezier(.2,.8,.2,1) run backwards is (.8,0,.8,.2) */
+        ease = "transform .42s cubic-bezier(.8,0,.8,.2)";
+      document.body.classList.remove("rise");
+      [[view, "-36vh"], [bar, "-55vh"]].forEach(function (p) {
+        if (!p[0]) return;
+        p[0].style.animation = "none";
+        p[0].style.transition = ease;
+        p[0].style.transform = "translateY(" + p[1] + ")";
+      });
+      if (tray && typeof toY === "number") {
+        tray.style.transition = ease;
+        tray.style.transform = "translateY(" + (toY - tray.getBoundingClientRect().top) + "px)";
+      }
+      document.body.style.opacity = "1";
+      setTimeout(done, 420);
+    },
+    /* Takes the screen away before another is drawn, so what was there is not seen again. */
+    hide: function () {
+      document.body.classList.remove("rise");
+    },
+    clear: function () {
+      try {
+        eaIdentifyOff();
+      } catch (e) {}
+      document.body.classList.remove("areamode");
+      body();
+    },
+    /* What the lights are doing now, so that what a change did to them can be undone, and what a scene should make each of them do. */
+    snapshot: function (ids) {
+      return JSON.stringify(lightSnapshot(ids));
+    },
+    restore: function (snapshot) {
+      lightRestore(JSON.parse(snapshot));
+    },
+    acts: function (ids) {
+      return lightUnits(ids).map(lightAct);
+    },
+  };
+
+  function start() {
+    return load("lights/ha-adapter.js")
+      .then(function () {
+        pending.splice(0).forEach(function (hass) {
+          window.HA.attach(hass);
+        });
+        return firstHass;
+      })
+      .then(function () {
+        return window.HA.ready();
+      })
+      .then(function () {
+        return FILES.reduce(function (chain, f) {
+          return chain.then(function () {
+            return load("lights/" + f);
+          });
+        }, Promise.resolve());
+      })
+      .then(function () {
+        /* What main.js sets up, without anything being kept in Home Assistant: the Hue panel is a window onto the bridge, so what Home Control's dashboard saves in Home Assistant (its layout, the
+           theme, saved colours) is not read and not written here, and the saved-colours rows of the light popup are left out. */
+        UI = { on: {}, caps: {}, rooms: [], devs: {}, layout: { home: [], rooms: {}, cols: {} }, meta: {} };
+        ISADMIN = true;
+        STORE_READY = true;
+        var nothing = function () {
+          return Promise.resolve(null);
+        };
+        window.HA.data = { get: nothing, set: nothing, subscribe: nothing, unsubscribe: nothing };
+        /* The effects page lists what Hue Plus has worked out for its lights (their pictures, speeds, default and other colours), as Home Control gets it from the plus integration. */
+        window.HA.effects = {
+          sources: function () {
+            return fetch(new URL("effects.json", location.href).href + (query.get("v") ? "?v=" + encodeURIComponent(query.get("v")) : ""))
+              .then(function (r) {
+                return r.json();
+              })
+              .then(function (source) {
+                return [source];
+              });
+          },
+        };
+        window.lightScenesRow = function () {};
+        var lookOn = window.lpLook;
+        window.lpLook = function (e) {
+          if (isOn(e)) return lookOn(e);
+          var m = HPLAST[e];
+          return m ? { b: m.b, xy: m.xy || null, k: m.k || null, mode: m.mode } : { off: true };
+        };
+        window.savedRoomOf = function () {
+          return null;
+        };
+        window.HA.onUpdate(function () {
+          window.refresh();
+        });
+        setInterval(window.refresh, 1500);
+      })
+      .then(function () {
+        window.BOOTED = true;
+        return load("menu.js");
+      })
+      .then(function () {
+        return new Promise(function (resolve) {
+          fxLoad(resolve);
+        });
+      })
+      .then(function () {
+        ready = true;
+      })
+      .catch(function (e) {
+        console.error("[hue-light]", e);
+      });
+  }
+
+  start();
+})();
+</script>
+</body>
+</html>

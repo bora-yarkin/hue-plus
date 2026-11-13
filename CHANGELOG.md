@@ -4,6 +4,18 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-11-13
+
+### Added
+- **Dashboard module** (off by default; switch it on in Hue Plus's options): a **Hue** panel in Home Assistant's sidebar (administrators only) that is a standalone clone of the Hue app, independent of Home Control and any other dashboard. It keeps nothing in Home Assistant: what it shows is the bridge's and what it changes goes to the bridge. It is as wide as a phone screen (9:16) in the middle of a wide one. Tabs:
+  - **Home**: rooms and zones as cards; a room is a full page with its scenes as the app's folders (Lights, Scenes, Defaults; hold and drag to reorder, drop a scene on another to make a folder; a folder opens as a card), its lights and its controls; a scene has its own settings page.
+  - **The colour screen** (tap a light): the wheel, white, effects (Hue Plus's calibrated catalogue), brightness and a tile for each light, run from a copy of Home Control's light panel code in a frame of its own (`scripts/sync_light_popup.py`). It opens as the room page turned into it and closes as the exact reverse, moving as the app does.
+  - **Automations**: the app's grouped list, with the new-automation wizards.
+  - **Sync**: the Spotify screen, coloured from the cover that plays, with Style, Intensity, Color and Brightness, the sync button and the entertainment area it plays on.
+  - **Settings**: the app's list (Devices with adding devices and the lists of lights and switches, Bridges and Bridge settings, MotionAware areas, Entertainment areas with their edit page, light placement and brightness balancer, Smart home and linking apps, Software update with the time of day, Applications), the switch pages (buttons, presses, scene cycle) and light settings.
+  Pages and popups move as the app's do (a page from the side, a popup from the bottom, each leaving the way it came), the page behind a popup stays alive, and smooth corners use `corner-shape` where the browser has it. Not included: the Hue app's Explore tab and scene gallery (Signify's cloud).
+- `get_resources` lists each scene's `colours` and a new `lights` kind with what each light was last set to (the panel places lights that are off on the wheel by their last settings).
+
 ## [0.15.0] - 2026-11-12
 
 ### Added

@@ -357,6 +357,32 @@ def groups(snap: Snapshot, kind: str) -> list[dict[str, Any]]:
     return out
 
 
+def _scene_colours(scene: dict[str, Any]) -> list[dict[str, Any]]:
+    """The colours the app draws a scene with: a moving scene's palette, else what its lights are set to (at most six, each once)."""
+    out: list[dict[str, Any]] = []
+
+    def add(colour: dict[str, Any] | None) -> None:
+        if colour and colour not in out and len(out) < 6:
+            out.append(colour)
+
+    def of(body: dict[str, Any]) -> dict[str, Any] | None:
+        xy = (body.get("color") or {}).get("xy") or {}
+        if "x" in xy and "y" in xy:
+            return {"xy": [round(xy["x"], 4), round(xy["y"], 4)]}
+        mirek = (body.get("color_temperature") or {}).get("mirek")
+        return {"mirek": mirek} if mirek else None
+
+    palette = scene.get("palette") or {}
+    for entry in palette.get("color") or []:
+        add(of(entry))
+    for entry in palette.get("color_temperature") or []:
+        add(of({"color_temperature": entry.get("color_temperature")}))
+    if not out:
+        for action in scene.get("actions") or []:
+            add(of(action.get("action") or {}))
+    return out
+
+
 def scenes(snap: Snapshot) -> list[dict[str, Any]]:
     return [
         {
@@ -371,9 +397,28 @@ def scenes(snap: Snapshot) -> list[dict[str, Any]]:
             "auto_dynamic": s.get("auto_dynamic"),
             "active": ((s.get("status") or {}).get("active")),
             "last_recall": ((s.get("status") or {}).get("last_recall")),
+            "colours": _scene_colours(s),
         }
         for s in snap.scene
     ]
+
+
+def light_states(snap: Snapshot) -> list[dict[str, Any]]:
+    """What every light was last set to, which the bridge keeps while it is off: the app shows an off light at those settings."""
+    out = []
+    for light in snap.light:
+        xy = (light.get("color") or {}).get("xy") or {}
+        temperature = light.get("color_temperature") or {}
+        out.append(
+            {
+                "id": light["id"],
+                "on": bool((light.get("on") or {}).get("on")),
+                "brightness": (light.get("dimming") or {}).get("brightness"),
+                "xy": [round(xy["x"], 4), round(xy["y"], 4)] if "x" in xy and "y" in xy else None,
+                "mirek": temperature.get("mirek") if temperature.get("mirek_valid") else None,
+            }
+        )
+    return out
 
 
 def search_status(snap: Snapshot) -> str | None:

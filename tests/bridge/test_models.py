@@ -259,6 +259,57 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(models.groups(s, "room")[0]["lights"], ["l1"], "the light of each device the room holds")
         self.assertEqual(models.groups(s, "zone")[0]["lights"], ["l1"])
 
+    def test_a_scene_shows_the_colours_of_its_palette_or_else_of_its_lights(self):
+        moving = {
+            "id": "dyn",
+            "metadata": {"name": "Aurora"},
+            "palette": {
+                "color": [
+                    {"color": {"xy": {"x": 0.1234567, "y": 0.2}}},
+                    {"color": {"xy": {"x": 0.1234567, "y": 0.2}}},
+                    {"color": {"xy": {"x": 0.3, "y": 0.4}}},
+                ],
+                "color_temperature": [{"color_temperature": {"mirek": 366}}],
+            },
+            "actions": [{"target": {"rid": "l1", "rtype": "light"}, "action": {"color": {"xy": {"x": 0.9, "y": 0.9}}}}],
+        }
+        still = {
+            "id": "st",
+            "metadata": {"name": "Read"},
+            "actions": [
+                {"target": {"rid": "l1", "rtype": "light"}, "action": {"color_temperature": {"mirek": 300}}},
+                {"target": {"rid": "l2", "rtype": "light"}, "action": {"on": {"on": False}}},
+            ],
+        }
+        out = {x["id"]: x["colours"] for x in models.scenes(snap(scene=[moving, still]))}
+        self.assertEqual(
+            out["dyn"],
+            [{"xy": [0.1235, 0.2]}, {"xy": [0.3, 0.4]}, {"mirek": 366}],
+            "the palette, rounded, without repeats, and not the lights",
+        )
+        self.assertEqual(out["st"], [{"mirek": 300}], "a light that sets no colour adds none")
+
+    def test_a_light_keeps_its_last_settings_while_it_is_off(self):
+        s = snap(
+            light=[
+                {
+                    "id": "a",
+                    "on": {"on": False},
+                    "dimming": {"brightness": 42.5},
+                    "color": {"xy": {"x": 0.31234, "y": 0.3}},
+                    "color_temperature": {"mirek_valid": False, "mirek": 300},
+                },
+                {"id": "b", "on": {"on": True}, "dimming": {"brightness": 80}, "color_temperature": {"mirek_valid": True, "mirek": 366}},
+            ]
+        )
+        self.assertEqual(
+            models.light_states(s),
+            [
+                {"id": "a", "on": False, "brightness": 42.5, "xy": [0.3123, 0.3], "mirek": None},
+                {"id": "b", "on": True, "brightness": 80, "xy": None, "mirek": 366},
+            ],
+        )
+
     def test_scenes_and_search_status(self):
         s = snap(
             scene=[
@@ -286,6 +337,7 @@ class ModelTests(unittest.TestCase):
                 "auto_dynamic": False,
                 "active": "inactive",
                 "last_recall": None,
+                "colours": [],
             },
         )
         self.assertEqual(models.search_status(s), "ready")

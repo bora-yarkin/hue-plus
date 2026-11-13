@@ -1,0 +1,735 @@
+/* Live scenes: a palette that moves across the lights of an area, played by Home Control's integration for any light. The scene is saved here with the other scenes, and the integration keeps a copy (so an automation can start it by its id) and plays it. */
+
+var LIVE_SPREADS = [
+  ["x", "left_to_right"],
+  ["y", "back_to_front"],
+  ["z", "low_to_high"],
+  ["radial", "from_the_middle"],
+];
+
+/* The sensor of the live scenes lists the running scenes. It belongs to Home Control's own integration, which plays them for every light; it is found through that integration, so renaming it changes nothing. It is remembered, and looked for again at most every 5 seconds when it is not found. */
+var ENGINE = { id: null, at: 0 };
+
+function engineSensor() {
+  var h = H();
+  if (!h || !h.entities) return null;
+  if (!ENGINE.id || !h.states[ENGINE.id]) {
+    if (Date.now() - ENGINE.at < 5000) return null;
+    ENGINE.at = Date.now();
+    ENGINE.id =
+      Object.keys(h.states).filter(function (k) {
+        var e = h.entities[k];
+        return k.indexOf("sensor.") === 0 && e && e.platform === "home_control" && /_live_scenes$/.test(e.unique_id || "");
+      })[0] || null;
+  }
+  if (ENGINE.id && !ENGINE.synced) {
+    ENGINE.synced = true;
+    liveSyncLibrary(true);
+  }
+  return ENGINE.id;
+}
+
+/* The speed of a live scene is set in 12 steps; an imported scene brings its speed from 0 (slowest) to 1. */
+var LIVE_SPEED_STEPS = 12;
+
+function liveSpeedToStep(speed) {
+  return Math.max(1, Math.min(LIVE_SPEED_STEPS, Math.round((Math.round(speed * 100) / 100) * (LIVE_SPEED_STEPS - 1)) + 1));
+}
+
+/* The services of live scenes, by what they do. */
+var LIVESVC = {
+  start: "scene_start",
+  update: "scene_update",
+  freeze: "scene_freeze",
+  play: "scene_play",
+  stop: "scene_stop",
+  area: "area_save",
+  scene: "scene_save",
+  delScene: "scene_delete",
+  delArea: "area_delete",
+};
+
+function liveCall(verb, data) {
+  callRaw("home_control", LIVESVC[verb], data);
+}
+
+/* The running scenes by scene id. */
+function liveSessions() {
+  var id = engineSensor();
+  return (id && A(id).sessions) || {};
+}
+
+/* The icons of the kinds of scene: a classic scene keeps its own (the scene icon unless one was chosen), a live scene the sparkle (unless one was chosen; the palette was the old default and counts as none), a Hue scene the palette. */
+var SCENE_ICON_LIVE = "sparkle";
+
+function liveIcon(sc) {
+  return sc && sc.icon && sc.icon !== "palette" ? sc.icon : SCENE_ICON_LIVE;
+}
+
+function liveRun(sc) {
+  var s = engineSensor() ? liveSessions() : null;
+  return s && s[sc.id] ? s[sc.id] : null;
+}
+
+function eaById(id) {
+  for (var i = 0; i < STORE.eareas.length; i++) if (STORE.eareas[i].id === id) return STORE.eareas[i];
+  return null;
+}
+
+/* What this device changed about a scene (speed, range, brightness), read from its storage once. */
+var LIVESET = {};
+
+function liveOverrides(id) {
+  if (!LIVESET[id]) {
+    LIVESET[id] = deviceGet("db_ls_" + id, {});
+  }
+  return LIVESET[id];
+}
+
+/* Speed, range and brightness the scene is played with: its own, unless this device changed them. */
+function liveSet(sc) {
+  var s = liveOverrides(sc.id);
+  return {
+    speed: typeof s.speed === "number" ? s.speed : sc.live.speed,
+    range: typeof s.range === "number" ? s.range : sc.live.range,
+    bri: typeof s.bri === "number" ? s.bri : sc.live.bri,
+  };
+}
+
+function liveSave(sc, st) {
+  LIVESET[sc.id] = st;
+  deviceSet("db_ls_" + sc.id, st);
+}
+
+/* The updates per second for lights that cannot fade by themselves (experimental): what the scene says, else 2. */
+function liveFps(live) {
+  return typeof live.fps === "number" ? Math.max(1, Math.min(60, Math.round(live.fps))) : 2;
+}
+
+/* The parts of a live scene beyond the palette, in the words of Hue Plus's services. */
+function liveParts(sc) {
+  var l = sc.live,
+    looks = {};
+  Object.keys(l.looks || {}).forEach(function (id) {
+    var k = l.looks[id],
+      o = {};
+    if (k.palette) o.palette = k.palette;
+    if (typeof k.bri === "number") o.brightness = Math.max(1, Math.min(255, Math.round(k.bri * 2.55)));
+    if (k.fx) o.effects = k.fx;
+    if (k.native) o.native = k.native;
+    if (Object.keys(o).length) looks[id] = o;
+  });
+  return {
+    colour_source: l.src || "palette",
+    mode: l.mode === "segmented" ? "segmented" : "linear",
+    effects: l.fx || [],
+    looks: looks,
+    actions: (l.also || []).map(function (a) {
+      return { entity_id: a.id, do: a.on ? "on" : "off" };
+    }),
+  };
+}
+
+/* What the engine is told to start: the area's lights the user may control, the palette and the settings. */
+function livePayload(sc) {
+  var ar = liveSceneArea(sc);
+  if (!ar) return null;
+  var st = liveSet(sc),
+    lights = [];
+  /* A bar (a light made of zones) is sent as its zones, spread along its direction. */
+  ar.lights.forEach(function (l) {
+    if (!ISADMIN && ACCESS_ME) {
+      var m = modeOf(l.id).mode;
+      if (m === "view" || m === "hide") return;
+    }
+    (eaIsBar(l.id) ? eaZonePoints(l) : [l]).forEach(function (q) {
+      lights.push({ id: q.id, x: q.x, y: q.y, z: q.z });
+    });
+  });
+  var parts = liveParts(sc);
+  return {
+    ids: lights.map(function (l) {
+      return l.id;
+    }),
+    data: {
+      colour_source: parts.colour_source,
+      mode: parts.mode,
+      effects: parts.effects,
+      looks: parts.looks,
+      actions: parts.actions,
+      scene_id: sc.id,
+      lights: lights.map(function (l) {
+        return { entity_id: l.id, x: l.x, y: l.y, z: l.z };
+      }),
+      palette: sc.live.palette,
+      speed: st.speed,
+      range: st.range,
+      brightness: Math.max(1, Math.min(255, Math.round(st.bri * 2.55))),
+      spread: sc.live.spread,
+      fps: liveFps(sc.live),
+      wake: true,
+    },
+  };
+}
+
+/* Home Control's integration keeps the live scenes and areas (so an automation can start a scene by its id, and so it works without this dashboard).
+   The dashboard writes what it saves, deletes what it deletes, and, when an administrator opens it, creates what the integration lacks.
+   It never deletes or overwrites anything it did not change: a scene made by a service stays there. */
+var LIVELIB = { t: 0, once: false };
+
+function liveId(id) {
+  return String(id).toLowerCase().replace(/[^a-z0-9_-]/g, "_").slice(0, 48);
+}
+
+function liveAreaLights(ar) {
+  var out = [];
+  ar.lights.forEach(function (l) {
+    (eaIsBar(l.id) ? eaZonePoints(l) : [l]).forEach(function (q) {
+      out.push({ entity_id: q.id, x: q.x, y: q.y, z: q.z });
+    });
+  });
+  return out.slice(0, 32);
+}
+
+function liveAreaPayload(ar) {
+  var lights = liveAreaLights(ar);
+  if (!lights.length) return null;
+  return { id: liveId(ar.id), name: ar.name || ar.id, lights: lights, ui: { room: ar.room || "" } };
+}
+
+function liveScenePayload(sc) {
+  var ar = sc.live ? liveSceneArea(sc) : null;
+  if (!ar || !liveAreaPayload(ar)) return null; /* a scene whose area cannot be written could not start there */
+  var parts = liveParts(sc);
+  return {
+    id: liveId(sc.id),
+    name: sc.name || sc.id,
+    colour_source: parts.colour_source,
+    mode: parts.mode,
+    effects: parts.effects,
+    looks: parts.looks,
+    actions: parts.actions,
+    palette: sc.live.palette,
+    speed: sc.live.speed,
+    range: sc.live.range,
+    brightness: Math.max(1, Math.min(255, Math.round(sc.live.bri * 2.55))),
+    spread: sc.live.spread,
+    fps: liveFps(sc.live),
+    area: liveId(ar.id),
+    ui: { room: sc.room || "" },
+  };
+}
+
+/* Writes the scenes and areas the administrator just saved (the areas first: a scene names one). */
+function livePush(scenes, areas) {
+  if (!ISADMIN || !engineSensor()) return;
+  areas.forEach(function (ar) {
+    var p = liveAreaPayload(ar);
+    if (p) liveCall("area", p);
+  });
+  scenes.forEach(function (sc) {
+    var p = liveScenePayload(sc);
+    if (p) liveCall("scene", p);
+  });
+}
+
+/* Deletes what the administrator just deleted. */
+function liveForget(sceneId, areaId) {
+  if (!ISADMIN || !engineSensor()) return;
+  if (sceneId) liveCall("delScene", { id: liveId(sceneId) });
+  if (areaId) liveCall("delArea", { id: liveId(areaId) });
+}
+
+/* Creates in the integration what it lacks (lost storage). What it already has is left alone. */
+function liveSyncLibrary(first) {
+  if (!ISADMIN || (first && LIVELIB.once)) return;
+  if (first) LIVELIB.once = true;
+  clearTimeout(LIVELIB.t);
+  LIVELIB.t = setTimeout(function () {
+    if (!engineSensor()) return;
+    var haveAreas = {},
+      haveScenes = {};
+    HA.serviceResponse("home_control", "get_library", {})
+      .then(function (lib) {
+        (lib.areas || []).forEach(function (a) {
+          haveAreas[a.id] = 1;
+        });
+        (lib.scenes || []).forEach(function (sc) {
+          haveScenes[sc.id] = 1;
+        });
+        livePush(
+          STORE.scenes.filter(function (sc) {
+            return sc.live && !haveScenes[liveId(sc.id)];
+          }),
+          STORE.eareas.filter(function (ar) {
+            return !haveAreas[liveId(ar.id)];
+          })
+        );
+      })
+      .catch(function () {});
+  }, 1500);
+}
+
+function liveStart(sc) {
+  if (!engineSensor()) {
+    toast(_T("live_scenes_are_not_available"));
+    return;
+  }
+  var p = livePayload(sc);
+  if (!p) {
+    toast(_T("this_scene_has_no_area"));
+    return;
+  }
+  if (!p.ids.length) {
+    toast(_T("this_is_view_only_for_you"));
+    return;
+  }
+  gate(p.ids, function () {
+    liveCall("start", p.data);
+  });
+}
+
+/* Something else is about to set these lights (a scene, a Hue scene): live scenes playing on any of them end, so the lights are left to what is set now. */
+function liveStopOn(ids) {
+  var running = engineSensor() ? liveSessions() : {},
+    mine = {};
+  lightIndividuals(
+    ids.filter(function (x) {
+      return dom(x) === "light";
+    })
+  ).forEach(function (x) {
+    mine[x] = 1;
+  });
+  Object.keys(running).forEach(function (scene) {
+    if (
+      (running[scene].lights || []).some(function (l) {
+        return mine[l];
+      })
+    )
+      callRaw("home_control", LIVESVC.stop, { scene_id: scene });
+  });
+}
+
+function liveToggle(sc) {
+  if (liveRun(sc)) liveCall("stop", { scene_id: sc.id });
+  else liveStart(sc);
+}
+
+function liveSub(sc) {
+  var r = liveRun(sc),
+    ar = liveSceneArea(sc);
+  if (r) return r.state === "frozen" ? _T("frozen") : _T("playing");
+  return ar ? ar.name : _T("this_scene_has_no_area");
+}
+
+function liveRow(sc) {
+  return edMark(
+    pill(liveIcon(sc), sc.name, {
+      on: function () {
+        return !!liveRun(sc);
+      },
+      sub: function () {
+        return liveSub(sc);
+      },
+      tap: function () {
+        showPopup("lscene:" + sc.id, true);
+      },
+      iconTap: function () {
+        liveToggle(sc);
+      },
+      pin: { kind: "cscene", sid: sc.id, name: sc.name, icon: liveIcon(sc), room: TITLES[sc.room] },
+    }),
+    function () {
+      liveMakerEdit(sc);
+    }
+  );
+}
+
+/* ---- colours ---- */
+
+function liveXyRgb(x, y) {
+  y = y || 1e-6;
+  var X = x / y,
+    Z = (1 - x - y) / y,
+    rgb = [
+      X * 1.656492 - 0.354851 - Z * 0.255038,
+      -X * 0.707196 + 1.655397 + Z * 0.036152,
+      X * 0.051713 - 0.121364 + Z * 1.01153,
+    ],
+    top = Math.max(rgb[0], rgb[1], rgb[2], 1e-6);
+  return rgb.map(function (v) {
+    v = Math.max(0, v / top);
+    v = v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
+    return Math.round(255 * Math.min(1, v));
+  });
+}
+
+function hsvOf(rgb) {
+  var mx = Math.max(rgb[0], rgb[1], rgb[2]),
+    mn = Math.min(rgb[0], rgb[1], rgb[2]),
+    d = mx - mn,
+    h = 0;
+  if (d > 0) {
+    if (mx === rgb[0]) h = ((rgb[1] - rgb[2]) / d + 6) % 6;
+    else if (mx === rgb[1]) h = (rgb[2] - rgb[0]) / d + 2;
+    else h = (rgb[0] - rgb[1]) / d + 4;
+  }
+  return [Math.round(h * 60) % 360, mx ? Math.round((d / mx) * 100) : 0];
+}
+
+function liveXyHs(x, y) {
+  return hsvOf(liveXyRgb(x, y));
+}
+
+/* ---- the popup of a live scene ---- */
+
+function liveScenePopup(b, id) {
+  var sc = sceneById(id);
+  if (!sc || !sc.live) return;
+  function run() {
+    return liveRun(sc);
+  }
+  function upd(data) {
+    if (run()) {
+      data.scene_id = sc.id;
+      liveCall("update", data);
+    }
+  }
+  b.appendChild(
+    sliderRow({
+      icon: "bright",
+      name: _T("brightness"),
+      min: 1,
+      max: 100,
+      step: 1,
+      get: function () {
+        return liveSet(sc).bri;
+      },
+      fmt: function (v) {
+        return v + "%";
+      },
+      on: function () {
+        return !!run();
+      },
+      live: function (v) {
+        upd({ brightness: Math.round(v * 2.55) });
+      },
+      commit: function (v) {
+        var st = liveSet(sc);
+        st.bri = v;
+        liveSave(sc, st);
+        upd({ brightness: Math.round(v * 2.55) });
+      },
+    })
+  );
+  b.appendChild(
+    sliderRow({
+      icon: "tune",
+      name: _T("speed"),
+      min: 1,
+      max: LIVE_SPEED_STEPS,
+      step: 1,
+      get: function () {
+        return liveSet(sc).speed;
+      },
+      fmt: function (v) {
+        return v + " / " + LIVE_SPEED_STEPS;
+      },
+      on: function () {
+        return !!run();
+      },
+      commit: function (v) {
+        var st = liveSet(sc);
+        st.speed = v;
+        liveSave(sc, st);
+        upd({ speed: v });
+      },
+    })
+  );
+  b.appendChild(
+    sliderRow({
+      icon: "palette",
+      name: _T("colour_range"),
+      min: 0,
+      max: 100,
+      step: 5,
+      get: function () {
+        return liveSet(sc).range;
+      },
+      fmt: function (v) {
+        return v + "%";
+      },
+      on: function () {
+        return !!run();
+      },
+      commit: function (v) {
+        var st = liveSet(sc);
+        st.range = v;
+        liveSave(sc, st);
+        upd({ range: v });
+      },
+    })
+  );
+  var g2 = mk("div", "gridl g2");
+  g2.appendChild(
+    pill("play", _T("play"), {
+      on: function () {
+        return !!run() && run().state === "running";
+      },
+      tap: function () {
+        if (run()) liveCall("play", { scene_id: sc.id });
+        else liveStart(sc);
+      },
+    })
+  );
+  g2.appendChild(
+    pill("pause", _T("freeze"), {
+      on: function () {
+        return !!run() && run().state === "frozen";
+      },
+      tap: function () {
+        if (run()) liveCall("freeze", { scene_id: sc.id });
+      },
+    })
+  );
+  b.appendChild(g2);
+  if (ISADMIN)
+    b.appendChild(
+      pill("edit", _T("edit_scene"), {
+        tap: function () {
+          liveMakerEdit(sc);
+        },
+      })
+    );
+}
+
+/* ---- the editor ---- */
+
+/* ---- importing a live scene from a registered source (a plugin's: Hue Plus reads Hue scenes from the bridge) ---- */
+
+/* The page an imported scene belongs on: the open room, or else the room that has most of its lights. */
+function liveRoomFor(lights) {
+  if (VIEW !== "home" && UIROOM[VIEW]) return VIEW;
+  var best = null,
+    n = 0;
+  Object.keys(UIROOM).forEach(function (r) {
+    var c = lights.filter(function (id) {
+      return (UI.devs[r] || []).some(function (d) {
+        return d.id === id;
+      });
+    }).length;
+    if (c > n) {
+      n = c;
+      best = r;
+    }
+  });
+  return best || "home";
+}
+
+/* The area to use for these lights: one of the room that holds all of them, or the room's imported-lights area with the missing ones added in a row. Returns { area, save }: save is true when the area is new or changed, and is then only a copy: it is stored when the scene is saved. */
+function liveAreaFor(room, lights) {
+  var mine = STORE.eareas.filter(function (a) {
+    return a.room === room;
+  });
+  var all = mine.filter(function (a) {
+    return lights.every(function (id) {
+      return a.lights.some(function (l) {
+        return l.id === id;
+      });
+    });
+  })[0];
+  if (all) return { area: all, save: false };
+  var auto = eaById("imp-" + room);
+  if (!auto) {
+    if (STORE.eareas.length >= 24) return { area: mine[0] || null, save: false };
+    auto = {
+      id: "imp-" + room,
+      name: (TITLES[room] || room) + " · " + _T("imported"),
+      room: room,
+      lights: [],
+      dummies: [],
+    };
+  } else auto = JSON.parse(JSON.stringify(auto));
+  var add = lights.filter(function (id) {
+    return !auto.lights.some(function (l) {
+      return l.id === id;
+    });
+  });
+  var total = auto.lights.length + add.length;
+  add.forEach(function (id, i) {
+    if (auto.lights.length >= 32) return;
+    var k = auto.lights.length;
+    var nl = { id: id, x: total > 1 ? -0.8 + (1.6 * k) / (total - 1) : 0, y: 0, z: 0 };
+    if (eaIsBar(id)) {
+      nl.a = 0;
+      nl.p = 0;
+      nl.len = 0.6;
+    }
+    auto.lights.push(nl);
+  });
+  return { area: auto, save: true };
+}
+
+function liveImportSource(key) {
+  var id = String(key).split(":")[0];
+  return PLUGIN_SCENE_IMPORTS.filter(function (x) {
+    return x.id === id;
+  })[0];
+}
+
+/* Whether two light settings of a scene are the same to the eye: both off, or on with about the same brightness and colour. */
+function classicSameSetting(x, y) {
+  if (!x.on || !y.on) return !x.on && !y.on;
+  if (Math.abs((x.brightness || 0) - (y.brightness || 0)) > 8) return false;
+  if (x.k || y.k) return !!x.k && !!y.k && Math.abs(x.k - y.k) <= 50;
+  return !!x.xy && !!y.xy && Math.abs(x.xy[0] - y.xy[0]) <= 0.01 && Math.abs(x.xy[1] - y.xy[1]) <= 0.01;
+}
+
+/* The lights a scene sets, with each light group of the room whose lights it sets all the same given as the group, as the room shows it (the floor lamps, not each lamp), and the other lights one by one. */
+function classicSettingsByUnit(lights, room) {
+  var by = {};
+  lights.forEach(function (l) {
+    by[l.entity_id] = l;
+  });
+  var taken = {},
+    out = [];
+  lightUnits(ROOMLIGHTS[room] || []).forEach(function (u) {
+    var members = A(u).entity_id;
+    if (!Array.isArray(members) || members.length < 2 || A(u).is_hue_group || by[u]) return;
+    var first = by[members[0]];
+    if (
+      first &&
+      members.every(function (m) {
+        return by[m] && classicSameSetting(first, by[m]);
+      })
+    ) {
+      members.forEach(function (m) {
+        taken[m] = u;
+      });
+      by[u] = Object.assign({}, first, { entity_id: u });
+    }
+  });
+  lights.forEach(function (l) {
+    var g = taken[l.entity_id];
+    if (!g) out.push(l);
+    else if (!taken["done:" + g]) {
+      taken["done:" + g] = 1;
+      out.push(by[g]);
+    }
+  });
+  return out;
+}
+
+/* A classic scene from what a source's scene sets, as "save the lights as they are" does for the lights now: the editor opens on it, not saved yet. The source gives { name, lights: [{ entity_id, on, brightness (1 to 255), xy: [x, y] or k (kelvin) }] }. */
+function classicImportFrom(src, sceneId, room, target) {
+  src
+    .read(sceneId)
+    .then(function (r) {
+      var rm = room || liveRoomFor(
+          ((r && r.lights) || []).map(function (l) {
+            return l.entity_id;
+          })
+        );
+      var acts = classicSettingsByUnit(
+        ((r && r.lights) || []).filter(function (l) {
+          return H().states[l.entity_id];
+        }),
+        rm
+      )
+        .slice(0, 20)
+        .map(function (l) {
+          if (!l.on) return { id: l.entity_id, on: false };
+          var act = { id: l.entity_id, on: true };
+          if (typeof l.brightness === "number") act.bri = Math.max(1, Math.min(100, Math.round(l.brightness / 2.55)));
+          if (l.k) act.col = { k: Math.round(l.k) };
+          else if (l.xy) {
+            var hs = liveXyHs(l.xy[0], l.xy[1]);
+            act.col = { h: hs[0], s: hs[1] };
+          }
+          return act;
+        });
+      if (!acts.length) throw new Error("empty");
+      var name = (r && r.name) || A(sceneId).name || "";
+      if (!target) {
+        var secs = secOrder(scopeKey(rm)).filter(function (s) {
+          return s.k === "scenes";
+        });
+        if (secs.length) target = { scope: rm, sid: secs[0].id };
+      }
+      staticOpen(rm, null, target, { name: name, others: "keep", acts: acts });
+    })
+    .catch(function () {
+      toast(_T((src && src.failed) || "couldn_t_read_that_scene"));
+    });
+}
+
+/* Reads a scene from a source and opens the editor with it. The source gives { name, palette, speed (0 to 1), brightness (1 to 255), lights }; a source of classic scenes gives what classicImportFrom takes. */
+function liveImportFrom(sourceId, sceneId, room, target) {
+  var src = liveImportSource(sourceId);
+  if (!src || !src.available()) {
+    toast(_T((src && src.unavailable) || "that_scene_cannot_be_imported_now"));
+    return;
+  }
+  if (src.classic) return classicImportFrom(src, sceneId, room, target);
+  src
+    .read(sceneId)
+    .then(function (r) {
+      if (!r || !r.palette || !r.palette.length) throw new Error("empty");
+      var lights = eaUnits(
+        (r.lights || []).filter(function (id) {
+          return H().states[id];
+        })
+      );
+      var rm = room || liveRoomFor(lights),
+        found = lights.length ? liveAreaFor(rm, lights) : { area: null, save: false },
+        ar = found.area,
+        draft = { name: "", icon: "palette", live: { speed: 6, range: 100, bri: 100, spread: "x", src: "palette", fx: [], looks: {}, also: [], palette: [] } };
+      draft.name = r.name || A(sceneId).name || "";
+      draft.live.palette = r.palette.slice(0, 16).map(function (c) {
+        var o = c.k ? { k: Math.round(c.k) } : { xy: c.xy };
+        if (c.b && c.b < 99) o.b = Math.round(c.b);
+        return o;
+      });
+      if (typeof r.speed === "number") draft.live.speed = liveSpeedToStep(r.speed);
+      draft.live.bri = Math.max(1, Math.min(100, Math.round(r.brightness / 2.55)));
+      if (!target) {
+        var secs = secOrder(scopeKey(rm)).filter(function (s) {
+          return s.k === "scenes";
+        });
+        if (secs.length) target = { scope: rm, sid: secs[0].id };
+      }
+      if (!ar) {
+        toast(_T("choose_an_area"));
+        return;
+      }
+      liveMakerOpen(rm, null, target, [ar.id], draft, found.save ? ar : null);
+    })
+    .catch(function () {
+      toast(_T((src && src.failed) || "couldn_t_read_that_scene"));
+    });
+}
+
+/* The list of scenes a source offers to import: the page key is "<source>:<room>:<section>". */
+function liveImportPage(b, key) {
+  var q = key.split(":"),
+    src = liveImportSource(key),
+    target = q.length >= 3 ? { scope: q[1], sid: q[2] } : null,
+    room = target && target.scope !== "home" ? target.scope : null,
+    list = src ? src.list() : [];
+  if (!list.length) b.appendChild(pill("info", _T((src && src.empty) || "no_scenes_found"), {}));
+  var last = null;
+  list.forEach(function (x) {
+    var g = x.group || "";
+    if (g !== last) {
+      b.appendChild(sep(g, "home"));
+      last = g;
+    }
+    b.appendChild(
+      pill(src.classic ? "scene" : "palette", x.name, {
+        tap: function () {
+          liveImportFrom(src.id, x.id, room, target);
+        },
+      })
+    );
+  });
+}

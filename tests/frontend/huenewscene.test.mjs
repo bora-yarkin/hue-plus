@@ -149,7 +149,7 @@ test("changing a scene starts with its own room chosen, and only that room is sh
   assert.equal(sandbox.HUENEW.mode, "edit");
   assert.equal(sandbox.HUENEW.restrict, "room-1");
   assert.deepEqual(plain(sandbox.hueSelectedIds()), ["bl1", "bl2", "bl3"], "all the lights of the room");
-  assert.deepEqual(log.opened, ["hue-lights"]);
+  assert.deepEqual(log.opened, ["hue-pick-lights"]);
 });
 
 test("then the lights are set as the scene has them, the light popup opens on the chosen ones, and its checkmark records them on the bridge", async () => {

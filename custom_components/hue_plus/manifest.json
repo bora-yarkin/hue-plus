@@ -2,7 +2,9 @@
   "domain": "hue_plus",
   "name": "Philips Hue Plus",
   "after_dependencies": [
-    "hue"
+    "frontend",
+    "hue",
+    "panel_custom"
   ],
   "codeowners": [
     "@bora-yarkin"
@@ -20,5 +22,5 @@
   "requirements": [
     "aiohue>=4.9.0"
   ],
-  "version": "0.15.0"
+  "version": "0.16.0"
 }

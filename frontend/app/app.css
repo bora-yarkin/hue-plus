@@ -1,0 +1,511 @@
+/* The look of the Hue app, taken from its screens (hue/, hue new images/, hue-app-images/ in the workspace): a near-black page, flat full-width rows, grey tiles that turn gold when their light is on, round
+ buttons, small spaced capital labels, a tab bar of five icons, and pages that cover the whole screen with a bar of an X or an arrow, a title and SAVE or DONE. The menu pages of Hue Plus (.hm) read the same tokens. */
+:root{
+ --bg:#1b1c20;--bg-warm:#2b2926;--bar:#14151a;--head:#232429;
+ --row:#25262a;--row-hi:#2d2e33;--tile:#3a3b3e;--tile-low:#2c2d30;--line:#33343a;
+ --ink:#f4f4f6;--ink2:#a9a9af;--label:#8f8f95;--acc:#2e68f7;
+ --gold1:#fbdb90;--gold2:#d6ab5b;--gold-ink:#2a2116;
+ --f-card:var(--row);--f-raise:var(--row-hi);--f-line:var(--line);--f-line2:#45464d;--ckfg:#fff;--warm:#f6cd72;
+ --r-s:10px;--r-m:14px;--r-l:18px;--r-xl:22px;--r-row:12px;--sp:10px;--sp-s:8px;--sp-l:12px;--sp-head:14px 6px 8px;
+ --fs-xs:11px;--fs-s:13px;--fs-m:14px;--fs-l:16px;
+ --sab:max(var(--safe-area-inset-bottom,0px),env(safe-area-inset-bottom,0px));--sat:max(var(--safe-area-inset-top,0px),env(safe-area-inset-top,0px));--tabs:58px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+hue-plus-panel{display:block;height:100vh}
+button{font:inherit;color:inherit}
+svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ic{display:flex;align-items:center;justify-content:center;flex:none}
+.ic svg{width:24px;height:24px}
+
+/* ---- the application: the tab and the tab bar ---- */
+#hp{position:fixed;inset:0;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--bg-warm) 0,var(--bg) 420px)}
+#hp .view{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:calc(var(--sat) + 14px) 16px calc(var(--tabs) + var(--sab) + 28px)}
+#hp .view>.in{max-width:760px;margin:0 auto}
+#hp nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;justify-content:center;background:var(--bar);padding-bottom:var(--sab)}
+#hp nav.tabs .in{display:flex;width:100%;max-width:760px}
+#hp nav.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 2px 8px;background:none;border:0;color:#5d5e66;cursor:pointer;font-size:9.5px;letter-spacing:.03em;text-transform:uppercase}
+#hp nav.tabs button svg{width:25px;height:25px}
+#hp nav.tabs button.on{color:#fff}
+#hp nav.tabs button:focus-visible{outline:2px solid var(--acc);outline-offset:-3px;border-radius:10px}
+.hd{display:flex;flex-direction:column;gap:14px;margin:0 0 4px}
+.hd .acts{display:flex;align-items:center;gap:10px;justify-content:flex-end;min-height:32px;order:-1}
+.hd h1{margin:0;font-size:31px;font-weight:700;letter-spacing:.01em;line-height:1.1;font-family:"Avenir Next","Montserrat","Century Gothic",Futura,"Segoe UI",system-ui,sans-serif}
+.top{display:flex;justify-content:flex-end;gap:10px;min-height:30px;margin-bottom:10px}
+.lb{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--label);margin:26px 4px 10px}
+.empty{color:var(--ink2);text-align:center;padding:36px 12px;font-size:var(--fs-l)}
+
+/* ---- round buttons and switches ---- */
+.rbt{width:30px;height:30px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0}
+.rbt svg{width:17px;height:17px}
+.rbt.dk{background:var(--tile)}
+.rbt:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.tg{width:52px;height:30px;border-radius:15px;flex:none;background:#56575c;position:relative;cursor:pointer;border:0;padding:0;transition:background .2s}
+.tg i{position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .2s}
+.tg.on{background:var(--acc)}
+.tg.on i{transform:translateX(22px)}
+.tg:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.sl{position:relative;height:18px;touch-action:pan-y;cursor:pointer;display:flex;align-items:center}
+.sl:before{content:"";position:absolute;left:0;right:0;height:8px;border-radius:4px;background:rgba(255,255,255,.16)}
+.sl .kn{position:absolute;top:0;width:18px;height:18px;margin-left:-9px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.45);left:0}
+
+/* ---- Home: the rooms and zones ---- */
+.rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}
+.room{position:relative;background:var(--tile);border-radius:14px;padding:16px 16px 14px;display:flex;flex-direction:column;gap:14px;cursor:pointer;min-height:92px;transition:background .25s;color:#fff}
+.room .rh{display:flex;align-items:center;gap:22px}
+.room .rh .ic svg{width:28px;height:28px}
+.room .rn{flex:1;min-width:0;font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.room:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.on-gold{color:var(--gold-ink)}
+.on-gold .tg{background:rgba(70,52,12,.38)}
+.on-gold .tg.on{background:rgba(70,52,12,.38)}
+.on-gold .sl:before{background:rgba(70,52,12,.22)}
+
+/* ---- a room's page: header, scenes, lights, controls ---- */
+.rhead{padding:calc(var(--sat) + 10px) 16px 16px;border-radius:0 0 22px 22px;background:linear-gradient(180deg,var(--tile) 0,var(--tile-low) 100%);color:#fff;transition:background .25s}
+.rhead.on-gold{box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.rhead .rr{display:flex;align-items:center;gap:10px}
+.rhead .rr .nm{flex:1;min-width:0;font-size:17px;font-weight:500;margin-left:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rhead .rr .tg{margin-left:4px}
+.rhead .sl{margin-top:20px}
+.rhead.on-gold .rbt{background:rgba(255,255,255,.34);color:#fff}
+.rbody{padding:4px 16px calc(var(--sab) + 40px);max-width:760px;margin:0 auto}
+.ltiles{display:flex;gap:12px;overflow-x:auto;padding:0 0 6px;margin:0 -16px;padding-left:16px;padding-right:16px;scrollbar-width:none}
+.ltiles::-webkit-scrollbar{display:none}
+.ltile{position:relative;flex:none;width:102px;height:158px;border-radius:12px;background:var(--tile);color:#fff;display:flex;flex-direction:column;overflow:hidden;cursor:pointer;transition:background .25s}
+.ltile .up{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px 6px 4px;min-height:0}
+.ltile .up .ic svg{width:28px;height:28px}
+.ltile .up b{font-size:12px;font-weight:500;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ltile .dn{height:52px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.14)}
+.ltile.gone{opacity:.5}
+.ltile:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.ctiles{display:flex;flex-wrap:wrap;gap:12px}
+.ctile{width:calc(50% - 6px);max-width:150px;min-height:104px;border-radius:var(--r-m);background:var(--tile);padding:12px 12px 12px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;color:#fff}
+.ctile .ic{justify-content:flex-start}
+.ctile .ic svg{width:26px;height:26px}
+.ctile b{display:block;font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ctile i{display:block;font-style:normal;font-size:13px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ctile:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.addgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:6px 16px 24px}
+.addgrid .atile{aspect-ratio:1.5;border-radius:var(--r-m);background:var(--tile);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;font-size:14px;font-weight:500;color:#fff}
+.atile .ci{width:48px;height:48px;border-radius:50%;background:#101114;display:flex;align-items:center;justify-content:center}
+.atile .ci svg{width:24px;height:24px}
+.atile:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+/* ---- a light: the panel of Home Control's colour wheel, in a frame under the bar ---- */
+.lightframe{position:fixed;left:0;right:0;bottom:0;top:0;z-index:55;border:0;width:100%;background:transparent;display:none}
+.lightframe.show{display:block}
+
+/* ---- a page: covers the screen, with a bar of an X or an arrow, the title, and SAVE or DONE ---- */
+.pg{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:var(--bg);transform:translateX(100%);transition:transform .42s cubic-bezier(.2,.9,.25,1),box-shadow .42s,opacity .25s}
+.pg.in{transform:none}
+.pg.under{transform:translateX(-26%)}
+.pg .pbar{display:flex;align-items:center;gap:14px;background:var(--head);padding:calc(var(--sat) + 10px) 16px 12px;flex:none}
+.pg .pbar .rbt{background:var(--tile);width:32px;height:32px}
+.pg .pbar .rbt svg{width:17px;height:17px;stroke-width:2.2}
+.pg .pbar .ttl{flex:1;min-width:0;font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg .pbar .ttl .ic{display:none}
+.pg .pbar .act{border:0;background:var(--tile);color:#fff;border-radius:16px;padding:8px 16px;font-size:12px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;cursor:pointer}
+.pg .pbar .act:disabled{opacity:.5;cursor:default}
+.pg .pbody{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 0 calc(var(--sab) + 32px)}
+.pg .pbody>*{max-width:760px;margin-left:auto;margin-right:auto}
+.pg.bare .pbar{background:transparent}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---- rows the pages use: full width, flat, separated by the page's own dark ---- */
+.pill{position:relative;display:flex;align-items:center;gap:14px;min-height:62px;padding:10px 18px;background:var(--row);cursor:pointer;overflow:hidden}
+.pill+.pill{border-top:1px solid var(--line)}
+.pill.static{cursor:default}
+.pill .tx{flex:1;min-width:0;display:flex;flex-direction:column;position:relative;z-index:1}
+.pill .nm{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill .sb{font-size:11px;color:var(--ink2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill .vl{font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap;position:relative;z-index:1}
+.pill>.ic{position:relative;z-index:1;width:40px;height:40px;border-radius:50%;background:#101114;color:#fff}
+.pill>.ic svg{width:21px;height:21px}
+.pill.on>.ic{background:var(--gold1);color:var(--gold-ink)}
+.pill .ck{width:22px;height:22px;flex:none;color:var(--acc);opacity:0;display:flex}
+.pill .ck svg{width:22px;height:22px;stroke-width:2.4}
+.pill.checked .ck{opacity:1}
+.pill:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+/* a slider row, as the app draws one: the name and the value on the first line, a thin track with a knob under them */
+.pill.slide{touch-action:pan-y;flex-wrap:wrap;padding-bottom:20px;row-gap:6px}
+.pill.slide .tx{flex:1}
+.pill.slide .trk{order:9;flex:0 0 100%;position:relative;height:18px}
+.pill.slide .trk:before{content:"";position:absolute;left:0;right:0;top:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.16)}
+.pill.slide .fill{position:absolute;left:0;top:6px;height:6px;width:0;border-radius:3px;background:rgba(255,255,255,.55)}
+.pill.slide .kn{position:absolute;top:0;left:0;width:18px;height:18px;margin-left:-9px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.45)}
+.sep{display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--label);margin:26px 18px 10px}
+.sep svg{display:none}
+.hint{font-size:var(--fs-s);color:var(--ink2);margin:10px 18px}
+.notec.pane.dim{font-size:var(--fs-m);color:var(--ink2);line-height:1.45;padding:14px 18px}
+.sqw.pane{background:var(--row);padding:4px 18px}
+.sq{width:100%;min-height:52px;background:none;border:0;color:var(--ink);font:inherit;font-size:var(--fs-l);outline:none}
+.gridl{display:grid;gap:var(--sp);padding:0 16px}
+.gridl.g2{grid-template-columns:1fr 1fr}
+.chev{display:flex}
+.pane{position:relative}
+
+/* ---- dialogs and the message ---- */
+.scrim{position:fixed;inset:0;opacity:0;transition:opacity .25s;z-index:80;background:rgba(0,0,0,.6)}
+.scrim.in{opacity:1}
+.dlg{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:90;width:min(360px,88%);border-radius:var(--r-xl);padding:22px;text-align:center;background:var(--head);box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.dlg p{margin:0 0 20px;font-size:var(--fs-l);line-height:1.4}
+.dlg .rrow{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp)}
+.rbtn{min-height:46px;display:flex;align-items:center;justify-content:center;border-radius:999px;background:var(--tile);cursor:pointer;font-weight:600;user-select:none}
+.rbtn.go{background:var(--acc);color:#fff}
+.toast{position:fixed;left:50%;bottom:calc(var(--tabs) + var(--sab) + 18px);transform:translate(-50%,10px);padding:11px 18px;border-radius:999px;font-size:var(--fs-m);z-index:95;opacity:0;transition:opacity .25s,transform .25s;background:var(--tile);max-width:90vw;text-align:center}
+.toast.in{opacity:1;transform:translate(-50%,0)}
+
+/* ---- the Hue Plus menu pages (.hm): the Hue app's settings screens ---- */
+.hm{padding:0 0 24px}
+.hm .hm-bigi{width:40px;height:40px;display:flex;align-items:center;justify-content:center;flex:none;color:#fff}
+.hm .hm-bigi svg{width:34px;height:34px}
+.hm .hm-title{padding:18px 18px 8px}
+.hm .hm-tt{min-width:0;display:block;margin-top:6px}
+.hm .hm-tt b{display:block;font-size:26px;font-weight:700;line-height:1.1;overflow-wrap:anywhere}
+.hm .hm-tt i{display:block;font-style:normal;font-size:var(--fs-m);color:var(--ink2);margin-top:6px}
+.hm .hm-label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--label);padding:26px 18px 10px}
+.hm .hm-group{background:var(--row);margin:0;border:0;border-radius:0}
+.hm .hm-row{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 18px;transition:background .2s}
+.hm .hm-row+.hm-row{border-top:1px solid var(--line)}
+.hm .hm-row.tap{cursor:pointer;user-select:none}
+.hm .hm-row.tap:active{background:var(--row-hi)}
+.hm .hm-row:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+.hm .hm-i{width:40px;height:40px;border-radius:50%;background:#101114;display:flex;align-items:center;justify-content:center;flex:none;color:#fff}
+.hm .hm-i svg,.hm .hm-c svg,.hm .hm-ck svg,.hm .hm-ni svg,.hm .hm-ti svg,.hm .hm-gear svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.hm .hm-i svg{width:21px;height:21px}
+.hm .hm-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.hm .hm-n{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hm .hm-s{font-size:11px;color:var(--ink2);overflow-wrap:anywhere}
+.hm .hm-v{font-size:12px;color:var(--ink2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.hm .hm-c{width:20px;height:20px;flex:none;color:var(--ink2);display:flex;align-items:center}
+.hm .hm-c svg{width:18px;height:18px;transform:rotate(-90deg)}
+.hm .hm-row.stack{min-height:58px}
+.hm .hm-row.good .hm-s{color:#6dd58c}
+.hm .hm-row.danger .hm-n{color:#ff6b62}
+.hm .hm-ck{width:22px;height:22px;flex:none;color:var(--acc);opacity:0;transition:opacity .2s}
+.hm .hm-ck svg{width:22px;height:22px;stroke-width:2.4}
+.hm .hm-row.checked .hm-ck,.hm .hm-row.good .hm-ck{opacity:1}
+.hm .hm-row.good .hm-ck{color:#6dd58c}
+.hm .hm-sw{width:47px;height:29px;border-radius:15px;flex:none;background:#56575c;position:relative;transition:background .2s}
+.hm .hm-sw i{position:absolute;left:2px;top:2px;width:25px;height:25px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .2s}
+.hm .hm-row.on .hm-sw{background:var(--acc)}
+.hm .hm-row.on .hm-sw i{transform:translateX(18px)}
+.hm .hm-note{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;margin:16px 16px;border-radius:var(--r-row);font-size:var(--fs-m);line-height:1.4;color:var(--ink2);background:rgba(46,104,247,.1);border:1px solid rgba(46,104,247,.4)}
+.hm .hm-ni{width:20px;height:20px;flex:none;color:var(--acc);margin-top:1px}
+.hm .hm-ni svg{width:20px;height:20px}
+.hm .hm-actions{display:flex;flex-direction:column;align-items:center;gap:12px;padding:26px 0 6px}
+.hm .hm-btn{min-width:120px;padding:10px 26px;border-radius:999px;border:1px solid transparent;font:inherit;font-size:var(--fs-m);font-weight:600;cursor:pointer;color:#fff;transition:transform .1s,filter .2s}
+.hm .hm-btn:active{transform:scale(.97)}
+.hm .hm-btn:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.hm .hm-btn.primary{background:var(--acc)}
+.hm .hm-btn.ghost{background:var(--tile)}
+.hm .hm-btn.danger{background:transparent;color:#ff6b62;border:1.5px solid #e5484d}
+.hm .hm-chips{display:flex;gap:8px;margin:0 16px 10px}
+.hm .hm-chip{flex:1;padding:10px 0;border-radius:999px;border:0;background:var(--tile);color:#fff;font:inherit;font-size:var(--fs-m);font-weight:600;cursor:pointer;transition:background .2s}
+.hm .hm-chip.on{background:var(--acc)}
+.hm .hm-tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:0 16px}
+.hm .hm-tile{position:relative;min-height:116px;padding:14px;border-radius:var(--r-m);display:flex;flex-direction:column;justify-content:flex-end;gap:2px;background:var(--tile);cursor:pointer;user-select:none;transition:background .2s}
+.hm .hm-tile b{font-size:var(--fs-l);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hm .hm-tile i{font-style:normal;font-size:var(--fs-s);color:var(--ink2)}
+.hm .hm-ti{position:absolute;left:14px;top:14px;width:30px;height:30px}
+.hm .hm-ti svg{width:28px;height:28px}
+.hm .hm-tile.on{background:linear-gradient(180deg,var(--gold1),var(--gold2));color:var(--gold-ink)}
+.hm .hm-tile.on i{color:rgba(42,33,22,.7)}
+.hm .hm-gear{position:absolute;right:10px;top:10px;width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.1);color:inherit;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.hm .hm-gear svg{width:18px;height:18px}
+.hm .hm-time{flex:1;min-height:44px;padding:8px 12px;border-radius:var(--r-row);border:0;background:var(--tile);color:#fff;font:inherit;font-size:var(--fs-l);font-variant-numeric:tabular-nums}
+.hm .hm-time:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+
+/* ---- more of the app: brightness bar of the menu pages, the list under the three dots, a room's page without a bar, menu pages that reach the screen's edges ---- */
+.bar{position:relative;height:40px;border-radius:20px;background:var(--tile);overflow:hidden;touch-action:pan-y;cursor:pointer}
+.bar .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,var(--gold1),var(--gold2));border-radius:inherit;transition:width .12s}
+.bar .vl{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:var(--fs-s);font-weight:600;color:#fff;text-shadow:0 0 3px rgba(0,0,0,.6);pointer-events:none}
+.bar.off .fill{width:0!important}
+.asheet{position:fixed;left:8px;right:8px;bottom:calc(var(--sab) + 8px);z-index:90;max-width:520px;margin:0 auto;background:var(--head);border-radius:var(--r-xl);overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.arow{display:block;width:100%;min-height:56px;border:0;background:none;color:#fff;font-size:17px;cursor:pointer;border-top:1px solid var(--line)}
+.arow:first-child{border-top:0}
+.arow.danger{color:#ff6b62}
+.arow.cancel{font-weight:600}
+.pg.roompg .pbar{display:none}
+.pg.roompg .pbody{padding:0 0 calc(var(--sab) + 24px)}
+.pg.roompg .pbody>*{max-width:none}
+.pg.roompg .rhead{position:sticky;top:0;z-index:5}
+.pg.roompg .rbody{max-width:760px}
+#hp .view .hm .hm-group{margin-left:-16px;margin-right:-16px}
+#hp .view .hm .hm-label{padding-left:20px}
+.room.on-gold,.rhead.on-gold{color:#fff;text-shadow:0 1px 2px rgba(60,45,15,.35)}
+.rhead.on-gold .sl:before{background:rgba(70,52,12,.25)}
+.ltile.on-gold .dn{background:rgba(70,52,12,.16)}
+.gridl .pill{flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:12px;min-height:118px;padding:14px;background:var(--tile);border-radius:var(--r-m)}
+.gridl .pill+.pill{border-top:0}
+.gridl .pill .nm,.gridl .pill .sb{white-space:normal;overflow:visible}
+.gridl .pill .tx{flex:none}
+
+/* ---- scene folders: two rows that scroll sideways ---- */
+.frows{display:grid;grid-template-columns:repeat(var(--cols,3),102px);grid-auto-rows:102px;column-gap:12px;row-gap:20px;overflow-x:auto;margin:0 -16px;padding:0 16px 6px;scrollbar-width:none}
+.frows::-webkit-scrollbar{display:none}
+.ftile{position:relative;border-radius:12px;background:var(--tile);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 6px 11px;cursor:pointer;overflow:hidden;transition:background .3s,transform .12s}
+.ftile:active{transform:scale(.96)}
+.ftile.lit{background:linear-gradient(180deg,var(--gold1),var(--gold2));color:var(--gold-ink)}
+.ftile .dots{position:absolute;left:0;right:0;top:12px;display:flex;flex-wrap:wrap;justify-content:center;gap:7px 6px;padding:0 8px}
+.ftile .dots .disc{width:22px;height:22px}
+.ftile b{font-size:12px;font-weight:500;line-height:1.2;text-align:center}
+.disc{display:block;width:100%;height:100%;border-radius:50%;background:#f9d27a;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.ftile:focus-visible,.sitem:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+/* ---- the card a folder opens ---- */
+.fscrim{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);transition:background-color .17s,backdrop-filter .17s,-webkit-backdrop-filter .17s}
+.fscrim.in{background:rgba(0,0,0,.45);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.fwrap{position:fixed;inset:0;z-index:75;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.fcard{position:relative;pointer-events:auto;width:min(520px,calc(100% - 34px));max-height:80vh;overflow:auto;background:#26272b;border-radius:18px;padding:20px 17px 20px;box-shadow:0 24px 60px rgba(0,0,0,.55);opacity:0}
+.fcard .ft{font-size:13.5px;font-weight:500;margin:2px 3px 18px}
+.fg{display:flex;flex-wrap:wrap;gap:10px 13px}
+.sitem{width:102px;flex:none;border-radius:11px;background:var(--tile);height:113px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:6px;cursor:pointer;color:#fff;transition:background .25s,transform .12s}
+.sitem:active{transform:scale(.96)}
+.sitem .dc{position:relative;width:50px;height:50px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.35))}
+.sitem .stop{position:absolute;inset:0;display:none;align-items:center;justify-content:center}
+.sitem .stop i{width:18px;height:18px;border-radius:3px;background:#fff}
+.sitem.moving{background:var(--acc)}
+.sitem.moving .disc{opacity:0}
+.sitem.moving .stop{display:flex}
+.sitem.on:not(.moving){background:linear-gradient(180deg,var(--gold1),var(--gold2));color:var(--gold-ink)}
+.sitem b{font-size:11.5px;font-weight:500;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.sside{display:flex;flex-direction:column;justify-content:center;gap:10px;width:34px;flex:none;animation:hpin .2s}
+.sside .rbt{background:var(--tile)}
+
+/* ---- the colour screen of a room's lights: the frame's own bar, SAVE and DONE ---- */
+.pg .pbar .lbar{display:none}
+.pg.lightpg{background:transparent}
+.pg.lightpg .pbar{background:transparent}
+.pg.lightpg .pbar>*:not(.lbar){display:none!important}
+.pg.lightpg .lbar{display:flex;flex:1;gap:10px;align-items:center}
+.pg.lightpg .lbar .act{background:var(--tile)}
+.pg.lightpg .lbar .act.done{margin-left:auto}
+
+/* ---- a scene's page ---- */
+.pg.scenepg{background:var(--bg)}
+.pg.scenepg .pbar{background:linear-gradient(180deg,var(--sc1),var(--sc2))}
+.schead{display:flex;align-items:flex-end;gap:14px;padding:12px 18px 18px;background:linear-gradient(180deg,var(--sc2),var(--bg) 140%)}
+.schead .big{width:48px;height:48px;flex:none;align-self:flex-start;position:absolute;display:none}
+.schead .nm{flex:1;font-size:30px;font-weight:700;line-height:1.1;overflow-wrap:anywhere}
+.schead .rbt{background:var(--tile);width:34px;height:34px}
+
+/* ---- the Automations tab ---- */
+#hp[data-tab=automations]{background:linear-gradient(180deg,#0f1c46 0,var(--bg) 340px)}
+.rbt.blue{background:var(--acc);width:36px;height:36px}
+.rbt.blue svg{width:20px;height:20px}
+.agroup{margin-top:16px}
+.ahead{display:flex;align-items:center;gap:16px;padding:6px 2px 10px}
+.ahead .ic svg{width:30px;height:30px}
+.ahead b{flex:1;font-size:13px;font-weight:500}
+.ahead i{font-style:normal;color:var(--ink2);font-size:11px}
+.ahead .fold{background:var(--tile);width:34px;height:34px}
+.ahead .fold svg{transition:transform .2s;transform:rotate(180deg)}
+.agroup.folded .fold svg{transform:none}
+.agroup.folded .acards{display:none}
+.acards{display:flex;flex-direction:column;gap:10px}
+.acard{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.085);border-radius:var(--r-m);padding:14px 16px;cursor:pointer;transition:background .2s,transform .12s}
+.acard:active{transform:scale(.985)}
+.acard .tx{flex:1;min-width:0}
+.acard b{display:block;font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acard i{display:block;font-style:normal;font-size:10.5px;color:var(--ink2);margin-top:2px}
+.acard:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+/* ---- movement: what changes, changes ---- */
+.room,.ltile,.rhead{transition:background-color .35s}
+.room:active,.ltile:active,.ctile:active,.atile:active{transform:scale(.97)}
+.room,.ltile,.ctile,.atile{transition:transform .12s,filter .3s}
+.room::before,.ltile::before,.rhead::before{content:"";position:absolute;inset:0;border-radius:inherit;corner-shape:inherit;background:linear-gradient(180deg,var(--gold1,#fbdb90),var(--gold2,#d6ab5b));opacity:0;transition:opacity .4s;pointer-events:none}
+.room.on-gold::before,.ltile.on-gold::before,.rhead.on-gold::before{opacity:1}
+.room>*,.ltile>*,.rhead>*{position:relative}
+.rhead{position:relative}
+.tg,.tg i{transition:background .25s,transform .25s cubic-bezier(.3,.9,.3,1)}
+.sl .kn{transition:left .25s cubic-bezier(.3,.9,.3,1)}
+.view>.in{animation:hpin .28s cubic-bezier(.2,.8,.2,1)}
+@keyframes hpin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.pg .pbody>*{animation:hpin .3s cubic-bezier(.2,.8,.2,1) backwards}
+.pg .pbody>*:nth-child(2){animation-delay:.03s}.pg .pbody>*:nth-child(3){animation-delay:.06s}.pg .pbody>*:nth-child(4){animation-delay:.09s}
+@media(prefers-reduced-motion:reduce){.view>.in,.pg .pbody>*{animation:none}}
+
+.pg.roompg{z-index:25}
+.pg.roompg .pbody{padding-bottom:calc(var(--tabs) + var(--sab) + 24px)}
+/* the app's tab bar: filled icons, a little larger */
+#hp nav.tabs{background:linear-gradient(180deg,#17181c,#101115)}
+#hp nav.tabs button svg{width:27px;height:27px}
+#hp nav.tabs button[data-tab=home] svg,#hp nav.tabs button[data-tab=automations] svg{fill:currentColor;stroke:none}
+#hp nav.tabs button[data-tab=sync] svg,#hp nav.tabs button[data-tab=settings] svg{stroke-width:2.3}
+/* a page that edits something (it has SAVE) opens with an X, and SAVE is dim until something changed */
+.pg.modalpg .back{display:none!important}
+.pg.modalpg .x{display:flex!important}
+.pg .pbar .act.ok:disabled{opacity:.45}
+/* the scene's round icon over its name */
+.schead{flex-wrap:wrap}
+.schead .big{display:block!important;position:static!important;width:50px;height:50px;flex:none;margin-bottom:4px;order:-1;flex-basis:100%;background:none}
+.schead .big .disc{width:46px;height:46px}
+.ctile .ic svg{width:26px;height:26px}
+
+/* what is written on a lit card or tile is dark on the app's gold, white on the header */
+.room.on-gold,.ltile.on-gold,.ftile.lit{color:var(--gold-ink);text-shadow:none}
+.rhead.on-gold{color:#fff;text-shadow:0 1px 2px rgba(60,45,15,.35)}
+
+/* a popup page: it slides up over the page behind, which is dimmed; the screen above it stays */
+.pg.modalpg{top:66px;border-radius:18px 18px 0 0;box-shadow:0 0 0 100vmax rgba(0,0,0,0);transform:translateY(calc(100% + 66px));opacity:1;transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s}
+.pg.modalpg.in{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.55)}
+.pg.modalpg .pbar{border-radius:18px 18px 0 0;padding-top:14px}
+.pg.modalpg .pbody{overflow-x:hidden}
+.pg.lightpg{transform:none;opacity:1;transition:none}
+
+/* ---- a switch's pages ---- */
+.swhead{padding:14px 18px 18px;background:var(--bg)}
+.swhead .ic{display:block;margin-bottom:12px}
+.swhead .ic svg{width:30px;height:30px;stroke-width:1.9}
+.swhead .nm{font-size:27px;font-weight:700;line-height:1.1;overflow-wrap:anywhere;font-family:"Avenir Next","Montserrat","Century Gothic",Futura,"Segoe UI",system-ui,sans-serif}
+.btiles{display:flex;gap:12px;overflow-x:auto;padding:18px 16px;scrollbar-width:none;background:#17181b}
+.btiles::-webkit-scrollbar{display:none}
+.btile{flex:none;width:102px;height:120px;border-radius:12px;background:var(--tile);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;cursor:pointer;color:#fff;transition:transform .12s,box-shadow .2s}
+.btile:active{transform:scale(.96)}
+.btile.sel{box-shadow:0 0 0 2.5px var(--acc)}
+.btile .ic svg{width:24px;height:24px}
+.btile b{font-size:12px;font-weight:500;text-align:center;padding:0 6px}
+.selroom{display:flex;flex-direction:column;gap:14px;margin:0 16px 8px;width:154px;padding:14px;border-radius:12px;background:var(--tile)}
+.selroom .ic svg{width:26px;height:26px}
+.selroom b{display:block;font-size:12px;font-weight:600}
+.selroom i{display:block;font-style:normal;font-size:11px;color:var(--ink2)}
+.hm-row .rend{flex:none;display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;margin-left:6px}
+.hm-row .rend .disc{width:42px;height:42px}
+.hm-row .rend.ico{background:#0e0f12;color:#fff}
+.hm-row .rend.ico svg{width:22px;height:22px}
+.pintro{padding:20px 18px 6px;font-size:13px;line-height:1.5;color:var(--ink2)}
+.pintro b{color:#fff;font-weight:600}
+.pgrid{display:flex;flex-wrap:wrap;gap:10px 12px;padding:0 16px}
+.pgrid .sitem{width:calc(25% - 9px);min-width:76px;height:98px}
+.pgrid .sitem .dc{width:46px;height:46px}
+.disc.dark{display:flex;align-items:center;justify-content:center;background:#0e0f12;color:#fff}
+.disc.dark svg{width:22px;height:22px}
+.hm .hm-row.nochev .hm-c{display:none}
+
+/* ---- smooth corners as the app draws them (a squircle where the browser can, a plain round corner where it cannot), and one gutter ---- */
+@supports (corner-shape:squircle){
+ .room,.ltile,.ftile,.sitem,.btile,.ctile,.acard,.selroom,.atile,.rhead,.fcard,.dlg,.asheet,.pg.modalpg,.pg.modalpg .pbar,.hm .hm-tile,.hm .hm-note{corner-shape:squircle}
+ .room{border-radius:22px}.ltile,.ftile,.btile,.ctile,.selroom,.atile{border-radius:18px}.sitem{border-radius:16px}.acard{border-radius:20px}
+ .rhead{border-radius:0 0 34px 34px}.fcard{border-radius:28px}.pg.modalpg,.pg.modalpg .pbar{border-radius:26px 26px 0 0}
+}
+.hm .hm-chips{margin:14px 16px}
+.hm .hm-note{margin:14px 16px}
+.hm .hm-actions{padding:24px 16px 6px}
+.pintro{padding:16px 18px 8px}
+.pintro.small{padding:10px 18px 4px;font-size:12px;color:var(--ink2)}
+.lbrow{display:flex;align-items:center;justify-content:space-between;padding-right:16px}
+.lbrow .hm-label{flex:1}
+.hm-group.cyc .hm-row{touch-action:pan-y}
+/* what is held and dragged */
+.lifting{position:relative;z-index:60;box-shadow:0 10px 28px rgba(0,0,0,.45);filter:brightness(1.22);transition:none!important}
+.frows .ftile,.fg .sitem,.hm-group.cyc .hm-row{user-select:none;-webkit-user-select:none}
+
+/* dropping a scene on another makes a folder: the one it is over lights up */
+.sitem.mergeable{box-shadow:0 0 0 3px #fff;transform:scale(1.04)}
+.fcard .fedit{position:absolute;right:14px;top:14px;background:var(--tile)}
+.dlg .pin{margin:0 0 18px;background:var(--tile);border-radius:12px;padding:0 14px;text-align:left}
+
+/* ---- a wizard: the app's blue top, the question as the heading, Next at the bottom ---- */
+.pg.wizpg .pbar{background:linear-gradient(180deg,#0e1b46 0,#15234f 60%,#1a2147 100%);padding-bottom:38px}
+.pg.wizpg .pbar .ttl{visibility:hidden}
+.pg.wizpg .pbar .rbt{background:rgba(255,255,255,.16)}
+.pg.wizpg .pbody{position:relative;margin-top:-24px;border-radius:24px 24px 0 0;background:var(--bg);padding:8px 0 calc(var(--sab) + 96px);overflow-y:auto}
+.pg.wizpg .hm-bigi{display:none}
+.pg.wizpg .hm .hm-tt b,.pg.wizpg .hm-tt b{font-size:21px;font-weight:600;line-height:1.25}
+.pg.wizpg .hm-tt i{font-size:12.5px;line-height:1.45}
+.pg.wizpg .hm-actions{position:fixed;left:0;right:0;bottom:0;z-index:5;flex-direction:row;justify-content:center;padding:14px 16px calc(var(--sab) + 14px);background:var(--bg);border-top:1px solid var(--line);margin:0}
+.pg.wizpg .hm-btn{min-width:88px;padding:9px 24px;font-size:12.5px}
+.pg.wizpg .hm-btn.primary{background:var(--acc)}
+@supports (corner-shape:squircle){.pg.wizpg .pbody{corner-shape:squircle;border-radius:30px 30px 0 0}}
+
+/* Settings pages: the blue plus in the top bar, the time wheels, the apps to link, the entertainment area */
+.pg.plusbar .pbar .lbar{display:flex;margin-left:auto}
+.pg .pbar .lbar .rbt.blue{background:var(--acc)}
+.wheels{position:relative;display:flex;justify-content:center;gap:0;padding:6px 16px 10px;background:var(--row)}
+.wheels .band{position:absolute;left:16px;right:16px;top:50%;height:36px;margin-top:-12px;border-radius:10px;background:var(--tile);opacity:.55;pointer-events:none}
+.wheel{position:relative;flex:1;height:180px;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;text-align:center}
+.wheel::-webkit-scrollbar{display:none}
+.wheel .pad{height:72px}
+.wheel .wv{height:36px;line-height:36px;scroll-snap-align:center;font-size:17px;font-variant-numeric:tabular-nums}
+.pgrid .ptile{width:calc(50% - 6px);height:96px;border-radius:16px;background:var(--tile);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;font-size:13px}
+.pgrid .ptile .ic{width:44px;height:44px;border-radius:50%;background:#fff;color:#1b1c20;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px}
+.ptile.sm{position:relative;flex:none;width:92px;height:112px;border-radius:14px;background:var(--tile);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#fff;font-size:12px;font-weight:500;text-align:center;cursor:pointer}
+.ptile.sm .ic svg{width:24px;height:24px}
+.ptile.sm b{font-weight:500;padding:0 6px}
+.ptile.sm.sel{box-shadow:0 0 0 2.5px var(--acc)}
+.ptile .minus{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);width:24px;height:24px;border-radius:50%;border:0;background:#d8353b;color:#fff;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+.ptile .minus svg{width:14px;height:14px;stroke-width:3}
+.ptile.sm:has(.minus) {padding-bottom:36px}
+.pfield{padding:4px 16px 8px}.pfield input{width:100%;box-sizing:border-box}
+.swhead.named{display:flex;flex-wrap:wrap;align-items:center;gap:0 12px}.swhead.named .ic{flex:0 0 100%}.swhead.named .nm{flex:1;min-width:0}.ltiles.areal{margin:0;padding:0 16px 6px}
+.wheel{-webkit-mask-image:linear-gradient(transparent,#000 32%,#000 68%,transparent);mask-image:linear-gradient(transparent,#000 32%,#000 68%,transparent)}
+
+/* The Sync tab: the Spotify screen, coloured from the cover */
+#hp[data-tab=sync]{background:linear-gradient(180deg,var(--sy1,#6b4a2b) 0,var(--sy2,#2a1d12) 100%)}
+#hp[data-tab=sync] .view{padding:0}
+#hp[data-tab=sync] .view>.in{max-width:none}
+.spp{box-sizing:border-box;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:calc(var(--sat) + 14px) 16px calc(var(--tabs) + var(--sab) + 14px)}
+.sytop{display:flex;align-items:center;gap:8px;font-size:22px;font-weight:700;letter-spacing:-.02em;margin:30px 0 0}
+.sytop .mark svg{width:28px;height:28px;display:block}
+.syart{width:233px;height:233px;margin:72px 0 0;background:#00000040;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.syart img{width:100%;height:100%;object-fit:cover;display:block}
+.syart svg{width:60px;height:60px;stroke:#fff8;fill:none;stroke-width:1.6}
+.syart.has-art svg{display:none}
+.syplay{margin:22px 0 0;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#ffffffcc;text-align:center;min-height:14px}
+.sytitle{margin:10px 0 0;font-size:19px;font-weight:600;text-align:center}
+.sysub{margin:6px 0 0;font-size:15px;color:#ffffffb0;text-align:center;min-height:20px}
+.syset{display:flex;gap:14px;width:100%;max-width:400px;margin:auto 0 0;padding-top:28px}
+.sycol{flex:1;display:flex;flex-direction:column;align-items:center;gap:10px}
+.sycap{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#ffffffb8}
+.sytilebtn{width:100%;height:48px;border:0;border-radius:24px;background:rgba(120,96,80,.72);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 14px rgba(0,0,0,.2)}
+.sytilebtn svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+.sytilebtn.grad svg{opacity:.9}
+.sybar{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:420px;margin:18px 0 0;padding:20px 18px;border-radius:26px;background:rgba(18,12,9,.82)}
+.sywhat,.sywhere{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;background:none;border:0;color:#fff;padding:0;font:inherit;cursor:pointer}
+.sywhat{cursor:default}
+.sybar .sc{width:48px;height:48px;border-radius:50%;background:#4b4a4d;display:flex;align-items:center;justify-content:center}
+.sybar .sc svg{width:26px;height:26px;fill:#fff;stroke:#fff}
+.sywhat .sc svg{fill:none}
+.sybar i{font-style:normal;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#ffffffa8;margin-top:6px}
+.sybar b{font-weight:400;font-size:13px;color:#ffffffd0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sygo{width:78px;height:78px;border-radius:50%;border:3px solid #2e68f755;background:#14183a;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;transition:border-color .2s,box-shadow .2s}
+.sygo.on{border-color:#2e68f7;box-shadow:0 0 0 1px #2e68f7,0 0 22px #2e68f755}
+.sygo svg{width:40px;height:40px;fill:none;stroke:currentColor;stroke-width:2.4}
+.sypop{position:fixed;inset:0;z-index:85;opacity:0;transition:opacity .3s}
+.sypop.in{opacity:1}
+.sycard{position:absolute;left:20px;right:20px;top:51%;margin-top:0;background:#26272c;border-radius:24px;padding:22px 20px 24px;box-shadow:0 20px 50px rgba(0,0,0,.5);transform:translateY(60vh);transition:transform .5s cubic-bezier(.2,.9,.25,1)}
+.sypop.in .sycard{transform:translateY(-50%)}
+.syt{font-size:15px;font-weight:500;margin:0 0 26px}
+.syrow{display:flex;gap:12px}
+.sychoice{flex:1;height:48px;border:0;border-radius:24px;background:#55565b;color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;box-shadow:0 5px 12px rgba(0,0,0,.25)}
+.sychoice svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+.sychoice.on{background:#fff;color:#16171a}
+.sychoice.wide{width:100%;margin-bottom:12px}
+.sygrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding-right:calc(100% / 4.4)}
+.sytile{height:112px;border-radius:14px;background:#3a3b3e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;font-size:13px;grid-column:span 1}
+.sytile .dc{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.35)}
+.sytile .dc svg{width:30px;height:30px}
+.sytile:first-child .dc{background:#101114;color:#fff}
+.sytile b{font-weight:500}
+.sybri{position:absolute;border-radius:24px;overflow:visible;background:#ffffff1c;touch-action:none;transform:translateY(24px);opacity:0;transition:transform .4s cubic-bezier(.2,.9,.25,1),opacity .25s}
+.sypop.in .sybri{transform:none;opacity:1}
+.sybri .fillb{position:absolute;left:0;right:0;bottom:0;border-radius:24px;background:linear-gradient(180deg,#bdbdbd,#808080)}
+.sybri .ic{position:absolute;left:0;right:0;bottom:0;height:48px;display:flex;align-items:center;justify-content:center;color:#fff}
+.sybri .ic svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2.1}
+.sybri .pc{position:absolute;left:50%;top:-36px;transform:translateX(-50%);padding:4px 10px;border-radius:12px;background:#1c1c20;font-size:11px;letter-spacing:.1em}
+.pg.plusbar .pbar .ok{display:none!important}
+
+/* The panel is a phone screen (9:16) in the middle of a wide one. The page is the containing block of everything fixed in it (the pages that slide in, the frame, the cards), and clips what slides. */
+html{background:#000;overflow:hidden}
+body{position:relative;width:min(100vw,calc(100vh * 9 / 16));width:min(100vw,calc(100dvh * 9 / 16));height:100vh;height:100dvh;margin:0 auto;overflow:hidden;transform:translateZ(0)}
+
+/* A light's screen is the room's page turned into it, not a page over it: the room's own header, scenes and controls go up and fade, the page takes the colour screen's background, and the row of lights (which the colour screen draws in the same place) slides down. */
+.pg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#2a1f1d 0,#16171a 62%);opacity:0;transition:opacity .45s;pointer-events:none}
+.pg.tolight::after{opacity:1}
+.pg .pbody,.pg .pbar{transition:opacity .3s}
+.pg.tolight .pbody,.pg.tolight .pbar{opacity:0}
+.pg.tolight .ltiles,.pg.leaving .ltiles{visibility:hidden}
+.pg.lightpg .lbar{animation:hpin .35s .12s backwards}
+.pg.lightout .lbar{opacity:0;transition:opacity .35s}

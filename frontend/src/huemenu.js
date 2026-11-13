@@ -1630,7 +1630,7 @@ function hmPress(b, id) {
                 return kind === c[0];
               },
               tap: function () {
-                if (c[0] === "scene") showPopup("hue-scene:" + id, true);
+                if (c[0] === "scene") showPopup("hue-pick-scene:" + id, true);
                 else if (c[0] === "cycle") showPopup("hue-cycle:" + id, true);
                 else if (c[0] === "time") showPopup("hue-time:" + id, true);
                 else {
@@ -2088,7 +2088,7 @@ HP_PAGES["hue-switches"] = ["hm_switches", "cog", hmSwitches];
 HP_PAGES["hue-switch"] = ["hm_switch_one", "cog", hmSwitch];
 HP_PAGES["hue-button"] = ["hm_button_label", "cog", hmButtonPage];
 HP_PAGES["hue-press"] = ["hm_press", "cog", hmPress];
-HP_PAGES["hue-scene"] = ["hm_single_scene", "scene", hmScenePick];
+HP_PAGES["hue-pick-scene"] = ["hm_single_scene", "scene", hmScenePick];
 HP_PAGES["hue-cycle"] = ["hm_scene_cycle", "scene", hmCycle];
 HP_PAGES["hue-time"] = ["hm_time_based_light", "clock", hmTimePage];
 HP_PAGES["hue-tslot"] = ["hm_time", "clock", hmTimeSlot];

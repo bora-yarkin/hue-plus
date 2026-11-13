@@ -123,6 +123,7 @@ KINDS = (
     "rooms",
     "zones",
     "scenes",
+    "lights",
     "smart_scenes",
     "entertainment_areas",
     "matter_fabrics",
@@ -159,6 +160,7 @@ async def get_resources(api: BridgeApi, snap: models.Snapshot, data: dict[str, A
         "rooms": lambda: models.groups(snap, "room"),
         "zones": lambda: models.groups(snap, "zone"),
         "scenes": lambda: models.scenes(snap),
+        "lights": lambda: models.light_states(snap),
         "smart_scenes": lambda: [
             {"id": s["id"], "name": models._name(s), "state": s.get("state"), "group": s.get("group")} for s in snap.smart_scene
         ],

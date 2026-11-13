@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Light popup frame, test page</title>
+<style>html,body{margin:0;height:100%;background:#1a1b1f}iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:transparent}</style></head>
+<body>
+<!-- Serve the repository root (python3 -m http.server 8777) and open /tests/frontend/panel/light.html: the frame the panel opens a light in, with the pretend Home Assistant. -->
+<iframe id="f" allowtransparency="true"></iframe>
+<script type="module">
+  import { makeHass } from "./mock-hass.js";
+  const hass = makeHass(new URLSearchParams(location.search));
+  window.__hass = hass;
+  const f = document.getElementById("f");
+  f.src = "/custom_components/hue_plus/frontend/popup.html?v=" + Date.now();
+  // The frame may have loaded before this module ran, or not yet.
+  const attach = setInterval(() => {
+    const w = f.contentWindow;
+    if (!w || !w.HuePopup) return;
+    clearInterval(attach);
+    w.HuePopup.attach(hass);
+    const wait = setInterval(() => { if (w.HuePopup.isReady()) { clearInterval(wait); window.__ready = true; } }, 200);
+  }, 50);
+</script></body></html>
