@@ -218,7 +218,7 @@ body.lg .wrap{zoom:1!important}
       window.lpMarker = function (n, showName) {
         var m = made(n, showName);
         /* one marker per circle (the colour and the white circle each have one) */
-        if (!showName) (HPM[n.key] = HPM[n.key] || []).push(m);
+        (HPM[n.key] = HPM[n.key] || []).push(m);
         return m;
       };
       window.lpMarker.hp = true;
