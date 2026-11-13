@@ -77,12 +77,13 @@ function hpFrameShow(on) {
     bar = layers.length ? layers[layers.length - 1].querySelector(".pbar") : null;
   /* Where the bar ends in its final place (a page that is still sliding in is measured without its movement). */
   var top = bar ? (layers[layers.length - 1].offsetTop + bar.offsetTop + bar.offsetHeight) / hpOffsetZoom() : 0;
-  /* The frame is a phone of the app's width (393 points) whatever the panel's width is: it is laid out at that width and scaled to fit, as the panel's own pages scale with the width. */
+  /* The frame's lengths are scaled as the panel's own are (the root font size). */
   var scale = hpFrameScale();
   HPLF.el.style.top = top + "px";
   HPLF.el.style.right = "auto";
   HPLF.el.style.bottom = "auto";
-  HPLF.el.style.width = HP_DESIGN_WIDTH + "px";
+  /* as wide as the panel, in the panel's own lengths */
+  HPLF.el.style.width = (parseFloat(document.body.style.width) || HP_DESIGN_WIDTH * scale) / scale + "px";
   HPLF.el.style.height = "calc((100% - " + top + "px) / " + scale + ")";
   HPLF.el.style.transformOrigin = "0 0";
   HPLF.el.style.transform = "scale(" + scale + ")";

@@ -68,15 +68,15 @@ function hpFit() {
     wide = parseFloat(page.width),
     high = parseFloat(page.height);
   if (!wide || !high) return;
-  /* On a phone the panel is the page. On a larger page it is a phone of the Hue app's own size (393 by 852 CSS px at most), in the middle: it is not blown up to fill the window, so the
-     browser's zoom makes it larger or smaller as it does any page. */
+  /* On a phone the panel is the page, drawn to the phone's width. On a larger page it is a column as high as the page and 9:16 wide; there it is a web page, not a phone blown up: its
+     lengths are at most a little larger than a phone's (so the browser's zoom still makes everything larger or smaller) and the wider column simply holds more. */
   var isPhone = wide <= 500,
-    phone = isPhone ? wide : 393,
-    tall = isPhone ? high : Math.min(high, 852);
+    phone = isPhone ? wide : Math.min(wide, (high * 9) / 16),
+    scale = isPhone ? phone / 393 : Math.max(1, Math.min(phone / 393, 1.12));
   document.body.style.width = phone + "px";
-  document.body.style.height = tall + "px";
-  document.body.style.marginTop = Math.max(0, (high - tall) / 2) + "px";
-  document.documentElement.style.fontSize = (phone / 393) * 16 + "px";
+  document.body.style.height = "";
+  document.body.style.marginTop = "";
+  document.documentElement.style.fontSize = scale * 16 + "px";
 }
 
 function hpStart() {
