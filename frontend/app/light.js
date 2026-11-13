@@ -145,6 +145,14 @@ window.HueHost.frameBar = function (title, onDone, onCancel) {
   };
 };
 
+/* The icon type of a light (the bridge's lights list, read when the panel opens), and what a rename changes. */
+window.HueHost.lightType = function (id) {
+  return hpArchetypeOf(id);
+};
+window.HueHost.onRenamed = function () {
+  hpLoadLightStates();
+};
+
 /* Every page that is drawn takes the frame away; a light screen puts it back. */
 window.HueHost.onRender = function () {
   hpFrameShow(false);

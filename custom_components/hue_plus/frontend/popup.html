@@ -48,6 +48,8 @@ body.areamode .ae-card.picked{outline:2.5px solid #fff;outline-offset:-2px}
 body.areamode .ae-card svg{width:24px;height:24px}
 body.areamode .ae-cn{font-size:12px;font-weight:500}
 .lp-tray{padding-bottom:2px}
+/* the settings rows Home Control shows under the room are not in the Hue app (its Orientation setup is the sheet below) */
+body.areamode .hp-info{display:none}
 /* Orientation setup */
 .hp-orient{display:none;position:absolute;right:10px;width:36px;height:36px;margin-top:-86px;border:0;border-radius:50%;background:#2d2e33;color:#fff;align-items:center;justify-content:center;cursor:pointer;z-index:3}
 .hp-orient.on{display:flex}
@@ -62,8 +64,6 @@ body.orienting .ae-tray,body.orienting .hp-orient,body.orienting #body>.seg{disp
 .hp-ochoice.on{box-shadow:inset 0 0 0 2px #2e68f7}
 /* the pins of the lights glow, as the app draws them */
 body.areamode .ae-dot{filter:drop-shadow(0 0 4px rgba(127,167,255,.85))}
-/* the picked light's icon in its group's drop, drawn as a single light's is */
-.lw-pin .hp-pick{display:contents}
 /* The row of lights is the room page's row, moved: the same tiles (size, gaps, look, the gold of a light that is on, the switch) at the same place sideways, so the row that slides here and the
  row the room page shows are one to the eye. */
 .lp-tray{gap:11px;margin:0 -16px 0;padding:0 11px;scroll-padding:0 11px}
@@ -150,11 +150,6 @@ body.lg .wrap{zoom:1!important}
     return b;
   }
 
-  /* ---- A light picked among lights that look the same, as the Hue app does it ----
-   The wheel shows one marker for lights that look the same, with their number. Tapping the tile of one of them does not take it out: the marker is picked for that light (its drop shows
-   that light's icon, not the number, and brightness, colour and effects act on that light alone). Only dragging the marker then takes that light out, and the others stay where they are.
-   Home Control's own code (lights/) is not changed: this wraps its functions in this frame. */
-  var HPM = {};
   /* The lights in the order the panel gives them (the room page's row): the tiles follow it, whatever the wheel joins. */
   var HPORDER = [];
   function hpRank(n) {
@@ -165,71 +160,7 @@ body.lg .wrap{zoom:1!important}
       });
     return i < 0 ? 1e6 : i;
   }
-  function hpPickable(S) {
-    window.HPS = S;
-    S.focus = null;
-    var reveal = S.reveal,
-      select = S.select,
-      target = S.target;
-    function groupOf(n) {
-      return S.joined.filter(function (v) {
-        return v.kids.indexOf(n) >= 0;
-      })[0];
-    }
-    /* The marker of the group shows the picked light's icon instead of the number while that light is picked. */
-    function paintPick() {
-      Object.keys(HPM).forEach(function (k) {
-        HPM[k] = HPM[k].filter(function (m) {
-          return m.pin.isConnected;
-        });
-        HPM[k].forEach(function (m) {
-          paintOne(k, m);
-        });
-      });
-    }
-    function paintOne(k, m) {
-      var num = m.pin.querySelector(".lw-num"),
-          pick = m.pin.querySelector(".hp-pick");
-        var mine = S.focus && S.focus.v.key === k && S.sel === k;
-        if (mine && !pick && num) {
-          num.style.display = "none";
-          var ico = document.createElement("span");
-          ico.className = "hp-pick";
-          ico.innerHTML = svg(S.focus.n.icon || "light");
-          m.pin.insertBefore(ico, num);
-        } else if (!mine && pick) {
-          pick.remove();
-          if (num) num.style.display = "";
-        }
-    }
-    S.select = function (key) {
-      if (!S.focus || key !== S.focus.v.key || !S.focus.keep) S.focus = null;
-      if (S.focus) S.focus.keep = false;
-      select(key);
-      paintPick();
-    };
-    S.target = function () {
-      return S.focus && S.sel === S.focus.v.key ? S.focus.n : target();
-    };
-    S.reveal = function (n) {
-      var v = groupOf(n);
-      if (!v) return reveal(n);
-      S.focus = { v: v, n: n, keep: true };
-      S.select(v.key);
-    };
-  }
-  /* The markers are made by lpMarker: each is noted by the key of what it stands for, so the group's marker can be found. */
-  function hpWrapMarkers() {
-    if (window.lpMarker && !window.lpMarker.hp) {
-      var made = window.lpMarker;
-      window.lpMarker = function (n, showName) {
-        var m = made(n, showName);
-        /* one marker per circle (the colour and the white circle each have one) */
-        (HPM[n.key] = HPM[n.key] || []).push(m);
-        return m;
-      };
-      window.lpMarker.hp = true;
-    }
+  function hpWrapPanel() {
     if (window.lpTrayNodes && !window.lpTrayNodes.hp) {
       var trayNodes = window.lpTrayNodes;
       window.lpTrayNodes = function (S) {
@@ -248,14 +179,6 @@ body.lg .wrap{zoom:1!important}
         hpOrientPaint();
       };
       window.eaSelect.hp = true;
-    }
-    if (window.lpTileSel && !window.lpTileSel.hp) {
-      var tileSel = window.lpTileSel;
-      window.lpTileSel = function (S, n) {
-        if (S.focus && S.sel === S.focus.v.key) return n === S.focus.n;
-        return tileSel(S, n);
-      };
-      window.lpTileSel.hp = true;
     }
   }
   /* ---- Orientation setup, as the app has it for a light made of zones (Hue-Screenshots/IMG_0419) ----
@@ -278,23 +201,11 @@ body.lg .wrap{zoom:1!important}
       key = window.EAD && EAD.sel;
     if (b) b.classList.toggle("on", !!(key && eaLightOf(key) && eaIsBar(key)));
   }
-  function hpOrientOf(l) {
-    var a = ((((l.a || 0) % 360) + 360) % 360) * (Math.PI / 180);
-    return {
-      up: Math.abs(l.p || 0) >= 45,
-      across: Math.abs(Math.sin(a)) > Math.abs(Math.cos(a)),
-      right: Math.abs(Math.sin(a)) > Math.abs(Math.cos(a)) ? Math.sin(a) < 0 : Math.cos(a) < 0,
-    };
-  }
-  function hpOrientSet(l, o) {
-    l.p = o.up ? 90 : 0;
-    l.a = o.across ? (o.right ? 270 : 90) : o.right ? 180 : 0;
-  }
   function hpOrientSheet() {
     var key = window.EAD && EAD.sel,
       l = key && eaLightOf(key);
     if (!l || !eaIsBar(key)) return;
-    var o = hpOrientOf(l),
+    var o = eaOrientOf(l),
       sheet = document.createElement("div");
     sheet.className = "hp-osheet";
     sheet.innerHTML = "<p></p><div class='hp-ogrid'></div>";
@@ -317,7 +228,7 @@ body.lg .wrap{zoom:1!important}
       t.dataset.v = c[1] ? "1" : "";
       t.addEventListener("click", function () {
         o[c[0]] = c[1];
-        hpOrientSet(l, o);
+        eaOrientSet(l, o);
         eaDrawLight(key);
         paint();
       });
@@ -351,61 +262,6 @@ body.lg .wrap{zoom:1!important}
     document.body.classList.add("orienting");
     document.body.appendChild(sheet);
   }
-
-  /* Pressing the picked group's marker takes the picked light out before the wheel sees the press, so the wheel drags that light alone; a press that does not move puts it back. */
-  var hpPress = null;
-  document.addEventListener(
-    "pointerdown",
-    function (e) {
-      var S = window.HPS,
-        circ = e.target.closest ? e.target.closest(".lw-c") : null;
-      hpPress = null;
-      if (!S || !circ || !S.focus || S.sel !== S.focus.v.key) return;
-      var m = (HPM[S.focus.v.key] || []).filter(function (x) {
-        return circ.contains(x.pin);
-      })[0];
-      if (!m || lpReach(circ, e, m) > 34) return;
-      var v = S.focus.v,
-        n = S.focus.n,
-        before = { ex: Object.assign({}, S.ex), joined: S.joined.slice(), sel: S.sel, focus: S.focus };
-      S.focus = null;
-      S.detach(v, n);
-      var mine = (HPM[n.key] || []).filter(function (x) {
-          return circ.contains(x.pin);
-        })[0],
-        r = circ.getBoundingClientRect();
-      if (mine) lpPlace(mine, e.clientX - r.left, e.clientY - r.top);
-      hpPress = { x: e.clientX, y: e.clientY, moved: false, before: before };
-    },
-    true
-  );
-  document.addEventListener(
-    "pointermove",
-    function (e) {
-      if (hpPress && !hpPress.moved && Math.hypot(e.clientX - hpPress.x, e.clientY - hpPress.y) >= 6) hpPress.moved = true;
-    },
-    true
-  );
-  document.addEventListener(
-    "pointerup",
-    function () {
-      var p = hpPress,
-        S = window.HPS;
-      hpPress = null;
-      if (!p || p.moved || !S) return;
-      /* A tap: the light goes back into its group, which stays picked for it. */
-      setTimeout(function () {
-        S.ex = p.before.ex;
-        S.joined = p.before.joined;
-        S.pop = null;
-        S.rebuild();
-        p.before.focus.keep = true;
-        S.focus = p.before.focus;
-        S.select(p.before.sel);
-      }, 0);
-    },
-    true
-  );
 
   /* The panel is the page (the Hue app's colour wheel screen), not a popup: it is drawn straight into the page of this frame, which the panel shows under its own bar. */
   window.HuePopup = {
@@ -475,7 +331,6 @@ body.lg .wrap{zoom:1!important}
             });
             S.rebuild();
           }
-          hpPickable(S);
           if (focus && ids.indexOf(focus) >= 0) {
             var fn = lpFindIn(S, focus);
             if (fn) S.reveal(fn);
@@ -528,6 +383,7 @@ body.lg .wrap{zoom:1!important}
       window.EAD = { room: "", isNew: false, sel: null, draft: draft, saved: JSON.stringify(draft), external: { plugin: "hue_plus", id: area.id, after: null, note: "" } };
       document.body.classList.add("areamode");
       eaEditor(body());
+      if (window.EAD && EAD.v && EAD.v.info) EAD.v.info.classList.add("hp-info");
       hpOrientButton();
       document.body.classList.add("rise");
       return true;
@@ -689,7 +545,7 @@ body.lg .wrap{zoom:1!important}
         window.deviceSet = function () {};
         LG = false;
         applyLG();
-        hpWrapMarkers();
+        hpWrapPanel();
         window.lightScenesRow = function () {};
         var lookOn = window.lpLook;
         window.lpLook = function (e) {

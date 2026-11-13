@@ -405,6 +405,30 @@ def scenes(snap: Snapshot) -> list[dict[str, Any]]:
     ]
 
 
+def device_details(snap: Snapshot) -> list[dict[str, Any]]:
+    """Every device with what the Hue app's Device info shows of it: its product, maker, model number, MAC address, hardware platform and
+    software, and the lights it has (so a light's page can find its device)."""
+    macs = {(z.get("owner") or {}).get("rid"): z.get("mac_address") for z in snap.zigbee_connectivity}
+    out = []
+    for d in snap.device:
+        product = d.get("product_data") or {}
+        out.append(
+            {
+                "id": d["id"],
+                "name": _name(d),
+                "model": product.get("product_name"),
+                "model_id": product.get("model_id"),
+                "manufacturer": product.get("manufacturer_name"),
+                "hardware": product.get("hardware_platform_type"),
+                "firmware": product.get("software_version"),
+                "mac": macs.get(d["id"]),
+                "services": [s.get("rtype") for s in d.get("services") or []],
+                "lights": [s.get("rid") for s in d.get("services") or [] if s.get("rtype") == "light"],
+            }
+        )
+    return out
+
+
 def light_states(snap: Snapshot) -> list[dict[str, Any]]:
     """What every light was last set to, which the bridge keeps while it is off: the app shows an off light at those settings."""
     out = []

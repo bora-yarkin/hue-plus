@@ -322,26 +322,6 @@ function hpScenesOf(id) {
 }
 
 /* The icon of a light from the shape the Hue app draws for its archetype (a name check: the bridge's archetype is not on the entity). */
-/* The icon types of the bridge (a light's archetype) in the groups the Hue app lists them under, each with the icon drawn for it here. */
-var HP_ARCHETYPES = [
-  ["app_type_table", "lamp", ["table_shade", "flexible_lamp", "table_wash"]],
-  ["app_type_floor", "floor", ["floor_shade", "floor_lantern", "bollard"]],
-  ["app_type_pendant", "ceiling", ["pendant_round", "pendant_long", "pendant_spot"]],
-  ["app_type_ceiling", "ceiling", ["ceiling_round", "ceiling_square", "ceiling_horizontal", "ceiling_tube", "recessed_ceiling", "single_spot", "double_spot"]],
-  ["app_type_wall", "light", ["wall_shade", "wall_lantern", "wall_spot", "wall_washer", "up_and_down", "up_and_down_up", "up_and_down_down"]],
-  ["app_type_outdoor", "light", ["ground_spot", "recessed_floor", "flood_bulb", "string_light"]],
-  ["app_type_hue", "strip", ["hue_lightstrip", "hue_lightstrip_tv", "hue_lightstrip_pc", "hue_play", "hue_play_wallwasher", "hue_tube", "hue_signe", "hue_go", "hue_iris", "hue_bloom", "hue_centris", "twilight"]],
-  ["app_type_bulbs", "light", ["classic_bulb", "sultan_bulb", "spot_bulb", "candle_bulb", "luster_bulb", "vintage_bulb", "vintage_candle_bulb", "edison_bulb", "ellipse_bulb", "triangle_bulb", "small_globe_bulb", "large_globe_bulb"]],
-  ["app_type_other", "plug", ["plug", "christmas_tree"]],
-];
-
-function hpArchetypeIcon(type) {
-  var found = HP_ARCHETYPES.filter(function (g) {
-    return g[2].indexOf(type) >= 0;
-  })[0];
-  return found ? found[1] : null;
-}
-
 /* What the bridge says a light's icon type is (the lights list it reads). */
 function hpArchetypeOf(lid) {
   var hue = A(lid).hue_light_id,

@@ -173,16 +173,7 @@ async def get_resources(api: BridgeApi, snap: models.Snapshot, data: dict[str, A
         "accessories": lambda: models.accessories(snap),
         "home_and_away": lambda: models.home_and_away(snap),
         "motion_sensors": lambda: models.motion_sensors(snap),
-        "devices": lambda: [
-            {
-                "id": d["id"],
-                "name": models._name(d),
-                "model": (d.get("product_data") or {}).get("product_name"),
-                "firmware": (d.get("product_data") or {}).get("software_version"),
-                "services": [s.get("rtype") for s in d.get("services") or []],
-            }
-            for d in snap.device
-        ],
+        "devices": lambda: models.device_details(snap),
         "firmware": lambda: models.firmware_items(snap),
         "bridge": lambda: {
             **models.bridge_update(snap),

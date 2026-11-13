@@ -414,46 +414,4 @@ function hpButtonControlsPage(b) {
   b.appendChild(hmGroup([hmRow({ icon: "lights", title: _T("lights"), check: function () { return true; } })]));
 }
 
-/* The lights a button acts on (the app's Selected lights): a room or a zone. Choosing one writes it to the bridge at once, and what the button's presses do stays. */
-function hpButtonLightsPage(b, id) {
-  hmBox(b);
-  hmLoad(b, ["accessories", "rooms", "zones"], function (box, r) {
-    var k = hmBtnKey(id),
-      f = hmBtnFind(r, k);
-    if (!f.acc || !f.btn) {
-      box.appendChild(hmCallout(_T("nothing_found")));
-      return;
-    }
-    var now = hmBtnTargets(r, f.acc, f.btn).ids;
-    [
-      ["room", r.rooms || [], "home"],
-      ["zone", r.zones || [], "target"],
-    ].forEach(function (kind) {
-      if (!kind[1].length) return;
-      box.appendChild(hmLabel(_T(kind[0] === "room" ? "app_rooms" : "zones")));
-      box.appendChild(
-        hmGroup(
-          kind[1].map(function (g) {
-            return hmRow({
-              icon: kind[2],
-              title: g.name,
-              check: function () {
-                return now.indexOf(g.id) >= 0;
-              },
-              tap: function () {
-                hpCall("hue_plus", "set_button_lights", { accessory: f.acc.id, button: f.btn.number, group: g.id, group_type: kind[0] }).then(function () {
-                  return hmReread("accessories", f.acc.id).then(function () {
-                    popBack();
-                  });
-                }, function () {});
-              },
-            });
-          })
-        )
-      );
-    });
-  });
-}
-
 HP_PAGES["app-btnctl"] = ["app_button_controls", "lights", hpButtonControlsPage];
-HP_PAGES["app-btnlights"] = ["app_selected_lights", "home", hpButtonLightsPage];

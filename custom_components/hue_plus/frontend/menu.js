@@ -791,6 +791,7 @@ var PLUGIN_STRINGS = {
 
 /* The styles of the Spotify sync and sync box popups, added to the dashboard's page by the plugin (the dashboard's own styles are for its own parts). */
 var HUE_PLUS_CSS = ".hs-now{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:4px 0 var(--sp)}\n.hs-art{width:min(62%,248px);aspect-ratio:1;border-radius:var(--r-m);background:var(--f-raise);border:1px solid var(--f-line);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--ink2);position:relative}\n.hs-art svg{width:44px;height:44px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}\n.hs-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}\n.hs-art.has-art svg{visibility:hidden}\n.hs-st{margin-top:12px;font-size:var(--fs-xs);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}\n.hs-tt{font-size:19px;font-weight:600;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}\n.hs-sub{font-size:var(--fs-m);color:var(--ink2);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.hs-set{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-s);margin:var(--sp) 0}\n.hs-set.one{grid-template-columns:minmax(0,1fr)}\n.hs-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}\n.hs-cap{font-size:var(--fs-xs);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}\n.hs-tile{display:flex;align-items:center;justify-content:center;width:76px;height:50px;border-radius:25px;box-sizing:border-box;background:var(--f-card);border:1px solid var(--f-line);color:var(--ink);cursor:pointer;min-width:0;transition:background .2s}\n.hs-tile:active{background:var(--f-line)}\n.hs-tile.hs-grad{border-color:transparent}\n.hs-i{display:flex;align-items:center;justify-content:center}\n.hs-i svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}\n\n.hs-now,.hs-bar,.hs>.pill,.hs-col{transition:opacity .25s}\n.hs.bri-open .hs-now,.hs.bri-open .hs-bar,.hs.bri-open>.pill,.hs.bri-open .hs-col:not(:last-child){opacity:.25;pointer-events:none}\n.hs-bar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:var(--sp);padding:14px 12px;margin:var(--sp) 0;border-radius:var(--r-l)}\n.hs-side{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;text-align:center}\n.hs-btn{cursor:pointer}\n.hs-nm{font-size:var(--fs-s);color:var(--ink);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.hs-go{width:76px;height:76px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--f-raise);border:2px solid var(--f-line2);color:var(--ink);cursor:pointer;transition:background .2s,border-color .2s}\n.hs-go svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}\n.hs-go.on{background:color-mix(in srgb,var(--acc) 40%,var(--f-raise));border-color:var(--acc)}\n.hs-go.on svg{animation:hs-spin 14s linear infinite}\n@keyframes hs-spin{to{transform:rotate(360deg)}}\n@media(prefers-reduced-motion:reduce){.hs-go.on svg{animation:none}}\n.hs-tile:focus-visible,.hs-go:focus-visible,.hs-btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}\n.hs-off{opacity:.5;pointer-events:none}\n.hs-sw{width:54px;height:16px;border-radius:999px;flex:none;margin-left:auto;border:1px solid var(--f-line2)}\n.hs-sw+.ck{margin-left:10px}\n.lp-mode.hs-m svg{fill:none}";
+HUE_PLUS_CSS += "\n/* Edit name and type */\n.hm-title{position:relative}\n.hm-title .hm-pen{position:absolute;right:16px;bottom:10px;width:30px;height:30px;border:0;border-radius:50%;background:var(--f-raise,#3a3b3e);color:inherit;display:flex;align-items:center;justify-content:center;cursor:pointer}\n.hm-title .hm-pen svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}\n.rnbig{display:flex;justify-content:center;padding:18px 0 10px}\n.rnbig svg{width:44px;height:44px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}\n.rnname{display:block;box-sizing:border-box;width:calc(100% - 22px);margin:8px 11px 4px;padding:13px 12px;border:0;border-radius:8px;background:var(--f-raise,#3a3b3e);color:inherit;font:inherit;font-size:14px}\n.rngrid{display:grid;grid-template-columns:repeat(3,1fr);background:var(--f-card,#25262a);margin:0 0 6px;border-radius:var(--r-row,0)}\n.rntype{display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px 4px 14px;border:0;background:none;color:inherit;cursor:pointer;font:inherit}\n.rntype .ic{width:38px;height:38px;border-radius:50%;background:var(--f-line2,#4a4b50);display:flex;align-items:center;justify-content:center}\n.rntype .ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}\n.rntype b{font-size:11px;font-weight:500;text-align:center}\n.rntype.on .ic{background:#fff;color:#1b1c20}\n";
 
 /* What Hue Plus offers, read from Home Assistant's registry and states (so a page shows only what exists): the bridge's entities, the lights, what belongs to one light, the
  updates, and the bridge's own data (a service that answers). It was the dashboard's `Integrations.hueplus`; now it is this plugin's. */
@@ -1937,9 +1938,21 @@ function hmLight(b, id) {
     },
     area = H().entities && H().entities[id] && H().entities[id].area_id,
     minutes = 15;
-  b.appendChild(hmTitle("lamp", hpName(id), function () {
+  var title = hmTitle(hpArchetypeIcon(hmLightType(id)) || "lamp", hpName(id), function () {
     return V_(id) === "unavailable" ? _T("hm_unreachable") : "";
-  }));
+  });
+  b.appendChild(title);
+  /* The pencil by the name: its name and type (the Hue app's Edit name and type). */
+  if (hue && hueplus.has(H(), "set_name")) {
+    var pen = mk("button", "hm-pen", svg("edit"));
+    pen.type = "button";
+    pen.setAttribute("aria-label", _T("app_edit_name_and_type"));
+    pen.addEventListener("click", function () {
+      delete HPRENAME[id];
+      showPopup("app-rename:" + id, true);
+    });
+    title.appendChild(pen);
+  }
   if (area && H().areas && H().areas[area])
     b.appendChild(hmGroup([hmRow({ icon: "home", title: _T("hm_room"), val: H().areas[area].name })]));
   var general = [];
@@ -1990,40 +2003,9 @@ function hmLight(b, id) {
     b.appendChild(hmGroup(general));
   }
   if (a().hue_function || a().hue_gradient_order) b.appendChild(hmExperimental("experimental_not_yet_tried_on_a_real_bridge"));
-  var info = [];
-  if (a().hue_min_brightness !== undefined)
-    info.push(
-      hmRow({
-        title: _T("lowest_brightness"),
-        val: function () {
-          return Math.round(a().hue_min_brightness * 100) / 100 + "%";
-        },
-      })
-    );
-  if (X.update)
-    info.push(
-      hmRow({
-        title: _T("firmware"),
-        sub: function () {
-          return A(X.update).installed_version || "";
-        },
-        val: function () {
-          return hmUpdateText(X.update);
-        },
-        tap:
-          V_(X.update) === "on"
-            ? function () {
-                confirmDlg(_T("install_this_update"), function () {
-                  call("update", "install", { entity_id: X.update });
-                });
-              }
-            : null,
-      })
-    );
-  if (info.length) {
-    b.appendChild(hmLabel(_T("hm_device_info")));
-    b.appendChild(hmGroup(info));
-  }
+  /* Support: the device's details are a page of their own, as in the Hue app. */
+  b.appendChild(hmLabel(_T("app_support")));
+  b.appendChild(hmGroup([hmRow({ icon: "info", title: _T("hm_device_info"), tap: "app-devinfo:" + id })]));
   if (!HC.hueApp) {
     b.appendChild(hmLabel(_T("hm_timed_effects")));
     b.appendChild(hmChips([5, 15, 30, 60], function () { return minutes; }, function (v) { minutes = v; }, function (v) { return v + " " + _T("hm_min"); }));
@@ -2907,7 +2889,15 @@ function hmButtonPage(b, id) {
       )
     );
     box.appendChild(hmLabel(_T("hm_behavior")));
-    box.appendChild(hmGroup([hmRow({ title: _T("hm_selected_lights"), val: t.name || _T("hm_the_whole_home") })]));
+    box.appendChild(
+      hmGroup([
+        hmRow({
+          title: _T("hm_selected_lights"),
+          val: t.name || _T("hm_the_whole_home"),
+          tap: hueplus.has(H(), "set_button_lights") ? "app-btnlights:" + f.acc.id + "|" + k.n : null,
+        }),
+      ])
+    );
     box.appendChild(hmExperimental("hm_experimental_buttons"));
   });
 }
@@ -3428,6 +3418,243 @@ HP_PAGES["hue-end"] = ["hm_when_sync_stops", "target", hmEnd];
 HP_PAGES["hue-perf"] = ["hm_performance", "target", hmPerf];
 HP_PAGES["hue-escene"] = ["hp_scene", "scene", hmEndScene];
 HP_PAGES["hue-motion"] = ["hm_motionaware_areas", "motion", hmMotion];
+
+/* ---- a light's name and type, its device info (the Hue app's Light settings), and the lights a button acts on ---- */
+
+/* The icon types of the bridge (a light's archetype) in the groups the Hue app lists them under, each with the icon drawn for it here. */
+var HP_ARCHETYPES = [
+  ["app_type_table", "lamp", ["table_shade", "flexible_lamp", "table_wash"]],
+  ["app_type_floor", "floor", ["floor_shade", "floor_lantern", "bollard"]],
+  ["app_type_pendant", "ceiling", ["pendant_round", "pendant_long", "pendant_spot"]],
+  ["app_type_ceiling", "ceiling", ["ceiling_round", "ceiling_square", "ceiling_horizontal", "ceiling_tube", "recessed_ceiling", "single_spot", "double_spot"]],
+  ["app_type_wall", "light", ["wall_shade", "wall_lantern", "wall_spot", "wall_washer", "up_and_down", "up_and_down_up", "up_and_down_down"]],
+  ["app_type_outdoor", "light", ["ground_spot", "recessed_floor", "flood_bulb", "string_light"]],
+  ["app_type_hue", "strip", ["hue_lightstrip", "hue_lightstrip_tv", "hue_lightstrip_pc", "hue_play", "hue_play_wallwasher", "hue_tube", "hue_signe", "hue_go", "hue_iris", "hue_bloom", "hue_centris", "twilight"]],
+  ["app_type_bulbs", "light", ["classic_bulb", "sultan_bulb", "spot_bulb", "candle_bulb", "luster_bulb", "vintage_bulb", "vintage_candle_bulb", "edison_bulb", "ellipse_bulb", "triangle_bulb", "small_globe_bulb", "large_globe_bulb"]],
+  ["app_type_other", "plug", ["plug", "christmas_tree"]],
+];
+
+/* The icon type of a light as far as this page knows it (the Hue panel keeps the bridge's lights list; elsewhere it is not known until read). */
+function hmLightType(id) {
+  return window.HueHost && window.HueHost.lightType ? window.HueHost.lightType(id) : null;
+}
+
+function hpArchetypeIcon(type) {
+  var found = HP_ARCHETYPES.filter(function (g) {
+    return g[2].indexOf(type) >= 0;
+  })[0];
+  return found ? found[1] : null;
+}
+
+function hpDeviceInfoRows(id) {
+  var a = function () {
+      return A(id);
+    },
+    X = hueplus.forLight(H(), id),
+    rows = [];
+  if (a().hue_min_brightness !== undefined)
+    rows.push(
+      hmRow({
+        title: _T("lowest_brightness"),
+        val: function () {
+          return Math.round(a().hue_min_brightness * 100) / 100 + "%";
+        },
+      })
+    );
+  if (X.update)
+    rows.push(
+      hmRow({
+        title: _T("firmware"),
+        sub: function () {
+          return A(X.update).installed_version || "";
+        },
+        val: function () {
+          return hmUpdateText(X.update);
+        },
+        tap:
+          V_(X.update) === "on"
+            ? function () {
+                confirmDlg(_T("install_this_update"), function () {
+                  call("update", "install", { entity_id: X.update });
+                });
+              }
+            : null,
+      })
+    );
+  return rows;
+}
+
+/* Device info, as the app lists it: device type, manufacturer, model, MAC address, hardware platform version and software, from what Home Assistant knows of the device; then the light's lowest
+ brightness and its firmware update, which Hue Plus adds. */
+function hpDeviceInfoPage(b, id) {
+  hmBox(b);
+  var ent = H().entities && H().entities[id],
+    dev = ent && H().devices ? H().devices[ent.device_id] : null,
+    rows = [];
+  function row(title, value) {
+    if (value) rows.push(hmRow({ title: title, sub: String(value), stack: true }));
+  }
+  /* What the bridge says of the device (it knows more than Home Assistant's device record), and Home Assistant's record where the bridge says nothing. */
+  var hue = A(id).hue_light_id,
+    group = mk("div");
+  b.appendChild(group);
+  function draw(bridge) {
+    rows = [];
+    var mac = dev
+      ? (dev.connections || []).filter(function (c) {
+          return c[0] === "zigbee" || c[0] === "mac";
+        })[0]
+      : null;
+    bridge = bridge || {};
+    row(_T("app_device_type"), bridge.model || (dev && dev.model));
+    row(_T("app_manufacturer"), bridge.manufacturer || (dev && dev.manufacturer));
+    row(_T("app_model"), bridge.model_id || (dev && dev.model_id));
+    row(_T("app_mac_address"), bridge.mac || (mac ? mac[1] : ""));
+    row(_T("app_hardware_version"), bridge.hardware || (dev && dev.hw_version));
+    row(_T("app_software"), bridge.firmware || (dev && dev.sw_version));
+    group.textContent = "";
+    if (rows.length) group.appendChild(hmGroup(rows));
+  }
+  draw(null);
+  if (hue)
+    hueplus.resources(["devices"]).then(function (r) {
+      draw(
+        ((r && r.devices) || []).filter(function (x) {
+          return (x.lights || []).indexOf(hue) >= 0;
+        })[0]
+      );
+    }, function () {});
+  var extra = hpDeviceInfoRows(id);
+  if (extra.length) b.appendChild(hmGroup(extra));
+}
+
+/* The pencil by the light's name: its name and its icon type, as the app's "Edit name and type" (Hue-Screenshots/IMG_0579): the icon, the name in a field, and the types in their groups. DONE
+ writes both to the bridge. */
+var HPRENAME = {};
+
+function hpRenamePage(b, id) {
+  hmBox(b);
+  var hue = A(id).hue_light_id,
+    st = HPRENAME[id] || (HPRENAME[id] = { name: hpName(id), type: null, read: false }),
+    big = mk("div", "rnbig");
+  function paintBig() {
+    var icon = hpArchetypeIcon(st.type) || "lamp";
+    big.innerHTML = svg(icon);
+  }
+  /* the light's type now, from the bridge */
+  if (!st.read && hue)
+    hueplus.resources(["lights"]).then(function (r) {
+      var l = ((r && r.lights) || []).filter(function (x) {
+        return x.id === hue;
+      })[0];
+      st.read = true;
+      if (l && !st.type) {
+        st.type = l.archetype;
+        paintBig();
+        Array.prototype.forEach.call(b.querySelectorAll(".rntype"), function (t) {
+          t.classList.toggle("on", t.dataset.type === st.type);
+        });
+      }
+    }, function () {});
+  paintBig();
+  b.appendChild(big);
+  var field = mk("input", "rnname");
+  field.type = "text";
+  field.maxLength = 32;
+  field.value = st.name;
+  field.setAttribute("aria-label", _T("app_name"));
+  field.addEventListener("input", function () {
+    st.name = field.value;
+  });
+  b.appendChild(field);
+  HP_ARCHETYPES.forEach(function (g) {
+    b.appendChild(hmLabel(_T(g[0])));
+    var grid = mk("div", "rngrid");
+    g[2].forEach(function (type) {
+      var t = mk("button", "rntype" + (st.type === type ? " on" : ""), "<span class='ic'></span><b></b>");
+      t.type = "button";
+      t.dataset.type = type;
+      var icon = g[1];
+      t.querySelector(".ic").innerHTML = svg(icon);
+      t.querySelector("b").textContent = _T("app_arch_" + type);
+      t.addEventListener("click", function () {
+        st.type = type;
+        Array.prototype.forEach.call(b.querySelectorAll(".rntype.on"), function (x) {
+          x.classList.remove("on");
+        });
+        t.classList.add("on");
+        paintBig();
+      });
+      grid.appendChild(t);
+    });
+    b.appendChild(grid);
+  });
+  HC.onDone = function () {
+    var name = String(st.name || "").trim();
+    if (!name) {
+      toast(_T("app_name_needed"));
+      return;
+    }
+    var data = { resource: "light", id: hue, name: name };
+    if (st.type) data.archetype = st.type;
+    hpCall("hue_plus", "set_name", data).then(
+      function () {
+        delete HPRENAME[id];
+        if (window.HueHost && window.HueHost.onRenamed) window.HueHost.onRenamed();
+        popBack();
+      },
+      function () {
+        toast(_T("hm_the_bridge_did_not_accept_this"));
+      }
+    );
+  };
+}
+
+/* The lights a button acts on (the app's Selected lights): a room or a zone. Choosing one writes it to the bridge at once, and what the button's presses do stays. */
+function hpButtonLightsPage(b, id) {
+  hmBox(b);
+  hmLoad(b, ["accessories", "rooms", "zones"], function (box, r) {
+    var k = hmBtnKey(id),
+      f = hmBtnFind(r, k);
+    if (!f.acc || !f.btn) {
+      box.appendChild(hmCallout(_T("nothing_found")));
+      return;
+    }
+    var now = hmBtnTargets(r, f.acc, f.btn).ids;
+    [
+      ["room", r.rooms || [], "home"],
+      ["zone", r.zones || [], "target"],
+    ].forEach(function (kind) {
+      if (!kind[1].length) return;
+      box.appendChild(hmLabel(_T(kind[0] === "room" ? "app_rooms" : "zones")));
+      box.appendChild(
+        hmGroup(
+          kind[1].map(function (g) {
+            return hmRow({
+              icon: kind[2],
+              title: g.name,
+              check: function () {
+                return now.indexOf(g.id) >= 0;
+              },
+              tap: function () {
+                hpCall("hue_plus", "set_button_lights", { accessory: f.acc.id, button: f.btn.number, group: g.id, group_type: kind[0] }).then(function () {
+                  return hmReread("accessories", f.acc.id).then(function () {
+                    popBack();
+                  });
+                }, function () {});
+              },
+            });
+          })
+        )
+      );
+    });
+  });
+}
+
+
+HP_PAGES["app-devinfo"] = ["hm_device_info", "info", hpDeviceInfoPage];
+HP_PAGES["app-rename"] = ["app_edit_name_and_type", "edit", hpRenamePage];
+HP_PAGES["app-btnlights"] = ["app_selected_lights", "home", hpButtonLightsPage];
 
 /* The Hue app's wizards in the Hue Plus menu: what the pages of one wizard share (the state in progress, a heading, Next, a name, a time, the days, a room or zone to choose) and the
  automation wizards ("What kind of automation do you want to create?": wake up, go to sleep, timer, lighting schedule, coming home, leaving home). The pieces are the menu's own (hmRow,
