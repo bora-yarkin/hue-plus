@@ -591,18 +591,6 @@ body{width:100%;height:100%}
 .syplay,.sytitle,.sysub,.syset,.sybar{flex:none}
 .syset{padding-top:14px}
 
-/* Edit name and type */
-.hm-title{position:relative}
-.hm-title .hm-pen{position:absolute;right:16px;bottom:10px;width:30px;height:30px}
-.rnbig{display:flex;justify-content:center;padding:18px 0 10px}
-.rnbig svg{width:44px;height:44px;fill:none;stroke:#fff;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-.rnname{display:block;width:calc(100% - 22px);margin:8px 11px 4px;padding:13px 12px;border:0;border-radius:8px;background:#3a3b3e;color:#fff;font:inherit;font-size:14px}
-.rngrid{display:grid;grid-template-columns:repeat(3,1fr);background:var(--row);margin:0 0 6px}
-.rntype{display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px 4px 14px;border:0;background:none;color:#fff;cursor:pointer;font:inherit}
-.rntype .ic{width:38px;height:38px;border-radius:50%;background:#4a4b50;display:flex;align-items:center;justify-content:center}
-.rntype .ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.rntype b{font-size:11px;font-weight:500;text-align:center}
-.rntype.on .ic{background:#fff;color:#1b1c20}
 
 /* the page's bar while a sheet of the light frame uses it: an X, as a sheet has */
 .pg.framebar .pbar .back{display:none!important}
