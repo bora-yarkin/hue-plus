@@ -55,6 +55,15 @@ function hpGroupLights(id) {
     .sort();
 }
 
+/* A room's lights in the order the app lists them: by name. */
+function hpLightsByName(id) {
+  return hpGroupLights(id)
+    .slice()
+    .sort(function (a, b) {
+      return String(A(a).friendly_name || a).localeCompare(String(A(b).friendly_name || b));
+    });
+}
+
 function hpGroupIcon(id) {
   var kind = HP_ROOM_ARCHETYPES[A(id).hue_type + "|" + A(id).friendly_name];
   return A(id).hue_type === "zone" ? "target" : HP_ROOM_ICONS[kind] || "home";
@@ -470,7 +479,7 @@ function hpRoomPage(body, id) {
 
   page.appendChild(mk("div", "lb")).textContent = _T("lights");
   var tiles = mk("div", "ltiles");
-  hpGroupLights(id).forEach(function (lid) {
+  hpLightsByName(id).forEach(function (lid) {
     tiles.appendChild(hpLightTile(lid, id));
   });
   page.appendChild(tiles);

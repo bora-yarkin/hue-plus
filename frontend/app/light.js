@@ -54,14 +54,28 @@ window.HueHost.onHass = function (h) {
   if (HPLF.win && HPLF.win.HuePopup) HPLF.win.HuePopup.attach(h);
 };
 
+/* The width the Hue app's screens were measured at, and how much larger or smaller the panel is drawn. */
+var HP_DESIGN_WIDTH = 393;
+
+function hpFrameScale() {
+  return (document.body.clientWidth || HP_DESIGN_WIDTH) / HP_DESIGN_WIDTH;
+}
+
 function hpFrameShow(on) {
   if (!HPLF.el) return;
   var layers = document.querySelectorAll(".pg"),
     bar = layers.length ? layers[layers.length - 1].querySelector(".pbar") : null;
   /* Where the bar ends in its final place (a page that is still sliding in is measured without its movement). */
   var top = bar ? layers[layers.length - 1].offsetTop + bar.offsetTop + bar.offsetHeight : 0;
+  /* The frame is a phone of the app's width (393 points) whatever the panel's width is: it is laid out at that width and scaled to fit, as the panel's own pages scale with the width. */
+  var scale = hpFrameScale();
   HPLF.el.style.top = top + "px";
-  HPLF.el.style.height = "calc(100% - " + top + "px)";
+  HPLF.el.style.right = "auto";
+  HPLF.el.style.bottom = "auto";
+  HPLF.el.style.width = HP_DESIGN_WIDTH + "px";
+  HPLF.el.style.height = (document.body.clientHeight - top) / scale + "px";
+  HPLF.el.style.transformOrigin = "0 0";
+  HPLF.el.style.transform = "scale(" + scale + ")";
   HPLF.el.classList.toggle("show", !!on);
   /* Counts the times the frame was put on a screen, so a screen that is leaving knows another has taken the frame. */
   if (on) HPLF.shown = (HPLF.shown || 0) + 1;
@@ -75,7 +89,7 @@ window.HueHost.onLeave = function (toY, done) {
   }
   var top = parseFloat(HPLF.el.style.top) || 0,
     shown = HPLF.shown;
-  HPLF.win.HuePopup.leave(typeof toY === "number" ? toY - top : undefined, function () {
+  HPLF.win.HuePopup.leave(typeof toY === "number" ? (toY - top) / hpFrameScale() : undefined, function () {
     done(HPLF.shown !== shown);
   });
 };
@@ -101,7 +115,7 @@ function hpLightScreen(body, ids, name, focus, from) {
     if (HPLIGHTS) win.HuePopup.seed(HPLIGHTS);
     hpFrameShow(true);
     var top = parseFloat(HPLF.el.style.top) || 0;
-    win.HuePopup.panel(ids, name, focus, typeof from === "number" ? from - top : undefined);
+    win.HuePopup.panel(ids, name, focus, typeof from === "number" ? (from - top) / hpFrameScale() : undefined);
   });
 }
 
@@ -135,7 +149,7 @@ function hpLightsPage(body, key) {
   bar.appendChild(done);
   var from = HPAPP.lightFrom;
   HPAPP.lightFrom = undefined;
-  hpLightScreen(body, hpGroupLights(room), A(room).friendly_name || room, focus, from);
+  hpLightScreen(body, hpLightsByName(room), A(room).friendly_name || room, focus, from);
 }
 
 /* The editor of a scene's lights (the Hue app's "New scene" and a scene's lights): the same screen, with SAVE. The lights show what is set while it is open; leaving after a change asks, and discarding

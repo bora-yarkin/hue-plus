@@ -75,7 +75,17 @@ def build_app() -> str:
     host = (APP_SOURCES / "host.js").read_text(encoding="utf-8").rstrip("\n") + "\n\n"
     plugin = ORDER[:-1]
     parts = [(SOURCES / name) for name in plugin] + [(APP_SOURCES / name) for name in APP_INSIDE] + [SOURCES / ORDER[-1]]
-    return head + host + "".join(p.read_text(encoding="utf-8").rstrip("\n") + "\n\n" for p in parts).rstrip("\n") + "\n"
+    return _scaled(head + host + "".join(p.read_text(encoding="utf-8").rstrip("\n") + "\n\n" for p in parts).rstrip("\n") + "\n")
+
+
+def _scaled(text: str) -> str:
+    """The panel is a phone drawn at any width: every length written in px (the Hue app's points, at its width of 393) becomes a rem, and the
+    panel's style sheet sets the root font size from the panel's width (16px at 393). Lengths that code works out while running stay px."""
+
+    def rem(match: re.Match[str]) -> str:
+        return f"{float(match.group(1)) / 16:.5f}".rstrip("0").rstrip(".") + "rem"
+
+    return re.sub(r"(?<![\w.#])(\d*\.?\d+)px\b", rem, text)
 
 
 def build_effects() -> str:
