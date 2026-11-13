@@ -54,6 +54,13 @@ function hpWatch() {
   if (HPAPP.sigOf && HPAPP.sigOf() !== HPAPP.lastSig && !HPAPI.hasSheet()) hpShowTab(HPAPP.tab);
 }
 
+/* How much the browser has zoomed the page, when it reports what it measures (a rectangle, a pointer's place) in zoomed units while a style's px is not zoomed (Safari's page zoom): a measured length
+ becomes a style's px by dividing by this. It is 1 where the two agree. */
+function hpZoom() {
+  var styled = parseFloat(getComputedStyle(document.body).width);
+  return styled ? document.body.getBoundingClientRect().width / styled || 1 : 1;
+}
+
 function hpStart() {
   HPAPI.ws({ type: "hue_plus/capabilities" }).then(
     function (r) {

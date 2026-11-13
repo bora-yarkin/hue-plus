@@ -58,7 +58,14 @@ window.HueHost.onHass = function (h) {
 var HP_DESIGN_WIDTH = 393;
 
 function hpFrameScale() {
-  return (document.body.clientWidth || HP_DESIGN_WIDTH) / HP_DESIGN_WIDTH;
+  /* From the root font size (the panel's width / 393 * 16, set in the style sheet), not from a measurement: a measurement is in zoomed units in a zoomed Safari. */
+  return (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16) / 16;
+}
+
+/* The same for the offsets of an element (offsetTop, clientWidth), which a zoomed Safari may or may not give in zoomed units. */
+function hpOffsetZoom() {
+  var styled = parseFloat(getComputedStyle(document.body).width);
+  return styled ? document.body.offsetWidth / styled || 1 : 1;
 }
 
 function hpFrameShow(on) {
@@ -66,14 +73,14 @@ function hpFrameShow(on) {
   var layers = document.querySelectorAll(".pg"),
     bar = layers.length ? layers[layers.length - 1].querySelector(".pbar") : null;
   /* Where the bar ends in its final place (a page that is still sliding in is measured without its movement). */
-  var top = bar ? layers[layers.length - 1].offsetTop + bar.offsetTop + bar.offsetHeight : 0;
+  var top = bar ? (layers[layers.length - 1].offsetTop + bar.offsetTop + bar.offsetHeight) / hpOffsetZoom() : 0;
   /* The frame is a phone of the app's width (393 points) whatever the panel's width is: it is laid out at that width and scaled to fit, as the panel's own pages scale with the width. */
   var scale = hpFrameScale();
   HPLF.el.style.top = top + "px";
   HPLF.el.style.right = "auto";
   HPLF.el.style.bottom = "auto";
   HPLF.el.style.width = HP_DESIGN_WIDTH + "px";
-  HPLF.el.style.height = (document.body.clientHeight - top) / scale + "px";
+  HPLF.el.style.height = "calc((100% - " + top + "px) / " + scale + ")";
   HPLF.el.style.transformOrigin = "0 0";
   HPLF.el.style.transform = "scale(" + scale + ")";
   HPLF.el.classList.toggle("show", !!on);
@@ -89,7 +96,7 @@ window.HueHost.onLeave = function (toY, done) {
   }
   var top = parseFloat(HPLF.el.style.top) || 0,
     shown = HPLF.shown;
-  HPLF.win.HuePopup.leave(typeof toY === "number" ? (toY - top) / hpFrameScale() : undefined, function () {
+  HPLF.win.HuePopup.leave(typeof toY === "number" ? (toY / hpZoom() - top) / hpFrameScale() : undefined, function () {
     done(HPLF.shown !== shown);
   });
 };
@@ -115,7 +122,7 @@ function hpLightScreen(body, ids, name, focus, from) {
     if (HPLIGHTS) win.HuePopup.seed(HPLIGHTS);
     hpFrameShow(true);
     var top = parseFloat(HPLF.el.style.top) || 0;
-    win.HuePopup.panel(ids, name, focus, typeof from === "number" ? (from - top) / hpFrameScale() : undefined);
+    win.HuePopup.panel(ids, name, focus, typeof from === "number" ? (from / hpZoom() - top) / hpFrameScale() : undefined);
   });
 }
 

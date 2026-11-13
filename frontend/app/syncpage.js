@@ -181,20 +181,21 @@ function hpSyBrightness(E, button) {
   /* The slider is placed inside the phone (the page's body), which on a wide screen is not the window. */
   var r = button.getBoundingClientRect(),
     phone = document.body.getBoundingClientRect(),
-    tall = Math.min(phone.height * 0.45, 210);
+    z = hpZoom(),
+    tall = Math.min((phone.height / z) * 0.45, 210 * hpFrameScale());
   hpSyPop(function (close) {
     var bar = mk("div", "sybri", "<span class='pc'></span><div class='fillb'></div><span class='ic'></span>"),
       fill = bar.querySelector(".fillb"),
       pc = bar.querySelector(".pc"),
       value = hsNumber(E.brightness) || 0;
     bar.querySelector(".ic").innerHTML = svg("bright");
-    bar.style.left = r.left - phone.left + "px";
-    bar.style.width = r.width + "px";
-    bar.style.bottom = phone.bottom - r.bottom + "px";
+    bar.style.left = (r.left - phone.left) / z + "px";
+    bar.style.width = r.width / z + "px";
+    bar.style.bottom = (phone.bottom - r.bottom) / z + "px";
     bar.style.height = tall + "px";
     function paint(v) {
       value = v;
-      fill.style.height = Math.max(r.height, (v / 100) * tall) + "px";
+      fill.style.height = Math.max(r.height / z, (v / 100) * tall) + "px";
       pc.textContent = Math.round(v) + "%";
     }
     paint(value);

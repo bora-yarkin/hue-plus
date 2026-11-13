@@ -101,6 +101,12 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
     } catch (e) {}
   }
 
+  /* A zoomed Safari measures in zoomed units and styles in unzoomed px: a measured length divided by this is a style's px (1 where they agree). */
+  function zoom() {
+    var styled = parseFloat(getComputedStyle(document.documentElement).width);
+    return styled ? document.documentElement.getBoundingClientRect().width / styled || 1 : 1;
+  }
+
   function body() {
     shutSheets();
     var b = document.getElementById("body");
@@ -166,7 +172,7 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
       /* The app opens this screen out of the room page: the row of lights slides down to the bottom while the wheel and its controls come in. */
       var tray = b.querySelector(".lp-tray");
       if (tray && typeof fromY === "number") {
-        var shift = fromY - tray.getBoundingClientRect().top;
+        var shift = fromY - tray.getBoundingClientRect().top / zoom();
         tray.style.transition = "none";
         tray.style.transform = "translateY(" + shift + "px)";
         void tray.offsetHeight;
@@ -234,7 +240,7 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
       });
       if (tray && typeof toY === "number") {
         tray.style.transition = ease;
-        tray.style.transform = "translateY(" + (toY - tray.getBoundingClientRect().top) + "px)";
+        tray.style.transform = "translateY(" + (toY - tray.getBoundingClientRect().top / zoom()) + "px)";
       }
       document.body.style.opacity = "1";
       setTimeout(done, 420);

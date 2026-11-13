@@ -48,7 +48,8 @@ function hpSortable(box, selector, idOf, done, opts) {
     function place(ev) {
       el.style.transform = "none";
       var base = el.getBoundingClientRect();
-      el.style.transform = "translate(" + (ev.clientX - grab.x - base.left) + "px," + (ev.clientY - grab.y - base.top) + "px) scale(1.03)";
+      var z = hpZoom();
+      el.style.transform = "translate(" + (ev.clientX - grab.x - base.left) / z + "px," + (ev.clientY - grab.y - base.top) / z + "px) scale(1.03)";
     }
     function lift() {
       lifted = true;
@@ -111,8 +112,8 @@ function hpSortable(box, selector, idOf, done, opts) {
       box.insertBefore(el, after);
       others.forEach(function (o, i) {
         var r = o.getBoundingClientRect(),
-          dx = before[i].left - r.left,
-          dy = before[i].top - r.top;
+          dx = (before[i].left - r.left) / hpZoom(),
+          dy = (before[i].top - r.top) / hpZoom();
         if ((dx || dy) && o.animate) o.animate([{ transform: "translate(" + dx + "px," + dy + "px)" }, { transform: "none" }], { duration: 220, easing: "cubic-bezier(.2,.8,.2,1)" });
       });
     }

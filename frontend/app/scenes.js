@@ -280,7 +280,8 @@ function hpFolderCard(folder, room, from) {
       return 0.9;
     }
     var tr = from.getBoundingClientRect();
-    card.style.transformOrigin = tr.left + tr.width / 2 - cr.left + "px " + (tr.top + tr.height / 2 - cr.top) + "px";
+    var z = hpZoom();
+    card.style.transformOrigin = (tr.left + tr.width / 2 - cr.left) / z + "px " + (tr.top + tr.height / 2 - cr.top) / z + "px";
     return Math.max(0.3, Math.min(0.6, (tr.width * 1.6) / cr.width));
   }
   function close() {

@@ -8600,6 +8600,13 @@ function hpWatch() {
   if (HPAPP.sigOf && HPAPP.sigOf() !== HPAPP.lastSig && !HPAPI.hasSheet()) hpShowTab(HPAPP.tab);
 }
 
+/* How much the browser has zoomed the page, when it reports what it measures (a rectangle, a pointer's place) in zoomed units while a style's px is not zoomed (Safari's page zoom): a measured length
+ becomes a style's px by dividing by this. It is 1 where the two agree. */
+function hpZoom() {
+  var styled = parseFloat(getComputedStyle(document.body).width);
+  return styled ? document.body.getBoundingClientRect().width / styled || 1 : 1;
+}
+
 function hpStart() {
   HPAPI.ws({ type: "hue_plus/capabilities" }).then(
     function (r) {
@@ -8715,7 +8722,8 @@ function hpSortable(box, selector, idOf, done, opts) {
     function place(ev) {
       el.style.transform = "none";
       var base = el.getBoundingClientRect();
-      el.style.transform = "translate(" + (ev.clientX - grab.x - base.left) + "px," + (ev.clientY - grab.y - base.top) + "px) scale(1.03)";
+      var z = hpZoom();
+      el.style.transform = "translate(" + (ev.clientX - grab.x - base.left) / z + "px," + (ev.clientY - grab.y - base.top) / z + "px) scale(1.03)";
     }
     function lift() {
       lifted = true;
@@ -8778,8 +8786,8 @@ function hpSortable(box, selector, idOf, done, opts) {
       box.insertBefore(el, after);
       others.forEach(function (o, i) {
         var r = o.getBoundingClientRect(),
-          dx = before[i].left - r.left,
-          dy = before[i].top - r.top;
+          dx = (before[i].left - r.left) / hpZoom(),
+          dy = (before[i].top - r.top) / hpZoom();
         if ((dx || dy) && o.animate) o.animate([{ transform: "translate(" + dx + "px," + dy + "px)" }, { transform: "none" }], { duration: 220, easing: "cubic-bezier(.2,.8,.2,1)" });
       });
     }
@@ -9703,7 +9711,8 @@ function hpFolderCard(folder, room, from) {
       return 0.9;
     }
     var tr = from.getBoundingClientRect();
-    card.style.transformOrigin = tr.left + tr.width / 2 - cr.left + "px " + (tr.top + tr.height / 2 - cr.top) + "px";
+    var z = hpZoom();
+    card.style.transformOrigin = (tr.left + tr.width / 2 - cr.left) / z + "px " + (tr.top + tr.height / 2 - cr.top) / z + "px";
     return Math.max(0.3, Math.min(0.6, (tr.width * 1.6) / cr.width));
   }
   function close() {
@@ -10784,7 +10793,14 @@ window.HueHost.onHass = function (h) {
 var HP_DESIGN_WIDTH = 393;
 
 function hpFrameScale() {
-  return (document.body.clientWidth || HP_DESIGN_WIDTH) / HP_DESIGN_WIDTH;
+  /* From the root font size (the panel's width / 393 * 16, set in the style sheet), not from a measurement: a measurement is in zoomed units in a zoomed Safari. */
+  return (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16) / 16;
+}
+
+/* The same for the offsets of an element (offsetTop, clientWidth), which a zoomed Safari may or may not give in zoomed units. */
+function hpOffsetZoom() {
+  var styled = parseFloat(getComputedStyle(document.body).width);
+  return styled ? document.body.offsetWidth / styled || 1 : 1;
 }
 
 function hpFrameShow(on) {
@@ -10792,14 +10808,14 @@ function hpFrameShow(on) {
   var layers = document.querySelectorAll(".pg"),
     bar = layers.length ? layers[layers.length - 1].querySelector(".pbar") : null;
   /* Where the bar ends in its final place (a page that is still sliding in is measured without its movement). */
-  var top = bar ? layers[layers.length - 1].offsetTop + bar.offsetTop + bar.offsetHeight : 0;
+  var top = bar ? (layers[layers.length - 1].offsetTop + bar.offsetTop + bar.offsetHeight) / hpOffsetZoom() : 0;
   /* The frame is a phone of the app's width (393 points) whatever the panel's width is: it is laid out at that width and scaled to fit, as the panel's own pages scale with the width. */
   var scale = hpFrameScale();
   HPLF.el.style.top = top + "px";
   HPLF.el.style.right = "auto";
   HPLF.el.style.bottom = "auto";
   HPLF.el.style.width = HP_DESIGN_WIDTH + "px";
-  HPLF.el.style.height = (document.body.clientHeight - top) / scale + "px";
+  HPLF.el.style.height = "calc((100% - " + top + "px) / " + scale + ")";
   HPLF.el.style.transformOrigin = "0 0";
   HPLF.el.style.transform = "scale(" + scale + ")";
   HPLF.el.classList.toggle("show", !!on);
@@ -10815,7 +10831,7 @@ window.HueHost.onLeave = function (toY, done) {
   }
   var top = parseFloat(HPLF.el.style.top) || 0,
     shown = HPLF.shown;
-  HPLF.win.HuePopup.leave(typeof toY === "number" ? (toY - top) / hpFrameScale() : undefined, function () {
+  HPLF.win.HuePopup.leave(typeof toY === "number" ? (toY / hpZoom() - top) / hpFrameScale() : undefined, function () {
     done(HPLF.shown !== shown);
   });
 };
@@ -10841,7 +10857,7 @@ function hpLightScreen(body, ids, name, focus, from) {
     if (HPLIGHTS) win.HuePopup.seed(HPLIGHTS);
     hpFrameShow(true);
     var top = parseFloat(HPLF.el.style.top) || 0;
-    win.HuePopup.panel(ids, name, focus, typeof from === "number" ? (from - top) / hpFrameScale() : undefined);
+    win.HuePopup.panel(ids, name, focus, typeof from === "number" ? (from / hpZoom() - top) / hpFrameScale() : undefined);
   });
 }
 
@@ -11132,20 +11148,21 @@ function hpSyBrightness(E, button) {
   /* The slider is placed inside the phone (the page's body), which on a wide screen is not the window. */
   var r = button.getBoundingClientRect(),
     phone = document.body.getBoundingClientRect(),
-    tall = Math.min(phone.height * 0.45, 210);
+    z = hpZoom(),
+    tall = Math.min((phone.height / z) * 0.45, 210 * hpFrameScale());
   hpSyPop(function (close) {
     var bar = mk("div", "sybri", "<span class='pc'></span><div class='fillb'></div><span class='ic'></span>"),
       fill = bar.querySelector(".fillb"),
       pc = bar.querySelector(".pc"),
       value = hsNumber(E.brightness) || 0;
     bar.querySelector(".ic").innerHTML = svg("bright");
-    bar.style.left = r.left - phone.left + "px";
-    bar.style.width = r.width + "px";
-    bar.style.bottom = phone.bottom - r.bottom + "px";
+    bar.style.left = (r.left - phone.left) / z + "px";
+    bar.style.width = r.width / z + "px";
+    bar.style.bottom = (phone.bottom - r.bottom) / z + "px";
     bar.style.height = tall + "px";
     function paint(v) {
       value = v;
-      fill.style.height = Math.max(r.height, (v / 100) * tall) + "px";
+      fill.style.height = Math.max(r.height / z, (v / 100) * tall) + "px";
       pc.textContent = Math.round(v) + "%";
     }
     paint(value);
