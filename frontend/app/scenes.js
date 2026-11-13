@@ -74,9 +74,34 @@ function hpSaveUserFolders(room, list) {
   );
 }
 
-/* The scenes of the room grouped as the app groups them, and the person's own folders; a folder that has none is not there. */
+/* A scene can be outside every folder, as in the app: it is then a tile of its own among the folders. Which scenes are, is kept on this device (the app keeps it in the app). */
+function hpLooseScenes(room) {
+  var v = deviceGet("db_loose_" + room, []);
+  return Array.isArray(v) ? v : [];
+}
+
+function hpSetLoose(room, sid, loose) {
+  var list = hpLooseScenes(room).filter(function (s) {
+    return s !== sid;
+  });
+  if (loose) list.push(sid);
+  deviceSet("db_loose_" + room, list.slice(0, 200));
+  /* A scene outside the folders is in none of the person's folders. */
+  if (loose)
+    hpSaveUserFolders(
+      room,
+      hpUserFolders(room).map(function (f) {
+        return { id: f.id, name: f.name, scenes: f.scenes.filter(function (s) { return s !== sid; }) };
+      })
+    );
+}
+
+/* The scenes of the room grouped as the app groups them, the person's own folders, and the scenes outside every folder; a folder that has none is not there. */
 function hpFolders(room) {
   var all = hpScenesOf(room),
+    loose = hpLooseScenes(room).filter(function (s) {
+      return all.indexOf(s) >= 0;
+    }),
     mine = hpUserFolders(room)
       .map(function (f) {
         return { key: "u:" + f.id, id: f.id, name: f.name, user: true, scenes: f.scenes.filter(function (s) { return all.indexOf(s) >= 0; }) };
@@ -85,6 +110,15 @@ function hpFolders(room) {
         return f.scenes.length;
       }),
     taken = {};
+  loose.forEach(function (s) {
+    taken[s] = 1;
+  });
+  mine.forEach(function (f) {
+    f.scenes = f.scenes.filter(function (s) { return loose.indexOf(s) < 0; });
+  });
+  mine = mine.filter(function (f) {
+    return f.scenes.length;
+  });
   mine.forEach(function (f) {
     f.scenes.forEach(function (s) {
       taken[s] = 1;
@@ -105,10 +139,22 @@ function hpFolders(room) {
     .filter(function (f) {
       return f.scenes.length;
     })
-    .concat(mine);
+    .concat(mine)
+    .concat(
+      loose.map(function (sid) {
+        return { key: "s:" + sid, name: A(sid).name || A(sid).friendly_name || sid, loose: true, sid: sid, scenes: [sid] };
+      })
+    );
 }
 
-/* Dropping a scene on another makes a folder of the two (named by the person), and dropping one outside its folder takes it out again. */
+/* A scene dragged out of a folder's card is outside every folder from then on. */
+function hpMakeLoose(room, sid, close) {
+  hpSetLoose(room, sid, true);
+  close();
+  showPopup("app-room:" + room, false);
+}
+
+/* Dropping a scene on another makes a folder of the two (named by the person). */
 function hpMakeFolder(room, a, b, close) {
   var list = hpUserFolders(room).map(function (f) {
     return { id: f.id, name: f.name, scenes: f.scenes.filter(function (s) { return s !== a && s !== b; }) };
@@ -123,15 +169,6 @@ function hpMakeFolder(room, a, b, close) {
     hpSaveUserFolders(room, list);
     showPopup("app-room:" + room, false);
   });
-}
-
-function hpTakeOut(room, folderId, sid, close) {
-  var list = hpUserFolders(room).map(function (f) {
-    return { id: f.id, name: f.name, scenes: f.id === folderId ? f.scenes.filter(function (s) { return s !== sid; }) : f.scenes };
-  });
-  hpSaveUserFolders(room, list);
-  close();
-  showPopup("app-room:" + room, false);
 }
 
 /* A question with a line to write the answer in, as the app asks a folder's name. */
@@ -181,8 +218,11 @@ function hpFolderTile(folder, room) {
   folder.scenes.slice(0, 6).forEach(function (sid) {
     dots.appendChild(hpDisc(sid));
   });
+  if (folder.loose) t.classList.add("loose");
   hpActive(t, function () {
-    hpFolderCard(folder, room, t);
+    /* A scene outside the folders is played from its tile. */
+    if (folder.loose) hueSceneToggle(folder.sid);
+    else hpFolderCard(folder, room, t);
   });
   t.refresh = function () {
     t.classList.toggle(
@@ -206,6 +246,16 @@ function hpFolderRows(box, room) {
   }).forEach(function (f) {
     grid.appendChild(hpFolderTile(f, room));
   });
+  /* Two rows that scroll sideways, as the app has them: the first half of the tiles along the top row, the rest along the bottom. */
+  function rows() {
+    var items = grid.querySelectorAll(".ftile"),
+      half = Math.ceil(items.length / 2);
+    Array.prototype.forEach.call(items, function (it, i) {
+      it.style.gridRow = i < half ? "1" : "2";
+      it.style.gridColumn = String((i < half ? i : i - half) + 1);
+    });
+  }
+  rows();
   hpSortable(
     grid,
     ".ftile",
@@ -214,8 +264,26 @@ function hpFolderRows(box, room) {
     },
     function (ids) {
       hpOrderSet("folders:" + room, ids);
+      rows();
     },
-    { live: false }
+    {
+      live: false,
+      /* A scene that is outside the folders, dropped on a folder, goes into it (one of the person's folders takes it; one of the app's own groups has it back where it belongs). */
+      merge: function (a, b) {
+        if (String(a).indexOf("s:") === 0 && String(b).indexOf("s:") !== 0) {
+          var sid = String(a).slice(2);
+          hpSetLoose(room, sid, false);
+          if (String(b).indexOf("u:") === 0)
+            hpSaveUserFolders(
+              room,
+              hpUserFolders(room).map(function (f) {
+                return { id: f.id, name: f.name, scenes: "u:" + f.id === b ? f.scenes.concat([sid]) : f.scenes };
+              })
+            );
+        }
+        showPopup("app-room:" + room, false);
+      },
+    }
   );
   box.appendChild(grid);
 }
@@ -270,7 +338,18 @@ function hpFolderCard(folder, room, from) {
   var OPEN = ".17s cubic-bezier(.3,0,.3,1)",
     SHUT = ".17s cubic-bezier(.7,0,.7,1)",
     pulse = null;
+  /* Where the app puts it: its top where the first row of folders ends. */
+  function place() {
+    var rows = from && from.closest ? from.closest(".frows") : null,
+      first = rows && rows.querySelector(".ftile");
+    if (!first) {
+      card.style.top = "30%";
+      return;
+    }
+    card.style.top = (first.getBoundingClientRect().bottom - document.body.getBoundingClientRect().top) / hpZoom() + "px";
+  }
   function aim() {
+    place();
     card.style.transition = "none";
     card.style.transform = "none";
     card.style.opacity = "1";
@@ -280,7 +359,8 @@ function hpFolderCard(folder, room, from) {
       return 0.9;
     }
     var tr = from.getBoundingClientRect();
-    card.style.transformOrigin = tr.left + tr.width / 2 - cr.left + "px " + (tr.top + tr.height / 2 - cr.top) + "px";
+    var z = hpZoom();
+    card.style.transformOrigin = (tr.left + tr.width / 2 - cr.left) / z + "px " + (tr.top + tr.height / 2 - cr.top) / z + "px";
     return Math.max(0.3, Math.min(0.6, (tr.width * 1.6) / cr.width));
   }
   function close() {
@@ -301,6 +381,16 @@ function hpFolderCard(folder, room, from) {
   }).forEach(function (sid) {
     grid.appendChild(hpSceneItem(sid, room, close));
   });
+  /* Two rows that scroll sideways, filled as the app fills them: the first half of the scenes along the top row, the rest along the bottom. */
+  function rows() {
+    var items = grid.querySelectorAll(".sitem"),
+      half = Math.ceil(items.length / 2);
+    Array.prototype.forEach.call(items, function (it, i) {
+      it.style.gridRow = i < half ? "1" : "2";
+      it.style.gridColumn = String((i < half ? i : i - half) + 1);
+    });
+  }
+  rows();
   hpSortable(
     grid,
     ".sitem",
@@ -310,6 +400,7 @@ function hpFolderCard(folder, room, from) {
     function (ids) {
       hpOrderSet("scenes:" + room + ":" + folder.key, ids);
       folder.scenes = ids;
+      rows();
       card.refresh();
     },
     {
@@ -318,11 +409,9 @@ function hpFolderCard(folder, room, from) {
         : function (a, b) {
             hpMakeFolder(room, a, b, close);
           },
-      outside: folder.user
-        ? function (sid) {
-            hpTakeOut(room, folder.id, sid, close);
-          }
-        : null,
+      outside: function (sid) {
+        hpMakeLoose(room, sid, close);
+      },
       bounds: function () {
         return card;
       },

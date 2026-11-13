@@ -11,6 +11,7 @@ is picked up by running this again (the copy is in git so that the integration w
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -19,9 +20,20 @@ SOURCE = ROOT.parent / "home-control" / "custom_components" / "home_control" / "
 TARGET = ROOT / "custom_components" / "hue_plus" / "frontend" / "lights"
 
 
+# The copy is made from Home Control's released code (its main branch), not from whatever its checkout has: work in progress on another branch
+# of Home Control is not copied, and does not make the check fail.
+REF = "main"
+
+
+def _read(name: str) -> bytes:
+    """A file of Home Control's frontend as its main branch has it."""
+    path = (SOURCE / name).relative_to(SOURCE.parents[2]).as_posix()
+    return subprocess.run(["git", "-C", str(SOURCE), "show", f"{REF}:{path}"], check=True, capture_output=True).stdout
+
+
 def _files() -> tuple[str, ...]:
     """What the dashboard of Home Control runs, in its order (its version.json), except main.js: the Hue panel starts itself."""
-    listed = json.loads((SOURCE / "version.json").read_text(encoding="utf-8"))["files"]
+    listed = json.loads(_read("version.json").decode("utf-8"))["files"]
     runtime = [name for name in listed if name != "app/main.js"]
     return ("ha-adapter.js", "camera-stream.js", *runtime, "dashboard.css")
 
@@ -29,15 +41,15 @@ def _files() -> tuple[str, ...]:
 def sync(check: bool) -> bool:
     ok = True
     for name in _files():
-        source, target = SOURCE / name, TARGET / name
+        target = TARGET / name
         if check:
-            same = target.is_file() and target.read_bytes() == source.read_bytes()
+            same = target.is_file() and target.read_bytes() == _read(name)
             ok = ok and same
             if not same:
                 print(f"differs: {name}")
         else:
             target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(source.read_bytes())
+            target.write_bytes(_read(name))
     return ok
 
 

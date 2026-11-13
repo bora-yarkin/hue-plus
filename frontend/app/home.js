@@ -55,6 +55,19 @@ function hpGroupLights(id) {
     .sort();
 }
 
+/* A room's lights in the order the app lists them: by name. */
+function hpLightsByName(id) {
+  var named = hpGroupLights(id)
+    .slice()
+    .sort(function (a, b) {
+      return String(A(a).friendly_name || a).localeCompare(String(A(b).friendly_name || b));
+    });
+  /* The person's own order (made in the room's edit mode, kept on this device as the app keeps it in the app) comes first; without one the lights are by name. */
+  return hpOrdered(named, "lights:" + id, function (x) {
+    return x;
+  });
+}
+
 function hpGroupIcon(id) {
   var kind = HP_ROOM_ARCHETYPES[A(id).hue_type + "|" + A(id).friendly_name];
   return A(id).hue_type === "zone" ? "target" : HP_ROOM_ICONS[kind] || "home";
@@ -309,7 +322,38 @@ function hpScenesOf(id) {
 }
 
 /* The icon of a light from the shape the Hue app draws for its archetype (a name check: the bridge's archetype is not on the entity). */
+/* The icon types of the bridge (a light's archetype) in the groups the Hue app lists them under, each with the icon drawn for it here. */
+var HP_ARCHETYPES = [
+  ["app_type_table", "lamp", ["table_shade", "flexible_lamp", "table_wash"]],
+  ["app_type_floor", "floor", ["floor_shade", "floor_lantern", "bollard"]],
+  ["app_type_pendant", "ceiling", ["pendant_round", "pendant_long", "pendant_spot"]],
+  ["app_type_ceiling", "ceiling", ["ceiling_round", "ceiling_square", "ceiling_horizontal", "ceiling_tube", "recessed_ceiling", "single_spot", "double_spot"]],
+  ["app_type_wall", "light", ["wall_shade", "wall_lantern", "wall_spot", "wall_washer", "up_and_down", "up_and_down_up", "up_and_down_down"]],
+  ["app_type_outdoor", "light", ["ground_spot", "recessed_floor", "flood_bulb", "string_light"]],
+  ["app_type_hue", "strip", ["hue_lightstrip", "hue_lightstrip_tv", "hue_lightstrip_pc", "hue_play", "hue_play_wallwasher", "hue_tube", "hue_signe", "hue_go", "hue_iris", "hue_bloom", "hue_centris", "twilight"]],
+  ["app_type_bulbs", "light", ["classic_bulb", "sultan_bulb", "spot_bulb", "candle_bulb", "luster_bulb", "vintage_bulb", "vintage_candle_bulb", "edison_bulb", "ellipse_bulb", "triangle_bulb", "small_globe_bulb", "large_globe_bulb"]],
+  ["app_type_other", "plug", ["plug", "christmas_tree"]],
+];
+
+function hpArchetypeIcon(type) {
+  var found = HP_ARCHETYPES.filter(function (g) {
+    return g[2].indexOf(type) >= 0;
+  })[0];
+  return found ? found[1] : null;
+}
+
+/* What the bridge says a light's icon type is (the lights list it reads). */
+function hpArchetypeOf(lid) {
+  var hue = A(lid).hue_light_id,
+    l = (HPLIGHTS || []).filter(function (x) {
+      return x.id === hue;
+    })[0];
+  return l ? l.archetype : null;
+}
+
 function hpLightIcon(lid) {
+  var byType = hpArchetypeIcon(hpArchetypeOf(lid));
+  if (byType) return byType;
   var n = String(A(lid).friendly_name || "").toLowerCase();
   if (/strip|tube|play|gradient/.test(n)) return "strip";
   if (/ceiling|pendant|top/.test(n)) return "ceiling";
@@ -324,9 +368,11 @@ function hpLightTile(lid, room) {
   t.querySelector(".ic").innerHTML = svg(hpLightIcon(lid));
   t.querySelector("b").textContent = name;
   t.setAttribute("aria-label", name);
+  t.dataset.lid = lid;
   t.querySelector(".dn").appendChild(hpLightToggle(lid, name));
   hpActive(t, function () {
     HPAPP.lightFrom = t.getBoundingClientRect().top;
+    HPAPP.lightScroll = t.parentNode ? t.parentNode.scrollLeft : 0;
     showPopup("app-lights:" + room + "~" + lid, true);
   });
   t.refresh = function () {
@@ -375,6 +421,8 @@ function hpControls(box, id) {
       var c = mk("div", "ctile", "<span class='ic'></span><div><b></b><i></i></div>");
       c.querySelector(".ic").innerHTML = svg("switch");
       c.querySelector("b").textContent = x.name;
+      c.dataset.acc = x.id;
+      c.dataset.name = x.name;
       c.querySelector("i").textContent = hpLastUsed(x.name) || cntS((x.buttons || []).length, _T("hm_button"), _T("hm_buttons"));
       hpActive(c, function () {
         showPopup("hue-switch:" + x.id, true);
@@ -419,6 +467,11 @@ function hpRoomPage(body, id) {
     return;
   }
   body.parentNode.classList.add("roompg");
+  if (HPAPP.editRoom === id && isAdmin()) {
+    hpRoomEditPage(body, id);
+    return;
+  }
+  HPAPP.editRoom = null;
   hpLoadLightStates();
   var name = A(id).friendly_name,
     zone = A(id).hue_type === "zone",
@@ -439,7 +492,9 @@ function hpRoomPage(body, id) {
           {
             label: _T(zone ? "app_edit_zone" : "app_edit_room"),
             fn: function () {
-              hpEditGroup(id);
+              /* The app's edit mode of the room: its tiles are chosen, then moved, edited or deleted. */
+              HPAPP.editRoom = id;
+              showPopup("app-room:" + id, false);
             },
           },
           {
@@ -468,9 +523,14 @@ function hpRoomPage(body, id) {
   hpFolderRows(page, id);
   if (!hpScenesOf(id).length) page.appendChild(mk("div", "empty")).textContent = _T("hw_no_scenes_here");
 
+  hpRoomSections(page, id);
+}
+
+/* The lights and the controls of a room, under their labels. */
+function hpRoomSections(page, id) {
   page.appendChild(mk("div", "lb")).textContent = _T("lights");
   var tiles = mk("div", "ltiles");
-  hpGroupLights(id).forEach(function (lid) {
+  hpLightsByName(id).forEach(function (lid) {
     tiles.appendChild(hpLightTile(lid, id));
   });
   page.appendChild(tiles);

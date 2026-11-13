@@ -58,6 +58,7 @@ APP_INSIDE = (
     "light.js",
     "syncpage.js",
     "menupages.js",
+    "roomedit.js",
 )
 
 
@@ -75,7 +76,32 @@ def build_app() -> str:
     host = (APP_SOURCES / "host.js").read_text(encoding="utf-8").rstrip("\n") + "\n\n"
     plugin = ORDER[:-1]
     parts = [(SOURCES / name) for name in plugin] + [(APP_SOURCES / name) for name in APP_INSIDE] + [SOURCES / ORDER[-1]]
-    return head + host + "".join(p.read_text(encoding="utf-8").rstrip("\n") + "\n\n" for p in parts).rstrip("\n") + "\n"
+    return _scaled(head + host + "".join(p.read_text(encoding="utf-8").rstrip("\n") + "\n\n" for p in parts).rstrip("\n") + "\n")
+
+
+def _scaled(text: str) -> str:
+    """The panel is a phone drawn at any width: every length written in px (the Hue app's points, at its width of 393) becomes a rem, and the
+    panel's style sheet sets the root font size from the panel's width (16px at 393). Lengths that code works out while running stay px."""
+
+    def rem(match: re.Match[str]) -> str:
+        return f"{float(match.group(1)) / 16:.5f}".rstrip("0").rstrip(".") + "rem"
+
+    return re.sub(r"(?<![\w.#])(\d*\.?\d+)px\b", rem, text)
+
+
+POPUP = ROOT / "custom_components" / "hue_plus" / "frontend" / "popup.html"
+LIGHTS = ROOT / "custom_components" / "hue_plus" / "frontend" / "lights"
+LIGHTS_BUILT = LIGHTS / "bundle.json"
+
+
+def build_lights() -> str:
+    """The files of Home Control's dashboard that the light frame runs (the list FILES in popup.html), in one answer: the frame asks for this instead of
+    some sixty files one after another, which took many seconds through a proxy. Each file is still run as a script of its own, so nothing about it changes."""
+    listed = json.loads(re.search(r"var FILES = (\[.*?\]);", POPUP.read_text(encoding="utf-8"), flags=re.S).group(1))
+    return (
+        json.dumps([[name, (LIGHTS / name).read_text(encoding="utf-8")] for name in listed], separators=(",", ":"), ensure_ascii=False)
+        + "\n"
+    )
 
 
 def build_effects() -> str:
@@ -96,6 +122,7 @@ def build_effects() -> str:
 
 if __name__ == "__main__":
     EFFECTS_BUILT.write_text(build_effects(), encoding="utf-8")
+    LIGHTS_BUILT.write_text(build_lights(), encoding="utf-8")
     BUILT.write_text(build(), encoding="utf-8")
     APP_BUILT.write_text(build_app(), encoding="utf-8")
     print("menu.js:", len(build().splitlines()), "lines;", "app.js:", len(build_app().splitlines()), "lines")

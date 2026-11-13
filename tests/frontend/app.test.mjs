@@ -8,7 +8,7 @@ import vm from "node:vm";
 
 const root = new URL("../../", import.meta.url);
 const read = (path) => readFileSync(new URL(path, root), "utf8");
-const APP_FILES = ["shell.js", "home.js", "sortable.js", "scenes.js", "switchpages.js", "cyclepage.js", "lightsettings.js", "autotab.js", "light.js", "syncpage.js", "menupages.js"].map((f) => read(`frontend/app/${f}`));
+const APP_FILES = ["shell.js", "home.js", "sortable.js", "scenes.js", "switchpages.js", "cyclepage.js", "lightsettings.js", "autotab.js", "light.js", "syncpage.js", "menupages.js", "roomedit.js"].map((f) => read(`frontend/app/${f}`));
 const host = read("frontend/app/host.js");
 const bundle = read("custom_components/hue_plus/frontend/app.js");
 const plugin = [...APP_FILES, ...["huemenu.js", "huewizard.js", "humotion.js", "huerooms.js", "huesync.js", "huescenes.js", "huestyle.js"].map((f) => read(`frontend/src/${f}`))].join("\n");

@@ -251,10 +251,51 @@ function hpBridgeDraft(area) {
     kept = [];
   (area.lights || []).forEach(function (l) {
     var id = hpEntityOf(l.light_id);
-    if (id) lights.push({ id: id, x: eaClamp(l.x || 0), y: eaClamp(hpFlip(l.y || 0)), z: eaClamp(l.z || 0), balance: l.balance });
+    if (id) lights.push(hpBarOf(l, { id: id, x: eaClamp(l.x || 0), y: eaClamp(hpFlip(l.y || 0)), z: eaClamp(l.z || 0), balance: l.balance }));
     else kept.push({ light: l.light_id, x: l.x, y: l.y, z: l.z, balance: l.balance });
   });
   return { id: area.id, name: area.name, room: "", lights: lights, dummies: [], kept: kept };
+}
+
+/* A light the bridge holds several positions for (a strip, a tube: its ends, or more along it) is a bar in the editor: its middle, the way it points (a, around; p, up) and its length, worked out
+ from the first and last position. `n` is how many positions the bridge has, for writing them back. */
+function hpBarOf(l, light) {
+  var ps = (l.positions || []).filter(function (p) {
+    return p && typeof p.x === "number";
+  });
+  if (ps.length < 2) return light;
+  var a = ps[0],
+    b = ps[ps.length - 1],
+    dx = b.x - a.x,
+    dy = hpFlip(b.y) - hpFlip(a.y),
+    dz = b.z - a.z,
+    len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+  light.n = ps.length;
+  if (len < 0.05) return light;
+  light.x = eaClamp((a.x + b.x) / 2);
+  light.y = eaClamp((hpFlip(a.y) + hpFlip(b.y)) / 2);
+  light.z = eaClamp((a.z + b.z) / 2);
+  light.a = Math.round(((Math.atan2(dy, dx) * 180) / Math.PI + 360) % 360);
+  light.p = Math.round((Math.atan2(dz, Math.sqrt(dx * dx + dy * dy)) * 180) / Math.PI);
+  light.len = Math.round(len * 100) / 100;
+  return light;
+}
+
+/* The positions of a bar for the bridge: `n` of them, evenly from one end to the other (the bridge's y, which runs the other way). Nothing for a light with one position. */
+function hpBarPositions(light) {
+  if (!(light.n > 1) || !light.len) return null;
+  var a = ((light.a || 0) * Math.PI) / 180,
+    p = ((light.p || 0) * Math.PI) / 180,
+    out = [];
+  for (var i = 0; i < light.n; i++) {
+    var t = (i / (light.n - 1) - 0.5) * light.len;
+    out.push({
+      x: eaClamp(light.x + t * Math.cos(a) * Math.cos(p)),
+      y: hpFlip(eaClamp(light.y + t * Math.sin(a) * Math.cos(p))),
+      z: eaClamp(light.z + t * Math.sin(p)),
+    });
+  }
+  return out;
 }
 
 function hpEditOnBridge(area, after) {
@@ -279,11 +320,14 @@ function hpSaveBridge(leave) {
   var lights = d.kept
     .concat(
       d.lights.map(function (l) {
-        return { light: hpHueId(l.id), x: l.x, y: hpFlip(l.y), z: l.z, balance: l.balance };
+        var every = hpBarPositions(l),
+          first = every ? every[0] : { x: l.x, y: hpFlip(l.y), z: l.z };
+        return { light: hpHueId(l.id), x: first.x, y: first.y, z: first.z, positions: every, balance: l.balance };
       })
     )
     .map(function (l) {
       var o = { light: l.light, x: l.x, y: l.y, z: l.z };
+      if (l.positions) o.positions = l.positions;
       if (typeof l.balance === "number") o.balance = l.balance;
       return o;
     });

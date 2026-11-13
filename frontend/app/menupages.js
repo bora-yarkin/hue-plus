@@ -227,7 +227,7 @@ function hpUpdatesPage(b) {
     hmGroup(
       list.map(function (id) {
         return hmRow({
-          title: hpName(id).replace(/ firmware$/i, ""),
+          title: hpName(id).replace(/ (bridge )?firmware$/i, ""),
           sub: function () {
             return A(id).installed_version || "";
           },
@@ -273,7 +273,7 @@ function hpSmartHomePage(b) {
         f.map(function (x) {
           return hmRow({
             icon: "home",
-            title: x.label || x.vendor || x.id,
+            title: x.label || x.vendor || _T("app_matter_controller"),
             sub: [x.vendor, x.status].filter(Boolean).join(" · "),
             tap: function () {
               confirmDlg(_T("disconnect_this_matter_app_from_the_bridge"), function () {
@@ -424,7 +424,10 @@ function hpAreaKey(id) {
 
 function hpAreaBase(x) {
   return (x.lights || []).map(function (l) {
-    return { light: l.light_id, name: l.name || String(l.light_id), x: l.x || 0, y: l.y || 0, z: l.z || 0, balance: typeof l.balance === "number" ? l.balance : 1 };
+    var o = { light: l.light_id, name: l.name || String(l.light_id), x: l.x || 0, y: l.y || 0, z: l.z || 0, balance: typeof l.balance === "number" ? l.balance : 1 };
+    /* every position the bridge holds (the ends of a strip or tube) */
+    if (Array.isArray(l.positions) && l.positions.length > 1) o.positions = l.positions;
+    return o;
   });
 }
 
@@ -449,7 +452,9 @@ hmSaveArea = function (id, ch) {
     if (ch.name) data.name = ch.name;
     if (ch.lights)
       data.lights = ch.lights.map(function (l) {
-        return { light: l.light, x: l.x, y: l.y, z: l.z, balance: l.balance };
+        var item = { light: l.light, x: l.x, y: l.y, z: l.z, balance: l.balance };
+        if (l.positions) item.positions = l.positions;
+        return item;
       });
     job = hpCall("hue_plus", "update_entertainment_area", data);
   }
@@ -616,7 +621,7 @@ function hpPlacePage(b, id) {
         id: id,
         name: hpAreaName(x),
         lights: hpAreaLights(x).map(function (l) {
-          return { light_id: l.light, name: l.name, x: l.x, y: l.y, z: l.z, balance: l.balance };
+          return { light_id: l.light, name: l.name, x: l.x, y: l.y, z: l.z, positions: l.positions, balance: l.balance };
         }),
       },
       names = {};
@@ -636,7 +641,9 @@ function hpPlacePage(b, id) {
             return { light: k.light, name: names[k.light] || String(k.light), x: k.x, y: k.y, z: k.z, balance: typeof k.balance === "number" ? k.balance : 1 };
           });
           (d.lights || []).forEach(function (l) {
-            lights.push({ light: hpHueId(l.id), name: hpName(l.id), x: l.x, y: hpFlip(l.y), z: l.z, balance: typeof l.balance === "number" ? l.balance : 1 });
+            var every = hpBarPositions(l),
+              first = every ? every[0] : { x: l.x, y: hpFlip(l.y), z: l.z };
+            lights.push({ light: hpHueId(l.id), name: hpName(l.id), x: first.x, y: first.y, z: first.z, positions: every || undefined, balance: typeof l.balance === "number" ? l.balance : 1 });
           });
           if (lights.length) hpStageLights(x, lights);
         }

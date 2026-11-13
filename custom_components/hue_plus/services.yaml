@@ -810,6 +810,31 @@ update_routine:
       selector:
         boolean: {}
 
+set_button_lights:
+  fields:
+    "accessory":
+      required: true
+      example: "Hue dimmer switch 1"
+      selector:
+        text: {}
+    "button":
+      required: true
+      selector:
+        number:
+          mode: "box"
+          min: 1
+          max: 8
+          step: 1
+    "group":
+      required: true
+      selector:
+        text: {}
+    "group_type":
+      default: "room"
+      selector:
+        select:
+          options: ["room", "zone"]
+
 configure_button:
   fields:
     "accessory":

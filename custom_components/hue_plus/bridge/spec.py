@@ -259,7 +259,7 @@ SPEC: dict[str, dict[str, Any]] = {
             "area_type": f("select", "A new type.", options=["music", "screen", "monitor", "3dspace", "other"]),
             "lights": f(
                 "lights",
-                "The lights with their positions, as a list of items with light, x, y and z (and balance, the brightness balance, more than 0; "
+                "The lights with their positions, as a list of items with light, x, y and z (and balance, the brightness balance, more than 0; positions, every position of a strip or tube as a list of x, y and z; "
                 "it stays as it is when left out). A light that stays keeps its balance and the other positions of its segments.",
             ),
             "performance": f(
@@ -371,6 +371,16 @@ SPEC: dict[str, dict[str, Any]] = {
                 k: {a: b for a, b in v.items() if a != "default"} if k in ("enabled", "end_brightness") else v
                 for k, v in ROUTINE_FIELDS.items()
             },
+        },
+    },
+    "set_button_lights": {
+        "description": "Sets the room or zone one button of a dimmer, smart button or tap switch acts on (the Hue app's Selected lights). "
+        "What its presses do stays as it is. Not tried on a real switch.",
+        "fields": {
+            "accessory": f("text", "The accessory (id or name).", True, example="Hue dimmer switch 1"),
+            "button": f("int", "The button's number on the accessory.", True, min=1, max=8),
+            "group": f("text", "The room or zone (id or name).", True),
+            "group_type": f("select", "Whether it is a room or a zone.", options=["room", "zone"], default="room"),
         },
     },
     "configure_button": {

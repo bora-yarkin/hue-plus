@@ -113,7 +113,8 @@ def group_put(kind: str, name: str | None, archetype: str | None, children: list
 # ---- entertainment areas ----
 
 # (entertainment service id, x, y, z, brightness balance or None), each position from -1 to 1. ``None`` keeps the balance the light has in the area.
-Placement = tuple[str, float, float, float, float | None]
+# (entertainment service, x, y, z, balance) and, when every position of the light is given, the list of them as a sixth item.
+Placement = tuple[Any, ...]
 
 PERFORMANCE_MODES = ("auto", "manual")
 
@@ -141,17 +142,20 @@ def _locations(placements: list[Placement], existing: list[dict[str, Any]] | Non
     if not placements:
         raise ValueError("An entertainment area needs at least one light")
     service_locations = []
-    for service_id, x, y, z, balance in placements:
-        for axis, value in (("x", x), ("y", y), ("z", z)):
-            if not -1 <= value <= 1:
-                raise ValueError(f"The {axis} position must be between -1 and 1")
+    for service_id, x, y, z, balance, *rest in placements:
+        every = rest[0] if rest else None
+        for point in [{"x": x, "y": y, "z": z}, *(every or [])]:
+            for axis in "xyz":
+                if not -1 <= point[axis] <= 1:
+                    raise ValueError(f"The {axis} position must be between -1 and 1")
         if balance is not None and not balance > 0:
             raise ValueError("The brightness balance must be more than 0")
         old = _location_of(existing or [], service_id)
         service_locations.append(
             {
                 "service": _ref(service_id, "entertainment"),
-                "positions": _positions(old.get("positions") or [], x, y, z),
+                # Every position as given (a strip that was turned or stretched), or the light moved as a whole.
+                "positions": every or _positions(old.get("positions") or [], x, y, z),
                 "equalization_factor": balance if balance is not None else old.get("equalization_factor", 1),
             }
         )
@@ -721,6 +725,16 @@ def button_configuration(configuration: dict[str, Any], button_id: str, press: s
         raise ValueError("This button has no action set up yet: set it up in the Hue app first")
     updated = {**configuration, "buttons": {**buttons, button_id: {**buttons[button_id], BUTTON_PRESSES[press]: what}}}
     return updated
+
+
+def button_where(configuration: dict[str, Any], button_id: str, group_id: str, group_type: str) -> dict[str, Any]:
+    """The automation's configuration with the room or zone one button acts on changed (the Hue app's "Selected lights") and
+    everything else as it was. What the presses do is kept; a scene of another room stays that scene."""
+    buttons = configuration.get("buttons") or {}
+    if button_id not in buttons:
+        raise ValueError("This button has no action set up yet: set it up in the Hue app first")
+    where = [{"group": {"rid": group_id, "rtype": group_type}}]
+    return {**configuration, "buttons": {**buttons, button_id: {**buttons[button_id], "where": where}}}
 
 
 # ---- smart scenes that change through the day ----

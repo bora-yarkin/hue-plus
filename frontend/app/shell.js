@@ -54,10 +54,32 @@ function hpWatch() {
   if (HPAPP.sigOf && HPAPP.sigOf() !== HPAPP.lastSig && !HPAPI.hasSheet()) hpShowTab(HPAPP.tab);
 }
 
+/* How much the browser has zoomed the page, when it reports what it measures (a rectangle, a pointer's place) in zoomed units while a style's px is not zoomed (Safari's page zoom): a measured length
+ becomes a style's px by dividing by this. It is 1 where the two agree. */
+function hpZoom() {
+  var styled = parseFloat(getComputedStyle(document.body).width);
+  return styled ? document.body.getBoundingClientRect().width / styled || 1 : 1;
+}
+
+/* The panel is a phone. Its size and the root font size (16px when the phone is 393 wide, the width the Hue app's screens
+ were measured at; every length of the style sheet is a rem) are set here from the page's computed size, which is right in a zoomed browser too; viewport units are not (Safari, in a frame). */
+function hpFit() {
+  var page = getComputedStyle(document.documentElement),
+    wide = parseFloat(page.width),
+    high = parseFloat(page.height);
+  if (!wide || !high) return;
+  /* On a phone the panel is the page, drawn to the phone's width. On a larger page it is a column as high as the page and 9:16 wide; there it is a web page, not a phone blown up: its
+     lengths are at most a little larger than a phone's (so the browser's zoom still makes everything larger or smaller) and the wider column simply holds more. */
+  var isPhone = wide <= 500,
+    phone = isPhone ? wide : Math.min(wide, (high * 9) / 16),
+    scale = isPhone ? phone / 393 : Math.max(1, Math.min(phone / 393, 1.12));
+  document.body.style.width = phone + "px";
+  document.body.style.height = "";
+  document.body.style.marginTop = "";
+  document.documentElement.style.fontSize = scale * 16 + "px";
+}
+
 function hpStart() {
-  /* What the room pages need (their controls, the colours of their scenes) is read now, while Home is looked at. */
-  hmReady().then(function () {}, function () {});
-  hpLoadLightStates();
   HPAPI.ws({ type: "hue_plus/capabilities" }).then(
     function (r) {
       var b = ((r && r.bridges) || [])[0];
@@ -73,7 +95,8 @@ function hpStart() {
     b.dataset.tab = t.id;
     b.querySelector("span").textContent = t.title;
     b.addEventListener("click", function () {
-      if (HPAPI.hasSheet()) HPAPI.closeSheet();
+      /* Another tab is shown at once, as in the app: the pages that were open are taken away, they do not slide back first. */
+      if (HPAPI.hasSheet()) HPAPI.closeSheet(true);
       hpShowTab(t.id);
     });
     HPAPP.nav.querySelector(".in").appendChild(b);
@@ -101,6 +124,9 @@ window.HuePlusApp = {
   mount: function (el, hass) {
     HPAPI.attach(hass);
     HC.addStyles(HOST_CSS);
+    hpFit();
+    window.addEventListener("resize", hpFit);
+    if (window.ResizeObserver) new ResizeObserver(hpFit).observe(document.documentElement);
     el.innerHTML = "<div id='hp'><div class='view'><div class='in'></div></div><nav class='tabs' aria-label='" + _T("app_tabs") + "'><div class='in'></div></nav></div>";
     HPAPP.el = el;
     HPAPP.view = el.querySelector(".view");
@@ -109,6 +135,9 @@ window.HuePlusApp = {
     HPAPP.main.appendChild(mk("div", "empty")).textContent = _T("loading");
     /* The colour panel takes a few seconds to start (it is Home Control's whole dashboard code), so it starts now, while Home is being read, and is ready when a light is tapped. */
     hpLightFrame(function () {});
+    /* Everything the pages need from the bridge (rooms, scenes and their colours, controls, what each light was last set to) is read now, before anything is tapped. */
+    hmReady().then(refresh, function () {});
+    hpLoadLightStates();
     /* The panel starts when the registries are in, or after a short wait; the lists fill in by themselves. */
     Promise.race([
       HPAPI.ready(),

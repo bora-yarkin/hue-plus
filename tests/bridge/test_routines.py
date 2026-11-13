@@ -376,6 +376,24 @@ class ButtonTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(buttons["b1"], {"on_short_release": {"action": "dim_up"}, "where": [ROOM_GROUP]})
         self.assertEqual(buttons["b2"], {"on_repeat": {"action": "dim_up"}})
 
+    async def test_the_lights_a_button_acts_on_change_and_its_presses_stay(self):
+        rec = Recorder()
+        snap = snapshot()
+        snap.zone = [{"id": "z9", "metadata": {"name": "Desk"}, "children": []}]
+        await actions.run("set_button_lights", rec, snap, {"accessory": "Dimmer", "button": 1, "group": "Desk", "group_type": "zone"})
+        (call,) = rec.calls
+        self.assertEqual(call[:3], ("put", "behavior_instance", "acc"))
+        buttons = call[3]["configuration"]["buttons"]
+        self.assertEqual(buttons["b1"]["where"], [{"group": {"rid": "z9", "rtype": "zone"}}])
+        before = next(a for a in snapshot().behavior_instance if a["id"] == "acc")["configuration"]["buttons"]["b1"]
+        presses = lambda button: {k: v for k, v in button.items() if k != "where"}  # noqa: E731
+        self.assertEqual(presses(buttons["b1"]), presses(before))
+        self.assertEqual(buttons["b2"], {"on_repeat": {"action": "dim_up"}})
+        with self.assertRaises(ValueError):
+            await actions.run(
+                "set_button_lights", Recorder(), snap, {"accessory": "Dimmer", "button": 9, "group": "Desk", "group_type": "zone"}
+            )
+
     async def test_a_scene_is_recalled_the_way_the_hue_app_sets_it_up(self):
         (call,) = await self.go({"accessory": "Dimmer", "button": 1, "press": "long", "action": "scene", "scene": "Soho", "with_off": True})
         self.assertEqual(

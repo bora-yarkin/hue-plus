@@ -10,23 +10,26 @@ var HM_READY = false;
 var HM_READING = null;
 
 /* The one read. Every page that needs the data waits for the same answer. */
+function hmRead() {
+  HM_READING = hueplus.resources(HM_KINDS).then(
+    function (r) {
+      HM_KINDS.forEach(function (k) {
+        HM[k] = (r || {})[k];
+      });
+      HM_READY = true;
+      HM_READING = null;
+    },
+    function (e) {
+      HM_READING = null;
+      throw e;
+    }
+  );
+  return HM_READING;
+}
+
 function hmReady() {
   if (HM_READY) return Promise.resolve();
-  if (!HM_READING)
-    HM_READING = hueplus.resources(HM_KINDS).then(
-      function (r) {
-        HM_KINDS.forEach(function (k) {
-          HM[k] = (r || {})[k];
-        });
-        HM_READY = true;
-        HM_READING = null;
-      },
-      function (e) {
-        HM_READING = null;
-        throw e;
-      }
-    );
-  return HM_READING;
+  return HM_READING || hmRead();
 }
 
 /* A page that draws from HM by itself (its rows read it when they refresh) only needs the data to be there. */
@@ -40,6 +43,12 @@ var HM_SHEET = null;
 function hmSession() {
   if (HM_SHEET === currentSheet()) return;
   HM_SHEET = currentSheet();
+  /* A host that is all Hue (Hue Plus's own panel) keeps what it read, so a page is drawn at once; it is read again behind the page, which then shows what changed. */
+  if (HC.keepsBridgeData && HM_READY) {
+    hmdClear();
+    if (!HM_READING) hmRead().then(refresh, function () {});
+    return;
+  }
   HM = {};
   HM_READY = false;
   HM_READING = null;
@@ -170,6 +179,11 @@ function hmActions(buttons) {
 }
 
 /* An information box. */
+/* A note that something was not tried on a real bridge: the Hue app's clone leaves it out. */
+function hmExperimental(key) {
+  return HC.hueApp ? document.createComment("") : hmCallout(_T(key));
+}
+
 function hmCallout(text) {
   var n = mk("div", "hm-note", "<span class='hm-ni'>" + svg("info") + "</span><span class='hm-nt'></span>");
   n.querySelector(".hm-nt").textContent = text;
@@ -668,7 +682,7 @@ function hmLight(b, id) {
     b.appendChild(hmLabel(_T("hm_general")));
     b.appendChild(hmGroup(general));
   }
-  if (a().hue_function || a().hue_gradient_order) b.appendChild(hmCallout(_T("experimental_not_yet_tried_on_a_real_bridge")));
+  if (a().hue_function || a().hue_gradient_order) b.appendChild(hmExperimental("experimental_not_yet_tried_on_a_real_bridge"));
   var info = [];
   if (a().hue_min_brightness !== undefined)
     info.push(
@@ -703,25 +717,27 @@ function hmLight(b, id) {
     b.appendChild(hmLabel(_T("hm_device_info")));
     b.appendChild(hmGroup(info));
   }
-  b.appendChild(hmLabel(_T("hm_timed_effects")));
-  b.appendChild(hmChips([5, 15, 30, 60], function () { return minutes; }, function (v) { minutes = v; }, function (v) { return v + " " + _T("hm_min"); }));
-  b.appendChild(
-    hmGroup(
-      [
-        ["sunrise", "bright"],
-        ["sunset", "moon"],
-        ["no_effect", "stop"],
-      ].map(function (x) {
-        return hmRow({
-          icon: x[1],
-          title: _T("hp_" + x[0]),
-          tap: function () {
-            call("hue_plus", "timed_effect", { light: hue, effect: x[0], duration: minutes * 60 });
-          },
-        });
-      })
-    )
-  );
+  if (!HC.hueApp) {
+    b.appendChild(hmLabel(_T("hm_timed_effects")));
+    b.appendChild(hmChips([5, 15, 30, 60], function () { return minutes; }, function (v) { minutes = v; }, function (v) { return v + " " + _T("hm_min"); }));
+    b.appendChild(
+      hmGroup(
+        [
+          ["sunrise", "bright"],
+          ["sunset", "moon"],
+          ["no_effect", "stop"],
+        ].map(function (x) {
+          return hmRow({
+            icon: x[1],
+            title: _T("hp_" + x[0]),
+            tap: function () {
+              call("hue_plus", "timed_effect", { light: hue, effect: x[0], duration: minutes * 60 });
+            },
+          });
+        })
+      )
+    );
+  }
   b.appendChild(
     hmActions([
       X.identify
@@ -1230,7 +1246,7 @@ function hmArea(b, id) {
         }),
       ])
     );
-    box.appendChild(hmCallout(_T("experimental_only_the_last_state_has_been_seen_on_a_real_bridge")));
+    box.appendChild(hmExperimental("experimental_only_the_last_state_has_been_seen_on_a_real_bridge"));
     box.appendChild(
       hmActions([
         hmButton(_T("hm_delete"), "danger", function () {
@@ -1366,7 +1382,7 @@ function hmPerf(b, id) {
         )
       )
     );
-    box.appendChild(hmCallout(_T("experimental_not_yet_tried_on_a_real_bridge")));
+    box.appendChild(hmExperimental("experimental_not_yet_tried_on_a_real_bridge"));
   });
 }
 
@@ -1585,7 +1601,7 @@ function hmButtonPage(b, id) {
     );
     box.appendChild(hmLabel(_T("hm_behavior")));
     box.appendChild(hmGroup([hmRow({ title: _T("hm_selected_lights"), val: t.name || _T("hm_the_whole_home") })]));
-    box.appendChild(hmCallout(_T("hm_experimental_buttons")));
+    box.appendChild(hmExperimental("hm_experimental_buttons"));
   });
 }
 

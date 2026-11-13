@@ -12,8 +12,8 @@ body.rise{opacity:1}
 /* As the Hue app moves it (read frame by frame from a screen recording): the wheel drops in from the top, the mode buttons and the brightness button drop further, over the same short time, and the tiles of the lights slide down from where the room page had them. */
 body.rise .lp-view{animation:lpwheel .42s cubic-bezier(.2,.8,.2,1) backwards}
 body.rise .lp-bar{animation:lpchips .42s cubic-bezier(.2,.8,.2,1) backwards}
-@keyframes lpwheel{from{transform:translateY(-36vh)}to{transform:none}}
-@keyframes lpchips{from{transform:translateY(-55vh)}to{transform:none}}
+@keyframes lpwheel{from{transform:translateY(-68vh)}to{transform:none}}
+@keyframes lpchips{from{transform:translateY(-58vh);opacity:0}to{transform:none;opacity:1}}
 /* Colour, white and effects follow each other by fading, not by sliding across the screen */
 .lp-track{transition:none!important}
 .lp-pane:not(.off){animation:lpfade .3s ease-out}
@@ -48,6 +48,40 @@ body.areamode .ae-card.picked{outline:2.5px solid #fff;outline-offset:-2px}
 body.areamode .ae-card svg{width:24px;height:24px}
 body.areamode .ae-cn{font-size:12px;font-weight:500}
 .lp-tray{padding-bottom:2px}
+/* Orientation setup */
+.hp-orient{display:none;position:absolute;right:10px;width:36px;height:36px;margin-top:-86px;border:0;border-radius:50%;background:#2d2e33;color:#fff;align-items:center;justify-content:center;cursor:pointer;z-index:3}
+.hp-orient.on{display:flex}
+.hp-orient svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8}
+.hp-osheet{position:fixed;left:0;right:0;bottom:0;z-index:50;background:#1b1c20;display:flex;flex-direction:column;padding-top:18px;animation:hpo .3s cubic-bezier(.2,.8,.2,1)}
+/* while it is open the room stays in view above it, as in the app; the tray and the Location/Height switch give way */
+body.orienting .ae-tray,body.orienting .hp-orient,body.orienting #body>.seg{display:none!important}
+@keyframes hpo{from{transform:translateY(100%)}to{transform:none}}
+.hp-osheet p{margin:0 16px 16px;text-align:center;font-size:14px;font-weight:500}
+.hp-ogrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 10px calc(var(--sab,0px) + 20px)}
+.hp-ochoice{min-height:64px;border:0;border-radius:12px;background:#2d2e33;color:#fff;font:inherit;font-size:12.5px;cursor:pointer}
+.hp-ochoice.on{box-shadow:inset 0 0 0 2px #2e68f7}
+/* the pins of the lights glow, as the app draws them */
+body.areamode .ae-dot{filter:drop-shadow(0 0 4px rgba(127,167,255,.85))}
+/* the picked light's icon in its group's drop, drawn as a single light's is */
+.lw-pin .hp-pick{display:contents}
+/* The row of lights is the room page's row, moved: the same tiles (size, gaps, look, the gold of a light that is on, the switch) at the same place sideways, so the row that slides here and the
+ row the room page shows are one to the eye. */
+.lp-tray{gap:11px;margin:0 -16px 0;padding:0 11px;scroll-padding:0 11px}
+.lp-tile{flex:0 0 93px;height:146px;border-radius:12px;padding:0 6px 51px;gap:8px;justify-content:center;background:#3a3b3e!important;color:#fff;overflow:hidden;box-shadow:none}
+.lp-tile::after{content:"";position:absolute;left:0;right:0;bottom:0;height:51px;background:rgba(0,0,0,.14);pointer-events:none}
+.lp-tile>svg{width:28px;height:28px;stroke-width:1.8}
+.lp-tn{flex:0 0 auto;font-size:12px;font-weight:500;display:block;white-space:nowrap;text-overflow:ellipsis}
+.lp-sw{position:absolute;left:50%;bottom:12px;margin-left:-23px;width:46px;height:27px;z-index:1;background:rgba(255,255,255,.2)}
+.lp-sw i{left:3px;top:3px;width:21px;height:21px;background:#fff}
+.lp-tile.on .lp-sw i{transform:translateX(19px)}
+.lp-tile.on,.lp-tile.on.lt{background:linear-gradient(180deg,#fbdb90,#d6ab5b)!important;color:#2a2116;text-shadow:none}
+.lp-tile.on .lp-sw,.lp-tile.on.lt .lp-sw{background:rgba(70,52,12,.35)}
+.lp-tile.on::after{background:rgba(70,52,12,.16)}
+.lp-tile .lp-tfx{display:none!important}
+.lp-tile.picked{box-shadow:inset 0 0 0 2.5px #fff}
+@supports (corner-shape:squircle){.lp-tile{border-radius:18px;corner-shape:squircle}}
+/* never Home Control's large display */
+body.lg .wrap{zoom:1!important}
 </style>
 </head>
 <body>
@@ -94,11 +128,284 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
   var ready = false;
   var HPLAST = {};
 
+  /* A sheet opened over the screen (a light's Style) belongs to that screen: it goes when the screen does, and is not found open over the next one. */
+  function shutSheets() {
+    try {
+      if (typeof SHEET !== "undefined" && SHEET) closeSheet();
+    } catch (e) {}
+  }
+
+  /* A zoomed Safari measures in zoomed units and styles in unzoomed px: a measured length divided by this is a style's px (1 where they agree). */
+  function zoom() {
+    var styled = parseFloat(getComputedStyle(document.documentElement).width);
+    return styled ? document.documentElement.getBoundingClientRect().width / styled || 1 : 1;
+  }
+
   function body() {
+    shutSheets();
     var b = document.getElementById("body");
+    /* what a close changed (see leave) is undone */
+    b.style.height = b.style.marginTop = b.style.flex = "";
     b.innerHTML = "";
     return b;
   }
+
+  /* ---- A light picked among lights that look the same, as the Hue app does it ----
+   The wheel shows one marker for lights that look the same, with their number. Tapping the tile of one of them does not take it out: the marker is picked for that light (its drop shows
+   that light's icon, not the number, and brightness, colour and effects act on that light alone). Only dragging the marker then takes that light out, and the others stay where they are.
+   Home Control's own code (lights/) is not changed: this wraps its functions in this frame. */
+  var HPM = {};
+  /* The lights in the order the panel gives them (the room page's row): the tiles follow it, whatever the wheel joins. */
+  var HPORDER = [];
+  function hpRank(n) {
+    var i = HPORDER.indexOf(n.key);
+    if (i < 0)
+      HPORDER.forEach(function (e, j) {
+        if (i < 0 && n.cmd && n.cmd.length && n.cmd[0] === e) i = j;
+      });
+    return i < 0 ? 1e6 : i;
+  }
+  function hpPickable(S) {
+    window.HPS = S;
+    S.focus = null;
+    var reveal = S.reveal,
+      select = S.select,
+      target = S.target;
+    function groupOf(n) {
+      return S.joined.filter(function (v) {
+        return v.kids.indexOf(n) >= 0;
+      })[0];
+    }
+    /* The marker of the group shows the picked light's icon instead of the number while that light is picked. */
+    function paintPick() {
+      Object.keys(HPM).forEach(function (k) {
+        HPM[k] = HPM[k].filter(function (m) {
+          return m.pin.isConnected;
+        });
+        HPM[k].forEach(function (m) {
+          paintOne(k, m);
+        });
+      });
+    }
+    function paintOne(k, m) {
+      var num = m.pin.querySelector(".lw-num"),
+          pick = m.pin.querySelector(".hp-pick");
+        var mine = S.focus && S.focus.v.key === k && S.sel === k;
+        if (mine && !pick && num) {
+          num.style.display = "none";
+          var ico = document.createElement("span");
+          ico.className = "hp-pick";
+          ico.innerHTML = svg(S.focus.n.icon || "light");
+          m.pin.insertBefore(ico, num);
+        } else if (!mine && pick) {
+          pick.remove();
+          if (num) num.style.display = "";
+        }
+    }
+    S.select = function (key) {
+      if (!S.focus || key !== S.focus.v.key || !S.focus.keep) S.focus = null;
+      if (S.focus) S.focus.keep = false;
+      select(key);
+      paintPick();
+    };
+    S.target = function () {
+      return S.focus && S.sel === S.focus.v.key ? S.focus.n : target();
+    };
+    S.reveal = function (n) {
+      var v = groupOf(n);
+      if (!v) return reveal(n);
+      S.focus = { v: v, n: n, keep: true };
+      S.select(v.key);
+    };
+  }
+  /* The markers are made by lpMarker: each is noted by the key of what it stands for, so the group's marker can be found. */
+  function hpWrapMarkers() {
+    if (window.lpMarker && !window.lpMarker.hp) {
+      var made = window.lpMarker;
+      window.lpMarker = function (n, showName) {
+        var m = made(n, showName);
+        /* one marker per circle (the colour and the white circle each have one) */
+        (HPM[n.key] = HPM[n.key] || []).push(m);
+        return m;
+      };
+      window.lpMarker.hp = true;
+    }
+    if (window.lpTrayNodes && !window.lpTrayNodes.hp) {
+      var trayNodes = window.lpTrayNodes;
+      window.lpTrayNodes = function (S) {
+        return trayNodes(S)
+          .slice()
+          .sort(function (a, b) {
+            return hpRank(a) - hpRank(b);
+          });
+      };
+      window.lpTrayNodes.hp = true;
+    }
+    if (window.eaSelect && !window.eaSelect.hp) {
+      var pickArea = window.eaSelect;
+      window.eaSelect = function (key) {
+        pickArea(key);
+        hpOrientPaint();
+      };
+      window.eaSelect.hp = true;
+    }
+    if (window.lpTileSel && !window.lpTileSel.hp) {
+      var tileSel = window.lpTileSel;
+      window.lpTileSel = function (S, n) {
+        if (S.focus && S.sel === S.focus.v.key) return n === S.focus.n;
+        return tileSel(S, n);
+      };
+      window.lpTileSel.hp = true;
+    }
+  }
+  /* ---- Orientation setup, as the app has it for a light made of zones (Hue-Screenshots/IMG_0419) ----
+   A round button at the end of the tray opens it for the picked light: lying flat or standing up, parallel or perpendicular to the speakers' wall, the cord at the left or the right. The
+   choices turn the bar in the editor (its angle around, a, and up, p); Home Control's editor draws it and saves it as it does any change. */
+  function hpOrientButton() {
+    var tray = document.querySelector(".ae-tray");
+    if (!tray || document.querySelector(".hp-orient")) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "hp-orient";
+    b.setAttribute("aria-label", _T("app_orientation_setup"));
+    b.innerHTML = svg("cog");
+    b.addEventListener("click", hpOrientSheet);
+    tray.parentNode.insertBefore(b, tray.nextSibling);
+    hpOrientPaint();
+  }
+  function hpOrientPaint() {
+    var b = document.querySelector(".hp-orient"),
+      key = window.EAD && EAD.sel;
+    if (b) b.classList.toggle("on", !!(key && eaLightOf(key) && eaIsBar(key)));
+  }
+  function hpOrientOf(l) {
+    var a = ((((l.a || 0) % 360) + 360) % 360) * (Math.PI / 180);
+    return {
+      up: Math.abs(l.p || 0) >= 45,
+      across: Math.abs(Math.sin(a)) > Math.abs(Math.cos(a)),
+      right: Math.abs(Math.sin(a)) > Math.abs(Math.cos(a)) ? Math.sin(a) < 0 : Math.cos(a) < 0,
+    };
+  }
+  function hpOrientSet(l, o) {
+    l.p = o.up ? 90 : 0;
+    l.a = o.across ? (o.right ? 270 : 90) : o.right ? 180 : 0;
+  }
+  function hpOrientSheet() {
+    var key = window.EAD && EAD.sel,
+      l = key && eaLightOf(key);
+    if (!l || !eaIsBar(key)) return;
+    var o = hpOrientOf(l),
+      sheet = document.createElement("div");
+    sheet.className = "hp-osheet";
+    sheet.innerHTML = "<p></p><div class='hp-ogrid'></div>";
+    sheet.querySelector("p").textContent = _T("app_orientation_question").replace("{name}", (EAD.v.byId[key] || {}).name || entName(key));
+    var grid = sheet.querySelector(".hp-ogrid"),
+      was = { a: l.a, p: l.p };
+    [
+      ["up", false, "app_lying_flat"],
+      ["up", true, "app_standing_up"],
+      ["across", false, "app_parallel"],
+      ["across", true, "app_perpendicular"],
+      ["right", false, "app_cord_at_left"],
+      ["right", true, "app_cord_at_right"],
+    ].forEach(function (c) {
+      var t = document.createElement("button");
+      t.type = "button";
+      t.className = "hp-ochoice";
+      t.textContent = _T(c[2]);
+      t.dataset.k = c[0];
+      t.dataset.v = c[1] ? "1" : "";
+      t.addEventListener("click", function () {
+        o[c[0]] = c[1];
+        hpOrientSet(l, o);
+        eaDrawLight(key);
+        paint();
+      });
+      grid.appendChild(t);
+    });
+    function paint() {
+      Array.prototype.forEach.call(grid.children, function (t) {
+        t.classList.toggle("on", o[t.dataset.k] === !!t.dataset.v);
+      });
+    }
+    paint();
+    /* The page's own bar above the frame becomes this sheet's: its title, X puts the light back as it was, DONE keeps it. */
+    var host = window.parent && window.parent.HueHost,
+      restore = function () {};
+    function shut() {
+      restore();
+      sheet.remove();
+      document.body.classList.remove("orienting");
+    }
+    if (host && host.frameBar)
+      restore = host.frameBar(
+        _T("app_orientation_setup"),
+        shut,
+        function () {
+          l.a = was.a;
+          l.p = was.p;
+          eaDrawLight(key);
+          shut();
+        }
+      );
+    document.body.classList.add("orienting");
+    document.body.appendChild(sheet);
+  }
+
+  /* Pressing the picked group's marker takes the picked light out before the wheel sees the press, so the wheel drags that light alone; a press that does not move puts it back. */
+  var hpPress = null;
+  document.addEventListener(
+    "pointerdown",
+    function (e) {
+      var S = window.HPS,
+        circ = e.target.closest ? e.target.closest(".lw-c") : null;
+      hpPress = null;
+      if (!S || !circ || !S.focus || S.sel !== S.focus.v.key) return;
+      var m = (HPM[S.focus.v.key] || []).filter(function (x) {
+        return circ.contains(x.pin);
+      })[0];
+      if (!m || lpReach(circ, e, m) > 34) return;
+      var v = S.focus.v,
+        n = S.focus.n,
+        before = { ex: Object.assign({}, S.ex), joined: S.joined.slice(), sel: S.sel, focus: S.focus };
+      S.focus = null;
+      S.detach(v, n);
+      var mine = (HPM[n.key] || []).filter(function (x) {
+          return circ.contains(x.pin);
+        })[0],
+        r = circ.getBoundingClientRect();
+      if (mine) lpPlace(mine, e.clientX - r.left, e.clientY - r.top);
+      hpPress = { x: e.clientX, y: e.clientY, moved: false, before: before };
+    },
+    true
+  );
+  document.addEventListener(
+    "pointermove",
+    function (e) {
+      if (hpPress && !hpPress.moved && Math.hypot(e.clientX - hpPress.x, e.clientY - hpPress.y) >= 6) hpPress.moved = true;
+    },
+    true
+  );
+  document.addEventListener(
+    "pointerup",
+    function () {
+      var p = hpPress,
+        S = window.HPS;
+      hpPress = null;
+      if (!p || p.moved || !S) return;
+      /* A tap: the light goes back into its group, which stays picked for it. */
+      setTimeout(function () {
+        S.ex = p.before.ex;
+        S.joined = p.before.joined;
+        S.pop = null;
+        S.rebuild();
+        p.before.focus.keep = true;
+        S.focus = p.before.focus;
+        S.select(p.before.sel);
+      }, 0);
+    },
+    true
+  );
 
   /* The panel is the page (the Hue app's colour wheel screen), not a popup: it is drawn straight into the page of this frame, which the panel shows under its own bar. */
   window.HuePopup = {
@@ -115,8 +422,13 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
       return ready;
     },
     /* Draws the colour, white and effects panel of the lights of a room or a scene, with a tile for each. */
-    panel: function (ids, name, focus, fromY) {
+    panel: function (ids, name, focus, fromY, scrollX, icons) {
       if (!ready) return false;
+      /* Each light is drawn with the icon the panel gives it (from the bridge's icon type), on its tile and in its marker. */
+      HPORDER = ids.slice();
+      Object.keys(icons || {}).forEach(function (e) {
+        LNAME[e] = [A(e).friendly_name || e, icons[e]];
+      });
       document.body.classList.remove("areamode");
       var b = body();
       document.body.classList.remove("rise");
@@ -135,6 +447,18 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
           if (root.kids) {
             S.ex[root.key] = true;
             S.joined.length = 0;
+            /* The tiles are in the order of the room page's row (the order the panel gives the lights in), so each slides to its own place. */
+            var names = ids.map(function (e) {
+              return A(e).friendly_name || e;
+            });
+            var rank = function (k) {
+              var i = ids.indexOf(k.key);
+              if (i < 0) i = names.indexOf(k.name);
+              return i < 0 ? 1e6 : i;
+            };
+            root.kids.sort(function (a, b) {
+              return rank(a) - rank(b) || String(a.name || "").localeCompare(String(b.name || ""));
+            });
             var groups = [];
             root.kids.forEach(function (k) {
               var look = lpNodeLook(k),
@@ -151,14 +475,20 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
             });
             S.rebuild();
           }
-          if (focus && ids.indexOf(focus) >= 0) S.select(focus);
+          hpPickable(S);
+          if (focus && ids.indexOf(focus) >= 0) {
+            var fn = lpFindIn(S, focus);
+            if (fn) S.reveal(fn);
+            else S.select(focus);
+          }
         },
       });
       window.refresh();
       /* The app opens this screen out of the room page: the row of lights slides down to the bottom while the wheel and its controls come in. */
       var tray = b.querySelector(".lp-tray");
+      if (tray && typeof scrollX === "number") tray.scrollLeft = scrollX;
       if (tray && typeof fromY === "number") {
-        var shift = fromY - tray.getBoundingClientRect().top;
+        var shift = fromY - tray.getBoundingClientRect().top / zoom();
         tray.style.transition = "none";
         tray.style.transform = "translateY(" + shift + "px)";
         void tray.offsetHeight;
@@ -198,6 +528,7 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
       window.EAD = { room: "", isNew: false, sel: null, draft: draft, saved: JSON.stringify(draft), external: { plugin: "hue_plus", id: area.id, after: null, note: "" } };
       document.body.classList.add("areamode");
       eaEditor(body());
+      hpOrientButton();
       document.body.classList.add("rise");
       return true;
     },
@@ -210,25 +541,75 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
       return d ? JSON.stringify(d) : null;
     },
     /* Closing the colour screen is its opening run backwards (same distances, same time, the mirrored curve): the wheel and the buttons go up out of the top, the tiles go up to where the room page has them (toY, the top of that row), then done(). */
-    leave: function (toY, done) {
+    leave: function (toY, done, lift, ms) {
+      /* Closing, as the Hue app does it (measured frame by frame in the owner's screen recording at 60 fps): about a quarter of a second; the wheel starts slowly and gathers speed until it
+         has left past the top of the screen; the mode and brightness buttons go up with it and fade at the very end; the row of lights reaches the room page's row by six tenths of the time;
+         the dark background stays until half way (the page does that part). `lift` is how far below the top of the screen this frame starts: the frame is made as high as the screen for the
+         close, so the wheel is not cut off at its top edge, and what is in it is moved down by as much, so nothing jumps. */
       var view = document.querySelector(".lp-view"),
         bar = document.querySelector(".lp-bar"),
         tray = document.querySelector(".lp-tray"),
-        /* the opening's curve, mirrored: cubic-bezier(.2,.8,.2,1) run backwards is (.8,0,.8,.2) */
-        ease = "transform .42s cubic-bezier(.8,0,.8,.2)";
+        b = document.getElementById("body"),
+        T = ms || 260,
+        z = zoom();
+      shutSheets();
       document.body.classList.remove("rise");
-      [[view, "-36vh"], [bar, "-55vh"]].forEach(function (p) {
-        if (!p[0]) return;
-        p[0].style.animation = "none";
-        p[0].style.transition = ease;
-        p[0].style.transform = "translateY(" + p[1] + ")";
-      });
-      if (tray && typeof toY === "number") {
-        tray.style.transition = ease;
-        tray.style.transform = "translateY(" + (toY - tray.getBoundingClientRect().top) + "px)";
-      }
       document.body.style.opacity = "1";
-      setTimeout(done, 420);
+      /* the tile that was picked is a plain tile again as it goes back into the room's row */
+      Array.prototype.forEach.call(document.querySelectorAll(".lp-tile.picked"), function (t) {
+        t.classList.remove("picked");
+      });
+      if (b && lift) {
+        b.style.height = b.offsetHeight + "px";
+        b.style.marginTop = lift + "px";
+        b.style.flex = "none";
+      }
+      /* The wheel's way out: where it is at each moment, as a share of the whole way (read from the recording; linear between the samples). */
+      var path = [
+        [0, 0],
+        [0.27, 0.07],
+        [0.4, 0.1],
+        [0.47, 0.17],
+        [0.53, 0.25],
+        [0.6, 0.31],
+        [0.67, 0.39],
+        [0.73, 0.47],
+        [0.8, 0.55],
+        [0.87, 0.64],
+        [0.93, 0.78],
+        [1, 1],
+      ];
+      function out(el, far, fade) {
+        if (!el) return;
+        el.style.animation = "none";
+        el.style.transition = "none";
+        el.animate(
+          path.map(function (p) {
+            var k = { offset: p[0], transform: "translateY(" + -far * p[1] + "px)" };
+            if (fade) k.opacity = p[0] < 0.8 ? 1 : Math.max(0, 1 - (p[0] - 0.8) / 0.15);
+            return k;
+          }),
+          { duration: T, easing: "linear", fill: "forwards" }
+        );
+      }
+      /* far enough that the wheel is above the top of the screen at the end */
+      var far = view ? view.getBoundingClientRect().bottom / z + (lift || 0) + 12 : 0;
+      out(view, far, false);
+      out(bar, far, true);
+      if (tray && typeof toY === "number") {
+        tray.style.transition = "none";
+        tray.animate([{ transform: "none" }, { transform: "translateY(" + (toY - tray.getBoundingClientRect().top / z) + "px)" }], {
+          duration: T * 0.6,
+          easing: "cubic-bezier(.6,0,.4,1)",
+          fill: "forwards",
+        });
+      }
+      setTimeout(done, T + 16);
+    },
+    /* How far the row of lights is scrolled sideways, so the room page's row can be put at the same place. */
+    trayScroll: function () {
+      var tray = document.querySelector(".lp-tray");
+      return tray ? tray.scrollLeft : 0;
     },
     /* Takes the screen away before another is drawn, so what was there is not seen again. */
     hide: function () {
@@ -265,11 +646,19 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
         return window.HA.ready();
       })
       .then(function () {
-        return FILES.reduce(function (chain, f) {
-          return chain.then(function () {
-            return load("lights/" + f);
+        /* Home Control's files come in one answer (lights/bundle.json, built from FILES by scripts/build_menu.py) and each is run as a script of its own, in order, as if it had been asked for by itself. */
+        return fetch("lights/bundle.json" + (query.get("v") ? "?v=" + encodeURIComponent(query.get("v")) : ""))
+          .then(function (r) {
+            if (!r.ok) throw new Error("Unable to load lights/bundle.json");
+            return r.json();
+          })
+          .then(function (files) {
+            files.forEach(function (f) {
+              var s = document.createElement("script");
+              s.textContent = f[1] + "\n//# sourceURL=lights/" + f[0];
+              document.body.appendChild(s);
+            });
           });
-        }, Promise.resolve());
       })
       .then(function () {
         /* What main.js sets up, without anything being kept in Home Assistant: the Hue panel is a window onto the bridge, so what Home Control's dashboard saves in Home Assistant (its layout, the
@@ -293,6 +682,14 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
               });
           },
         };
+        /* What Home Control keeps for this browser (its large display, its theme, what it last showed) is Home Control's: the Hue panel shares its address, so it would read it, and must not. */
+        window.deviceGet = function (key, fallback) {
+          return fallback;
+        };
+        window.deviceSet = function () {};
+        LG = false;
+        applyLG();
+        hpWrapMarkers();
         window.lightScenesRow = function () {};
         var lookOn = window.lpLook;
         window.lpLook = function (e) {

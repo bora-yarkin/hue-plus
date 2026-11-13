@@ -88,6 +88,9 @@ def _placements(snap: models.Snapshot, lights: list[dict[str, Any]]) -> list[pay
     for entry in lights:
         if not isinstance(entry, dict) or "light" not in entry:
             raise ValueError("Each light needs a light and a position, for example {light: Bed Light, x: 0, y: 1, z: 0}")
+        every = entry.get("positions")
+        if every is not None and not (isinstance(every, list) and every and all(isinstance(p, dict) for p in every)):
+            raise ValueError("positions is a list of {x, y, z}")
         out.append(
             (
                 _entertainment_service(snap, _light(snap, str(entry["light"]))),
@@ -95,6 +98,7 @@ def _placements(snap: models.Snapshot, lights: list[dict[str, Any]]) -> list[pay
                 float(entry.get("y", 0)),
                 float(entry.get("z", 0)),
                 float(entry["balance"]) if entry.get("balance") is not None else None,
+                [{axis: float(p.get(axis, 0)) for axis in "xyz"} for p in every] if every else None,
             )
         )
     return out
@@ -826,6 +830,23 @@ async def configure_button(api, snap, data):
     slots = _time_slots(snap, data.get("slots"), accessory["targets"].get(button["id"], [])) if data["action"] == "time_based" else None
     what = payloads.button_action(data["action"], scene, data.get("with_off", False), cycle, data.get("repeat_timeout"), slots)
     configuration = payloads.button_configuration(instance["configuration"], button["id"], data["press"], what)
+    await api.put("behavior_instance", instance["id"], {"configuration": configuration})
+
+
+@action("set_button_lights")
+async def set_button_lights(api, snap, data):
+    """Sets the room or zone one button of an accessory acts on (the Hue app's "Selected lights"). Not tried on a real switch."""
+    accessory = resolve(models.accessories(snap), data["accessory"], "accessory")
+    number = int(data["button"])
+    button = next((b for b in accessory["buttons"] if b["number"] == number), None)
+    if button is None:
+        raise ValueError(f"{accessory['name']} has buttons {', '.join(str(b['number']) for b in accessory['buttons'])}")
+    if accessory["automation_id"] is None:
+        raise ValueError(f"{accessory['name']} has no automation yet: set it up in the Hue app first")
+    group_type = data.get("group_type", "room")
+    group = _group(snap, group_type, data["group"])
+    instance = next(a for a in snap.behavior_instance if a["id"] == accessory["automation_id"])
+    configuration = payloads.button_where(instance["configuration"], button["id"], group["id"], group_type)
     await api.put("behavior_instance", instance["id"], {"configuration": configuration})
 
 

@@ -652,6 +652,96 @@ var PLUGIN_STRINGS = {
   "app_room": "Room",
   "app_button_controls": "Button controls…",
   "app_selected_lights": "Selected lights",
+  "app_rooms": "Rooms",
+  "app_orientation_setup": "Orientation setup",
+  "app_orientation_question": "How is your “{name}” positioned in relation to the speakers?",
+  "app_lying_flat": "Lying flat",
+  "app_standing_up": "Standing up",
+  "app_parallel": "Parallel",
+  "app_perpendicular": "Perpendicular",
+  "app_cord_at_left": "Cord at left",
+  "app_cord_at_right": "Cord at right",
+  "app_type_table": "Table",
+  "app_type_floor": "Floor",
+  "app_type_pendant": "Pendant",
+  "app_type_ceiling": "Ceiling",
+  "app_type_wall": "Wall",
+  "app_type_outdoor": "Outdoor",
+  "app_type_hue": "Hue",
+  "app_type_bulbs": "Bulbs",
+  "app_type_other": "Other",
+  "app_edit_name_and_type": "Edit name and type",
+  "app_name": "Name",
+  "app_name_needed": "Give it a name",
+  "app_device_type": "Device type",
+  "app_manufacturer": "Manufacturer",
+  "app_model": "Model",
+  "app_mac_address": "MAC address",
+  "app_hardware_version": "Hardware Platform Version",
+  "app_software": "Software",
+  "app_arch_table_shade": "Traditional lamp",
+  "app_arch_flexible_lamp": "Desk lamp",
+  "app_arch_table_wash": "Table wash",
+  "app_arch_floor_shade": "Traditional floor lamp",
+  "app_arch_floor_lantern": "Floor lantern",
+  "app_arch_bollard": "Bollard",
+  "app_arch_pendant_round": "Round pendant",
+  "app_arch_pendant_long": "Long pendant",
+  "app_arch_pendant_spot": "Pendant spot",
+  "app_arch_ceiling_round": "Round ceiling",
+  "app_arch_ceiling_square": "Square ceiling",
+  "app_arch_ceiling_horizontal": "Horizontal ceiling",
+  "app_arch_ceiling_tube": "Ceiling tube",
+  "app_arch_recessed_ceiling": "Recessed ceiling",
+  "app_arch_single_spot": "Single spot",
+  "app_arch_double_spot": "Double spot",
+  "app_arch_wall_shade": "Wall shade",
+  "app_arch_wall_lantern": "Wall lantern",
+  "app_arch_wall_spot": "Wall spot",
+  "app_arch_wall_washer": "Wall washer",
+  "app_arch_up_and_down": "Up and down",
+  "app_arch_up_and_down_up": "Up light",
+  "app_arch_up_and_down_down": "Down light",
+  "app_arch_ground_spot": "Ground spot",
+  "app_arch_recessed_floor": "Recessed floor",
+  "app_arch_flood_bulb": "Flood bulb",
+  "app_arch_string_light": "String light",
+  "app_arch_hue_lightstrip": "Lightstrip",
+  "app_arch_hue_lightstrip_tv": "TV lightstrip",
+  "app_arch_hue_lightstrip_pc": "PC lightstrip",
+  "app_arch_hue_play": "Play",
+  "app_arch_hue_play_wallwasher": "Play wall washer",
+  "app_arch_hue_tube": "Gradient tube",
+  "app_arch_hue_signe": "Signe",
+  "app_arch_hue_go": "Go",
+  "app_arch_hue_iris": "Iris",
+  "app_arch_hue_bloom": "Bloom",
+  "app_arch_hue_centris": "Centris",
+  "app_arch_twilight": "Twilight",
+  "app_arch_classic_bulb": "Classic bulb",
+  "app_arch_sultan_bulb": "Sultan bulb",
+  "app_arch_spot_bulb": "Spot bulb",
+  "app_arch_candle_bulb": "Candle bulb",
+  "app_arch_luster_bulb": "Luster bulb",
+  "app_arch_vintage_bulb": "Vintage bulb",
+  "app_arch_vintage_candle_bulb": "Vintage candle bulb",
+  "app_arch_edison_bulb": "Edison bulb",
+  "app_arch_ellipse_bulb": "Ellipse bulb",
+  "app_arch_triangle_bulb": "Triangle bulb",
+  "app_arch_small_globe_bulb": "Small globe bulb",
+  "app_arch_large_globe_bulb": "Large globe bulb",
+  "app_arch_plug": "Plug",
+  "app_arch_christmas_tree": "Christmas tree",
+  "app_select_all": "Select all",
+  "app_edit": "Edit",
+  "app_deselect": "Deselect",
+  "app_rearrange": "Rearrange",
+  "app_move_to": "Move to",
+  "app_hold_and_drag": "Hold a tile and drag it to its new place",
+  "app_sort_by_name": "Sort by name",
+  "app_choose_one": "Choose one thing to edit",
+  "app_not_for_this": "Not for what is chosen",
+  "app_matter_controller": "Matter controller",
   "app_entire_room": "Entire Room",
   "app_btn_onoff": "On/Off button",
   "app_btn_brighten": "Brighten button",
@@ -1113,10 +1203,51 @@ function hpBridgeDraft(area) {
     kept = [];
   (area.lights || []).forEach(function (l) {
     var id = hpEntityOf(l.light_id);
-    if (id) lights.push({ id: id, x: eaClamp(l.x || 0), y: eaClamp(hpFlip(l.y || 0)), z: eaClamp(l.z || 0), balance: l.balance });
+    if (id) lights.push(hpBarOf(l, { id: id, x: eaClamp(l.x || 0), y: eaClamp(hpFlip(l.y || 0)), z: eaClamp(l.z || 0), balance: l.balance }));
     else kept.push({ light: l.light_id, x: l.x, y: l.y, z: l.z, balance: l.balance });
   });
   return { id: area.id, name: area.name, room: "", lights: lights, dummies: [], kept: kept };
+}
+
+/* A light the bridge holds several positions for (a strip, a tube: its ends, or more along it) is a bar in the editor: its middle, the way it points (a, around; p, up) and its length, worked out
+ from the first and last position. `n` is how many positions the bridge has, for writing them back. */
+function hpBarOf(l, light) {
+  var ps = (l.positions || []).filter(function (p) {
+    return p && typeof p.x === "number";
+  });
+  if (ps.length < 2) return light;
+  var a = ps[0],
+    b = ps[ps.length - 1],
+    dx = b.x - a.x,
+    dy = hpFlip(b.y) - hpFlip(a.y),
+    dz = b.z - a.z,
+    len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+  light.n = ps.length;
+  if (len < 0.05) return light;
+  light.x = eaClamp((a.x + b.x) / 2);
+  light.y = eaClamp((hpFlip(a.y) + hpFlip(b.y)) / 2);
+  light.z = eaClamp((a.z + b.z) / 2);
+  light.a = Math.round(((Math.atan2(dy, dx) * 180) / Math.PI + 360) % 360);
+  light.p = Math.round((Math.atan2(dz, Math.sqrt(dx * dx + dy * dy)) * 180) / Math.PI);
+  light.len = Math.round(len * 100) / 100;
+  return light;
+}
+
+/* The positions of a bar for the bridge: `n` of them, evenly from one end to the other (the bridge's y, which runs the other way). Nothing for a light with one position. */
+function hpBarPositions(light) {
+  if (!(light.n > 1) || !light.len) return null;
+  var a = ((light.a || 0) * Math.PI) / 180,
+    p = ((light.p || 0) * Math.PI) / 180,
+    out = [];
+  for (var i = 0; i < light.n; i++) {
+    var t = (i / (light.n - 1) - 0.5) * light.len;
+    out.push({
+      x: eaClamp(light.x + t * Math.cos(a) * Math.cos(p)),
+      y: hpFlip(eaClamp(light.y + t * Math.sin(a) * Math.cos(p))),
+      z: eaClamp(light.z + t * Math.sin(p)),
+    });
+  }
+  return out;
 }
 
 function hpEditOnBridge(area, after) {
@@ -1141,11 +1272,14 @@ function hpSaveBridge(leave) {
   var lights = d.kept
     .concat(
       d.lights.map(function (l) {
-        return { light: hpHueId(l.id), x: l.x, y: hpFlip(l.y), z: l.z, balance: l.balance };
+        var every = hpBarPositions(l),
+          first = every ? every[0] : { x: l.x, y: hpFlip(l.y), z: l.z };
+        return { light: hpHueId(l.id), x: first.x, y: first.y, z: first.z, positions: every, balance: l.balance };
       })
     )
     .map(function (l) {
       var o = { light: l.light, x: l.x, y: l.y, z: l.z };
+      if (l.positions) o.positions = l.positions;
       if (typeof l.balance === "number") o.balance = l.balance;
       return o;
     });
@@ -1183,23 +1317,26 @@ var HM_READY = false;
 var HM_READING = null;
 
 /* The one read. Every page that needs the data waits for the same answer. */
+function hmRead() {
+  HM_READING = hueplus.resources(HM_KINDS).then(
+    function (r) {
+      HM_KINDS.forEach(function (k) {
+        HM[k] = (r || {})[k];
+      });
+      HM_READY = true;
+      HM_READING = null;
+    },
+    function (e) {
+      HM_READING = null;
+      throw e;
+    }
+  );
+  return HM_READING;
+}
+
 function hmReady() {
   if (HM_READY) return Promise.resolve();
-  if (!HM_READING)
-    HM_READING = hueplus.resources(HM_KINDS).then(
-      function (r) {
-        HM_KINDS.forEach(function (k) {
-          HM[k] = (r || {})[k];
-        });
-        HM_READY = true;
-        HM_READING = null;
-      },
-      function (e) {
-        HM_READING = null;
-        throw e;
-      }
-    );
-  return HM_READING;
+  return HM_READING || hmRead();
 }
 
 /* A page that draws from HM by itself (its rows read it when they refresh) only needs the data to be there. */
@@ -1213,6 +1350,12 @@ var HM_SHEET = null;
 function hmSession() {
   if (HM_SHEET === currentSheet()) return;
   HM_SHEET = currentSheet();
+  /* A host that is all Hue (Hue Plus's own panel) keeps what it read, so a page is drawn at once; it is read again behind the page, which then shows what changed. */
+  if (HC.keepsBridgeData && HM_READY) {
+    hmdClear();
+    if (!HM_READING) hmRead().then(refresh, function () {});
+    return;
+  }
   HM = {};
   HM_READY = false;
   HM_READING = null;
@@ -1343,6 +1486,11 @@ function hmActions(buttons) {
 }
 
 /* An information box. */
+/* A note that something was not tried on a real bridge: the Hue app's clone leaves it out. */
+function hmExperimental(key) {
+  return HC.hueApp ? document.createComment("") : hmCallout(_T(key));
+}
+
 function hmCallout(text) {
   var n = mk("div", "hm-note", "<span class='hm-ni'>" + svg("info") + "</span><span class='hm-nt'></span>");
   n.querySelector(".hm-nt").textContent = text;
@@ -1841,7 +1989,7 @@ function hmLight(b, id) {
     b.appendChild(hmLabel(_T("hm_general")));
     b.appendChild(hmGroup(general));
   }
-  if (a().hue_function || a().hue_gradient_order) b.appendChild(hmCallout(_T("experimental_not_yet_tried_on_a_real_bridge")));
+  if (a().hue_function || a().hue_gradient_order) b.appendChild(hmExperimental("experimental_not_yet_tried_on_a_real_bridge"));
   var info = [];
   if (a().hue_min_brightness !== undefined)
     info.push(
@@ -1876,25 +2024,27 @@ function hmLight(b, id) {
     b.appendChild(hmLabel(_T("hm_device_info")));
     b.appendChild(hmGroup(info));
   }
-  b.appendChild(hmLabel(_T("hm_timed_effects")));
-  b.appendChild(hmChips([5, 15, 30, 60], function () { return minutes; }, function (v) { minutes = v; }, function (v) { return v + " " + _T("hm_min"); }));
-  b.appendChild(
-    hmGroup(
-      [
-        ["sunrise", "bright"],
-        ["sunset", "moon"],
-        ["no_effect", "stop"],
-      ].map(function (x) {
-        return hmRow({
-          icon: x[1],
-          title: _T("hp_" + x[0]),
-          tap: function () {
-            call("hue_plus", "timed_effect", { light: hue, effect: x[0], duration: minutes * 60 });
-          },
-        });
-      })
-    )
-  );
+  if (!HC.hueApp) {
+    b.appendChild(hmLabel(_T("hm_timed_effects")));
+    b.appendChild(hmChips([5, 15, 30, 60], function () { return minutes; }, function (v) { minutes = v; }, function (v) { return v + " " + _T("hm_min"); }));
+    b.appendChild(
+      hmGroup(
+        [
+          ["sunrise", "bright"],
+          ["sunset", "moon"],
+          ["no_effect", "stop"],
+        ].map(function (x) {
+          return hmRow({
+            icon: x[1],
+            title: _T("hp_" + x[0]),
+            tap: function () {
+              call("hue_plus", "timed_effect", { light: hue, effect: x[0], duration: minutes * 60 });
+            },
+          });
+        })
+      )
+    );
+  }
   b.appendChild(
     hmActions([
       X.identify
@@ -2403,7 +2553,7 @@ function hmArea(b, id) {
         }),
       ])
     );
-    box.appendChild(hmCallout(_T("experimental_only_the_last_state_has_been_seen_on_a_real_bridge")));
+    box.appendChild(hmExperimental("experimental_only_the_last_state_has_been_seen_on_a_real_bridge"));
     box.appendChild(
       hmActions([
         hmButton(_T("hm_delete"), "danger", function () {
@@ -2539,7 +2689,7 @@ function hmPerf(b, id) {
         )
       )
     );
-    box.appendChild(hmCallout(_T("experimental_not_yet_tried_on_a_real_bridge")));
+    box.appendChild(hmExperimental("experimental_not_yet_tried_on_a_real_bridge"));
   });
 }
 
@@ -2758,7 +2908,7 @@ function hmButtonPage(b, id) {
     );
     box.appendChild(hmLabel(_T("hm_behavior")));
     box.appendChild(hmGroup([hmRow({ title: _T("hm_selected_lights"), val: t.name || _T("hm_the_whole_home") })]));
-    box.appendChild(hmCallout(_T("hm_experimental_buttons")));
+    box.appendChild(hmExperimental("hm_experimental_buttons"));
   });
 }
 

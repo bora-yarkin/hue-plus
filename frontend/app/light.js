@@ -32,6 +32,9 @@ function hpLightFrame(then) {
   f.src = new URL("popup.html", HP_BASE).href + (HP_VERSION ? "?v=" + encodeURIComponent(HP_VERSION) : "");
   document.body.appendChild(f);
   HPLF.el = f;
+  /* The frame has its size from the start and is hidden by visibility, never by display: Safari, with the page zoomed, draws a frame that was made without a box with the zoom applied
+     twice (its content larger than its box). */
+  hpFrameShow(false);
   var wait = setInterval(function () {
     var w = f.contentWindow;
     if (!w || !w.HuePopup) return;
@@ -54,15 +57,41 @@ window.HueHost.onHass = function (h) {
   if (HPLF.win && HPLF.win.HuePopup) HPLF.win.HuePopup.attach(h);
 };
 
+/* The width the Hue app's screens were measured at, and how much larger or smaller the panel is drawn. */
+var HP_DESIGN_WIDTH = 393;
+/* How long the colour screen takes to close (the Hue app: about 250 ms); the page's fades in app.css are timed to it. */
+var HP_CLOSE_MS = 260;
+
+function hpFrameScale() {
+  /* From the root font size (the panel's width / 393 * 16, set in the style sheet), not from a measurement: a measurement is in zoomed units in a zoomed Safari. */
+  return (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16) / 16;
+}
+
+/* The same for the offsets of an element (offsetTop, clientWidth), which a zoomed Safari may or may not give in zoomed units. */
+function hpOffsetZoom() {
+  var styled = parseFloat(getComputedStyle(document.body).width);
+  return styled ? document.body.offsetWidth / styled || 1 : 1;
+}
+
 function hpFrameShow(on) {
   if (!HPLF.el) return;
   var layers = document.querySelectorAll(".pg"),
     bar = layers.length ? layers[layers.length - 1].querySelector(".pbar") : null;
   /* Where the bar ends in its final place (a page that is still sliding in is measured without its movement). */
-  var top = bar ? layers[layers.length - 1].offsetTop + bar.offsetTop + bar.offsetHeight : 0;
+  var top = bar ? (layers[layers.length - 1].offsetTop + bar.offsetTop + bar.offsetHeight) / hpOffsetZoom() : 0;
+  /* The frame's lengths are scaled as the panel's own are (the root font size). */
+  var scale = hpFrameScale();
   HPLF.el.style.top = top + "px";
-  HPLF.el.style.height = "calc(100% - " + top + "px)";
+  HPLF.el.style.right = "auto";
+  HPLF.el.style.bottom = "auto";
+  /* as wide as the panel, in the panel's own lengths */
+  HPLF.el.style.width = (parseFloat(document.body.style.width) || HP_DESIGN_WIDTH * scale) / scale + "px";
+  HPLF.el.style.height = "calc((100% - " + top + "px) / " + scale + ")";
+  HPLF.el.style.transformOrigin = "0 0";
+  HPLF.el.style.transform = "scale(" + scale + ")";
   HPLF.el.classList.toggle("show", !!on);
+  /* Counts the times the frame was put on a screen, so a screen that is leaving knows another has taken the frame. */
+  if (on) HPLF.shown = (HPLF.shown || 0) + 1;
 }
 
 /* Closing a colour screen: the frame animates out (its wheel goes up, its tiles go to the room page's row) before it is taken away. */
@@ -71,8 +100,49 @@ window.HueHost.onLeave = function (toY, done) {
     done();
     return;
   }
-  var top = parseFloat(HPLF.el.style.top) || 0;
-  HPLF.win.HuePopup.leave(typeof toY === "number" ? toY - top : undefined, done);
+  var top = parseFloat(HPLF.el.style.top) || 0,
+    scale = hpFrameScale(),
+    shown = HPLF.shown,
+    row = document.querySelector(".pg.leaving .ltiles");
+  /* The room page's row is where the colour screen's row was left, sideways: it is one row. */
+  if (row) row.scrollLeft = HPLF.win.HuePopup.trayScroll() * scale * hpZoom();
+  /* For the close the frame is as high as the screen (the wheel leaves past the top of the screen, not past the frame's edge); its content is moved down by as much in the same step. */
+  HPLF.win.HuePopup.leave(
+    typeof toY === "number" ? toY / hpZoom() / scale : undefined,
+    function () {
+      done(HPLF.shown !== shown);
+    },
+    top / scale,
+    HP_CLOSE_MS
+  );
+  HPLF.el.style.top = "0px";
+  HPLF.el.style.height = "calc(100% / " + scale + ")";
+};
+
+/* A sheet the light frame opens over its page (Orientation setup) uses the page's own bar: its title, X to cancel and DONE to keep, until `restore` is called. */
+window.HueHost.frameBar = function (title, onDone, onCancel) {
+  var layers = document.querySelectorAll(".pg"),
+    layer = layers[layers.length - 1];
+  if (!layer) return function () {};
+  var bar = layer.querySelector(".pbar"),
+    tt = bar.querySelector(".tt"),
+    was = tt.textContent;
+  tt.textContent = title;
+  layer.classList.add("framebar");
+  function take(e) {
+    var b = e.target.closest ? e.target.closest("button") : null;
+    if (!b || !bar.contains(b)) return;
+    e.stopPropagation();
+    e.preventDefault();
+    if (b.classList.contains("back") || b.classList.contains("x")) onCancel();
+    else onDone();
+  }
+  bar.addEventListener("click", take, true);
+  return function () {
+    bar.removeEventListener("click", take, true);
+    tt.textContent = was;
+    layer.classList.remove("framebar");
+  };
 };
 
 /* Every page that is drawn takes the frame away; a light screen puts it back. */
@@ -83,6 +153,15 @@ window.HueHost.onRender = function () {
 window.HueHost.onResume = function (key) {
   if (/^(app-lights|app-edit|app-place)\b/.test(String(key))) hpFrameShow(true);
 };
+
+/* The icon of each light, as the room page draws it, for the colour screen. */
+function hpIconsOf(ids) {
+  var out = {};
+  (ids || []).forEach(function (e) {
+    out[e] = hpLightIcon(e);
+  });
+  return out;
+}
 
 function hpLightScreen(body, ids, name, focus, from) {
   var wait = mk("div", "empty");
@@ -96,7 +175,7 @@ function hpLightScreen(body, ids, name, focus, from) {
     if (HPLIGHTS) win.HuePopup.seed(HPLIGHTS);
     hpFrameShow(true);
     var top = parseFloat(HPLF.el.style.top) || 0;
-    win.HuePopup.panel(ids, name, focus, typeof from === "number" ? from - top : undefined);
+    win.HuePopup.panel(ids, name, focus, typeof from === "number" ? (from / hpZoom() - top) / hpFrameScale() : undefined, typeof HPAPP.lightScroll === "number" ? HPAPP.lightScroll / hpZoom() / hpFrameScale() : undefined, hpIconsOf(ids));
   });
 }
 
@@ -130,14 +209,45 @@ function hpLightsPage(body, key) {
   bar.appendChild(done);
   var from = HPAPP.lightFrom;
   HPAPP.lightFrom = undefined;
-  hpLightScreen(body, hpGroupLights(room), A(room).friendly_name || room, focus, from);
+  hpLightScreen(body, hpLightsByName(room), A(room).friendly_name || room, focus, from);
 }
 
 /* The editor of a scene's lights (the Hue app's "New scene" and a scene's lights): the same screen, with SAVE. The lights show what is set while it is open; leaving after a change asks, and discarding
  puts them back as they were. o = { name, lights, onSave(acts), after }; onSave answers true (or a promise of true) when it kept the scene. */
 var HPEDIT = null;
 
+/* Lights in the order of the room (or zone) they are all in, as its row shows them (the person's order, or by name); lights of no single room keep their order. */
+function hpInRoomOrder(lights) {
+  var h = H(),
+    room = Object.keys(h.states).filter(function (e) {
+      var t = A(e).hue_type;
+      if (e.indexOf("light.") !== 0 || !A(e).is_hue_group || (t !== "room" && t !== "zone")) return false;
+      var members = hpGroupLights(e);
+      return (
+        lights.length &&
+        lights.every(function (l) {
+          return members.indexOf(l) >= 0;
+        })
+      );
+    })
+    /* a room before a zone */
+    .sort(function (x, y) {
+      return (A(x).hue_type === "room" ? 0 : 1) - (A(y).hue_type === "room" ? 0 : 1);
+    })[0];
+  if (!room) return lights;
+  return hpLightsByName(room)
+    .filter(function (l) {
+      return lights.indexOf(l) >= 0;
+    })
+    .concat(
+      lights.filter(function (l) {
+        return hpGroupLights(room).indexOf(l) < 0;
+      })
+    );
+}
+
 function hpEditLights(o) {
+  o.lights = hpInRoomOrder(o.lights || []);
   HPEDIT = { o: o, snap: null };
   call("light", "turn_on", { entity_id: o.lights });
   showPopup("app-edit", true);
@@ -161,7 +271,7 @@ function hpEditPage(body) {
     setTimeout(function () {
       if (HC.sheet.light !== token) return;
       E.snap = win.HuePopup.snapshot(o.lights);
-      win.HuePopup.panel(o.lights, o.name);
+      win.HuePopup.panel(o.lights, o.name, undefined, undefined, undefined, hpIconsOf(o.lights));
       hpFrameShow(true);
     }, 700);
   });

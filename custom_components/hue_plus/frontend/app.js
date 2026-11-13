@@ -1,6 +1,6 @@
 /* The Hue dashboard panel. Built by scripts/build_menu.py from frontend/app and frontend/src; edit those files, not this one. */
 var HOST_ICONS = {"ac":"<path d='M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9'/>","alert":"<path d='M12 4l9 16H3z'/><path d='M12 10v4M12 17v.5'/>","apple":"<g transform='translate(2.4 2.4) scale(.8)' stroke-width='2'><path d='M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701'/></g>","apps":"<rect x='4' y='4' width='6.500' height='6.500' rx='1.500'/><rect x='13.500' y='4' width='6.500' height='6.500' rx='1.500'/><rect x='4' y='13.500' width='6.500' height='6.500' rx='1.500'/><rect x='13.500' y='13.500' width='6.500' height='6.500' rx='1.500'/>","axis":"<path d='M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3'/>","back":"<path d='M19 12H5M11 6l-6 6 6 6'/>","battery":"<rect x='7' y='6' width='10' height='15' rx='2'/><path d='M10 3h4v3h-4z'/>","bed":"<path d='M3 18V8M3 14h18v4M21 14v-3a3 3 0 0 0-3-3h-7v6'/>","bedking":"<path d='M3 19V6M21 19V6M3 14h18M6 14v-3h5v3M13 14v-3h5v3'/>","bedsingle":"<path d='M4 19V7M4 14h16v5M20 14v-2a3 3 0 0 0-3-3H9v5'/>","bell":"<path d='M6 17h12l-1.500-2V11a4.500 4.500 0 0 0-9 0v4z'/><path d='M10 20a2 2 0 0 0 4 0'/>","bright":"<circle cx='12' cy='12' r='4'/><path d='M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2'/>","broom":"<path d='M14 4l6 6M12 6l6 6-8 8H4v-6z'/>","cam":"<rect x='3' y='7' width='13' height='10' rx='2'/><path d='M16 11l5-3v8l-5-3'/>","camoff":"<path d='M4 7h11v10H4zM15 11l5-3v8l-5-3M3 3l18 18'/>","cctv":"<path d='M3 8l12-3 2 6-12 3zM17 10l4-1M9 15v4h6'/>","ceiling":"<path d='M12 3v4'/><path d='M4 14l3-7h10l3 7z'/><path d='M9 18v1M12 18v2M15 18v1'/>","chdown":"<path d='M6 9l6 6 6-6'/>","check":"<path d='M5 12l5 5 9-10'/>","chev":"<path d='M6 9l6 6 6-6'/>","chup":"<path d='M6 15l6-6 6 6'/>","clock":"<circle cx='12' cy='12' r='9'/><path d='M12 7v5l3 2'/>","close":"<path d='M6 6l12 12M18 6L6 18'/>","cog":"<circle cx='12' cy='12' r='3'/><path d='M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z'/>","down":"<path d='M12 5v14M6 13l6 6 6-6'/>","drag":"<path d='M5 8h14M5 12h14M5 16h14'/>","drop":"<path d='M12 3s6 6 6 10a6 6 0 0 1-12 0c0-4 6-10 6-10z'/>","edit":"<path d='M4 20l4-1 11-11-3-3L5 16z'/><path d='M14 6l3 3'/>","eq":"<path d='M4 10v4M8 6v12M12 3v18M16 7v10M20 10v4'/>","expand":"<path d='M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5'/>","eye":"<path d='M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z'/><circle cx='12' cy='12' r='3'/>","eyeoff":"<path d='M3 3l18 18'/><path d='M10.6 6.2A9.5 9.5 0 0 1 12 6c6.5 0 10 6 10 6a17 17 0 0 1-3.2 3.9M6.4 7.9A16.6 16.6 0 0 0 2 12s3.5 6 10 6a9.7 9.7 0 0 0 4-.9'/><path d='M9.9 9.9a3 3 0 0 0 4.2 4.2'/>","fan":"<circle cx='12' cy='12' r='1.8'/><path d='M12 10.2C12 6 14.5 4 17 5.2c-.8 2.6-2.4 4-5 5zM13.8 12c4.2 0 6 2.5 4.8 5-2.6-.8-4-2.4-4.8-5zM12 13.8c0 4.2-2.5 6-5 4.8.8-2.6 2.4-4 5-4.8zM10.2 12c-4.2 0-6-2.5-4.8-5 2.6.8 4 2.4 4.8 5z'/>","filter":"<path d='M4 6h16l-6 7v6l-4-2v-4z'/>","flood":"<path d='M4 6h16v4H4zM8 14l-2 6M12 14v6M16 14l2 6'/>","floor":"<path d='M12 21v-9M9 21h6'/><path d='M7 12l2-8h6l2 8z'/>","home":"<path d='M4 11l8-7 8 7v9H4z'/>","info":"<circle cx='12' cy='12' r='9'/><path d='M12 11v6M12 7.500v.5'/>","keyboard":"<rect x='2' y='6' width='20' height='12' rx='2'/><path d='M6 10h1M10 10h1M14 10h1M18 10h1M7 14h10'/>","lamp":"<path d='M8 21h8M12 21v-6'/><path d='M7 15h10l-2-9H9z'/>","leave":"<path d='M14 4h5v16h-5M10 8l-4 4 4 4M6 12h10'/>","left":"<path d='M19 12H5M11 6l-6 6 6 6'/>","light":"<path d='M9 18h6M10 21h4'/><path d='M8 14a6 6 0 1 1 8 0c-1 1-1.5 2-1.5 3h-5c0-1-.5-2-1.5-3z'/>","lights":"<path d='M9 18h6M10 21h4'/><path d='M8 14a6 6 0 1 1 8 0c-1 1-1.5 2-1.5 3h-5c0-1-.5-2-1.5-3z'/>","lock":"<rect x='5' y='11' width='14' height='9' rx='2'/><path d='M8 11V8a4 4 0 0 1 8 0v3'/>","media":"<rect x='3' y='5' width='18' height='12' rx='2'/><path d='M8 21h8'/>","mic":"<rect x='9' y='3' width='6' height='11' rx='3'/><path d='M5 11a7 7 0 0 0 14 0M12 18v3'/>","minus":"<path d='M5 12h14'/>","moon":"<path d='M20 14A8 8 0 1 1 10 4a6.500 6.500 0 0 0 10 10z'/>","motion":"<circle cx='12' cy='12' r='2'/><path d='M6 12a6 6 0 0 1 12 0M3 12a9 9 0 0 1 18 0'/>","movie":"<rect x='3' y='6' width='18' height='12' rx='2'/><path d='M3 10h18M8 6l-2 4M13 6l-2 4M18 6l-2 4'/>","mute":"<path d='M4 9v6h4l5 4V5L8 9z'/><path d='M17 9l5 6M22 9l-5 6'/>","next":"<path d='M18 5v14M6 5l10 7-10 7z'/>","note":"<path d='M9 18V5l11-2v13'/><circle cx='6' cy='18' r='3'/><circle cx='17' cy='16' r='3'/>","padlock":"<path class='shk' d='M8 11V8a4 4 0 0 1 8 0v3'/><rect x='5' y='11' width='14' height='9' rx='2'/><circle class='key' cx='12' cy='15.500' r='1' fill='currentColor' stroke='none'/>","palette":"<path d='M12 3a9 9 0 1 0 0 18c1.500 0 2-1 1.500-2s0-2 1.500-2h2a4 4 0 0 0 4-4c0-5-4-10-9-10z'/><circle cx='8' cy='10' r='1'/><circle cx='12' cy='7' r='1'/><circle cx='16' cy='10' r='1'/>","pause":"<path d='M8 5v14M16 5v14'/>","person":"<circle cx='12' cy='8' r='4'/><path d='M4 20c1-4 4-6 8-6s7 2 8 6'/>","phone":"<path d='M22 16.920v3a2 2 0 0 1-2.180 2 19.790 19.790 0 0 1-8.630-3.070 19.500 19.500 0 0 1-6-6 19.790 19.790 0 0 1-3.070-8.670A2 2 0 0 1 4.110 2h3a2 2 0 0 1 2 1.720 12.840 12.840 0 0 0 .7 2.810 2 2 0 0 1-.45 2.110L8.090 9.910a16 16 0 0 0 6 6l1.270-1.270a2 2 0 0 1 2.110-.45 12.840 12.840 0 0 0 2.810.7A2 2 0 0 1 22 16.920z'/>","pin":"<circle cx='12' cy='10' r='3'/><path d='M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z'/>","play":"<path d='M7 5l12 7-12 7z'/>","playc":"<circle cx='12' cy='12' r='9'/><path d='M10 8l6 4-6 4z'/>","playpause":"<path d='M4 5l6 7-6 7zM14 5v14M19 5v14'/>","plug":"<rect x='6' y='5' width='12' height='14' rx='3'/><path d='M10 9v2M14 9v2M10 15h4'/>","plus":"<path d='M12 5v14M5 12h14'/>","power":"<path d='M12 3v8'/><path d='M7 6.500a8 8 0 1 0 10 0'/>","powerset":"<path d='M12 3v8'/><path d='M7 6.500a8 8 0 1 0 10 0'/>","prev":"<path d='M6 5v14M18 5L8 12l10 7z'/>","printer":"<rect x='5' y='9' width='14' height='8' rx='2'/><path d='M8 9V4h8v5M8 17v3h8v-3'/>","pulsebars":"<path d='M4 12h.01M8 9v6M12 12h.01M16 6v12M20 12h.01'/>","purifier":"<rect x='5' y='3' width='14' height='18' rx='3'/><circle cx='12' cy='12' r='3'/>","rec":"<circle cx='12' cy='12' r='6'/>","repeat":"<path d='M17 3l3 3-3 3M20 6H8a4 4 0 0 0-4 4M7 21l-3-3 3-3M4 18h12a4 4 0 0 0 4-4'/>","restart":"<path d='M20 12a8 8 0 1 1-3-6.200M20 4v5h-5'/>","right":"<path d='M5 12h14M13 6l6 6-6 6'/>","rug":"<rect x='3' y='7' width='18' height='10' rx='1'/><path d='M3 10h18M3 14h18'/>","scene":"<circle cx='12' cy='12' r='9'/><circle cx='9' cy='10' r='1.4'/><circle cx='14.5' cy='8.8' r='1.4'/><circle cx='15.5' cy='14.5' r='1.4'/>","sd":"<path d='M7 3h8l4 4v14H7z'/><path d='M10 7v3M13 7v3'/>","search":"<circle cx='11' cy='11' r='7'/><path d='M20 20l-4-4'/>","sofa":"<path d='M4 12V9a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M3 12h18v6H3z'/>","sparkle":"<path d='M9 3l1.8 4.7L15.5 9.5l-4.7 1.8L9 16l-1.8-4.7L2.5 9.5l4.7-1.8z'/><path d='M18 13l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9z'/>","speaker":"<rect x='6' y='3' width='12' height='18' rx='3'/><circle cx='12' cy='14' r='3'/><path d='M10 7h4'/>","stop":"<rect x='6' y='6' width='12' height='12' rx='1'/>","strip":"<path d='M3 8h18v8H3z'/><path d='M6 11v2M10 11v2M14 11v2M18 11v2'/>","swap":"<path d='M7 7h12l-3-3M17 17H5l3 3'/>","syncring":"<path d='M17.500 6.500a8 8 0 1 0 2.300 5.500'/><circle cx='12' cy='12' r='3'/>","target":"<circle cx='12' cy='12' r='8'/><circle cx='12' cy='12' r='3'/>","thermo":"<path d='M10 14V5a2 2 0 0 1 4 0v9a4 4 0 1 1-4 0z'/>","trash":"<path d='M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13'/>","tune":"<path d='M4 7h10M18 7h2M4 17h4M12 17h8'/><circle cx='16' cy='7' r='2'/><circle cx='10' cy='17' r='2'/>","tv":"<rect x='3' y='5' width='18' height='12' rx='2'/><path d='M8 21h8'/>","undo":"<path d='M9 14 4 9l5-5'/><path d='M4 9h10.5a5.5 5.5 0 0 1 0 11H11'/>","up":"<path d='M12 19V5M6 11l6-6 6 6'/>","vac":"<circle cx='12' cy='12' r='8'/><circle cx='12' cy='12' r='3'/>","voldown":"<path d='M4 9v6h4l5 4V5L8 9z'/><path d='M16 9a4 4 0 0 1 0 6'/>","volup":"<path d='M4 9v6h4l5 4V5L8 9z'/><path d='M16 9a4 4 0 0 1 0 6M18.500 6.500a8 8 0 0 1 0 11'/>","walk":"<circle cx='13' cy='5' r='2'/><path d='M12 21l2-7-3-3 2-3 3 3h3M9 14l-2 7'/>","wave1":"<path d='M2 12c2.500-1.500 4.500-1.500 7 0s4.500 1.500 7 0 4.500-1.500 6 0'/>","wave2":"<path d='M2 12c2.500-3 4.500-3 7 0s4.500 3 7 0 4.500-3 6 0'/>","wave3":"<path d='M2 12c2.500-5 4.500-5 7 0s4.500 5 7 0 4.500-5 6 0'/>","wave4":"<path d='M2 12c1.200-8 2.300-8 3.500 0s2.300 8 3.500 0 2.300-8 3.500 0 2.300 8 3.500 0 2.300-8 3.500 0'/>","wrench":"<path d='M14 6a4 4 0 0 0 5 5l-9 9a2 2 0 0 1-3-3l9-9a4 4 0 0 0-2-2z'/>"};
-var HOST_CSS = ":root{--bg:#1b1c20;--bg-warm:#2b2926;--bar:#14151a;--head:#232429;--row:#25262a;--row-hi:#2d2e33;--tile:#3a3b3e;--tile-low:#2c2d30;--line:#33343a;--ink:#f4f4f6;--ink2:#a9a9af;--label:#8f8f95;--acc:#2e68f7;--gold1:#fbdb90;--gold2:#d6ab5b;--gold-ink:#2a2116;--f-card:var(--row);--f-raise:var(--row-hi);--f-line:var(--line);--f-line2:#45464d;--ckfg:#fff;--warm:#f6cd72;--r-s:10px;--r-m:14px;--r-l:18px;--r-xl:22px;--r-row:12px;--sp:10px;--sp-s:8px;--sp-l:12px;--sp-head:14px 6px 8px;--fs-xs:11px;--fs-s:13px;--fs-m:14px;--fs-l:16px;--sab:max(var(--safe-area-inset-bottom,0px),env(safe-area-inset-bottom,0px));--sat:max(var(--safe-area-inset-top,0px),env(safe-area-inset-top,0px));--tabs:58px}*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.35 -apple-system,BlinkMacSystemFont,\"SF Pro Text\",\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}hue-plus-panel{display:block;height:100vh}button{font:inherit;color:inherit}svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.ic{display:flex;align-items:center;justify-content:center;flex:none}.ic svg{width:24px;height:24px}#hp{position:fixed;inset:0;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--bg-warm) 0,var(--bg) 420px)}#hp .view{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:calc(var(--sat) + 14px) 16px calc(var(--tabs) + var(--sab) + 28px)}#hp .view>.in{max-width:760px;margin:0 auto}#hp nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;justify-content:center;background:var(--bar);padding-bottom:var(--sab)}#hp nav.tabs .in{display:flex;width:100%;max-width:760px}#hp nav.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 2px 8px;background:none;border:0;color:#5d5e66;cursor:pointer;font-size:9.5px;letter-spacing:.03em;text-transform:uppercase}#hp nav.tabs button svg{width:25px;height:25px}#hp nav.tabs button.on{color:#fff}#hp nav.tabs button:focus-visible{outline:2px solid var(--acc);outline-offset:-3px;border-radius:10px}.hd{display:flex;flex-direction:column;gap:14px;margin:0 0 4px}.hd .acts{display:flex;align-items:center;gap:10px;justify-content:flex-end;min-height:32px;order:-1}.hd h1{margin:0;font-size:31px;font-weight:700;letter-spacing:.01em;line-height:1.1;font-family:\"Avenir Next\",\"Montserrat\",\"Century Gothic\",Futura,\"Segoe UI\",system-ui,sans-serif}.top{display:flex;justify-content:flex-end;gap:10px;min-height:30px;margin-bottom:10px}.lb{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--label);margin:26px 4px 10px}.empty{color:var(--ink2);text-align:center;padding:36px 12px;font-size:var(--fs-l)}.rbt{width:30px;height:30px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0}.rbt svg{width:17px;height:17px}.rbt.dk{background:var(--tile)}.rbt:focus-visible{outline:2px solid #fff;outline-offset:2px}.tg{width:52px;height:30px;border-radius:15px;flex:none;background:#56575c;position:relative;cursor:pointer;border:0;padding:0;transition:background .2s}.tg i{position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .2s}.tg.on{background:var(--acc)}.tg.on i{transform:translateX(22px)}.tg:focus-visible{outline:2px solid #fff;outline-offset:2px}.sl{position:relative;height:18px;touch-action:pan-y;cursor:pointer;display:flex;align-items:center}.sl:before{content:\"\";position:absolute;left:0;right:0;height:8px;border-radius:4px;background:rgba(255,255,255,.16)}.sl .kn{position:absolute;top:0;width:18px;height:18px;margin-left:-9px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.45);left:0}.rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}.room{position:relative;background:var(--tile);border-radius:14px;padding:16px 16px 14px;display:flex;flex-direction:column;gap:14px;cursor:pointer;min-height:92px;transition:background .25s;color:#fff}.room .rh{display:flex;align-items:center;gap:22px}.room .rh .ic svg{width:28px;height:28px}.room .rn{flex:1;min-width:0;font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.room:focus-visible{outline:2px solid #fff;outline-offset:2px}.on-gold{color:var(--gold-ink)}.on-gold .tg{background:rgba(70,52,12,.38)}.on-gold .tg.on{background:rgba(70,52,12,.38)}.on-gold .sl:before{background:rgba(70,52,12,.22)}.rhead{padding:calc(var(--sat) + 10px) 16px 16px;border-radius:0 0 22px 22px;background:linear-gradient(180deg,var(--tile) 0,var(--tile-low) 100%);color:#fff;transition:background .25s}.rhead.on-gold{box-shadow:0 8px 24px rgba(0,0,0,.35)}.rhead .rr{display:flex;align-items:center;gap:10px}.rhead .rr .nm{flex:1;min-width:0;font-size:17px;font-weight:500;margin-left:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rhead .rr .tg{margin-left:4px}.rhead .sl{margin-top:20px}.rhead.on-gold .rbt{background:rgba(255,255,255,.34);color:#fff}.rbody{padding:4px 16px calc(var(--sab) + 40px);max-width:760px;margin:0 auto}.ltiles{display:flex;gap:12px;overflow-x:auto;padding:0 0 6px;margin:0 -16px;padding-left:16px;padding-right:16px;scrollbar-width:none}.ltiles::-webkit-scrollbar{display:none}.ltile{position:relative;flex:none;width:102px;height:158px;border-radius:12px;background:var(--tile);color:#fff;display:flex;flex-direction:column;overflow:hidden;cursor:pointer;transition:background .25s}.ltile .up{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px 6px 4px;min-height:0}.ltile .up .ic svg{width:28px;height:28px}.ltile .up b{font-size:12px;font-weight:500;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ltile .dn{height:52px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.14)}.ltile.gone{opacity:.5}.ltile:focus-visible{outline:2px solid #fff;outline-offset:2px}.ctiles{display:flex;flex-wrap:wrap;gap:12px}.ctile{width:calc(50% - 6px);max-width:150px;min-height:104px;border-radius:var(--r-m);background:var(--tile);padding:12px 12px 12px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;color:#fff}.ctile .ic{justify-content:flex-start}.ctile .ic svg{width:26px;height:26px}.ctile b{display:block;font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ctile i{display:block;font-style:normal;font-size:13px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ctile:focus-visible{outline:2px solid #fff;outline-offset:2px}.addgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:6px 16px 24px}.addgrid .atile{aspect-ratio:1.5;border-radius:var(--r-m);background:var(--tile);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;font-size:14px;font-weight:500;color:#fff}.atile .ci{width:48px;height:48px;border-radius:50%;background:#101114;display:flex;align-items:center;justify-content:center}.atile .ci svg{width:24px;height:24px}.atile:focus-visible{outline:2px solid #fff;outline-offset:2px}.lightframe{position:fixed;left:0;right:0;bottom:0;top:0;z-index:55;border:0;width:100%;background:transparent;display:none}.lightframe.show{display:block}.pg{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:var(--bg);transform:translateX(100%);transition:transform .42s cubic-bezier(.2,.9,.25,1),box-shadow .42s,opacity .25s}.pg.in{transform:none}.pg.under{transform:translateX(-26%)}.pg .pbar{display:flex;align-items:center;gap:14px;background:var(--head);padding:calc(var(--sat) + 10px) 16px 12px;flex:none}.pg .pbar .rbt{background:var(--tile);width:32px;height:32px}.pg .pbar .rbt svg{width:17px;height:17px;stroke-width:2.2}.pg .pbar .ttl{flex:1;min-width:0;font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pg .pbar .ttl .ic{display:none}.pg .pbar .act{border:0;background:var(--tile);color:#fff;border-radius:16px;padding:8px 16px;font-size:12px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;cursor:pointer}.pg .pbar .act:disabled{opacity:.5;cursor:default}.pg .pbody{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 0 calc(var(--sab) + 32px)}.pg .pbody>*{max-width:760px;margin-left:auto;margin-right:auto}.pg.bare .pbar{background:transparent}@media(prefers-reduced-motion:reduce){*{transition:none!important}}.pill{position:relative;display:flex;align-items:center;gap:14px;min-height:62px;padding:10px 18px;background:var(--row);cursor:pointer;overflow:hidden}.pill+.pill{border-top:1px solid var(--line)}.pill.static{cursor:default}.pill .tx{flex:1;min-width:0;display:flex;flex-direction:column;position:relative;z-index:1}.pill .nm{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pill .sb{font-size:11px;color:var(--ink2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pill .vl{font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap;position:relative;z-index:1}.pill>.ic{position:relative;z-index:1;width:40px;height:40px;border-radius:50%;background:#101114;color:#fff}.pill>.ic svg{width:21px;height:21px}.pill.on>.ic{background:var(--gold1);color:var(--gold-ink)}.pill .ck{width:22px;height:22px;flex:none;color:var(--acc);opacity:0;display:flex}.pill .ck svg{width:22px;height:22px;stroke-width:2.4}.pill.checked .ck{opacity:1}.pill:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}.pill.slide{touch-action:pan-y;flex-wrap:wrap;padding-bottom:20px;row-gap:6px}.pill.slide .tx{flex:1}.pill.slide .trk{order:9;flex:0 0 100%;position:relative;height:18px}.pill.slide .trk:before{content:\"\";position:absolute;left:0;right:0;top:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.16)}.pill.slide .fill{position:absolute;left:0;top:6px;height:6px;width:0;border-radius:3px;background:rgba(255,255,255,.55)}.pill.slide .kn{position:absolute;top:0;left:0;width:18px;height:18px;margin-left:-9px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.45)}.sep{display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--label);margin:26px 18px 10px}.sep svg{display:none}.hint{font-size:var(--fs-s);color:var(--ink2);margin:10px 18px}.notec.pane.dim{font-size:var(--fs-m);color:var(--ink2);line-height:1.45;padding:14px 18px}.sqw.pane{background:var(--row);padding:4px 18px}.sq{width:100%;min-height:52px;background:none;border:0;color:var(--ink);font:inherit;font-size:var(--fs-l);outline:none}.gridl{display:grid;gap:var(--sp);padding:0 16px}.gridl.g2{grid-template-columns:1fr 1fr}.chev{display:flex}.pane{position:relative}.scrim{position:fixed;inset:0;opacity:0;transition:opacity .25s;z-index:80;background:rgba(0,0,0,.6)}.scrim.in{opacity:1}.dlg{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:90;width:min(360px,88%);border-radius:var(--r-xl);padding:22px;text-align:center;background:var(--head);box-shadow:0 20px 50px rgba(0,0,0,.5)}.dlg p{margin:0 0 20px;font-size:var(--fs-l);line-height:1.4}.dlg .rrow{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp)}.rbtn{min-height:46px;display:flex;align-items:center;justify-content:center;border-radius:999px;background:var(--tile);cursor:pointer;font-weight:600;user-select:none}.rbtn.go{background:var(--acc);color:#fff}.toast{position:fixed;left:50%;bottom:calc(var(--tabs) + var(--sab) + 18px);transform:translate(-50%,10px);padding:11px 18px;border-radius:999px;font-size:var(--fs-m);z-index:95;opacity:0;transition:opacity .25s,transform .25s;background:var(--tile);max-width:90vw;text-align:center}.toast.in{opacity:1;transform:translate(-50%,0)}.hm{padding:0 0 24px}.hm .hm-bigi{width:40px;height:40px;display:flex;align-items:center;justify-content:center;flex:none;color:#fff}.hm .hm-bigi svg{width:34px;height:34px}.hm .hm-title{padding:18px 18px 8px}.hm .hm-tt{min-width:0;display:block;margin-top:6px}.hm .hm-tt b{display:block;font-size:26px;font-weight:700;line-height:1.1;overflow-wrap:anywhere}.hm .hm-tt i{display:block;font-style:normal;font-size:var(--fs-m);color:var(--ink2);margin-top:6px}.hm .hm-label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--label);padding:26px 18px 10px}.hm .hm-group{background:var(--row);margin:0;border:0;border-radius:0}.hm .hm-row{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 18px;transition:background .2s}.hm .hm-row+.hm-row{border-top:1px solid var(--line)}.hm .hm-row.tap{cursor:pointer;user-select:none}.hm .hm-row.tap:active{background:var(--row-hi)}.hm .hm-row:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}.hm .hm-i{width:40px;height:40px;border-radius:50%;background:#101114;display:flex;align-items:center;justify-content:center;flex:none;color:#fff}.hm .hm-i svg,.hm .hm-c svg,.hm .hm-ck svg,.hm .hm-ni svg,.hm .hm-ti svg,.hm .hm-gear svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.hm .hm-i svg{width:21px;height:21px}.hm .hm-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.hm .hm-n{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hm .hm-s{font-size:11px;color:var(--ink2);overflow-wrap:anywhere}.hm .hm-v{font-size:12px;color:var(--ink2);white-space:nowrap;font-variant-numeric:tabular-nums}.hm .hm-c{width:20px;height:20px;flex:none;color:var(--ink2);display:flex;align-items:center}.hm .hm-c svg{width:18px;height:18px;transform:rotate(-90deg)}.hm .hm-row.stack{min-height:58px}.hm .hm-row.good .hm-s{color:#6dd58c}.hm .hm-row.danger .hm-n{color:#ff6b62}.hm .hm-ck{width:22px;height:22px;flex:none;color:var(--acc);opacity:0;transition:opacity .2s}.hm .hm-ck svg{width:22px;height:22px;stroke-width:2.4}.hm .hm-row.checked .hm-ck,.hm .hm-row.good .hm-ck{opacity:1}.hm .hm-row.good .hm-ck{color:#6dd58c}.hm .hm-sw{width:47px;height:29px;border-radius:15px;flex:none;background:#56575c;position:relative;transition:background .2s}.hm .hm-sw i{position:absolute;left:2px;top:2px;width:25px;height:25px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .2s}.hm .hm-row.on .hm-sw{background:var(--acc)}.hm .hm-row.on .hm-sw i{transform:translateX(18px)}.hm .hm-note{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;margin:16px 16px;border-radius:var(--r-row);font-size:var(--fs-m);line-height:1.4;color:var(--ink2);background:rgba(46,104,247,.1);border:1px solid rgba(46,104,247,.4)}.hm .hm-ni{width:20px;height:20px;flex:none;color:var(--acc);margin-top:1px}.hm .hm-ni svg{width:20px;height:20px}.hm .hm-actions{display:flex;flex-direction:column;align-items:center;gap:12px;padding:26px 0 6px}.hm .hm-btn{min-width:120px;padding:10px 26px;border-radius:999px;border:1px solid transparent;font:inherit;font-size:var(--fs-m);font-weight:600;cursor:pointer;color:#fff;transition:transform .1s,filter .2s}.hm .hm-btn:active{transform:scale(.97)}.hm .hm-btn:focus-visible{outline:2px solid #fff;outline-offset:2px}.hm .hm-btn.primary{background:var(--acc)}.hm .hm-btn.ghost{background:var(--tile)}.hm .hm-btn.danger{background:transparent;color:#ff6b62;border:1.5px solid #e5484d}.hm .hm-chips{display:flex;gap:8px;margin:0 16px 10px}.hm .hm-chip{flex:1;padding:10px 0;border-radius:999px;border:0;background:var(--tile);color:#fff;font:inherit;font-size:var(--fs-m);font-weight:600;cursor:pointer;transition:background .2s}.hm .hm-chip.on{background:var(--acc)}.hm .hm-tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:0 16px}.hm .hm-tile{position:relative;min-height:116px;padding:14px;border-radius:var(--r-m);display:flex;flex-direction:column;justify-content:flex-end;gap:2px;background:var(--tile);cursor:pointer;user-select:none;transition:background .2s}.hm .hm-tile b{font-size:var(--fs-l);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hm .hm-tile i{font-style:normal;font-size:var(--fs-s);color:var(--ink2)}.hm .hm-ti{position:absolute;left:14px;top:14px;width:30px;height:30px}.hm .hm-ti svg{width:28px;height:28px}.hm .hm-tile.on{background:linear-gradient(180deg,var(--gold1),var(--gold2));color:var(--gold-ink)}.hm .hm-tile.on i{color:rgba(42,33,22,.7)}.hm .hm-gear{position:absolute;right:10px;top:10px;width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.1);color:inherit;display:flex;align-items:center;justify-content:center;cursor:pointer}.hm .hm-gear svg{width:18px;height:18px}.hm .hm-time{flex:1;min-height:44px;padding:8px 12px;border-radius:var(--r-row);border:0;background:var(--tile);color:#fff;font:inherit;font-size:var(--fs-l);font-variant-numeric:tabular-nums}.hm .hm-time:focus-visible{outline:2px solid var(--acc);outline-offset:1px}.bar{position:relative;height:40px;border-radius:20px;background:var(--tile);overflow:hidden;touch-action:pan-y;cursor:pointer}.bar .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,var(--gold1),var(--gold2));border-radius:inherit;transition:width .12s}.bar .vl{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:var(--fs-s);font-weight:600;color:#fff;text-shadow:0 0 3px rgba(0,0,0,.6);pointer-events:none}.bar.off .fill{width:0!important}.asheet{position:fixed;left:8px;right:8px;bottom:calc(var(--sab) + 8px);z-index:90;max-width:520px;margin:0 auto;background:var(--head);border-radius:var(--r-xl);overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.5)}.arow{display:block;width:100%;min-height:56px;border:0;background:none;color:#fff;font-size:17px;cursor:pointer;border-top:1px solid var(--line)}.arow:first-child{border-top:0}.arow.danger{color:#ff6b62}.arow.cancel{font-weight:600}.pg.roompg .pbar{display:none}.pg.roompg .pbody{padding:0 0 calc(var(--sab) + 24px)}.pg.roompg .pbody>*{max-width:none}.pg.roompg .rhead{position:sticky;top:0;z-index:5}.pg.roompg .rbody{max-width:760px}#hp .view .hm .hm-group{margin-left:-16px;margin-right:-16px}#hp .view .hm .hm-label{padding-left:20px}.room.on-gold,.rhead.on-gold{color:#fff;text-shadow:0 1px 2px rgba(60,45,15,.35)}.rhead.on-gold .sl:before{background:rgba(70,52,12,.25)}.ltile.on-gold .dn{background:rgba(70,52,12,.16)}.gridl .pill{flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:12px;min-height:118px;padding:14px;background:var(--tile);border-radius:var(--r-m)}.gridl .pill+.pill{border-top:0}.gridl .pill .nm,.gridl .pill .sb{white-space:normal;overflow:visible}.gridl .pill .tx{flex:none}.frows{display:grid;grid-template-columns:repeat(var(--cols,3),102px);grid-auto-rows:102px;column-gap:12px;row-gap:20px;overflow-x:auto;margin:0 -16px;padding:0 16px 6px;scrollbar-width:none}.frows::-webkit-scrollbar{display:none}.ftile{position:relative;border-radius:12px;background:var(--tile);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 6px 11px;cursor:pointer;overflow:hidden;transition:background .3s,transform .12s}.ftile:active{transform:scale(.96)}.ftile.lit{background:linear-gradient(180deg,var(--gold1),var(--gold2));color:var(--gold-ink)}.ftile .dots{position:absolute;left:0;right:0;top:12px;display:flex;flex-wrap:wrap;justify-content:center;gap:7px 6px;padding:0 8px}.ftile .dots .disc{width:22px;height:22px}.ftile b{font-size:12px;font-weight:500;line-height:1.2;text-align:center}.disc{display:block;width:100%;height:100%;border-radius:50%;background:#f9d27a;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}.ftile:focus-visible,.sitem:focus-visible{outline:2px solid #fff;outline-offset:2px}.fscrim{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);transition:background-color .17s,backdrop-filter .17s,-webkit-backdrop-filter .17s}.fscrim.in{background:rgba(0,0,0,.45);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}.fwrap{position:fixed;inset:0;z-index:75;display:flex;align-items:center;justify-content:center;pointer-events:none}.fcard{position:relative;pointer-events:auto;width:min(520px,calc(100% - 34px));max-height:80vh;overflow:auto;background:#26272b;border-radius:18px;padding:20px 17px 20px;box-shadow:0 24px 60px rgba(0,0,0,.55);opacity:0}.fcard .ft{font-size:13.5px;font-weight:500;margin:2px 3px 18px}.fg{display:flex;flex-wrap:wrap;gap:10px 13px}.sitem{width:102px;flex:none;border-radius:11px;background:var(--tile);height:113px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:6px;cursor:pointer;color:#fff;transition:background .25s,transform .12s}.sitem:active{transform:scale(.96)}.sitem .dc{position:relative;width:50px;height:50px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.35))}.sitem .stop{position:absolute;inset:0;display:none;align-items:center;justify-content:center}.sitem .stop i{width:18px;height:18px;border-radius:3px;background:#fff}.sitem.moving{background:var(--acc)}.sitem.moving .disc{opacity:0}.sitem.moving .stop{display:flex}.sitem.on:not(.moving){background:linear-gradient(180deg,var(--gold1),var(--gold2));color:var(--gold-ink)}.sitem b{font-size:11.5px;font-weight:500;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.sside{display:flex;flex-direction:column;justify-content:center;gap:10px;width:34px;flex:none;animation:hpin .2s}.sside .rbt{background:var(--tile)}.pg .pbar .lbar{display:none}.pg.lightpg{background:transparent}.pg.lightpg .pbar{background:transparent}.pg.lightpg .pbar>*:not(.lbar){display:none!important}.pg.lightpg .lbar{display:flex;flex:1;gap:10px;align-items:center}.pg.lightpg .lbar .act{background:var(--tile)}.pg.lightpg .lbar .act.done{margin-left:auto}.pg.scenepg{background:var(--bg)}.pg.scenepg .pbar{background:linear-gradient(180deg,var(--sc1),var(--sc2))}.schead{display:flex;align-items:flex-end;gap:14px;padding:12px 18px 18px;background:linear-gradient(180deg,var(--sc2),var(--bg) 140%)}.schead .big{width:48px;height:48px;flex:none;align-self:flex-start;position:absolute;display:none}.schead .nm{flex:1;font-size:30px;font-weight:700;line-height:1.1;overflow-wrap:anywhere}.schead .rbt{background:var(--tile);width:34px;height:34px}#hp[data-tab=automations]{background:linear-gradient(180deg,#0f1c46 0,var(--bg) 340px)}.rbt.blue{background:var(--acc);width:36px;height:36px}.rbt.blue svg{width:20px;height:20px}.agroup{margin-top:16px}.ahead{display:flex;align-items:center;gap:16px;padding:6px 2px 10px}.ahead .ic svg{width:30px;height:30px}.ahead b{flex:1;font-size:13px;font-weight:500}.ahead i{font-style:normal;color:var(--ink2);font-size:11px}.ahead .fold{background:var(--tile);width:34px;height:34px}.ahead .fold svg{transition:transform .2s;transform:rotate(180deg)}.agroup.folded .fold svg{transform:none}.agroup.folded .acards{display:none}.acards{display:flex;flex-direction:column;gap:10px}.acard{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.085);border-radius:var(--r-m);padding:14px 16px;cursor:pointer;transition:background .2s,transform .12s}.acard:active{transform:scale(.985)}.acard .tx{flex:1;min-width:0}.acard b{display:block;font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.acard i{display:block;font-style:normal;font-size:10.5px;color:var(--ink2);margin-top:2px}.acard:focus-visible{outline:2px solid #fff;outline-offset:2px}.room,.ltile,.rhead{transition:background-color .35s}.room:active,.ltile:active,.ctile:active,.atile:active{transform:scale(.97)}.room,.ltile,.ctile,.atile{transition:transform .12s,filter .3s}.room::before,.ltile::before,.rhead::before{content:\"\";position:absolute;inset:0;border-radius:inherit;corner-shape:inherit;background:linear-gradient(180deg,var(--gold1,#fbdb90),var(--gold2,#d6ab5b));opacity:0;transition:opacity .4s;pointer-events:none}.room.on-gold::before,.ltile.on-gold::before,.rhead.on-gold::before{opacity:1}.room>*,.ltile>*,.rhead>*{position:relative}.rhead{position:relative}.tg,.tg i{transition:background .25s,transform .25s cubic-bezier(.3,.9,.3,1)}.sl .kn{transition:left .25s cubic-bezier(.3,.9,.3,1)}.view>.in{animation:hpin .28s cubic-bezier(.2,.8,.2,1)}@keyframes hpin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}.pg .pbody>*{animation:hpin .3s cubic-bezier(.2,.8,.2,1) backwards}.pg .pbody>*:nth-child(2){animation-delay:.03s}.pg .pbody>*:nth-child(3){animation-delay:.06s}.pg .pbody>*:nth-child(4){animation-delay:.09s}@media(prefers-reduced-motion:reduce){.view>.in,.pg .pbody>*{animation:none}}.pg.roompg{z-index:25}.pg.roompg .pbody{padding-bottom:calc(var(--tabs) + var(--sab) + 24px)}#hp nav.tabs{background:linear-gradient(180deg,#17181c,#101115)}#hp nav.tabs button svg{width:27px;height:27px}#hp nav.tabs button[data-tab=home] svg,#hp nav.tabs button[data-tab=automations] svg{fill:currentColor;stroke:none}#hp nav.tabs button[data-tab=sync] svg,#hp nav.tabs button[data-tab=settings] svg{stroke-width:2.3}.pg.modalpg .back{display:none!important}.pg.modalpg .x{display:flex!important}.pg .pbar .act.ok:disabled{opacity:.45}.schead{flex-wrap:wrap}.schead .big{display:block!important;position:static!important;width:50px;height:50px;flex:none;margin-bottom:4px;order:-1;flex-basis:100%;background:none}.schead .big .disc{width:46px;height:46px}.ctile .ic svg{width:26px;height:26px}.room.on-gold,.ltile.on-gold,.ftile.lit{color:var(--gold-ink);text-shadow:none}.rhead.on-gold{color:#fff;text-shadow:0 1px 2px rgba(60,45,15,.35)}.pg.modalpg{top:66px;border-radius:18px 18px 0 0;box-shadow:0 0 0 100vmax rgba(0,0,0,0);transform:translateY(calc(100% + 66px));opacity:1;transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s}.pg.modalpg.in{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.55)}.pg.modalpg .pbar{border-radius:18px 18px 0 0;padding-top:14px}.pg.modalpg .pbody{overflow-x:hidden}.pg.lightpg{transform:none;opacity:1;transition:none}.swhead{padding:14px 18px 18px;background:var(--bg)}.swhead .ic{display:block;margin-bottom:12px}.swhead .ic svg{width:30px;height:30px;stroke-width:1.9}.swhead .nm{font-size:27px;font-weight:700;line-height:1.1;overflow-wrap:anywhere;font-family:\"Avenir Next\",\"Montserrat\",\"Century Gothic\",Futura,\"Segoe UI\",system-ui,sans-serif}.btiles{display:flex;gap:12px;overflow-x:auto;padding:18px 16px;scrollbar-width:none;background:#17181b}.btiles::-webkit-scrollbar{display:none}.btile{flex:none;width:102px;height:120px;border-radius:12px;background:var(--tile);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;cursor:pointer;color:#fff;transition:transform .12s,box-shadow .2s}.btile:active{transform:scale(.96)}.btile.sel{box-shadow:0 0 0 2.5px var(--acc)}.btile .ic svg{width:24px;height:24px}.btile b{font-size:12px;font-weight:500;text-align:center;padding:0 6px}.selroom{display:flex;flex-direction:column;gap:14px;margin:0 16px 8px;width:154px;padding:14px;border-radius:12px;background:var(--tile)}.selroom .ic svg{width:26px;height:26px}.selroom b{display:block;font-size:12px;font-weight:600}.selroom i{display:block;font-style:normal;font-size:11px;color:var(--ink2)}.hm-row .rend{flex:none;display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;margin-left:6px}.hm-row .rend .disc{width:42px;height:42px}.hm-row .rend.ico{background:#0e0f12;color:#fff}.hm-row .rend.ico svg{width:22px;height:22px}.pintro{padding:20px 18px 6px;font-size:13px;line-height:1.5;color:var(--ink2)}.pintro b{color:#fff;font-weight:600}.pgrid{display:flex;flex-wrap:wrap;gap:10px 12px;padding:0 16px}.pgrid .sitem{width:calc(25% - 9px);min-width:76px;height:98px}.pgrid .sitem .dc{width:46px;height:46px}.disc.dark{display:flex;align-items:center;justify-content:center;background:#0e0f12;color:#fff}.disc.dark svg{width:22px;height:22px}.hm .hm-row.nochev .hm-c{display:none}@supports (corner-shape:squircle){.room,.ltile,.ftile,.sitem,.btile,.ctile,.acard,.selroom,.atile,.rhead,.fcard,.dlg,.asheet,.pg.modalpg,.pg.modalpg .pbar,.hm .hm-tile,.hm .hm-note{corner-shape:squircle}.room{border-radius:22px}.ltile,.ftile,.btile,.ctile,.selroom,.atile{border-radius:18px}.sitem{border-radius:16px}.acard{border-radius:20px}.rhead{border-radius:0 0 34px 34px}.fcard{border-radius:28px}.pg.modalpg,.pg.modalpg .pbar{border-radius:26px 26px 0 0}}.hm .hm-chips{margin:14px 16px}.hm .hm-note{margin:14px 16px}.hm .hm-actions{padding:24px 16px 6px}.pintro{padding:16px 18px 8px}.pintro.small{padding:10px 18px 4px;font-size:12px;color:var(--ink2)}.lbrow{display:flex;align-items:center;justify-content:space-between;padding-right:16px}.lbrow .hm-label{flex:1}.hm-group.cyc .hm-row{touch-action:pan-y}.lifting{position:relative;z-index:60;box-shadow:0 10px 28px rgba(0,0,0,.45);filter:brightness(1.22);transition:none!important}.frows .ftile,.fg .sitem,.hm-group.cyc .hm-row{user-select:none;-webkit-user-select:none}.sitem.mergeable{box-shadow:0 0 0 3px #fff;transform:scale(1.04)}.fcard .fedit{position:absolute;right:14px;top:14px;background:var(--tile)}.dlg .pin{margin:0 0 18px;background:var(--tile);border-radius:12px;padding:0 14px;text-align:left}.pg.wizpg .pbar{background:linear-gradient(180deg,#0e1b46 0,#15234f 60%,#1a2147 100%);padding-bottom:38px}.pg.wizpg .pbar .ttl{visibility:hidden}.pg.wizpg .pbar .rbt{background:rgba(255,255,255,.16)}.pg.wizpg .pbody{position:relative;margin-top:-24px;border-radius:24px 24px 0 0;background:var(--bg);padding:8px 0 calc(var(--sab) + 96px);overflow-y:auto}.pg.wizpg .hm-bigi{display:none}.pg.wizpg .hm .hm-tt b,.pg.wizpg .hm-tt b{font-size:21px;font-weight:600;line-height:1.25}.pg.wizpg .hm-tt i{font-size:12.5px;line-height:1.45}.pg.wizpg .hm-actions{position:fixed;left:0;right:0;bottom:0;z-index:5;flex-direction:row;justify-content:center;padding:14px 16px calc(var(--sab) + 14px);background:var(--bg);border-top:1px solid var(--line);margin:0}.pg.wizpg .hm-btn{min-width:88px;padding:9px 24px;font-size:12.5px}.pg.wizpg .hm-btn.primary{background:var(--acc)}@supports (corner-shape:squircle){.pg.wizpg .pbody{corner-shape:squircle;border-radius:30px 30px 0 0}}.pg.plusbar .pbar .lbar{display:flex;margin-left:auto}.pg .pbar .lbar .rbt.blue{background:var(--acc)}.wheels{position:relative;display:flex;justify-content:center;gap:0;padding:6px 16px 10px;background:var(--row)}.wheels .band{position:absolute;left:16px;right:16px;top:50%;height:36px;margin-top:-12px;border-radius:10px;background:var(--tile);opacity:.55;pointer-events:none}.wheel{position:relative;flex:1;height:180px;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;text-align:center}.wheel::-webkit-scrollbar{display:none}.wheel .pad{height:72px}.wheel .wv{height:36px;line-height:36px;scroll-snap-align:center;font-size:17px;font-variant-numeric:tabular-nums}.pgrid .ptile{width:calc(50% - 6px);height:96px;border-radius:16px;background:var(--tile);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;font-size:13px}.pgrid .ptile .ic{width:44px;height:44px;border-radius:50%;background:#fff;color:#1b1c20;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px}.ptile.sm{position:relative;flex:none;width:92px;height:112px;border-radius:14px;background:var(--tile);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#fff;font-size:12px;font-weight:500;text-align:center;cursor:pointer}.ptile.sm .ic svg{width:24px;height:24px}.ptile.sm b{font-weight:500;padding:0 6px}.ptile.sm.sel{box-shadow:0 0 0 2.5px var(--acc)}.ptile .minus{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);width:24px;height:24px;border-radius:50%;border:0;background:#d8353b;color:#fff;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}.ptile .minus svg{width:14px;height:14px;stroke-width:3}.ptile.sm:has(.minus){padding-bottom:36px}.pfield{padding:4px 16px 8px}.pfield input{width:100%;box-sizing:border-box}.swhead.named{display:flex;flex-wrap:wrap;align-items:center;gap:0 12px}.swhead.named .ic{flex:0 0 100%}.swhead.named .nm{flex:1;min-width:0}.ltiles.areal{margin:0;padding:0 16px 6px}.wheel{-webkit-mask-image:linear-gradient(transparent,#000 32%,#000 68%,transparent);mask-image:linear-gradient(transparent,#000 32%,#000 68%,transparent)}#hp[data-tab=sync]{background:linear-gradient(180deg,var(--sy1,#6b4a2b) 0,var(--sy2,#2a1d12) 100%)}#hp[data-tab=sync] .view{padding:0}#hp[data-tab=sync] .view>.in{max-width:none}.spp{box-sizing:border-box;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:calc(var(--sat) + 14px) 16px calc(var(--tabs) + var(--sab) + 14px)}.sytop{display:flex;align-items:center;gap:8px;font-size:22px;font-weight:700;letter-spacing:-.02em;margin:30px 0 0}.sytop .mark svg{width:28px;height:28px;display:block}.syart{width:233px;height:233px;margin:72px 0 0;background:#00000040;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.35)}.syart img{width:100%;height:100%;object-fit:cover;display:block}.syart svg{width:60px;height:60px;stroke:#fff8;fill:none;stroke-width:1.6}.syart.has-art svg{display:none}.syplay{margin:22px 0 0;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#ffffffcc;text-align:center;min-height:14px}.sytitle{margin:10px 0 0;font-size:19px;font-weight:600;text-align:center}.sysub{margin:6px 0 0;font-size:15px;color:#ffffffb0;text-align:center;min-height:20px}.syset{display:flex;gap:14px;width:100%;max-width:400px;margin:auto 0 0;padding-top:28px}.sycol{flex:1;display:flex;flex-direction:column;align-items:center;gap:10px}.sycap{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#ffffffb8}.sytilebtn{width:100%;height:48px;border:0;border-radius:24px;background:rgba(120,96,80,.72);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 14px rgba(0,0,0,.2)}.sytilebtn svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}.sytilebtn.grad svg{opacity:.9}.sybar{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:420px;margin:18px 0 0;padding:20px 18px;border-radius:26px;background:rgba(18,12,9,.82)}.sywhat,.sywhere{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;background:none;border:0;color:#fff;padding:0;font:inherit;cursor:pointer}.sywhat{cursor:default}.sybar .sc{width:48px;height:48px;border-radius:50%;background:#4b4a4d;display:flex;align-items:center;justify-content:center}.sybar .sc svg{width:26px;height:26px;fill:#fff;stroke:#fff}.sywhat .sc svg{fill:none}.sybar i{font-style:normal;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#ffffffa8;margin-top:6px}.sybar b{font-weight:400;font-size:13px;color:#ffffffd0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sygo{width:78px;height:78px;border-radius:50%;border:3px solid #2e68f755;background:#14183a;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;transition:border-color .2s,box-shadow .2s}.sygo.on{border-color:#2e68f7;box-shadow:0 0 0 1px #2e68f7,0 0 22px #2e68f755}.sygo svg{width:40px;height:40px;fill:none;stroke:currentColor;stroke-width:2.4}.sypop{position:fixed;inset:0;z-index:85;opacity:0;transition:opacity .3s}.sypop.in{opacity:1}.sycard{position:absolute;left:20px;right:20px;top:51%;margin-top:0;background:#26272c;border-radius:24px;padding:22px 20px 24px;box-shadow:0 20px 50px rgba(0,0,0,.5);transform:translateY(60vh);transition:transform .5s cubic-bezier(.2,.9,.25,1)}.sypop.in .sycard{transform:translateY(-50%)}.syt{font-size:15px;font-weight:500;margin:0 0 26px}.syrow{display:flex;gap:12px}.sychoice{flex:1;height:48px;border:0;border-radius:24px;background:#55565b;color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;box-shadow:0 5px 12px rgba(0,0,0,.25)}.sychoice svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}.sychoice.on{background:#fff;color:#16171a}.sychoice.wide{width:100%;margin-bottom:12px}.sygrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding-right:calc(100% / 4.4)}.sytile{height:112px;border-radius:14px;background:#3a3b3e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;font-size:13px;grid-column:span 1}.sytile .dc{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.35)}.sytile .dc svg{width:30px;height:30px}.sytile:first-child .dc{background:#101114;color:#fff}.sytile b{font-weight:500}.sybri{position:absolute;border-radius:24px;overflow:visible;background:#ffffff1c;touch-action:none;transform:translateY(24px);opacity:0;transition:transform .4s cubic-bezier(.2,.9,.25,1),opacity .25s}.sypop.in .sybri{transform:none;opacity:1}.sybri .fillb{position:absolute;left:0;right:0;bottom:0;border-radius:24px;background:linear-gradient(180deg,#bdbdbd,#808080)}.sybri .ic{position:absolute;left:0;right:0;bottom:0;height:48px;display:flex;align-items:center;justify-content:center;color:#fff}.sybri .ic svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2.1}.sybri .pc{position:absolute;left:50%;top:-36px;transform:translateX(-50%);padding:4px 10px;border-radius:12px;background:#1c1c20;font-size:11px;letter-spacing:.1em}.pg.plusbar .pbar .ok{display:none!important}html{background:#000;overflow:hidden}body{position:relative;width:min(100vw,calc(100vh * 9 / 16));width:min(100vw,calc(100dvh * 9 / 16));height:100vh;height:100dvh;margin:0 auto;overflow:hidden;transform:translateZ(0)}.pg::after{content:\"\";position:absolute;inset:0;background:linear-gradient(180deg,#2a1f1d 0,#16171a 62%);opacity:0;transition:opacity .45s;pointer-events:none}.pg.tolight::after{opacity:1}.pg .pbody,.pg .pbar{transition:opacity .3s}.pg.tolight .pbody,.pg.tolight .pbar{opacity:0}.pg.tolight .ltiles,.pg.leaving .ltiles{visibility:hidden}.pg.lightpg .lbar{animation:hpin .35s .12s backwards}.pg.lightout .lbar{opacity:0;transition:opacity .35s}";
+var HOST_CSS = ":root{--bg:#1b1c20;--bg-warm:#2b2926;--bar:#14151a;--head:#232429;--row:#25262a;--row-hi:#2d2e33;--tile:#3a3b3e;--tile-low:#2c2d30;--line:#33343a;--ink:#f4f4f6;--ink2:#a9a9af;--label:#8f8f95;--acc:#2e68f7;--gold1:#fbdb90;--gold2:#d6ab5b;--gold-ink:#2a2116;--f-card:var(--row);--f-raise:var(--row-hi);--f-line:var(--line);--f-line2:#45464d;--ckfg:#fff;--warm:#f6cd72;--r-s:0.625rem;--r-m:0.875rem;--r-l:1.125rem;--r-xl:1.375rem;--r-row:0.75rem;--sp:0.625rem;--sp-s:0.5rem;--sp-l:0.75rem;--sp-head:0.875rem 0.375rem 0.5rem;--fs-xs:0.6875rem;--fs-s:0.8125rem;--fs-m:0.875rem;--fs-l:1rem;--sab:max(var(--safe-area-inset-bottom,0rem),env(safe-area-inset-bottom,0rem));--sat:max(var(--safe-area-inset-top,0rem),env(safe-area-inset-top,0rem));--tabs:3.625rem}*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--ink);font:0.9375rem/1.35 -apple-system,BlinkMacSystemFont,\"SF Pro Text\",\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}hue-plus-panel{display:block;height:100vh}button{font:inherit;color:inherit}svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.ic{display:flex;align-items:center;justify-content:center;flex:none}.ic svg{width:1.5rem;height:1.5rem}#hp{position:fixed;inset:0;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--bg-warm) 0,var(--bg) 26.25rem)}#hp .view{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:calc(var(--sat) + 0.875rem) 1rem calc(var(--tabs) + var(--sab) + 1.75rem)}#hp .view>.in{max-width:47.5rem;margin:0 auto}#hp nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;justify-content:center;background:var(--bar);padding-bottom:var(--sab)}#hp nav.tabs .in{display:flex;width:100%;max-width:47.5rem}#hp nav.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:0.25rem;padding:0.5625rem 0.125rem 0.5rem;background:none;border:0;color:#5d5e66;cursor:pointer;font-size:0.59375rem;letter-spacing:.03em;text-transform:uppercase}#hp nav.tabs button svg{width:1.5625rem;height:1.5625rem}#hp nav.tabs button.on{color:#fff}#hp nav.tabs button:focus-visible{outline:0.125rem solid var(--acc);outline-offset:-0.1875rem;border-radius:0.625rem}.hd{display:flex;flex-direction:column;gap:0.875rem;margin:0 0 0.25rem}.hd .acts{display:flex;align-items:center;gap:0.625rem;justify-content:flex-end;min-height:2rem;order:-1}.hd h1{margin:0;font-size:1.9375rem;font-weight:700;letter-spacing:.01em;line-height:1.1;font-family:\"Avenir Next\",\"Montserrat\",\"Century Gothic\",Futura,\"Segoe UI\",system-ui,sans-serif}.top{display:flex;justify-content:flex-end;gap:0.625rem;min-height:1.875rem;margin-bottom:0.625rem}.lb{font-size:0.625rem;letter-spacing:.22em;text-transform:uppercase;color:var(--label);margin:1.625rem 0.25rem 0.625rem}.empty{color:var(--ink2);text-align:center;padding:2.25rem 0.75rem;font-size:var(--fs-l)}.rbt{width:1.875rem;height:1.875rem;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0}.rbt svg{width:1.0625rem;height:1.0625rem}.rbt.dk{background:var(--tile)}.rbt:focus-visible{outline:0.125rem solid #fff;outline-offset:0.125rem}.tg{width:3.25rem;height:1.875rem;border-radius:0.9375rem;flex:none;background:#56575c;position:relative;cursor:pointer;border:0;padding:0;transition:background .2s}.tg i{position:absolute;left:0.1875rem;top:0.1875rem;width:1.5rem;height:1.5rem;border-radius:50%;background:#fff;box-shadow:0 0.0625rem 0.1875rem rgba(0,0,0,.4);transition:transform .2s}.tg.on{background:var(--acc)}.tg.on i{transform:translateX(1.375rem)}.tg:focus-visible{outline:0.125rem solid #fff;outline-offset:0.125rem}.sl{position:relative;height:1.125rem;touch-action:pan-y;cursor:pointer;display:flex;align-items:center}.sl:before{content:\"\";position:absolute;left:0;right:0;height:0.5rem;border-radius:0.25rem;background:rgba(255,255,255,.16)}.sl .kn{position:absolute;top:0;width:1.125rem;height:1.125rem;margin-left:-0.5625rem;border-radius:50%;background:#fff;box-shadow:0 0.0625rem 0.25rem rgba(0,0,0,.45);left:0}.rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(19.375rem,1fr));gap:0.75rem}.room{position:relative;background:var(--tile);border-radius:0.875rem;padding:1rem 1rem 0.875rem;display:flex;flex-direction:column;gap:0.875rem;cursor:pointer;min-height:5.75rem;transition:background .25s;color:#fff}.room .rh{display:flex;align-items:center;gap:1.375rem}.room .rh .ic svg{width:1.75rem;height:1.75rem}.room .rn{flex:1;min-width:0;font-size:0.84375rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.room:focus-visible{outline:0.125rem solid #fff;outline-offset:0.125rem}.on-gold{color:var(--gold-ink)}.on-gold .tg{background:rgba(70,52,12,.38)}.on-gold .tg.on{background:rgba(70,52,12,.38)}.on-gold .sl:before{background:rgba(70,52,12,.22)}.rhead{padding:calc(var(--sat) + 0.625rem) 1rem 1rem;border-radius:0 0 1.375rem 1.375rem;background:linear-gradient(180deg,var(--tile) 0,var(--tile-low) 100%);color:#fff;transition:background .25s}.rhead.on-gold{box-shadow:0 0.5rem 1.5rem rgba(0,0,0,.35)}.rhead .rr{display:flex;align-items:center;gap:0.625rem}.rhead .rr .nm{flex:1;min-width:0;font-size:1.0625rem;font-weight:500;margin-left:0.375rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rhead .rr .tg{margin-left:0.25rem}.rhead .sl{margin-top:1.25rem}.rhead.on-gold .rbt{background:rgba(255,255,255,.34);color:#fff}.rbody{padding:0.25rem 1rem calc(var(--sab) + 2.5rem);max-width:47.5rem;margin:0 auto}.ltiles{display:flex;gap:0.75rem;overflow-x:auto;padding:0 0 0.375rem;margin:0 -1rem;padding-left:1rem;padding-right:1rem;scrollbar-width:none}.ltiles::-webkit-scrollbar{display:none}.ltile{position:relative;flex:none;width:6.375rem;height:9.875rem;border-radius:0.75rem;background:var(--tile);color:#fff;display:flex;flex-direction:column;overflow:hidden;cursor:pointer;transition:background .25s}.ltile .up{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem;padding:0.5rem 0.375rem 0.25rem;min-height:0}.ltile .up .ic svg{width:1.75rem;height:1.75rem}.ltile .up b{font-size:0.75rem;font-weight:500;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ltile .dn{height:3.25rem;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.14)}.ltile.gone{opacity:.5}.ltile:focus-visible{outline:0.125rem solid #fff;outline-offset:0.125rem}.ctiles{display:flex;flex-wrap:wrap;gap:0.75rem}.ctile{width:calc(50% - 0.375rem);max-width:9.375rem;min-height:6.5rem;border-radius:var(--r-m);background:var(--tile);padding:0.75rem 0.75rem 0.75rem;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;color:#fff}.ctile .ic{justify-content:flex-start}.ctile .ic svg{width:1.625rem;height:1.625rem}.ctile b{display:block;font-size:0.875rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ctile i{display:block;font-style:normal;font-size:0.8125rem;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ctile:focus-visible{outline:0.125rem solid #fff;outline-offset:0.125rem}.addgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:0.75rem;padding:0.375rem 1rem 1.5rem}.addgrid .atile{aspect-ratio:1.5;border-radius:var(--r-m);background:var(--tile);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;cursor:pointer;font-size:0.875rem;font-weight:500;color:#fff}.atile .ci{width:3rem;height:3rem;border-radius:50%;background:#101114;display:flex;align-items:center;justify-content:center}.atile .ci svg{width:1.5rem;height:1.5rem}.atile:focus-visible{outline:0.125rem solid #fff;outline-offset:0.125rem}.lightframe{position:fixed;left:0;right:0;bottom:0;top:0;z-index:55;border:0;width:100%;background:transparent;visibility:hidden;pointer-events:none}.lightframe.show{visibility:visible;pointer-events:auto}.pg{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:var(--bg);transform:translateX(100%);transition:transform .42s cubic-bezier(.2,.9,.25,1),box-shadow .42s,opacity .25s}.pg.in{transform:none}.pg.under{transform:translateX(-26%)}.pg .pbar{display:flex;align-items:center;gap:0.875rem;background:var(--head);padding:calc(var(--sat) + 0.625rem) 1rem 0.75rem;flex:none}.pg .pbar .rbt{background:var(--tile);width:2rem;height:2rem}.pg .pbar .rbt svg{width:1.0625rem;height:1.0625rem;stroke-width:2.2}.pg .pbar .ttl{flex:1;min-width:0;font-size:0.84375rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pg .pbar .ttl .ic{display:none}.pg .pbar .act{border:0;background:var(--tile);color:#fff;border-radius:1rem;padding:0.5rem 1rem;font-size:0.75rem;font-weight:600;letter-spacing:.02em;text-transform:uppercase;cursor:pointer}.pg .pbar .act:disabled{opacity:.5;cursor:default}.pg .pbody{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 0 calc(var(--sab) + 2rem)}.pg .pbody>*{max-width:47.5rem;margin-left:auto;margin-right:auto}.pg.bare .pbar{background:transparent}@media(prefers-reduced-motion:reduce){*{transition:none!important}}.pill{position:relative;display:flex;align-items:center;gap:0.875rem;min-height:3.875rem;padding:0.625rem 1.125rem;background:var(--row);cursor:pointer;overflow:hidden}.pill+.pill{border-top:0.0625rem solid var(--line)}.pill.static{cursor:default}.pill .tx{flex:1;min-width:0;display:flex;flex-direction:column;position:relative;z-index:1}.pill .nm{font-size:0.875rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pill .sb{font-size:0.6875rem;color:var(--ink2);margin-top:0.125rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pill .vl{font-size:0.75rem;color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap;position:relative;z-index:1}.pill>.ic{position:relative;z-index:1;width:2.5rem;height:2.5rem;border-radius:50%;background:#101114;color:#fff}.pill>.ic svg{width:1.3125rem;height:1.3125rem}.pill.on>.ic{background:var(--gold1);color:var(--gold-ink)}.pill .ck{width:1.375rem;height:1.375rem;flex:none;color:var(--acc);opacity:0;display:flex}.pill .ck svg{width:1.375rem;height:1.375rem;stroke-width:2.4}.pill.checked .ck{opacity:1}.pill:focus-visible{outline:0.125rem solid var(--acc);outline-offset:-0.125rem}.pill.slide{touch-action:pan-y;flex-wrap:wrap;padding-bottom:1.25rem;row-gap:0.375rem}.pill.slide .tx{flex:1}.pill.slide .trk{order:9;flex:0 0 100%;position:relative;height:1.125rem}.pill.slide .trk:before{content:\"\";position:absolute;left:0;right:0;top:0.375rem;height:0.375rem;border-radius:0.1875rem;background:rgba(255,255,255,.16)}.pill.slide .fill{position:absolute;left:0;top:0.375rem;height:0.375rem;width:0;border-radius:0.1875rem;background:rgba(255,255,255,.55)}.pill.slide .kn{position:absolute;top:0;left:0;width:1.125rem;height:1.125rem;margin-left:-0.5625rem;border-radius:50%;background:#fff;box-shadow:0 0.0625rem 0.25rem rgba(0,0,0,.45)}.sep{display:flex;align-items:center;gap:0.5rem;font-size:0.625rem;letter-spacing:.2em;text-transform:uppercase;color:var(--label);margin:1.625rem 1.125rem 0.625rem}.sep svg{display:none}.hint{font-size:var(--fs-s);color:var(--ink2);margin:0.625rem 1.125rem}.notec.pane.dim{font-size:var(--fs-m);color:var(--ink2);line-height:1.45;padding:0.875rem 1.125rem}.sqw.pane{background:var(--row);padding:0.25rem 1.125rem}.sq{width:100%;min-height:3.25rem;background:none;border:0;color:var(--ink);font:inherit;font-size:var(--fs-l);outline:none}.gridl{display:grid;gap:var(--sp);padding:0 1rem}.gridl.g2{grid-template-columns:1fr 1fr}.chev{display:flex}.pane{position:relative}.scrim{position:fixed;inset:0;opacity:0;transition:opacity .25s;z-index:80;background:rgba(0,0,0,.6)}.scrim.in{opacity:1}.dlg{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:90;width:min(22.5rem,88%);border-radius:var(--r-xl);padding:1.375rem;text-align:center;background:var(--head);box-shadow:0 1.25rem 3.125rem rgba(0,0,0,.5)}.dlg p{margin:0 0 1.25rem;font-size:var(--fs-l);line-height:1.4}.dlg .rrow{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp)}.rbtn{min-height:2.875rem;display:flex;align-items:center;justify-content:center;border-radius:62.4375rem;background:var(--tile);cursor:pointer;font-weight:600;user-select:none}.rbtn.go{background:var(--acc);color:#fff}.toast{position:fixed;left:50%;bottom:calc(var(--tabs) + var(--sab) + 1.125rem);transform:translate(-50%,0.625rem);padding:0.6875rem 1.125rem;border-radius:62.4375rem;font-size:var(--fs-m);z-index:95;opacity:0;transition:opacity .25s,transform .25s;background:var(--tile);max-width:90vw;text-align:center}.toast.in{opacity:1;transform:translate(-50%,0)}.hm{padding:0 0 1.5rem}.hm .hm-bigi{width:2.5rem;height:2.5rem;display:flex;align-items:center;justify-content:center;flex:none;color:#fff}.hm .hm-bigi svg{width:2.125rem;height:2.125rem}.hm .hm-title{padding:1.125rem 1.125rem 0.5rem}.hm .hm-tt{min-width:0;display:block;margin-top:0.375rem}.hm .hm-tt b{display:block;font-size:1.625rem;font-weight:700;line-height:1.1;overflow-wrap:anywhere}.hm .hm-tt i{display:block;font-style:normal;font-size:var(--fs-m);color:var(--ink2);margin-top:0.375rem}.hm .hm-label{font-size:0.625rem;letter-spacing:.2em;text-transform:uppercase;color:var(--label);padding:1.625rem 1.125rem 0.625rem}.hm .hm-group{background:var(--row);margin:0;border:0;border-radius:0}.hm .hm-row{display:flex;align-items:center;gap:0.875rem;min-height:4rem;padding:0.625rem 1.125rem;transition:background .2s}.hm .hm-row+.hm-row{border-top:0.0625rem solid var(--line)}.hm .hm-row.tap{cursor:pointer;user-select:none}.hm .hm-row.tap:active{background:var(--row-hi)}.hm .hm-row:focus-visible{outline:0.125rem solid var(--acc);outline-offset:-0.125rem}.hm .hm-i{width:2.5rem;height:2.5rem;border-radius:50%;background:#101114;display:flex;align-items:center;justify-content:center;flex:none;color:#fff}.hm .hm-i svg,.hm .hm-c svg,.hm .hm-ck svg,.hm .hm-ni svg,.hm .hm-ti svg,.hm .hm-gear svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.hm .hm-i svg{width:1.3125rem;height:1.3125rem}.hm .hm-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:0.125rem}.hm .hm-n{font-size:0.875rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hm .hm-s{font-size:0.6875rem;color:var(--ink2);overflow-wrap:anywhere}.hm .hm-v{font-size:0.75rem;color:var(--ink2);white-space:nowrap;font-variant-numeric:tabular-nums}.hm .hm-c{width:1.25rem;height:1.25rem;flex:none;color:var(--ink2);display:flex;align-items:center}.hm .hm-c svg{width:1.125rem;height:1.125rem;transform:rotate(-90deg)}.hm .hm-row.stack{min-height:3.625rem}.hm .hm-row.good .hm-s{color:#6dd58c}.hm .hm-row.danger .hm-n{color:#ff6b62}.hm .hm-ck{width:1.375rem;height:1.375rem;flex:none;color:var(--acc);opacity:0;transition:opacity .2s}.hm .hm-ck svg{width:1.375rem;height:1.375rem;stroke-width:2.4}.hm .hm-row.checked .hm-ck,.hm .hm-row.good .hm-ck{opacity:1}.hm .hm-row.good .hm-ck{color:#6dd58c}.hm .hm-sw{width:2.9375rem;height:1.8125rem;border-radius:0.9375rem;flex:none;background:#56575c;position:relative;transition:background .2s}.hm .hm-sw i{position:absolute;left:0.125rem;top:0.125rem;width:1.5625rem;height:1.5625rem;border-radius:50%;background:#fff;box-shadow:0 0.0625rem 0.1875rem rgba(0,0,0,.4);transition:transform .2s}.hm .hm-row.on .hm-sw{background:var(--acc)}.hm .hm-row.on .hm-sw i{transform:translateX(1.125rem)}.hm .hm-note{display:flex;align-items:flex-start;gap:0.75rem;padding:0.875rem 1rem;margin:1rem 1rem;border-radius:var(--r-row);font-size:var(--fs-m);line-height:1.4;color:var(--ink2);background:rgba(46,104,247,.1);border:0.0625rem solid rgba(46,104,247,.4)}.hm .hm-ni{width:1.25rem;height:1.25rem;flex:none;color:var(--acc);margin-top:0.0625rem}.hm .hm-ni svg{width:1.25rem;height:1.25rem}.hm .hm-actions{display:flex;flex-direction:column;align-items:center;gap:0.75rem;padding:1.625rem 0 0.375rem}.hm .hm-btn{min-width:7.5rem;padding:0.625rem 1.625rem;border-radius:62.4375rem;border:0.0625rem solid transparent;font:inherit;font-size:var(--fs-m);font-weight:600;cursor:pointer;color:#fff;transition:transform .1s,filter .2s}.hm .hm-btn:active{transform:scale(.97)}.hm .hm-btn:focus-visible{outline:0.125rem solid #fff;outline-offset:0.125rem}.hm .hm-btn.primary{background:var(--acc)}.hm .hm-btn.ghost{background:var(--tile)}.hm .hm-btn.danger{background:transparent;color:#ff6b62;border:0.09375rem solid #e5484d}.hm .hm-chips{display:flex;gap:0.5rem;margin:0 1rem 0.625rem}.hm .hm-chip{flex:1;padding:0.625rem 0;border-radius:62.4375rem;border:0;background:var(--tile);color:#fff;font:inherit;font-size:var(--fs-m);font-weight:600;cursor:pointer;transition:background .2s}.hm .hm-chip.on{background:var(--acc)}.hm .hm-tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:0.75rem;padding:0 1rem}.hm .hm-tile{position:relative;min-height:7.25rem;padding:0.875rem;border-radius:var(--r-m);display:flex;flex-direction:column;justify-content:flex-end;gap:0.125rem;background:var(--tile);cursor:pointer;user-select:none;transition:background .2s}.hm .hm-tile b{font-size:var(--fs-l);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hm .hm-tile i{font-style:normal;font-size:var(--fs-s);color:var(--ink2)}.hm .hm-ti{position:absolute;left:0.875rem;top:0.875rem;width:1.875rem;height:1.875rem}.hm .hm-ti svg{width:1.75rem;height:1.75rem}.hm .hm-tile.on{background:linear-gradient(180deg,var(--gold1),var(--gold2));color:var(--gold-ink)}.hm .hm-tile.on i{color:rgba(42,33,22,.7)}.hm .hm-gear{position:absolute;right:0.625rem;top:0.625rem;width:2.125rem;height:2.125rem;border-radius:50%;border:0;background:rgba(255,255,255,.1);color:inherit;display:flex;align-items:center;justify-content:center;cursor:pointer}.hm .hm-gear svg{width:1.125rem;height:1.125rem}.hm .hm-time{flex:1;min-height:2.75rem;padding:0.5rem 0.75rem;border-radius:var(--r-row);border:0;background:var(--tile);color:#fff;font:inherit;font-size:var(--fs-l);font-variant-numeric:tabular-nums}.hm .hm-time:focus-visible{outline:0.125rem solid var(--acc);outline-offset:0.0625rem}.bar{position:relative;height:2.5rem;border-radius:1.25rem;background:var(--tile);overflow:hidden;touch-action:pan-y;cursor:pointer}.bar .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,var(--gold1),var(--gold2));border-radius:inherit;transition:width .12s}.bar .vl{position:absolute;left:1rem;top:50%;transform:translateY(-50%);font-size:var(--fs-s);font-weight:600;color:#fff;text-shadow:0 0 0.1875rem rgba(0,0,0,.6);pointer-events:none}.bar.off .fill{width:0!important}.asheet{position:fixed;left:0.5rem;right:0.5rem;bottom:calc(var(--sab) + 0.5rem);z-index:90;max-width:32.5rem;margin:0 auto;background:var(--head);border-radius:var(--r-xl);overflow:hidden;box-shadow:0 1.25rem 3.125rem rgba(0,0,0,.5)}.arow{display:block;width:100%;min-height:3.5rem;border:0;background:none;color:#fff;font-size:1.0625rem;cursor:pointer;border-top:0.0625rem solid var(--line)}.arow:first-child{border-top:0}.arow.danger{color:#ff6b62}.arow.cancel{font-weight:600}.pg.roompg .pbar{display:none}.pg.roompg .pbody{padding:0 0 calc(var(--sab) + 1.5rem)}.pg.roompg .pbody>*{max-width:none}.pg.roompg .rhead{position:sticky;top:0;z-index:5}.pg.roompg .rbody{max-width:47.5rem}#hp .view .hm .hm-group{margin-left:-1rem;margin-right:-1rem}#hp .view .hm .hm-label{padding-left:1.25rem}.room.on-gold,.rhead.on-gold{color:#fff;text-shadow:0 0.0625rem 0.125rem rgba(60,45,15,.35)}.rhead.on-gold .sl:before{background:rgba(70,52,12,.25)}.ltile.on-gold .dn{background:rgba(70,52,12,.16)}.gridl .pill{flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:0.75rem;min-height:7.375rem;padding:0.875rem;background:var(--tile);border-radius:var(--r-m)}.gridl .pill+.pill{border-top:0}.gridl .pill .nm,.gridl .pill .sb{white-space:normal;overflow:visible}.gridl .pill .tx{flex:none}.frows{display:grid;grid-template-columns:repeat(var(--cols,3),6.375rem);grid-auto-rows:6.375rem;column-gap:0.75rem;row-gap:1.25rem;overflow-x:auto;margin:0 -1rem;padding:0 1rem 0.375rem;scrollbar-width:none}.frows::-webkit-scrollbar{display:none}.ftile{position:relative;border-radius:0.75rem;background:var(--tile);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 0.375rem 0.6875rem;cursor:pointer;overflow:hidden;transition:background .3s,transform .12s}.ftile:active{transform:scale(.96)}.ftile.lit{background:linear-gradient(180deg,var(--gold1),var(--gold2));color:var(--gold-ink)}.ftile .dots{position:absolute;left:0;right:0;top:0.75rem;display:flex;flex-wrap:wrap;justify-content:center;gap:0.4375rem 0.375rem;padding:0 0.5rem}.ftile .dots .disc{width:1.375rem;height:1.375rem}.ftile b{font-size:0.75rem;font-weight:500;line-height:1.2;text-align:center}.disc{display:block;width:100%;height:100%;border-radius:50%;background:#f9d27a;box-shadow:inset 0 0 0 0.0625rem rgba(255,255,255,.12)}.ftile:focus-visible,.sitem:focus-visible{outline:0.125rem solid #fff;outline-offset:0.125rem}.fscrim{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);transition:background-color .17s,backdrop-filter .17s,-webkit-backdrop-filter .17s}.fscrim.in{background:rgba(0,0,0,.45);backdrop-filter:blur(0.625rem);-webkit-backdrop-filter:blur(0.625rem)}.fwrap{position:fixed;inset:0;z-index:75;display:flex;align-items:center;justify-content:center;pointer-events:none}.fcard{position:relative;pointer-events:auto;width:min(32.5rem,calc(100% - 2.125rem));max-height:80vh;overflow:auto;background:#26272b;border-radius:1.125rem;padding:1.25rem 1.0625rem 1.25rem;box-shadow:0 1.5rem 3.75rem rgba(0,0,0,.55);opacity:0}.fcard .ft{font-size:0.84375rem;font-weight:500;margin:0.125rem 0.1875rem 1.125rem}.fg{display:flex;flex-wrap:wrap;gap:0.625rem 0.8125rem}.sitem{width:6.375rem;flex:none;border-radius:0.6875rem;background:var(--tile);height:7.0625rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem;padding:0.375rem;cursor:pointer;color:#fff;transition:background .25s,transform .12s}.sitem:active{transform:scale(.96)}.sitem .dc{position:relative;width:3.125rem;height:3.125rem;filter:drop-shadow(0 0.1875rem 0.3125rem rgba(0,0,0,.35))}.sitem .stop{position:absolute;inset:0;display:none;align-items:center;justify-content:center}.sitem .stop i{width:1.125rem;height:1.125rem;border-radius:0.1875rem;background:#fff}.sitem.moving{background:var(--acc)}.sitem.moving .disc{opacity:0}.sitem.moving .stop{display:flex}.sitem.on:not(.moving){background:linear-gradient(180deg,var(--gold1),var(--gold2));color:var(--gold-ink)}.sitem b{font-size:0.71875rem;font-weight:500;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.sside{display:flex;flex-direction:column;justify-content:center;gap:0.625rem;width:2.125rem;flex:none;animation:hpin .2s}.sside .rbt{background:var(--tile)}.pg .pbar .lbar{display:none}.pg.lightpg{background:transparent}.pg.lightpg .pbar{background:transparent}.pg.lightpg .pbar>*:not(.lbar){display:none!important}.pg.lightpg .lbar{display:flex;flex:1;gap:0.625rem;align-items:center}.pg.lightpg .lbar .act{background:var(--tile)}.pg.lightpg .lbar .act.done{margin-left:auto}.pg.scenepg{background:var(--bg)}.pg.scenepg .pbar{background:linear-gradient(180deg,var(--sc1),var(--sc2))}.schead{display:flex;align-items:flex-end;gap:0.875rem;padding:0.75rem 1.125rem 1.125rem;background:linear-gradient(180deg,var(--sc2),var(--bg) 140%)}.schead .big{width:3rem;height:3rem;flex:none;align-self:flex-start;position:absolute;display:none}.schead .nm{flex:1;font-size:1.875rem;font-weight:700;line-height:1.1;overflow-wrap:anywhere}.schead .rbt{background:var(--tile);width:2.125rem;height:2.125rem}#hp[data-tab=automations]{background:linear-gradient(180deg,#0f1c46 0,var(--bg) 21.25rem)}.rbt.blue{background:var(--acc);width:2.25rem;height:2.25rem}.rbt.blue svg{width:1.25rem;height:1.25rem}.agroup{margin-top:1rem}.ahead{display:flex;align-items:center;gap:1rem;padding:0.375rem 0.125rem 0.625rem}.ahead .ic svg{width:1.875rem;height:1.875rem}.ahead b{flex:1;font-size:0.8125rem;font-weight:500}.ahead i{font-style:normal;color:var(--ink2);font-size:0.6875rem}.ahead .fold{background:var(--tile);width:2.125rem;height:2.125rem}.ahead .fold svg{transition:transform .2s;transform:rotate(180deg)}.agroup.folded .fold svg{transform:none}.agroup.folded .acards{display:none}.acards{display:flex;flex-direction:column;gap:0.625rem}.acard{display:flex;align-items:center;gap:0.75rem;background:rgba(255,255,255,.085);border-radius:var(--r-m);padding:0.875rem 1rem;cursor:pointer;transition:background .2s,transform .12s}.acard:active{transform:scale(.985)}.acard .tx{flex:1;min-width:0}.acard b{display:block;font-size:0.78125rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.acard i{display:block;font-style:normal;font-size:0.65625rem;color:var(--ink2);margin-top:0.125rem}.acard:focus-visible{outline:0.125rem solid #fff;outline-offset:0.125rem}.room,.ltile,.rhead{transition:background-color .35s}.room:active,.ltile:active,.ctile:active,.atile:active{transform:scale(.97)}.room,.ltile,.ctile,.atile{transition:transform .12s,filter .3s}.room::before,.ltile::before,.rhead::before{content:\"\";position:absolute;inset:0;border-radius:inherit;corner-shape:inherit;background:linear-gradient(180deg,var(--gold1,#fbdb90),var(--gold2,#d6ab5b));opacity:0;transition:opacity .4s;pointer-events:none}.room.on-gold::before,.ltile.on-gold::before,.rhead.on-gold::before{opacity:1}.room>*,.ltile>*,.rhead>*{position:relative}.rhead{position:relative}.tg,.tg i{transition:background .25s,transform .25s cubic-bezier(.3,.9,.3,1)}.sl .kn{transition:left .25s cubic-bezier(.3,.9,.3,1)}.view>.in{animation:hpin .28s cubic-bezier(.2,.8,.2,1)}@keyframes hpin{from{opacity:0;transform:translateY(0.5rem)}to{opacity:1;transform:none}}.pg .pbody>*{animation:hpin .3s cubic-bezier(.2,.8,.2,1) backwards}.pg .pbody>*:nth-child(2){animation-delay:.03s}.pg .pbody>*:nth-child(3){animation-delay:.06s}.pg .pbody>*:nth-child(4){animation-delay:.09s}@media(prefers-reduced-motion:reduce){.view>.in,.pg .pbody>*{animation:none}}.pg.roompg{z-index:25}.pg.roompg .pbody{padding-bottom:calc(var(--tabs) + var(--sab) + 1.5rem)}#hp nav.tabs{background:linear-gradient(180deg,#17181c,#101115)}#hp nav.tabs button svg{width:1.6875rem;height:1.6875rem}#hp nav.tabs button[data-tab=home] svg,#hp nav.tabs button[data-tab=automations] svg{fill:currentColor;stroke:none}#hp nav.tabs button[data-tab=sync] svg,#hp nav.tabs button[data-tab=settings] svg{stroke-width:2.3}.pg.modalpg .back{display:none!important}.pg.modalpg .x{display:flex!important}.pg .pbar .act.ok:disabled{opacity:.45}.schead{flex-wrap:wrap}.schead .big{display:block!important;position:static!important;width:3.125rem;height:3.125rem;flex:none;margin-bottom:0.25rem;order:-1;flex-basis:100%;background:none}.schead .big .disc{width:2.875rem;height:2.875rem}.ctile .ic svg{width:1.625rem;height:1.625rem}.room.on-gold,.ltile.on-gold,.ftile.lit{color:var(--gold-ink);text-shadow:none}.rhead.on-gold{color:#fff;text-shadow:0 0.0625rem 0.125rem rgba(60,45,15,.35)}.pg.modalpg{top:4.125rem;border-radius:1.125rem 1.125rem 0 0;box-shadow:0 0 0 100vmax rgba(0,0,0,0);transform:translateY(calc(100% + 4.125rem));opacity:1;transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s}.pg.modalpg.in{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.55)}.pg.modalpg .pbar{border-radius:1.125rem 1.125rem 0 0;padding-top:0.875rem}.pg.modalpg .pbody{overflow-x:hidden}.pg.lightpg{transform:none;opacity:1;transition:none}.swhead{padding:0.875rem 1.125rem 1.125rem;background:var(--bg)}.swhead .ic{display:block;margin-bottom:0.75rem}.swhead .ic svg{width:1.875rem;height:1.875rem;stroke-width:1.9}.swhead .nm{font-size:1.6875rem;font-weight:700;line-height:1.1;overflow-wrap:anywhere;font-family:\"Avenir Next\",\"Montserrat\",\"Century Gothic\",Futura,\"Segoe UI\",system-ui,sans-serif}.btiles{display:flex;gap:0.75rem;overflow-x:auto;padding:1.125rem 1rem;scrollbar-width:none;background:#17181b}.btiles::-webkit-scrollbar{display:none}.btile{flex:none;width:6.375rem;height:7.5rem;border-radius:0.75rem;background:var(--tile);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;cursor:pointer;color:#fff;transition:transform .12s,box-shadow .2s}.btile:active{transform:scale(.96)}.btile.sel{box-shadow:0 0 0 0.15625rem var(--acc)}.btile .ic svg{width:1.5rem;height:1.5rem}.btile b{font-size:0.75rem;font-weight:500;text-align:center;padding:0 0.375rem}.selroom{display:flex;flex-direction:column;gap:0.875rem;margin:0 1rem 0.5rem;width:9.625rem;padding:0.875rem;border-radius:0.75rem;background:var(--tile)}.selroom .ic svg{width:1.625rem;height:1.625rem}.selroom b{display:block;font-size:0.75rem;font-weight:600}.selroom i{display:block;font-style:normal;font-size:0.6875rem;color:var(--ink2)}.hm-row .rend{flex:none;display:flex;align-items:center;justify-content:center;width:2.625rem;height:2.625rem;border-radius:50%;margin-left:0.375rem}.hm-row .rend .disc{width:2.625rem;height:2.625rem}.hm-row .rend.ico{background:#0e0f12;color:#fff}.hm-row .rend.ico svg{width:1.375rem;height:1.375rem}.pintro{padding:1.25rem 1.125rem 0.375rem;font-size:0.8125rem;line-height:1.5;color:var(--ink2)}.pintro b{color:#fff;font-weight:600}.pgrid{display:flex;flex-wrap:wrap;gap:0.625rem 0.75rem;padding:0 1rem}.pgrid .sitem{width:calc(25% - 0.5625rem);min-width:4.75rem;height:6.125rem}.pgrid .sitem .dc{width:2.875rem;height:2.875rem}.disc.dark{display:flex;align-items:center;justify-content:center;background:#0e0f12;color:#fff}.disc.dark svg{width:1.375rem;height:1.375rem}.hm .hm-row.nochev .hm-c{display:none}@supports (corner-shape:squircle){.room,.ltile,.ftile,.sitem,.btile,.ctile,.acard,.selroom,.atile,.rhead,.fcard,.dlg,.asheet,.pg.modalpg,.pg.modalpg .pbar,.hm .hm-tile,.hm .hm-note{corner-shape:squircle}.room{border-radius:1.375rem}.ltile,.ftile,.btile,.ctile,.selroom,.atile{border-radius:1.125rem}.sitem{border-radius:1rem}.acard{border-radius:1.25rem}.rhead{border-radius:0 0 2.125rem 2.125rem}.fcard{border-radius:1.75rem}.pg.modalpg,.pg.modalpg .pbar{border-radius:1.625rem 1.625rem 0 0}}.hm .hm-chips{margin:0.875rem 1rem}.hm .hm-note{margin:0.875rem 1rem}.hm .hm-actions{padding:1.5rem 1rem 0.375rem}.pintro{padding:1rem 1.125rem 0.5rem}.pintro.small{padding:0.625rem 1.125rem 0.25rem;font-size:0.75rem;color:var(--ink2)}.lbrow{display:flex;align-items:center;justify-content:space-between;padding-right:1rem}.lbrow .hm-label{flex:1}.hm-group.cyc .hm-row{touch-action:pan-y}.lifting{position:relative;z-index:60;box-shadow:0 0.625rem 1.75rem rgba(0,0,0,.45);filter:brightness(1.22);transition:none!important}.frows .ftile,.fg .sitem,.hm-group.cyc .hm-row{user-select:none;-webkit-user-select:none}.sitem.mergeable{box-shadow:0 0 0 0.1875rem #fff;transform:scale(1.04)}.fcard .fedit{position:absolute;right:0.875rem;top:0.875rem;background:var(--tile)}.dlg .pin{margin:0 0 1.125rem;background:var(--tile);border-radius:0.75rem;padding:0 0.875rem;text-align:left}.pg.wizpg .pbar{background:linear-gradient(180deg,#0e1b46 0,#15234f 60%,#1a2147 100%);padding-bottom:2.375rem}.pg.wizpg .pbar .ttl{visibility:hidden}.pg.wizpg .pbar .rbt{background:rgba(255,255,255,.16)}.pg.wizpg .pbody{position:relative;margin-top:-1.5rem;border-radius:1.5rem 1.5rem 0 0;background:var(--bg);padding:0.5rem 0 calc(var(--sab) + 6rem);overflow-y:auto}.pg.wizpg .hm-bigi{display:none}.pg.wizpg .hm .hm-tt b,.pg.wizpg .hm-tt b{font-size:1.3125rem;font-weight:600;line-height:1.25}.pg.wizpg .hm-tt i{font-size:0.78125rem;line-height:1.45}.pg.wizpg .hm-actions{position:fixed;left:0;right:0;bottom:0;z-index:5;flex-direction:row;justify-content:center;padding:0.875rem 1rem calc(var(--sab) + 0.875rem);background:var(--bg);border-top:0.0625rem solid var(--line);margin:0}.pg.wizpg .hm-btn{min-width:5.5rem;padding:0.5625rem 1.5rem;font-size:0.78125rem}.pg.wizpg .hm-btn.primary{background:var(--acc)}@supports (corner-shape:squircle){.pg.wizpg .pbody{corner-shape:squircle;border-radius:1.875rem 1.875rem 0 0}}.pg.plusbar .pbar .lbar{display:flex;margin-left:auto}.pg .pbar .lbar .rbt.blue{background:var(--acc)}.wheels{position:relative;display:flex;justify-content:center;gap:0;padding:0.375rem 1rem 0.625rem;background:var(--row)}.wheels .band{position:absolute;left:1rem;right:1rem;top:50%;height:2.25rem;margin-top:-0.75rem;border-radius:0.625rem;background:var(--tile);opacity:.55;pointer-events:none}.wheel{position:relative;flex:1;height:11.25rem;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;text-align:center}.wheel::-webkit-scrollbar{display:none}.wheel .pad{height:4.5rem}.wheel .wv{height:2.25rem;line-height:2.25rem;scroll-snap-align:center;font-size:1.0625rem;font-variant-numeric:tabular-nums}.pgrid .ptile{width:calc(50% - 0.375rem);height:6rem;border-radius:1rem;background:var(--tile);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.625rem;cursor:pointer;font-size:0.8125rem}.pgrid .ptile .ic{width:2.75rem;height:2.75rem;border-radius:50%;background:#fff;color:#1b1c20;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.125rem}.ptile.sm{position:relative;flex:none;width:5.75rem;height:7rem;border-radius:0.875rem;background:var(--tile);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;color:#fff;font-size:0.75rem;font-weight:500;text-align:center;cursor:pointer}.ptile.sm .ic svg{width:1.5rem;height:1.5rem}.ptile.sm b{font-weight:500;padding:0 0.375rem}.ptile.sm.sel{box-shadow:0 0 0 0.15625rem var(--acc)}.ptile .minus{position:absolute;left:50%;bottom:0.625rem;transform:translateX(-50%);width:1.5rem;height:1.5rem;border-radius:50%;border:0;background:#d8353b;color:#fff;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}.ptile .minus svg{width:0.875rem;height:0.875rem;stroke-width:3}.ptile.sm:has(.minus){padding-bottom:2.25rem}.pfield{padding:0.25rem 1rem 0.5rem}.pfield input{width:100%;box-sizing:border-box}.swhead.named{display:flex;flex-wrap:wrap;align-items:center;gap:0 0.75rem}.swhead.named .ic{flex:0 0 100%}.swhead.named .nm{flex:1;min-width:0}.ltiles.areal{margin:0;padding:0 1rem 0.375rem}.wheel{-webkit-mask-image:linear-gradient(transparent,#000 32%,#000 68%,transparent);mask-image:linear-gradient(transparent,#000 32%,#000 68%,transparent)}#hp[data-tab=sync]{background:linear-gradient(180deg,var(--sy1,#6b4a2b) 0,var(--sy2,#2a1d12) 100%)}#hp[data-tab=sync] .view{padding:0}#hp[data-tab=sync] .view>.in{max-width:none}.spp{box-sizing:border-box;min-height:100%;display:flex;flex-direction:column;align-items:center;padding:calc(var(--sat) + 0.875rem) 1rem calc(var(--tabs) + var(--sab) + 0.875rem)}.sytop{display:flex;align-items:center;gap:0.5rem;font-size:1.375rem;font-weight:700;letter-spacing:-.02em;margin:1.875rem 0 0}.sytop .mark svg{width:1.75rem;height:1.75rem;display:block}.syart{width:14.5625rem;height:14.5625rem;margin:4.5rem 0 0;background:#00000040;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 0.75rem 2.5rem rgba(0,0,0,.35)}.syart img{width:100%;height:100%;object-fit:cover;display:block}.syart svg{width:3.75rem;height:3.75rem;stroke:#fff8;fill:none;stroke-width:1.6}.syart.has-art svg{display:none}.syplay{margin:1.375rem 0 0;font-size:0.65625rem;letter-spacing:.2em;text-transform:uppercase;color:#ffffffcc;text-align:center;min-height:0.875rem}.sytitle{margin:0.625rem 0 0;font-size:1.1875rem;font-weight:600;text-align:center}.sysub{margin:0.375rem 0 0;font-size:0.9375rem;color:#ffffffb0;text-align:center;min-height:1.25rem}.syset{display:flex;gap:0.875rem;width:100%;max-width:25rem;margin:auto 0 0;padding-top:1.75rem}.sycol{flex:1;display:flex;flex-direction:column;align-items:center;gap:0.625rem}.sycap{font-size:0.625rem;letter-spacing:.2em;text-transform:uppercase;color:#ffffffb8}.sytilebtn{width:100%;height:3rem;border:0;border-radius:1.5rem;background:rgba(120,96,80,.72);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0.375rem 0.875rem rgba(0,0,0,.2)}.sytilebtn svg{width:1.625rem;height:1.625rem;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}.sytilebtn.grad svg{opacity:.9}.sybar{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:26.25rem;margin:1.125rem 0 0;padding:1.25rem 1.125rem;border-radius:1.625rem;background:rgba(18,12,9,.82)}.sywhat,.sywhere{flex:1;display:flex;flex-direction:column;align-items:center;gap:0.375rem;min-width:0;background:none;border:0;color:#fff;padding:0;font:inherit;cursor:pointer}.sywhat{cursor:default}.sybar .sc{width:3rem;height:3rem;border-radius:50%;background:#4b4a4d;display:flex;align-items:center;justify-content:center}.sybar .sc svg{width:1.625rem;height:1.625rem;fill:#fff;stroke:#fff}.sywhat .sc svg{fill:none}.sybar i{font-style:normal;font-size:0.625rem;letter-spacing:.2em;text-transform:uppercase;color:#ffffffa8;margin-top:0.375rem}.sybar b{font-weight:400;font-size:0.8125rem;color:#ffffffd0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sygo{width:4.875rem;height:4.875rem;border-radius:50%;border:0.1875rem solid #2e68f755;background:#14183a;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;transition:border-color .2s,box-shadow .2s}.sygo.on{border-color:#2e68f7;box-shadow:0 0 0 0.0625rem #2e68f7,0 0 1.375rem #2e68f755}.sygo svg{width:2.5rem;height:2.5rem;fill:none;stroke:currentColor;stroke-width:2.4}.sypop{position:fixed;inset:0;z-index:85;opacity:0;transition:opacity .3s}.sypop.in{opacity:1}.sycard{position:absolute;left:1.25rem;right:1.25rem;top:51%;margin-top:0;background:#26272c;border-radius:1.5rem;padding:1.375rem 1.25rem 1.5rem;box-shadow:0 1.25rem 3.125rem rgba(0,0,0,.5);transform:translateY(60vh);transition:transform .5s cubic-bezier(.2,.9,.25,1)}.sypop.in .sycard{transform:translateY(-50%)}.syt{font-size:0.9375rem;font-weight:500;margin:0 0 1.625rem}.syrow{display:flex;gap:0.75rem}.sychoice{flex:1;height:3rem;border:0;border-radius:1.5rem;background:#55565b;color:#fff;display:flex;align-items:center;justify-content:center;gap:0.625rem;font-size:0.6875rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;box-shadow:0 0.3125rem 0.75rem rgba(0,0,0,.25)}.sychoice svg{width:1.375rem;height:1.375rem;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}.sychoice.on{background:#fff;color:#16171a}.sychoice.wide{width:100%;margin-bottom:0.75rem}.sygrid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;padding-right:calc(100% / 4.4)}.sytile{height:7rem;border-radius:0.875rem;background:#3a3b3e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.625rem;cursor:pointer;font-size:0.8125rem;grid-column:span 1}.sytile .dc{width:3rem;height:3rem;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0.1875rem 0.5rem rgba(0,0,0,.35)}.sytile .dc svg{width:1.875rem;height:1.875rem}.sytile:first-child .dc{background:#101114;color:#fff}.sytile b{font-weight:500}.sybri{position:absolute;border-radius:1.5rem;overflow:visible;background:#ffffff1c;touch-action:none;transform:translateY(1.5rem);opacity:0;transition:transform .4s cubic-bezier(.2,.9,.25,1),opacity .25s}.sypop.in .sybri{transform:none;opacity:1}.sybri .fillb{position:absolute;left:0;right:0;bottom:0;border-radius:1.5rem;background:linear-gradient(180deg,#bdbdbd,#808080)}.sybri .ic{position:absolute;left:0;right:0;bottom:0;height:3rem;display:flex;align-items:center;justify-content:center;color:#fff}.sybri .ic svg{width:1.625rem;height:1.625rem;fill:none;stroke:currentColor;stroke-width:2.1}.sybri .pc{position:absolute;left:50%;top:-2.25rem;transform:translateX(-50%);padding:0.25rem 0.625rem;border-radius:0.75rem;background:#1c1c20;font-size:0.6875rem;letter-spacing:.1em}.pg.plusbar .pbar .ok{display:none!important}html{background:#000;overflow:hidden}body{position:relative;width:min(100vw,calc(100vh * 9 / 16));width:min(100vw,calc(100dvh * 9 / 16));height:100vh;height:100dvh;margin:0 auto;overflow:hidden;transform:translateZ(0)}.pg::after{content:\"\";position:absolute;inset:0;background:linear-gradient(180deg,#2a1f1d 0,#16171a 62%);opacity:0;transition:opacity .45s;pointer-events:none}.pg.tolight::after{opacity:1}.pg .pbody,.pg .pbar{transition:opacity .3s}.pg.tolight .pbody,.pg.tolight .pbar{opacity:0}.pg.tolight .ltiles,.pg.leaving .ltiles{visibility:hidden}.pg.lightpg .lbar{animation:hpin .35s .12s backwards}.pg.lightout .lbar{opacity:0;transition:opacity .07s}html{width:100%;height:100%}body{width:100%;height:100%}.pg:not(.modalpg):not(.wizpg):not(.lightpg){bottom:calc(var(--tabs) + var(--sab))}.pg:not(.modalpg):not(.wizpg):not(.lightpg) .pbody,.pg.roompg .pbody{padding-bottom:1.5rem}:root{--tabs:3.125rem;--side:0.6875rem}#hp .view{padding-left:var(--side);padding-right:var(--side)}#hp .view .hm .hm-group{margin-left:calc(0rem - var(--side));margin-right:calc(0rem - var(--side))}#hp .view .hm .hm-label{padding-left:0.9375rem}.room{min-height:5.5rem;padding:0.875rem 1rem 0.75rem;gap:0.75rem;border-radius:0.75rem}.rooms{gap:0.75rem}.rhead{padding:calc(var(--sat) + 0.375rem) 1rem 0.75rem}.rhead .sl{margin-top:0.75rem}.rbody{padding-left:var(--side);padding-right:var(--side)}.ltiles{gap:0.6875rem;margin:0 calc(0rem - var(--side));padding-left:var(--side);padding-right:var(--side)}.ltile{width:5.8125rem;height:9.125rem}.ltile .dn{height:3.1875rem}.ctiles{gap:0.6875rem}.ctile{width:8.5625rem;max-width:none;min-height:6.125rem}#hp nav.tabs button{padding:0.3125rem 0.125rem 0.375rem;gap:0.1875rem}#hp nav.tabs button svg{width:1.625rem;height:1.625rem}.pg.modalpg{top:max(calc(var(--sat) + 0.4375rem),1.75rem)}.frows{grid-template-columns:repeat(var(--cols,3),5.8125rem);grid-auto-rows:6.375rem;column-gap:0.6875rem;row-gap:0.75rem;margin:0 calc(0rem - var(--side));padding:0 var(--side) 0.375rem}.ftile .dots{top:0.6875rem;gap:0.4375rem 0.4375rem;padding:0 0.5625rem}.ftile .dots .disc{width:1.1875rem;height:1.1875rem}.btiles{gap:0.375rem;padding:0.875rem 0.5rem}.btile{width:6.3125rem;height:6.625rem}.pg:not(.modalpg):not(.wizpg):not(.lightpg)::after{bottom:calc(0rem - var(--tabs) - var(--sab))}.pg.leaving::after{transition:opacity .13s .13s linear}.pg.leaving .pbody,.pg.leaving .pbar{transition:opacity .13s .13s linear}.fwrap{display:block}.fcard{position:absolute;left:0.875rem;width:calc(100% - 2.75rem);max-height:none;overflow:visible;padding:0.75rem 0.875rem 0.875rem;border-radius:0.875rem}.fcard .ft{font-size:0.75rem;margin:0.25rem 0.125rem 0.75rem}.fcard .fedit{right:0.625rem;top:0.5rem;width:1.625rem;height:1.625rem}.fg{display:grid;grid-template-rows:repeat(2,6.375rem);grid-auto-flow:column;grid-auto-columns:5.8125rem;gap:0.6875rem;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;margin:0 -0.875rem;padding:0 0.875rem 0.125rem;scrollbar-width:none;overscroll-behavior-x:contain}.fg::-webkit-scrollbar{display:none}.fg .sitem{width:5.8125rem;height:6.375rem}.fg .sitem .dc{width:2.75rem;height:2.75rem}.pg.modalpg.subpg .back{display:flex!important}.pg.modalpg.subpg .x{display:none!important}.ftile.loose .dots{top:0.875rem;padding:0}.ftile.loose .dots .disc{width:2.75rem;height:2.75rem}.rhead.edit .rr .ic svg{width:1.5rem;height:1.5rem}.rhead.edit .rr .nm{margin-left:0.625rem}.rhead.edit .act{border:0;background:var(--tile);color:#fff;border-radius:1rem;padding:0.5rem 0.875rem;font-size:0.6875rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}.rhead.edit .sl.off{height:0.5rem;border-radius:0.25rem;background:rgba(255,255,255,.12);margin-top:0.875rem}.rhead.edit .sl.off:before{display:none}.lb.lbrow{display:flex;align-items:center;gap:0.5rem;min-height:1.875rem}.lb.lbrow>span{flex:1}.lb.lbrow .selall{border:0.0625rem solid #45464d;background:#1f2024;color:#fff;border-radius:0.9375rem;padding:0.4375rem 0.8125rem;font-size:0.625rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}.lb.lbrow .sortb{width:1.75rem;height:1.75rem;background:#2d2e33}.rbody.editing .ftile,.rbody.editing .ltile,.rbody.editing .ctile{transition:box-shadow .15s,opacity .15s}.rbody.editing .sel{box-shadow:0 0 0 0.15625rem var(--acc)}.rbody.editing .tg{pointer-events:none}.editbar{position:absolute;left:0;right:0;bottom:calc(0rem - var(--tabs) - var(--sab));height:calc(var(--tabs) + var(--sab));padding-bottom:var(--sab);z-index:6;display:flex;justify-content:space-around;align-items:center;background:linear-gradient(180deg,#17181c,#101115)}.editbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:0.25rem;background:none;border:0;color:#fff;font-size:0.59375rem;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}.editbar button svg{width:1.375rem;height:1.375rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}#hp[data-tab=sync] .view{display:flex;flex-direction:column;overflow:hidden}#hp[data-tab=sync] .view>.in{flex:1;min-height:0;display:flex;flex-direction:column}.spp{flex:1;min-height:0;height:100%;overflow:hidden}.sytop{margin-top:clamp(0.5rem,3%,1.875rem);flex:none}.syart{width:auto;height:auto;flex:0 1 14.5625rem;min-height:6rem;aspect-ratio:1;margin-top:clamp(0.875rem,7%,4.5rem)}.syplay,.sytitle,.sysub,.syset,.sybar{flex:none}.syset{padding-top:0.875rem}.hm-title{position:relative}.hm-title .hm-pen{position:absolute;right:1rem;bottom:0.625rem;width:1.875rem;height:1.875rem}.rnbig{display:flex;justify-content:center;padding:1.125rem 0 0.625rem}.rnbig svg{width:2.75rem;height:2.75rem;fill:none;stroke:#fff;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.rnname{display:block;width:calc(100% - 1.375rem);margin:0.5rem 0.6875rem 0.25rem;padding:0.8125rem 0.75rem;border:0;border-radius:0.5rem;background:#3a3b3e;color:#fff;font:inherit;font-size:0.875rem}.rngrid{display:grid;grid-template-columns:repeat(3,1fr);background:var(--row);margin:0 0 0.375rem}.rntype{display:flex;flex-direction:column;align-items:center;gap:0.625rem;padding:1rem 0.25rem 0.875rem;border:0;background:none;color:#fff;cursor:pointer;font:inherit}.rntype .ic{width:2.375rem;height:2.375rem;border-radius:50%;background:#4a4b50;display:flex;align-items:center;justify-content:center}.rntype .ic svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.rntype b{font-size:0.6875rem;font-weight:500;text-align:center}.rntype.on .ic{background:#fff;color:#1b1c20}.pg.framebar .pbar .back{display:none!important}.pg.framebar .pbar .x{display:flex!important}";
 /* The host of the Hue dashboard panel: what the Hue Plus pages expect of the dashboard they run in (the plugin API, version 1, which Home Control also offers), made for this panel.
  It gives them Home Assistant's states and registries, service calls, rows and sliders, sheets that open over the tab (with the "unsaved changes" question), dialogs and toasts, in the Hue app's look.
  The pages themselves (the Hue Plus menu, the wizards, the Spotify sync and the sync box) are the very same files Home Control loads; nothing here knows about them except the registration they make.
@@ -718,7 +718,7 @@ var HOST_CSS = ":root{--bg:#1b1c20;--bg-warm:#2b2926;--bar:#14151a;--head:#23242
 
   var PAGES = {};
   /* The pages the app opens as a popup over the page behind (it slides up from the bottom, with an X and DONE or SAVE): a switch and what its buttons do, a light's settings, a scene's. The rest are pushed from the right, with an arrow. */
-  var MODAL = { "hue-switch": 1, "hue-button": 1, "hue-press": 1, "hue-cycle": 1, "hue-time": 1, "hue-tslot": 1, "hue-cslot": 1, "hue-pick-scene": 1, "hue-light": 1, "hue-pw": 1, "hue-fn": 1, "hue-or": 1, "hue-od": 1, "hue-perf": 1, "hue-end": 1, "hue-escene": 1, "app-scene": 1, "app-press": 1, "app-smart": 1, "hue-bridge": 1, "hue-area": 1, "hue-marea": 1, "hue-group": 1, "hue-routine": 1, "hue-bname": 1, "hue-gname": 1, "hue-mname": 1, "hue-zch": 1, "app-devinfo": 1, "app-areaadd": 1, "app-place": 1, "app-balance": 1, "app-syncarea": 1 };
+  var MODAL = { "app-rename": 1, "app-devinfo": 1, "app-btnctl": 1, "app-btnlights": 1, "hue-switch": 1, "hue-button": 1, "hue-press": 1, "hue-cycle": 1, "hue-time": 1, "hue-tslot": 1, "hue-cslot": 1, "hue-pick-scene": 1, "hue-light": 1, "hue-pw": 1, "hue-fn": 1, "hue-or": 1, "hue-od": 1, "hue-perf": 1, "hue-end": 1, "hue-escene": 1, "app-scene": 1, "app-press": 1, "app-smart": 1, "hue-bridge": 1, "hue-area": 1, "hue-marea": 1, "hue-group": 1, "hue-routine": 1, "hue-bname": 1, "hue-gname": 1, "hue-mname": 1, "hue-zch": 1, "app-devinfo": 1, "app-areaadd": 1, "app-place": 1, "app-balance": 1, "app-syncarea": 1 };
   var LAYERS = []; /* {root, body, key, list, popguard, check, done}, the first opened first */
   var SHEET = null; /* the layer on top, while there is one */
   var SESSION = {}; /* what the pages ask HC.sheet for: it changes whenever the pages close or the tab changes, which is when what they read is read again */
@@ -802,6 +802,9 @@ var HOST_CSS = ":root{--bg:#1b1c20;--bg-warm:#2b2926;--bar:#14151a;--head:#23242
     if (/^(hue-(wz|mw)-|app-(adddev2?|link2?|newarea)$|hue-newauto$|hue-add-scene$)/.test(String(key).split(":")[0])) root.classList.add("wizpg");
     var okb = root.querySelector(".ok"),
       modal = isModalKey(key);
+    /* A popup's page that was opened from another page of the popup goes back to it. */
+    var under = LAYERS.length > 1 && LAYERS[LAYERS.length - 1] === layer ? LAYERS[LAYERS.length - 2] : null;
+    root.classList.toggle("subpg", !!(modal && under && under.key && isModalKey(under.key)));
     if (modal) {
       root.classList.add("modalpg");
       okb.textContent = T("done");
@@ -884,9 +887,10 @@ var HOST_CSS = ":root{--bg:#1b1c20;--bg-warm:#2b2926;--bar:#14151a;--head:#23242
       var row = below.root.querySelector(".ltiles");
       below.root.classList.add("leaving");
       gone.root.classList.add("lightout");
-      HOST.onLeave(row ? row.getBoundingClientRect().top : undefined, function () {
+      HOST.onLeave(row ? row.getBoundingClientRect().top : undefined, function (reopened) {
         below.root.classList.remove("leaving");
-        if (HOST.onRender) HOST.onRender();
+        /* A light tapped while the screen was still leaving has the frame again: it is not taken away under it. */
+        if (!reopened && HOST.onRender) HOST.onRender();
       });
     } else if (HOST.onRender) HOST.onRender();
     if (HOST.onResume) HOST.onResume(below.key);
@@ -915,7 +919,7 @@ var HOST_CSS = ":root{--bg:#1b1c20;--bg-warm:#2b2926;--bar:#14151a;--head:#23242
     else closeSheet();
   }
 
-  function closeSheet() {
+  function closeSheet(now) {
     if (POPGUARD && POPGUARD(closeSheet)) return;
     POPGUARD = null;
     CHECK = null;
@@ -924,7 +928,11 @@ var HOST_CSS = ":root{--bg:#1b1c20;--bg-warm:#2b2926;--bar:#14151a;--head:#23242
     LAYERS = [];
     activate(null);
     SHEET_LIST = [];
-    all.forEach(function (l, i) {
+    all.forEach(function (l) {
+      if (now === true) {
+        l.root.remove();
+        return;
+      }
       leaveStyle(l.root);
       l.root.classList.remove("in");
       setTimeout(function () {
@@ -1039,6 +1047,10 @@ var HOST_CSS = ":root{--bg:#1b1c20;--bg-warm:#2b2926;--bar:#14151a;--head:#23242
     editing: function () {
       return false;
     },
+    /* What the pages read from the bridge is kept between popups (see hmSession). */
+    keepsBridgeData: true,
+    /* This host is the Hue app's clone: the pages leave out what the app does not have (Hue Plus's timed effects, notes about what was tried). */
+    hueApp: true,
     ui: {
       attachSlide: attachSlide,
       briControl: briControl,
@@ -1103,7 +1115,7 @@ var HOST_CSS = ":root{--bg:#1b1c20;--bg-warm:#2b2926;--bar:#14151a;--head:#23242
       },
       open: function () {},
       clamp: function (v) {
-        return v;
+        return Math.max(-1, Math.min(1, v));
       },
       identifyOff: function () {},
       rebuild: function () {},
@@ -1840,6 +1852,96 @@ var PLUGIN_STRINGS = {
   "app_room": "Room",
   "app_button_controls": "Button controls…",
   "app_selected_lights": "Selected lights",
+  "app_rooms": "Rooms",
+  "app_orientation_setup": "Orientation setup",
+  "app_orientation_question": "How is your “{name}” positioned in relation to the speakers?",
+  "app_lying_flat": "Lying flat",
+  "app_standing_up": "Standing up",
+  "app_parallel": "Parallel",
+  "app_perpendicular": "Perpendicular",
+  "app_cord_at_left": "Cord at left",
+  "app_cord_at_right": "Cord at right",
+  "app_type_table": "Table",
+  "app_type_floor": "Floor",
+  "app_type_pendant": "Pendant",
+  "app_type_ceiling": "Ceiling",
+  "app_type_wall": "Wall",
+  "app_type_outdoor": "Outdoor",
+  "app_type_hue": "Hue",
+  "app_type_bulbs": "Bulbs",
+  "app_type_other": "Other",
+  "app_edit_name_and_type": "Edit name and type",
+  "app_name": "Name",
+  "app_name_needed": "Give it a name",
+  "app_device_type": "Device type",
+  "app_manufacturer": "Manufacturer",
+  "app_model": "Model",
+  "app_mac_address": "MAC address",
+  "app_hardware_version": "Hardware Platform Version",
+  "app_software": "Software",
+  "app_arch_table_shade": "Traditional lamp",
+  "app_arch_flexible_lamp": "Desk lamp",
+  "app_arch_table_wash": "Table wash",
+  "app_arch_floor_shade": "Traditional floor lamp",
+  "app_arch_floor_lantern": "Floor lantern",
+  "app_arch_bollard": "Bollard",
+  "app_arch_pendant_round": "Round pendant",
+  "app_arch_pendant_long": "Long pendant",
+  "app_arch_pendant_spot": "Pendant spot",
+  "app_arch_ceiling_round": "Round ceiling",
+  "app_arch_ceiling_square": "Square ceiling",
+  "app_arch_ceiling_horizontal": "Horizontal ceiling",
+  "app_arch_ceiling_tube": "Ceiling tube",
+  "app_arch_recessed_ceiling": "Recessed ceiling",
+  "app_arch_single_spot": "Single spot",
+  "app_arch_double_spot": "Double spot",
+  "app_arch_wall_shade": "Wall shade",
+  "app_arch_wall_lantern": "Wall lantern",
+  "app_arch_wall_spot": "Wall spot",
+  "app_arch_wall_washer": "Wall washer",
+  "app_arch_up_and_down": "Up and down",
+  "app_arch_up_and_down_up": "Up light",
+  "app_arch_up_and_down_down": "Down light",
+  "app_arch_ground_spot": "Ground spot",
+  "app_arch_recessed_floor": "Recessed floor",
+  "app_arch_flood_bulb": "Flood bulb",
+  "app_arch_string_light": "String light",
+  "app_arch_hue_lightstrip": "Lightstrip",
+  "app_arch_hue_lightstrip_tv": "TV lightstrip",
+  "app_arch_hue_lightstrip_pc": "PC lightstrip",
+  "app_arch_hue_play": "Play",
+  "app_arch_hue_play_wallwasher": "Play wall washer",
+  "app_arch_hue_tube": "Gradient tube",
+  "app_arch_hue_signe": "Signe",
+  "app_arch_hue_go": "Go",
+  "app_arch_hue_iris": "Iris",
+  "app_arch_hue_bloom": "Bloom",
+  "app_arch_hue_centris": "Centris",
+  "app_arch_twilight": "Twilight",
+  "app_arch_classic_bulb": "Classic bulb",
+  "app_arch_sultan_bulb": "Sultan bulb",
+  "app_arch_spot_bulb": "Spot bulb",
+  "app_arch_candle_bulb": "Candle bulb",
+  "app_arch_luster_bulb": "Luster bulb",
+  "app_arch_vintage_bulb": "Vintage bulb",
+  "app_arch_vintage_candle_bulb": "Vintage candle bulb",
+  "app_arch_edison_bulb": "Edison bulb",
+  "app_arch_ellipse_bulb": "Ellipse bulb",
+  "app_arch_triangle_bulb": "Triangle bulb",
+  "app_arch_small_globe_bulb": "Small globe bulb",
+  "app_arch_large_globe_bulb": "Large globe bulb",
+  "app_arch_plug": "Plug",
+  "app_arch_christmas_tree": "Christmas tree",
+  "app_select_all": "Select all",
+  "app_edit": "Edit",
+  "app_deselect": "Deselect",
+  "app_rearrange": "Rearrange",
+  "app_move_to": "Move to",
+  "app_hold_and_drag": "Hold a tile and drag it to its new place",
+  "app_sort_by_name": "Sort by name",
+  "app_choose_one": "Choose one thing to edit",
+  "app_not_for_this": "Not for what is chosen",
+  "app_matter_controller": "Matter controller",
   "app_entire_room": "Entire Room",
   "app_btn_onoff": "On/Off button",
   "app_btn_brighten": "Brighten button",
@@ -1888,7 +1990,7 @@ var PLUGIN_STRINGS = {
 };
 
 /* The styles of the Spotify sync and sync box popups, added to the dashboard's page by the plugin (the dashboard's own styles are for its own parts). */
-var HUE_PLUS_CSS = ".hs-now{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:4px 0 var(--sp)}\n.hs-art{width:min(62%,248px);aspect-ratio:1;border-radius:var(--r-m);background:var(--f-raise);border:1px solid var(--f-line);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--ink2);position:relative}\n.hs-art svg{width:44px;height:44px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}\n.hs-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}\n.hs-art.has-art svg{visibility:hidden}\n.hs-st{margin-top:12px;font-size:var(--fs-xs);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}\n.hs-tt{font-size:19px;font-weight:600;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}\n.hs-sub{font-size:var(--fs-m);color:var(--ink2);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.hs-set{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-s);margin:var(--sp) 0}\n.hs-set.one{grid-template-columns:minmax(0,1fr)}\n.hs-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}\n.hs-cap{font-size:var(--fs-xs);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}\n.hs-tile{display:flex;align-items:center;justify-content:center;width:76px;height:50px;border-radius:25px;box-sizing:border-box;background:var(--f-card);border:1px solid var(--f-line);color:var(--ink);cursor:pointer;min-width:0;transition:background .2s}\n.hs-tile:active{background:var(--f-line)}\n.hs-tile.hs-grad{border-color:transparent}\n.hs-i{display:flex;align-items:center;justify-content:center}\n.hs-i svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}\n\n.hs-now,.hs-bar,.hs>.pill,.hs-col{transition:opacity .25s}\n.hs.bri-open .hs-now,.hs.bri-open .hs-bar,.hs.bri-open>.pill,.hs.bri-open .hs-col:not(:last-child){opacity:.25;pointer-events:none}\n.hs-bar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:var(--sp);padding:14px 12px;margin:var(--sp) 0;border-radius:var(--r-l)}\n.hs-side{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;text-align:center}\n.hs-btn{cursor:pointer}\n.hs-nm{font-size:var(--fs-s);color:var(--ink);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.hs-go{width:76px;height:76px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--f-raise);border:2px solid var(--f-line2);color:var(--ink);cursor:pointer;transition:background .2s,border-color .2s}\n.hs-go svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}\n.hs-go.on{background:color-mix(in srgb,var(--acc) 40%,var(--f-raise));border-color:var(--acc)}\n.hs-go.on svg{animation:hs-spin 14s linear infinite}\n@keyframes hs-spin{to{transform:rotate(360deg)}}\n@media(prefers-reduced-motion:reduce){.hs-go.on svg{animation:none}}\n.hs-tile:focus-visible,.hs-go:focus-visible,.hs-btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}\n.hs-off{opacity:.5;pointer-events:none}\n.hs-sw{width:54px;height:16px;border-radius:999px;flex:none;margin-left:auto;border:1px solid var(--f-line2)}\n.hs-sw+.ck{margin-left:10px}\n.lp-mode.hs-m svg{fill:none}";
+var HUE_PLUS_CSS = ".hs-now{display:flex;flex-direction:column;align-items:center;text-align:center;gap:0.25rem;padding:0.25rem 0 var(--sp)}\n.hs-art{width:min(62%,15.5rem);aspect-ratio:1;border-radius:var(--r-m);background:var(--f-raise);border:0.0625rem solid var(--f-line);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--ink2);position:relative}\n.hs-art svg{width:2.75rem;height:2.75rem;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}\n.hs-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}\n.hs-art.has-art svg{visibility:hidden}\n.hs-st{margin-top:0.75rem;font-size:var(--fs-xs);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}\n.hs-tt{font-size:1.1875rem;font-weight:600;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}\n.hs-sub{font-size:var(--fs-m);color:var(--ink2);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.hs-set{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-s);margin:var(--sp) 0}\n.hs-set.one{grid-template-columns:minmax(0,1fr)}\n.hs-col{display:flex;flex-direction:column;align-items:center;gap:0.375rem;min-width:0}\n.hs-cap{font-size:var(--fs-xs);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}\n.hs-tile{display:flex;align-items:center;justify-content:center;width:4.75rem;height:3.125rem;border-radius:1.5625rem;box-sizing:border-box;background:var(--f-card);border:0.0625rem solid var(--f-line);color:var(--ink);cursor:pointer;min-width:0;transition:background .2s}\n.hs-tile:active{background:var(--f-line)}\n.hs-tile.hs-grad{border-color:transparent}\n.hs-i{display:flex;align-items:center;justify-content:center}\n.hs-i svg{width:1.625rem;height:1.625rem;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}\n\n.hs-now,.hs-bar,.hs>.pill,.hs-col{transition:opacity .25s}\n.hs.bri-open .hs-now,.hs.bri-open .hs-bar,.hs.bri-open>.pill,.hs.bri-open .hs-col:not(:last-child){opacity:.25;pointer-events:none}\n.hs-bar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:var(--sp);padding:0.875rem 0.75rem;margin:var(--sp) 0;border-radius:var(--r-l)}\n.hs-side{display:flex;flex-direction:column;align-items:center;gap:0.375rem;min-width:0;text-align:center}\n.hs-btn{cursor:pointer}\n.hs-nm{font-size:var(--fs-s);color:var(--ink);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.hs-go{width:4.75rem;height:4.75rem;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--f-raise);border:0.125rem solid var(--f-line2);color:var(--ink);cursor:pointer;transition:background .2s,border-color .2s}\n.hs-go svg{width:2.125rem;height:2.125rem;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}\n.hs-go.on{background:color-mix(in srgb,var(--acc) 40%,var(--f-raise));border-color:var(--acc)}\n.hs-go.on svg{animation:hs-spin 14s linear infinite}\n@keyframes hs-spin{to{transform:rotate(360deg)}}\n@media(prefers-reduced-motion:reduce){.hs-go.on svg{animation:none}}\n.hs-tile:focus-visible,.hs-go:focus-visible,.hs-btn:focus-visible{outline:0.125rem solid var(--acc);outline-offset:0.125rem}\n.hs-off{opacity:.5;pointer-events:none}\n.hs-sw{width:3.375rem;height:1rem;border-radius:62.4375rem;flex:none;margin-left:auto;border:0.0625rem solid var(--f-line2)}\n.hs-sw+.ck{margin-left:0.625rem}\n.lp-mode.hs-m svg{fill:none}";
 
 /* What Hue Plus offers, read from Home Assistant's registry and states (so a page shows only what exists): the bridge's entities, the lights, what belongs to one light, the
  updates, and the bridge's own data (a service that answers). It was the dashboard's `Integrations.hueplus`; now it is this plugin's. */
@@ -2301,10 +2403,51 @@ function hpBridgeDraft(area) {
     kept = [];
   (area.lights || []).forEach(function (l) {
     var id = hpEntityOf(l.light_id);
-    if (id) lights.push({ id: id, x: eaClamp(l.x || 0), y: eaClamp(hpFlip(l.y || 0)), z: eaClamp(l.z || 0), balance: l.balance });
+    if (id) lights.push(hpBarOf(l, { id: id, x: eaClamp(l.x || 0), y: eaClamp(hpFlip(l.y || 0)), z: eaClamp(l.z || 0), balance: l.balance }));
     else kept.push({ light: l.light_id, x: l.x, y: l.y, z: l.z, balance: l.balance });
   });
   return { id: area.id, name: area.name, room: "", lights: lights, dummies: [], kept: kept };
+}
+
+/* A light the bridge holds several positions for (a strip, a tube: its ends, or more along it) is a bar in the editor: its middle, the way it points (a, around; p, up) and its length, worked out
+ from the first and last position. `n` is how many positions the bridge has, for writing them back. */
+function hpBarOf(l, light) {
+  var ps = (l.positions || []).filter(function (p) {
+    return p && typeof p.x === "number";
+  });
+  if (ps.length < 2) return light;
+  var a = ps[0],
+    b = ps[ps.length - 1],
+    dx = b.x - a.x,
+    dy = hpFlip(b.y) - hpFlip(a.y),
+    dz = b.z - a.z,
+    len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+  light.n = ps.length;
+  if (len < 0.05) return light;
+  light.x = eaClamp((a.x + b.x) / 2);
+  light.y = eaClamp((hpFlip(a.y) + hpFlip(b.y)) / 2);
+  light.z = eaClamp((a.z + b.z) / 2);
+  light.a = Math.round(((Math.atan2(dy, dx) * 180) / Math.PI + 360) % 360);
+  light.p = Math.round((Math.atan2(dz, Math.sqrt(dx * dx + dy * dy)) * 180) / Math.PI);
+  light.len = Math.round(len * 100) / 100;
+  return light;
+}
+
+/* The positions of a bar for the bridge: `n` of them, evenly from one end to the other (the bridge's y, which runs the other way). Nothing for a light with one position. */
+function hpBarPositions(light) {
+  if (!(light.n > 1) || !light.len) return null;
+  var a = ((light.a || 0) * Math.PI) / 180,
+    p = ((light.p || 0) * Math.PI) / 180,
+    out = [];
+  for (var i = 0; i < light.n; i++) {
+    var t = (i / (light.n - 1) - 0.5) * light.len;
+    out.push({
+      x: eaClamp(light.x + t * Math.cos(a) * Math.cos(p)),
+      y: hpFlip(eaClamp(light.y + t * Math.sin(a) * Math.cos(p))),
+      z: eaClamp(light.z + t * Math.sin(p)),
+    });
+  }
+  return out;
 }
 
 function hpEditOnBridge(area, after) {
@@ -2329,11 +2472,14 @@ function hpSaveBridge(leave) {
   var lights = d.kept
     .concat(
       d.lights.map(function (l) {
-        return { light: hpHueId(l.id), x: l.x, y: hpFlip(l.y), z: l.z, balance: l.balance };
+        var every = hpBarPositions(l),
+          first = every ? every[0] : { x: l.x, y: hpFlip(l.y), z: l.z };
+        return { light: hpHueId(l.id), x: first.x, y: first.y, z: first.z, positions: every, balance: l.balance };
       })
     )
     .map(function (l) {
       var o = { light: l.light, x: l.x, y: l.y, z: l.z };
+      if (l.positions) o.positions = l.positions;
       if (typeof l.balance === "number") o.balance = l.balance;
       return o;
     });
@@ -2371,23 +2517,26 @@ var HM_READY = false;
 var HM_READING = null;
 
 /* The one read. Every page that needs the data waits for the same answer. */
+function hmRead() {
+  HM_READING = hueplus.resources(HM_KINDS).then(
+    function (r) {
+      HM_KINDS.forEach(function (k) {
+        HM[k] = (r || {})[k];
+      });
+      HM_READY = true;
+      HM_READING = null;
+    },
+    function (e) {
+      HM_READING = null;
+      throw e;
+    }
+  );
+  return HM_READING;
+}
+
 function hmReady() {
   if (HM_READY) return Promise.resolve();
-  if (!HM_READING)
-    HM_READING = hueplus.resources(HM_KINDS).then(
-      function (r) {
-        HM_KINDS.forEach(function (k) {
-          HM[k] = (r || {})[k];
-        });
-        HM_READY = true;
-        HM_READING = null;
-      },
-      function (e) {
-        HM_READING = null;
-        throw e;
-      }
-    );
-  return HM_READING;
+  return HM_READING || hmRead();
 }
 
 /* A page that draws from HM by itself (its rows read it when they refresh) only needs the data to be there. */
@@ -2401,6 +2550,12 @@ var HM_SHEET = null;
 function hmSession() {
   if (HM_SHEET === currentSheet()) return;
   HM_SHEET = currentSheet();
+  /* A host that is all Hue (Hue Plus's own panel) keeps what it read, so a page is drawn at once; it is read again behind the page, which then shows what changed. */
+  if (HC.keepsBridgeData && HM_READY) {
+    hmdClear();
+    if (!HM_READING) hmRead().then(refresh, function () {});
+    return;
+  }
   HM = {};
   HM_READY = false;
   HM_READING = null;
@@ -2531,6 +2686,11 @@ function hmActions(buttons) {
 }
 
 /* An information box. */
+/* A note that something was not tried on a real bridge: the Hue app's clone leaves it out. */
+function hmExperimental(key) {
+  return HC.hueApp ? document.createComment("") : hmCallout(_T(key));
+}
+
 function hmCallout(text) {
   var n = mk("div", "hm-note", "<span class='hm-ni'>" + svg("info") + "</span><span class='hm-nt'></span>");
   n.querySelector(".hm-nt").textContent = text;
@@ -3029,7 +3189,7 @@ function hmLight(b, id) {
     b.appendChild(hmLabel(_T("hm_general")));
     b.appendChild(hmGroup(general));
   }
-  if (a().hue_function || a().hue_gradient_order) b.appendChild(hmCallout(_T("experimental_not_yet_tried_on_a_real_bridge")));
+  if (a().hue_function || a().hue_gradient_order) b.appendChild(hmExperimental("experimental_not_yet_tried_on_a_real_bridge"));
   var info = [];
   if (a().hue_min_brightness !== undefined)
     info.push(
@@ -3064,25 +3224,27 @@ function hmLight(b, id) {
     b.appendChild(hmLabel(_T("hm_device_info")));
     b.appendChild(hmGroup(info));
   }
-  b.appendChild(hmLabel(_T("hm_timed_effects")));
-  b.appendChild(hmChips([5, 15, 30, 60], function () { return minutes; }, function (v) { minutes = v; }, function (v) { return v + " " + _T("hm_min"); }));
-  b.appendChild(
-    hmGroup(
-      [
-        ["sunrise", "bright"],
-        ["sunset", "moon"],
-        ["no_effect", "stop"],
-      ].map(function (x) {
-        return hmRow({
-          icon: x[1],
-          title: _T("hp_" + x[0]),
-          tap: function () {
-            call("hue_plus", "timed_effect", { light: hue, effect: x[0], duration: minutes * 60 });
-          },
-        });
-      })
-    )
-  );
+  if (!HC.hueApp) {
+    b.appendChild(hmLabel(_T("hm_timed_effects")));
+    b.appendChild(hmChips([5, 15, 30, 60], function () { return minutes; }, function (v) { minutes = v; }, function (v) { return v + " " + _T("hm_min"); }));
+    b.appendChild(
+      hmGroup(
+        [
+          ["sunrise", "bright"],
+          ["sunset", "moon"],
+          ["no_effect", "stop"],
+        ].map(function (x) {
+          return hmRow({
+            icon: x[1],
+            title: _T("hp_" + x[0]),
+            tap: function () {
+              call("hue_plus", "timed_effect", { light: hue, effect: x[0], duration: minutes * 60 });
+            },
+          });
+        })
+      )
+    );
+  }
   b.appendChild(
     hmActions([
       X.identify
@@ -3591,7 +3753,7 @@ function hmArea(b, id) {
         }),
       ])
     );
-    box.appendChild(hmCallout(_T("experimental_only_the_last_state_has_been_seen_on_a_real_bridge")));
+    box.appendChild(hmExperimental("experimental_only_the_last_state_has_been_seen_on_a_real_bridge"));
     box.appendChild(
       hmActions([
         hmButton(_T("hm_delete"), "danger", function () {
@@ -3727,7 +3889,7 @@ function hmPerf(b, id) {
         )
       )
     );
-    box.appendChild(hmCallout(_T("experimental_not_yet_tried_on_a_real_bridge")));
+    box.appendChild(hmExperimental("experimental_not_yet_tried_on_a_real_bridge"));
   });
 }
 
@@ -3946,7 +4108,7 @@ function hmButtonPage(b, id) {
     );
     box.appendChild(hmLabel(_T("hm_behavior")));
     box.appendChild(hmGroup([hmRow({ title: _T("hm_selected_lights"), val: t.name || _T("hm_the_whole_home") })]));
-    box.appendChild(hmCallout(_T("hm_experimental_buttons")));
+    box.appendChild(hmExperimental("hm_experimental_buttons"));
   });
 }
 
@@ -6963,7 +7125,7 @@ function hsyncRow(d) {
     if (cc) {
       fill.style.background =
         "linear-gradient(180deg,color-mix(in srgb," + cc + " 88%,transparent),color-mix(in srgb," + cc + " 64%,transparent))";
-      fill.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.35)";
+      fill.style.boxShadow = "inset 0 0.0625rem 0 rgba(255,255,255,.35)";
     } else {
       fill.style.background = "";
       fill.style.boxShadow = "";
@@ -8458,7 +8620,7 @@ function hueSceneRemove(id) {
 
 /* The styles of these pages. */
 var HUE_NEW_CSS =
-  ".hn-slot{display:flex;align-items:center;gap:10px;padding:8px 12px}\n.hn-time{width:auto;flex:none;background:transparent;color:inherit;border:0;font-size:var(--fs-m)}\n.hn-pick{flex:1;min-width:0;background:transparent;color:inherit;border:0;font-size:var(--fs-m)}\n.hn-days{display:flex;justify-content:space-between;gap:6px;margin:var(--sp) 0}\n.hn-day{width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:600}\n.hn-day.on{background:color-mix(in srgb,var(--acc) 55%,var(--f-card))}\n.hn-swatches{display:flex;gap:8px;margin:var(--sp) 0}\n.hn-sw{flex:1;height:40px;border-radius:var(--r-m);border:1px solid var(--f-line)}";
+  ".hn-slot{display:flex;align-items:center;gap:0.625rem;padding:0.5rem 0.75rem}\n.hn-time{width:auto;flex:none;background:transparent;color:inherit;border:0;font-size:var(--fs-m)}\n.hn-pick{flex:1;min-width:0;background:transparent;color:inherit;border:0;font-size:var(--fs-m)}\n.hn-days{display:flex;justify-content:space-between;gap:0.375rem;margin:var(--sp) 0}\n.hn-day{width:2.5rem;height:2.5rem;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:600}\n.hn-day.on{background:color-mix(in srgb,var(--acc) 55%,var(--f-card))}\n.hn-swatches{display:flex;gap:0.5rem;margin:var(--sp) 0}\n.hn-sw{flex:1;height:2.5rem;border-radius:var(--r-m);border:0.0625rem solid var(--f-line)}";
 
 /* The styles of a Hue light made of zones (a gradient tube or strip), as in the Hue app: pins with a smooth blend (Linear, Mirrored) or colours of their own
  (Scattered, Segmented). The dashboard shows a Style button on a light panel when a registered light style applies to the light (see epilogue.js). */
@@ -8588,10 +8750,32 @@ function hpWatch() {
   if (HPAPP.sigOf && HPAPP.sigOf() !== HPAPP.lastSig && !HPAPI.hasSheet()) hpShowTab(HPAPP.tab);
 }
 
+/* How much the browser has zoomed the page, when it reports what it measures (a rectangle, a pointer's place) in zoomed units while a style's px is not zoomed (Safari's page zoom): a measured length
+ becomes a style's px by dividing by this. It is 1 where the two agree. */
+function hpZoom() {
+  var styled = parseFloat(getComputedStyle(document.body).width);
+  return styled ? document.body.getBoundingClientRect().width / styled || 1 : 1;
+}
+
+/* The panel is a phone. Its size and the root font size (1rem when the phone is 393 wide, the width the Hue app's screens
+ were measured at; every length of the style sheet is a rem) are set here from the page's computed size, which is right in a zoomed browser too; viewport units are not (Safari, in a frame). */
+function hpFit() {
+  var page = getComputedStyle(document.documentElement),
+    wide = parseFloat(page.width),
+    high = parseFloat(page.height);
+  if (!wide || !high) return;
+  /* On a phone the panel is the page, drawn to the phone's width. On a larger page it is a column as high as the page and 9:16 wide; there it is a web page, not a phone blown up: its
+     lengths are at most a little larger than a phone's (so the browser's zoom still makes everything larger or smaller) and the wider column simply holds more. */
+  var isPhone = wide <= 500,
+    phone = isPhone ? wide : Math.min(wide, (high * 9) / 16),
+    scale = isPhone ? phone / 393 : Math.max(1, Math.min(phone / 393, 1.12));
+  document.body.style.width = phone + "px";
+  document.body.style.height = "";
+  document.body.style.marginTop = "";
+  document.documentElement.style.fontSize = scale * 16 + "px";
+}
+
 function hpStart() {
-  /* What the room pages need (their controls, the colours of their scenes) is read now, while Home is looked at. */
-  hmReady().then(function () {}, function () {});
-  hpLoadLightStates();
   HPAPI.ws({ type: "hue_plus/capabilities" }).then(
     function (r) {
       var b = ((r && r.bridges) || [])[0];
@@ -8607,7 +8791,8 @@ function hpStart() {
     b.dataset.tab = t.id;
     b.querySelector("span").textContent = t.title;
     b.addEventListener("click", function () {
-      if (HPAPI.hasSheet()) HPAPI.closeSheet();
+      /* Another tab is shown at once, as in the app: the pages that were open are taken away, they do not slide back first. */
+      if (HPAPI.hasSheet()) HPAPI.closeSheet(true);
       hpShowTab(t.id);
     });
     HPAPP.nav.querySelector(".in").appendChild(b);
@@ -8635,6 +8820,9 @@ window.HuePlusApp = {
   mount: function (el, hass) {
     HPAPI.attach(hass);
     HC.addStyles(HOST_CSS);
+    hpFit();
+    window.addEventListener("resize", hpFit);
+    if (window.ResizeObserver) new ResizeObserver(hpFit).observe(document.documentElement);
     el.innerHTML = "<div id='hp'><div class='view'><div class='in'></div></div><nav class='tabs' aria-label='" + _T("app_tabs") + "'><div class='in'></div></nav></div>";
     HPAPP.el = el;
     HPAPP.view = el.querySelector(".view");
@@ -8643,6 +8831,9 @@ window.HuePlusApp = {
     HPAPP.main.appendChild(mk("div", "empty")).textContent = _T("loading");
     /* The colour panel takes a few seconds to start (it is Home Control's whole dashboard code), so it starts now, while Home is being read, and is ready when a light is tapped. */
     hpLightFrame(function () {});
+    /* Everything the pages need from the bridge (rooms, scenes and their colours, controls, what each light was last set to) is read now, before anything is tapped. */
+    hmReady().then(refresh, function () {});
+    hpLoadLightStates();
     /* The panel starts when the registries are in, or after a short wait; the lists fill in by themselves. */
     Promise.race([
       HPAPI.ready(),
@@ -8703,7 +8894,8 @@ function hpSortable(box, selector, idOf, done, opts) {
     function place(ev) {
       el.style.transform = "none";
       var base = el.getBoundingClientRect();
-      el.style.transform = "translate(" + (ev.clientX - grab.x - base.left) + "px," + (ev.clientY - grab.y - base.top) + "px) scale(1.03)";
+      var z = hpZoom();
+      el.style.transform = "translate(" + (ev.clientX - grab.x - base.left) / z + "px," + (ev.clientY - grab.y - base.top) / z + "px) scale(1.03)";
     }
     function lift() {
       lifted = true;
@@ -8766,8 +8958,8 @@ function hpSortable(box, selector, idOf, done, opts) {
       box.insertBefore(el, after);
       others.forEach(function (o, i) {
         var r = o.getBoundingClientRect(),
-          dx = before[i].left - r.left,
-          dy = before[i].top - r.top;
+          dx = (before[i].left - r.left) / hpZoom(),
+          dy = (before[i].top - r.top) / hpZoom();
         if ((dx || dy) && o.animate) o.animate([{ transform: "translate(" + dx + "px," + dy + "px)" }, { transform: "none" }], { duration: 220, easing: "cubic-bezier(.2,.8,.2,1)" });
       });
     }
@@ -8873,6 +9065,19 @@ function hpGroupLights(id) {
       return m.indexOf("light.") === 0 && b.hue_light_id && !b.is_hue_group && !(e && e.hidden) && names.indexOf(b.friendly_name) >= 0;
     })
     .sort();
+}
+
+/* A room's lights in the order the app lists them: by name. */
+function hpLightsByName(id) {
+  var named = hpGroupLights(id)
+    .slice()
+    .sort(function (a, b) {
+      return String(A(a).friendly_name || a).localeCompare(String(A(b).friendly_name || b));
+    });
+  /* The person's own order (made in the room's edit mode, kept on this device as the app keeps it in the app) comes first; without one the lights are by name. */
+  return hpOrdered(named, "lights:" + id, function (x) {
+    return x;
+  });
 }
 
 function hpGroupIcon(id) {
@@ -9129,7 +9334,38 @@ function hpScenesOf(id) {
 }
 
 /* The icon of a light from the shape the Hue app draws for its archetype (a name check: the bridge's archetype is not on the entity). */
+/* The icon types of the bridge (a light's archetype) in the groups the Hue app lists them under, each with the icon drawn for it here. */
+var HP_ARCHETYPES = [
+  ["app_type_table", "lamp", ["table_shade", "flexible_lamp", "table_wash"]],
+  ["app_type_floor", "floor", ["floor_shade", "floor_lantern", "bollard"]],
+  ["app_type_pendant", "ceiling", ["pendant_round", "pendant_long", "pendant_spot"]],
+  ["app_type_ceiling", "ceiling", ["ceiling_round", "ceiling_square", "ceiling_horizontal", "ceiling_tube", "recessed_ceiling", "single_spot", "double_spot"]],
+  ["app_type_wall", "light", ["wall_shade", "wall_lantern", "wall_spot", "wall_washer", "up_and_down", "up_and_down_up", "up_and_down_down"]],
+  ["app_type_outdoor", "light", ["ground_spot", "recessed_floor", "flood_bulb", "string_light"]],
+  ["app_type_hue", "strip", ["hue_lightstrip", "hue_lightstrip_tv", "hue_lightstrip_pc", "hue_play", "hue_play_wallwasher", "hue_tube", "hue_signe", "hue_go", "hue_iris", "hue_bloom", "hue_centris", "twilight"]],
+  ["app_type_bulbs", "light", ["classic_bulb", "sultan_bulb", "spot_bulb", "candle_bulb", "luster_bulb", "vintage_bulb", "vintage_candle_bulb", "edison_bulb", "ellipse_bulb", "triangle_bulb", "small_globe_bulb", "large_globe_bulb"]],
+  ["app_type_other", "plug", ["plug", "christmas_tree"]],
+];
+
+function hpArchetypeIcon(type) {
+  var found = HP_ARCHETYPES.filter(function (g) {
+    return g[2].indexOf(type) >= 0;
+  })[0];
+  return found ? found[1] : null;
+}
+
+/* What the bridge says a light's icon type is (the lights list it reads). */
+function hpArchetypeOf(lid) {
+  var hue = A(lid).hue_light_id,
+    l = (HPLIGHTS || []).filter(function (x) {
+      return x.id === hue;
+    })[0];
+  return l ? l.archetype : null;
+}
+
 function hpLightIcon(lid) {
+  var byType = hpArchetypeIcon(hpArchetypeOf(lid));
+  if (byType) return byType;
   var n = String(A(lid).friendly_name || "").toLowerCase();
   if (/strip|tube|play|gradient/.test(n)) return "strip";
   if (/ceiling|pendant|top/.test(n)) return "ceiling";
@@ -9144,9 +9380,11 @@ function hpLightTile(lid, room) {
   t.querySelector(".ic").innerHTML = svg(hpLightIcon(lid));
   t.querySelector("b").textContent = name;
   t.setAttribute("aria-label", name);
+  t.dataset.lid = lid;
   t.querySelector(".dn").appendChild(hpLightToggle(lid, name));
   hpActive(t, function () {
     HPAPP.lightFrom = t.getBoundingClientRect().top;
+    HPAPP.lightScroll = t.parentNode ? t.parentNode.scrollLeft : 0;
     showPopup("app-lights:" + room + "~" + lid, true);
   });
   t.refresh = function () {
@@ -9195,6 +9433,8 @@ function hpControls(box, id) {
       var c = mk("div", "ctile", "<span class='ic'></span><div><b></b><i></i></div>");
       c.querySelector(".ic").innerHTML = svg("switch");
       c.querySelector("b").textContent = x.name;
+      c.dataset.acc = x.id;
+      c.dataset.name = x.name;
       c.querySelector("i").textContent = hpLastUsed(x.name) || cntS((x.buttons || []).length, _T("hm_button"), _T("hm_buttons"));
       hpActive(c, function () {
         showPopup("hue-switch:" + x.id, true);
@@ -9239,6 +9479,11 @@ function hpRoomPage(body, id) {
     return;
   }
   body.parentNode.classList.add("roompg");
+  if (HPAPP.editRoom === id && isAdmin()) {
+    hpRoomEditPage(body, id);
+    return;
+  }
+  HPAPP.editRoom = null;
   hpLoadLightStates();
   var name = A(id).friendly_name,
     zone = A(id).hue_type === "zone",
@@ -9259,7 +9504,9 @@ function hpRoomPage(body, id) {
           {
             label: _T(zone ? "app_edit_zone" : "app_edit_room"),
             fn: function () {
-              hpEditGroup(id);
+              /* The app's edit mode of the room: its tiles are chosen, then moved, edited or deleted. */
+              HPAPP.editRoom = id;
+              showPopup("app-room:" + id, false);
             },
           },
           {
@@ -9288,9 +9535,14 @@ function hpRoomPage(body, id) {
   hpFolderRows(page, id);
   if (!hpScenesOf(id).length) page.appendChild(mk("div", "empty")).textContent = _T("hw_no_scenes_here");
 
+  hpRoomSections(page, id);
+}
+
+/* The lights and the controls of a room, under their labels. */
+function hpRoomSections(page, id) {
   page.appendChild(mk("div", "lb")).textContent = _T("lights");
   var tiles = mk("div", "ltiles");
-  hpGroupLights(id).forEach(function (lid) {
+  hpLightsByName(id).forEach(function (lid) {
     tiles.appendChild(hpLightTile(lid, id));
   });
   page.appendChild(tiles);
@@ -9332,7 +9584,7 @@ function hpAddPage(body, id) {
   ];
   var title = mk("div", "lb");
   title.textContent = _T("app_tap_to_add") + A(id).friendly_name;
-  title.style.margin = "22px 20px 12px";
+  title.style.margin = "1.375rem 1.25rem 0.75rem";
   body.appendChild(title);
   var grid = mk("div", "addgrid");
   items.forEach(function (it) {
@@ -9476,9 +9728,34 @@ function hpSaveUserFolders(room, list) {
   );
 }
 
-/* The scenes of the room grouped as the app groups them, and the person's own folders; a folder that has none is not there. */
+/* A scene can be outside every folder, as in the app: it is then a tile of its own among the folders. Which scenes are, is kept on this device (the app keeps it in the app). */
+function hpLooseScenes(room) {
+  var v = deviceGet("db_loose_" + room, []);
+  return Array.isArray(v) ? v : [];
+}
+
+function hpSetLoose(room, sid, loose) {
+  var list = hpLooseScenes(room).filter(function (s) {
+    return s !== sid;
+  });
+  if (loose) list.push(sid);
+  deviceSet("db_loose_" + room, list.slice(0, 200));
+  /* A scene outside the folders is in none of the person's folders. */
+  if (loose)
+    hpSaveUserFolders(
+      room,
+      hpUserFolders(room).map(function (f) {
+        return { id: f.id, name: f.name, scenes: f.scenes.filter(function (s) { return s !== sid; }) };
+      })
+    );
+}
+
+/* The scenes of the room grouped as the app groups them, the person's own folders, and the scenes outside every folder; a folder that has none is not there. */
 function hpFolders(room) {
   var all = hpScenesOf(room),
+    loose = hpLooseScenes(room).filter(function (s) {
+      return all.indexOf(s) >= 0;
+    }),
     mine = hpUserFolders(room)
       .map(function (f) {
         return { key: "u:" + f.id, id: f.id, name: f.name, user: true, scenes: f.scenes.filter(function (s) { return all.indexOf(s) >= 0; }) };
@@ -9487,6 +9764,15 @@ function hpFolders(room) {
         return f.scenes.length;
       }),
     taken = {};
+  loose.forEach(function (s) {
+    taken[s] = 1;
+  });
+  mine.forEach(function (f) {
+    f.scenes = f.scenes.filter(function (s) { return loose.indexOf(s) < 0; });
+  });
+  mine = mine.filter(function (f) {
+    return f.scenes.length;
+  });
   mine.forEach(function (f) {
     f.scenes.forEach(function (s) {
       taken[s] = 1;
@@ -9507,10 +9793,22 @@ function hpFolders(room) {
     .filter(function (f) {
       return f.scenes.length;
     })
-    .concat(mine);
+    .concat(mine)
+    .concat(
+      loose.map(function (sid) {
+        return { key: "s:" + sid, name: A(sid).name || A(sid).friendly_name || sid, loose: true, sid: sid, scenes: [sid] };
+      })
+    );
 }
 
-/* Dropping a scene on another makes a folder of the two (named by the person), and dropping one outside its folder takes it out again. */
+/* A scene dragged out of a folder's card is outside every folder from then on. */
+function hpMakeLoose(room, sid, close) {
+  hpSetLoose(room, sid, true);
+  close();
+  showPopup("app-room:" + room, false);
+}
+
+/* Dropping a scene on another makes a folder of the two (named by the person). */
 function hpMakeFolder(room, a, b, close) {
   var list = hpUserFolders(room).map(function (f) {
     return { id: f.id, name: f.name, scenes: f.scenes.filter(function (s) { return s !== a && s !== b; }) };
@@ -9525,15 +9823,6 @@ function hpMakeFolder(room, a, b, close) {
     hpSaveUserFolders(room, list);
     showPopup("app-room:" + room, false);
   });
-}
-
-function hpTakeOut(room, folderId, sid, close) {
-  var list = hpUserFolders(room).map(function (f) {
-    return { id: f.id, name: f.name, scenes: f.id === folderId ? f.scenes.filter(function (s) { return s !== sid; }) : f.scenes };
-  });
-  hpSaveUserFolders(room, list);
-  close();
-  showPopup("app-room:" + room, false);
 }
 
 /* A question with a line to write the answer in, as the app asks a folder's name. */
@@ -9583,8 +9872,11 @@ function hpFolderTile(folder, room) {
   folder.scenes.slice(0, 6).forEach(function (sid) {
     dots.appendChild(hpDisc(sid));
   });
+  if (folder.loose) t.classList.add("loose");
   hpActive(t, function () {
-    hpFolderCard(folder, room, t);
+    /* A scene outside the folders is played from its tile. */
+    if (folder.loose) hueSceneToggle(folder.sid);
+    else hpFolderCard(folder, room, t);
   });
   t.refresh = function () {
     t.classList.toggle(
@@ -9608,6 +9900,16 @@ function hpFolderRows(box, room) {
   }).forEach(function (f) {
     grid.appendChild(hpFolderTile(f, room));
   });
+  /* Two rows that scroll sideways, as the app has them: the first half of the tiles along the top row, the rest along the bottom. */
+  function rows() {
+    var items = grid.querySelectorAll(".ftile"),
+      half = Math.ceil(items.length / 2);
+    Array.prototype.forEach.call(items, function (it, i) {
+      it.style.gridRow = i < half ? "1" : "2";
+      it.style.gridColumn = String((i < half ? i : i - half) + 1);
+    });
+  }
+  rows();
   hpSortable(
     grid,
     ".ftile",
@@ -9616,8 +9918,26 @@ function hpFolderRows(box, room) {
     },
     function (ids) {
       hpOrderSet("folders:" + room, ids);
+      rows();
     },
-    { live: false }
+    {
+      live: false,
+      /* A scene that is outside the folders, dropped on a folder, goes into it (one of the person's folders takes it; one of the app's own groups has it back where it belongs). */
+      merge: function (a, b) {
+        if (String(a).indexOf("s:") === 0 && String(b).indexOf("s:") !== 0) {
+          var sid = String(a).slice(2);
+          hpSetLoose(room, sid, false);
+          if (String(b).indexOf("u:") === 0)
+            hpSaveUserFolders(
+              room,
+              hpUserFolders(room).map(function (f) {
+                return { id: f.id, name: f.name, scenes: "u:" + f.id === b ? f.scenes.concat([sid]) : f.scenes };
+              })
+            );
+        }
+        showPopup("app-room:" + room, false);
+      },
+    }
   );
   box.appendChild(grid);
 }
@@ -9672,7 +9992,18 @@ function hpFolderCard(folder, room, from) {
   var OPEN = ".17s cubic-bezier(.3,0,.3,1)",
     SHUT = ".17s cubic-bezier(.7,0,.7,1)",
     pulse = null;
+  /* Where the app puts it: its top where the first row of folders ends. */
+  function place() {
+    var rows = from && from.closest ? from.closest(".frows") : null,
+      first = rows && rows.querySelector(".ftile");
+    if (!first) {
+      card.style.top = "30%";
+      return;
+    }
+    card.style.top = (first.getBoundingClientRect().bottom - document.body.getBoundingClientRect().top) / hpZoom() + "px";
+  }
   function aim() {
+    place();
     card.style.transition = "none";
     card.style.transform = "none";
     card.style.opacity = "1";
@@ -9682,7 +10013,8 @@ function hpFolderCard(folder, room, from) {
       return 0.9;
     }
     var tr = from.getBoundingClientRect();
-    card.style.transformOrigin = tr.left + tr.width / 2 - cr.left + "px " + (tr.top + tr.height / 2 - cr.top) + "px";
+    var z = hpZoom();
+    card.style.transformOrigin = (tr.left + tr.width / 2 - cr.left) / z + "px " + (tr.top + tr.height / 2 - cr.top) / z + "px";
     return Math.max(0.3, Math.min(0.6, (tr.width * 1.6) / cr.width));
   }
   function close() {
@@ -9703,6 +10035,16 @@ function hpFolderCard(folder, room, from) {
   }).forEach(function (sid) {
     grid.appendChild(hpSceneItem(sid, room, close));
   });
+  /* Two rows that scroll sideways, filled as the app fills them: the first half of the scenes along the top row, the rest along the bottom. */
+  function rows() {
+    var items = grid.querySelectorAll(".sitem"),
+      half = Math.ceil(items.length / 2);
+    Array.prototype.forEach.call(items, function (it, i) {
+      it.style.gridRow = i < half ? "1" : "2";
+      it.style.gridColumn = String((i < half ? i : i - half) + 1);
+    });
+  }
+  rows();
   hpSortable(
     grid,
     ".sitem",
@@ -9712,6 +10054,7 @@ function hpFolderCard(folder, room, from) {
     function (ids) {
       hpOrderSet("scenes:" + room + ":" + folder.key, ids);
       folder.scenes = ids;
+      rows();
       card.refresh();
     },
     {
@@ -9720,11 +10063,9 @@ function hpFolderCard(folder, room, from) {
         : function (a, b) {
             hpMakeFolder(room, a, b, close);
           },
-      outside: folder.user
-        ? function (sid) {
-            hpTakeOut(room, folder.id, sid, close);
-          }
-        : null,
+      outside: function (sid) {
+        hpMakeLoose(room, sid, close);
+      },
       bounds: function () {
         return card;
       },
@@ -10055,7 +10396,20 @@ function hpSwitchPage(b, id) {
     head.querySelector(".ic").innerHTML = svg("switch");
     head.querySelector(".nm").textContent = x.name;
     box.appendChild(head);
-    box.appendChild(hmGroup([hmRow({ title: _T("app_room"), val: room ? room.name : _T("hm_the_whole_home") })]));
+    /* The room the switch is in: the row opens the room, where its devices are chosen (a switch moves by being added to another room). */
+    box.appendChild(
+      hmGroup([
+        hmRow({
+          title: _T("app_room"),
+          val: room ? room.name : _T("hm_the_whole_home"),
+          tap: room
+            ? function () {
+                hrwStart(room.type === "zone" ? "zone" : "room", room);
+              }
+            : null,
+        }),
+      ])
+    );
     var tiles = mk("div", "btiles");
     buttons.forEach(function (btn) {
       var look = hpButtonLook(x, btn),
@@ -10078,6 +10432,7 @@ function hpSwitchPage(b, id) {
         title: _T("app_button_controls"),
         val: _T("lights"),
         icon: "lights",
+        tap: "app-btnctl:" + x.id + "|" + btn.number,
       })
     );
     var t = hmBtnTargets(r, x, btn);
@@ -10086,6 +10441,13 @@ function hpSwitchPage(b, id) {
     sel.querySelector(".ic").innerHTML = svg(room && room.type === "zone" ? "target" : "home");
     sel.querySelector("b").textContent = t.name || (room ? room.name : _T("hm_the_whole_home"));
     sel.querySelector("i").textContent = _T("app_entire_room");
+    if (hueplus.has(H(), "set_button_lights")) {
+      sel.setAttribute("role", "button");
+      sel.tabIndex = 0;
+      hpActive(sel, function () {
+        showPopup("app-btnlights:" + x.id + "|" + btn.number, true);
+      });
+    }
     box.appendChild(sel);
     box.appendChild(hmLabel(_T("hm_behavior")));
     box.appendChild(
@@ -10364,6 +10726,56 @@ HP_PAGES["hue-pick-scene"] = ["app_my_scenes", "palette", hpPressScenePage];
 HP_PAGES["app-press"] = ["hm_press", "switch", hpPressPage];
 HP_PAGES["app-smart"] = ["hm_smart_on_off", "switch", hpSmartPage];
 
+/* What a button controls. The app offers lights and, where the home has them, other kinds of device; this bridge's buttons control lights. */
+function hpButtonControlsPage(b) {
+  hmBox(b);
+  b.appendChild(hmGroup([hmRow({ icon: "lights", title: _T("lights"), check: function () { return true; } })]));
+}
+
+/* The lights a button acts on (the app's Selected lights): a room or a zone. Choosing one writes it to the bridge at once, and what the button's presses do stays. */
+function hpButtonLightsPage(b, id) {
+  hmBox(b);
+  hmLoad(b, ["accessories", "rooms", "zones"], function (box, r) {
+    var k = hmBtnKey(id),
+      f = hmBtnFind(r, k);
+    if (!f.acc || !f.btn) {
+      box.appendChild(hmCallout(_T("nothing_found")));
+      return;
+    }
+    var now = hmBtnTargets(r, f.acc, f.btn).ids;
+    [
+      ["room", r.rooms || [], "home"],
+      ["zone", r.zones || [], "target"],
+    ].forEach(function (kind) {
+      if (!kind[1].length) return;
+      box.appendChild(hmLabel(_T(kind[0] === "room" ? "app_rooms" : "zones")));
+      box.appendChild(
+        hmGroup(
+          kind[1].map(function (g) {
+            return hmRow({
+              icon: kind[2],
+              title: g.name,
+              check: function () {
+                return now.indexOf(g.id) >= 0;
+              },
+              tap: function () {
+                hpCall("hue_plus", "set_button_lights", { accessory: f.acc.id, button: f.btn.number, group: g.id, group_type: kind[0] }).then(function () {
+                  return hmReread("accessories", f.acc.id).then(function () {
+                    popBack();
+                  });
+                }, function () {});
+              },
+            });
+          })
+        )
+      );
+    });
+  });
+}
+
+HP_PAGES["app-btnctl"] = ["app_button_controls", "lights", hpButtonControlsPage];
+HP_PAGES["app-btnlights"] = ["app_selected_lights", "home", hpButtonLightsPage];
+
 /* A scene cycle, as the app lays it out: the kind of press on top, then BEHAVIOR with the presses in order (each with the picture of its scene, and a blue plus that adds one), a line saying the rows
  can be dragged, and ADVANCED. DONE keeps the cycle (it is staged and written when the switch is saved). The draft is the menu's (HM_CYCLE); only the page is the app's. */
 
@@ -10539,28 +10951,125 @@ function hpLightSettings(b, id) {
     var g = hmGroup([hmRow({ title: _T("hm_room"), val: room.name })]);
     b.insertBefore(g, title.nextSibling);
   }
+  /* The pencil by the name opens Edit name and type. */
+  if (title && hueplus.has(H(), "set_name") && A(id).hue_light_id) {
+    var pen = hpRound("edit", _T("app_edit_name_and_type"), function () {
+      delete HPRENAME[id];
+      showPopup("app-rename:" + id, true);
+    });
+    pen.classList.add("hm-pen");
+    title.appendChild(pen);
+  }
   /* The device info is a row under Support, as in the app, and opens the details. */
   var label = [].filter.call(b.querySelectorAll(".hm-label"), function (l) {
     return l.textContent === _T("hm_device_info");
   })[0];
+  var support = hmGroup([hmRow({ icon: "info", title: _T("hm_device_info"), tap: "app-devinfo:" + id })]);
   if (label) {
     var group = label.nextSibling;
     label.textContent = _T("app_support");
-    group.parentNode.replaceChild(
-      hmGroup([hmRow({ icon: "info", title: _T("hm_device_info"), tap: "app-devinfo:" + id })]),
-      group
-    );
+    group.parentNode.replaceChild(support, group);
+  } else {
+    /* the app always has Support with Device info, before the buttons at the end */
+    var end = b.querySelector(".hm-actions");
+    b.insertBefore(hmLabel(_T("app_support")), end);
+    b.insertBefore(support, end);
   }
 }
 
+/* Device info, as the app lists it: device type, manufacturer, model, MAC address, hardware platform version and software, from what Home Assistant knows of the device; then the light's lowest
+ brightness and its firmware update, which Hue Plus adds. */
 function hpDeviceInfoPage(b, id) {
   hmBox(b);
-  b.appendChild(hmTitle("lamp", hpName(id)));
-  b.appendChild(hmGroup(hpDeviceInfoRows(id)));
+  var ent = H().entities && H().entities[id],
+    dev = ent && H().devices ? H().devices[ent.device_id] : null,
+    rows = [];
+  function row(title, value) {
+    if (value) rows.push(hmRow({ title: title, sub: String(value), stack: true }));
+  }
+  if (dev) {
+    var mac = (dev.connections || []).filter(function (c) {
+      return c[0] === "zigbee" || c[0] === "mac";
+    })[0];
+    row(_T("app_device_type"), dev.model);
+    row(_T("app_manufacturer"), dev.manufacturer);
+    row(_T("app_model"), dev.model_id);
+    row(_T("app_mac_address"), mac ? mac[1] : "");
+    row(_T("app_hardware_version"), dev.hw_version);
+    row(_T("app_software"), dev.sw_version);
+  }
+  if (rows.length) b.appendChild(hmGroup(rows));
+  var extra = hpDeviceInfoRows(id);
+  if (extra.length) b.appendChild(hmGroup(extra));
+}
+
+/* The pencil by the light's name: its name and its icon type, as the app's "Edit name and type" (Hue-Screenshots/IMG_0579): the icon, the name in a field, and the types in their groups. DONE
+ writes both to the bridge. */
+var HPRENAME = {};
+
+function hpRenamePage(b, id) {
+  hmBox(b);
+  var hue = A(id).hue_light_id,
+    st = HPRENAME[id] || (HPRENAME[id] = { name: hpName(id), type: hpArchetypeOf(id) }),
+    big = mk("div", "rnbig");
+  function paintBig() {
+    big.innerHTML = svg(hpArchetypeIcon(st.type) || hpLightIcon(id));
+  }
+  paintBig();
+  b.appendChild(big);
+  var field = mk("input", "rnname");
+  field.type = "text";
+  field.maxLength = 32;
+  field.value = st.name;
+  field.setAttribute("aria-label", _T("app_name"));
+  field.addEventListener("input", function () {
+    st.name = field.value;
+  });
+  b.appendChild(field);
+  HP_ARCHETYPES.forEach(function (g) {
+    b.appendChild(hmLabel(_T(g[0])));
+    var grid = mk("div", "rngrid");
+    g[2].forEach(function (type) {
+      var t = mk("button", "rntype" + (st.type === type ? " on" : ""), "<span class='ic'></span><b></b>");
+      t.type = "button";
+      t.querySelector(".ic").innerHTML = svg(g[1]);
+      t.querySelector("b").textContent = _T("app_arch_" + type);
+      t.addEventListener("click", function () {
+        st.type = type;
+        Array.prototype.forEach.call(b.querySelectorAll(".rntype.on"), function (x) {
+          x.classList.remove("on");
+        });
+        t.classList.add("on");
+        paintBig();
+      });
+      grid.appendChild(t);
+    });
+    b.appendChild(grid);
+  });
+  HC.onDone = function () {
+    var name = String(st.name || "").trim();
+    if (!name) {
+      toast(_T("app_name_needed"));
+      return;
+    }
+    var data = { resource: "light", id: hue, name: name };
+    if (st.type) data.archetype = st.type;
+    hpCall("hue_plus", "set_name", data).then(
+      function () {
+        delete HPRENAME[id];
+        hpLoadLightStates();
+        popBack();
+      },
+      function () {
+        toast(_T("hm_the_bridge_did_not_accept_this"));
+      }
+    );
+  };
 }
 
 HP_PAGES["hue-light"] = ["app_light_settings", "lamp", hpLightSettings];
 HP_PAGES["app-devinfo"] = ["hm_device_info", "info", hpDeviceInfoPage];
+HP_PAGES["app-rename"] = ["app_edit_name_and_type", "edit", hpRenamePage];
 
 /* The Bridges list of the app: the bridge, and a tap opens its settings. (The menu's Bridges row goes straight to the settings.) */
 function hpBridgesPage(b) {
@@ -10737,6 +11246,9 @@ function hpLightFrame(then) {
   f.src = new URL("popup.html", HP_BASE).href + (HP_VERSION ? "?v=" + encodeURIComponent(HP_VERSION) : "");
   document.body.appendChild(f);
   HPLF.el = f;
+  /* The frame has its size from the start and is hidden by visibility, never by display: Safari, with the page zoomed, draws a frame that was made without a box with the zoom applied
+     twice (its content larger than its box). */
+  hpFrameShow(false);
   var wait = setInterval(function () {
     var w = f.contentWindow;
     if (!w || !w.HuePopup) return;
@@ -10759,15 +11271,41 @@ window.HueHost.onHass = function (h) {
   if (HPLF.win && HPLF.win.HuePopup) HPLF.win.HuePopup.attach(h);
 };
 
+/* The width the Hue app's screens were measured at, and how much larger or smaller the panel is drawn. */
+var HP_DESIGN_WIDTH = 393;
+/* How long the colour screen takes to close (the Hue app: about 250 ms); the page's fades in app.css are timed to it. */
+var HP_CLOSE_MS = 260;
+
+function hpFrameScale() {
+  /* From the root font size (the panel's width / 393 * 16, set in the style sheet), not from a measurement: a measurement is in zoomed units in a zoomed Safari. */
+  return (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16) / 16;
+}
+
+/* The same for the offsets of an element (offsetTop, clientWidth), which a zoomed Safari may or may not give in zoomed units. */
+function hpOffsetZoom() {
+  var styled = parseFloat(getComputedStyle(document.body).width);
+  return styled ? document.body.offsetWidth / styled || 1 : 1;
+}
+
 function hpFrameShow(on) {
   if (!HPLF.el) return;
   var layers = document.querySelectorAll(".pg"),
     bar = layers.length ? layers[layers.length - 1].querySelector(".pbar") : null;
   /* Where the bar ends in its final place (a page that is still sliding in is measured without its movement). */
-  var top = bar ? layers[layers.length - 1].offsetTop + bar.offsetTop + bar.offsetHeight : 0;
+  var top = bar ? (layers[layers.length - 1].offsetTop + bar.offsetTop + bar.offsetHeight) / hpOffsetZoom() : 0;
+  /* The frame's lengths are scaled as the panel's own are (the root font size). */
+  var scale = hpFrameScale();
   HPLF.el.style.top = top + "px";
-  HPLF.el.style.height = "calc(100% - " + top + "px)";
+  HPLF.el.style.right = "auto";
+  HPLF.el.style.bottom = "auto";
+  /* as wide as the panel, in the panel's own lengths */
+  HPLF.el.style.width = (parseFloat(document.body.style.width) || HP_DESIGN_WIDTH * scale) / scale + "px";
+  HPLF.el.style.height = "calc((100% - " + top + "px) / " + scale + ")";
+  HPLF.el.style.transformOrigin = "0 0";
+  HPLF.el.style.transform = "scale(" + scale + ")";
   HPLF.el.classList.toggle("show", !!on);
+  /* Counts the times the frame was put on a screen, so a screen that is leaving knows another has taken the frame. */
+  if (on) HPLF.shown = (HPLF.shown || 0) + 1;
 }
 
 /* Closing a colour screen: the frame animates out (its wheel goes up, its tiles go to the room page's row) before it is taken away. */
@@ -10776,8 +11314,49 @@ window.HueHost.onLeave = function (toY, done) {
     done();
     return;
   }
-  var top = parseFloat(HPLF.el.style.top) || 0;
-  HPLF.win.HuePopup.leave(typeof toY === "number" ? toY - top : undefined, done);
+  var top = parseFloat(HPLF.el.style.top) || 0,
+    scale = hpFrameScale(),
+    shown = HPLF.shown,
+    row = document.querySelector(".pg.leaving .ltiles");
+  /* The room page's row is where the colour screen's row was left, sideways: it is one row. */
+  if (row) row.scrollLeft = HPLF.win.HuePopup.trayScroll() * scale * hpZoom();
+  /* For the close the frame is as high as the screen (the wheel leaves past the top of the screen, not past the frame's edge); its content is moved down by as much in the same step. */
+  HPLF.win.HuePopup.leave(
+    typeof toY === "number" ? toY / hpZoom() / scale : undefined,
+    function () {
+      done(HPLF.shown !== shown);
+    },
+    top / scale,
+    HP_CLOSE_MS
+  );
+  HPLF.el.style.top = "0rem";
+  HPLF.el.style.height = "calc(100% / " + scale + ")";
+};
+
+/* A sheet the light frame opens over its page (Orientation setup) uses the page's own bar: its title, X to cancel and DONE to keep, until `restore` is called. */
+window.HueHost.frameBar = function (title, onDone, onCancel) {
+  var layers = document.querySelectorAll(".pg"),
+    layer = layers[layers.length - 1];
+  if (!layer) return function () {};
+  var bar = layer.querySelector(".pbar"),
+    tt = bar.querySelector(".tt"),
+    was = tt.textContent;
+  tt.textContent = title;
+  layer.classList.add("framebar");
+  function take(e) {
+    var b = e.target.closest ? e.target.closest("button") : null;
+    if (!b || !bar.contains(b)) return;
+    e.stopPropagation();
+    e.preventDefault();
+    if (b.classList.contains("back") || b.classList.contains("x")) onCancel();
+    else onDone();
+  }
+  bar.addEventListener("click", take, true);
+  return function () {
+    bar.removeEventListener("click", take, true);
+    tt.textContent = was;
+    layer.classList.remove("framebar");
+  };
 };
 
 /* Every page that is drawn takes the frame away; a light screen puts it back. */
@@ -10788,6 +11367,15 @@ window.HueHost.onRender = function () {
 window.HueHost.onResume = function (key) {
   if (/^(app-lights|app-edit|app-place)\b/.test(String(key))) hpFrameShow(true);
 };
+
+/* The icon of each light, as the room page draws it, for the colour screen. */
+function hpIconsOf(ids) {
+  var out = {};
+  (ids || []).forEach(function (e) {
+    out[e] = hpLightIcon(e);
+  });
+  return out;
+}
 
 function hpLightScreen(body, ids, name, focus, from) {
   var wait = mk("div", "empty");
@@ -10801,7 +11389,7 @@ function hpLightScreen(body, ids, name, focus, from) {
     if (HPLIGHTS) win.HuePopup.seed(HPLIGHTS);
     hpFrameShow(true);
     var top = parseFloat(HPLF.el.style.top) || 0;
-    win.HuePopup.panel(ids, name, focus, typeof from === "number" ? from - top : undefined);
+    win.HuePopup.panel(ids, name, focus, typeof from === "number" ? (from / hpZoom() - top) / hpFrameScale() : undefined, typeof HPAPP.lightScroll === "number" ? HPAPP.lightScroll / hpZoom() / hpFrameScale() : undefined, hpIconsOf(ids));
   });
 }
 
@@ -10835,14 +11423,45 @@ function hpLightsPage(body, key) {
   bar.appendChild(done);
   var from = HPAPP.lightFrom;
   HPAPP.lightFrom = undefined;
-  hpLightScreen(body, hpGroupLights(room), A(room).friendly_name || room, focus, from);
+  hpLightScreen(body, hpLightsByName(room), A(room).friendly_name || room, focus, from);
 }
 
 /* The editor of a scene's lights (the Hue app's "New scene" and a scene's lights): the same screen, with SAVE. The lights show what is set while it is open; leaving after a change asks, and discarding
  puts them back as they were. o = { name, lights, onSave(acts), after }; onSave answers true (or a promise of true) when it kept the scene. */
 var HPEDIT = null;
 
+/* Lights in the order of the room (or zone) they are all in, as its row shows them (the person's order, or by name); lights of no single room keep their order. */
+function hpInRoomOrder(lights) {
+  var h = H(),
+    room = Object.keys(h.states).filter(function (e) {
+      var t = A(e).hue_type;
+      if (e.indexOf("light.") !== 0 || !A(e).is_hue_group || (t !== "room" && t !== "zone")) return false;
+      var members = hpGroupLights(e);
+      return (
+        lights.length &&
+        lights.every(function (l) {
+          return members.indexOf(l) >= 0;
+        })
+      );
+    })
+    /* a room before a zone */
+    .sort(function (x, y) {
+      return (A(x).hue_type === "room" ? 0 : 1) - (A(y).hue_type === "room" ? 0 : 1);
+    })[0];
+  if (!room) return lights;
+  return hpLightsByName(room)
+    .filter(function (l) {
+      return lights.indexOf(l) >= 0;
+    })
+    .concat(
+      lights.filter(function (l) {
+        return hpGroupLights(room).indexOf(l) < 0;
+      })
+    );
+}
+
 function hpEditLights(o) {
+  o.lights = hpInRoomOrder(o.lights || []);
   HPEDIT = { o: o, snap: null };
   call("light", "turn_on", { entity_id: o.lights });
   showPopup("app-edit", true);
@@ -10866,7 +11485,7 @@ function hpEditPage(body) {
     setTimeout(function () {
       if (HC.sheet.light !== token) return;
       E.snap = win.HuePopup.snapshot(o.lights);
-      win.HuePopup.panel(o.lights, o.name);
+      win.HuePopup.panel(o.lights, o.name, undefined, undefined, undefined, hpIconsOf(o.lights));
       hpFrameShow(true);
     }, 700);
   });
@@ -11089,21 +11708,24 @@ function hpSyColorCard(E) {
 
 /* The brightness slider rises out of its button: the same width, the button at its foot, the percentage above it. */
 function hpSyBrightness(E, button) {
+  /* The slider is placed inside the phone (the page's body), which on a wide screen is not the window. */
   var r = button.getBoundingClientRect(),
-    tall = Math.min(window.innerHeight * 0.45, 210);
+    phone = document.body.getBoundingClientRect(),
+    z = hpZoom(),
+    tall = Math.min((phone.height / z) * 0.45, 210 * hpFrameScale());
   hpSyPop(function (close) {
     var bar = mk("div", "sybri", "<span class='pc'></span><div class='fillb'></div><span class='ic'></span>"),
       fill = bar.querySelector(".fillb"),
       pc = bar.querySelector(".pc"),
       value = hsNumber(E.brightness) || 0;
     bar.querySelector(".ic").innerHTML = svg("bright");
-    bar.style.left = r.left + "px";
-    bar.style.width = r.width + "px";
-    bar.style.bottom = window.innerHeight - r.bottom + "px";
+    bar.style.left = (r.left - phone.left) / z + "px";
+    bar.style.width = r.width / z + "px";
+    bar.style.bottom = (phone.bottom - r.bottom) / z + "px";
     bar.style.height = tall + "px";
     function paint(v) {
       value = v;
-      fill.style.height = Math.max(r.height, (v / 100) * tall) + "px";
+      fill.style.height = Math.max(r.height / z, (v / 100) * tall) + "px";
       pc.textContent = Math.round(v) + "%";
     }
     paint(value);
@@ -11123,10 +11745,12 @@ function hpSyBrightness(E, button) {
       var up = function () {
         bar.removeEventListener("pointermove", move);
         bar.removeEventListener("pointerup", up);
+        bar.removeEventListener("pointercancel", up);
         call("number", "set_value", { entity_id: E.brightness, value: Math.max(1, value) });
       };
       bar.addEventListener("pointermove", move);
       bar.addEventListener("pointerup", up);
+      bar.addEventListener("pointercancel", up);
     });
     bar.addEventListener("away", close);
     return bar;
@@ -11560,7 +12184,7 @@ function hpUpdatesPage(b) {
     hmGroup(
       list.map(function (id) {
         return hmRow({
-          title: hpName(id).replace(/ firmware$/i, ""),
+          title: hpName(id).replace(/ (bridge )?firmware$/i, ""),
           sub: function () {
             return A(id).installed_version || "";
           },
@@ -11606,7 +12230,7 @@ function hpSmartHomePage(b) {
         f.map(function (x) {
           return hmRow({
             icon: "home",
-            title: x.label || x.vendor || x.id,
+            title: x.label || x.vendor || _T("app_matter_controller"),
             sub: [x.vendor, x.status].filter(Boolean).join(" · "),
             tap: function () {
               confirmDlg(_T("disconnect_this_matter_app_from_the_bridge"), function () {
@@ -11757,7 +12381,10 @@ function hpAreaKey(id) {
 
 function hpAreaBase(x) {
   return (x.lights || []).map(function (l) {
-    return { light: l.light_id, name: l.name || String(l.light_id), x: l.x || 0, y: l.y || 0, z: l.z || 0, balance: typeof l.balance === "number" ? l.balance : 1 };
+    var o = { light: l.light_id, name: l.name || String(l.light_id), x: l.x || 0, y: l.y || 0, z: l.z || 0, balance: typeof l.balance === "number" ? l.balance : 1 };
+    /* every position the bridge holds (the ends of a strip or tube) */
+    if (Array.isArray(l.positions) && l.positions.length > 1) o.positions = l.positions;
+    return o;
   });
 }
 
@@ -11782,7 +12409,9 @@ hmSaveArea = function (id, ch) {
     if (ch.name) data.name = ch.name;
     if (ch.lights)
       data.lights = ch.lights.map(function (l) {
-        return { light: l.light, x: l.x, y: l.y, z: l.z, balance: l.balance };
+        var item = { light: l.light, x: l.x, y: l.y, z: l.z, balance: l.balance };
+        if (l.positions) item.positions = l.positions;
+        return item;
       });
     job = hpCall("hue_plus", "update_entertainment_area", data);
   }
@@ -11949,7 +12578,7 @@ function hpPlacePage(b, id) {
         id: id,
         name: hpAreaName(x),
         lights: hpAreaLights(x).map(function (l) {
-          return { light_id: l.light, name: l.name, x: l.x, y: l.y, z: l.z, balance: l.balance };
+          return { light_id: l.light, name: l.name, x: l.x, y: l.y, z: l.z, positions: l.positions, balance: l.balance };
         }),
       },
       names = {};
@@ -11969,7 +12598,9 @@ function hpPlacePage(b, id) {
             return { light: k.light, name: names[k.light] || String(k.light), x: k.x, y: k.y, z: k.z, balance: typeof k.balance === "number" ? k.balance : 1 };
           });
           (d.lights || []).forEach(function (l) {
-            lights.push({ light: hpHueId(l.id), name: hpName(l.id), x: l.x, y: hpFlip(l.y), z: l.z, balance: typeof l.balance === "number" ? l.balance : 1 });
+            var every = hpBarPositions(l),
+              first = every ? every[0] : { x: l.x, y: hpFlip(l.y), z: l.z };
+            lights.push({ light: hpHueId(l.id), name: hpName(l.id), x: first.x, y: first.y, z: first.z, positions: every || undefined, balance: typeof l.balance === "number" ? l.balance : 1 });
           });
           if (lights.length) hpStageLights(x, lights);
         }
@@ -12034,6 +12665,284 @@ HP_PAGES["app-areaadd"] = ["app_add_a_light", "plus", hpAreaAddPage];
 HP_PAGES["app-place"] = ["hm_light_placement", "target", hpPlacePage];
 HP_PAGES["app-balance"] = ["app_balancer", "tune", hpBalancePage];
 HP_PAGES["app-newarea"] = ["app_new_area", "plus", hpNewAreaPage];
+
+/* The edit mode of a room, as the Hue app has it (Hue-Screenshots/IMG_0576, 0577): the header is the room's icon and name with a pencil and DONE; every section has SELECT ALL; a tile that is tapped is
+ chosen (a blue line around it); the tab bar gives way to what can be done: REARRANGE while nothing is chosen (the tiles are then held and dragged), MOVE TO, EDIT and DELETE for what is chosen. */
+
+function hpRoomEditPage(body, id) {
+  var root = body.parentNode,
+    name = A(id).friendly_name,
+    zone = A(id).hue_type === "zone",
+    head = mk("div", "rhead edit", "<div class='rr'><span class='ic'></span><span class='nm'></span></div><div class='sl off'></div>"),
+    row = head.querySelector(".rr");
+  head.querySelector(".ic").innerHTML = svg(hpGroupIcon(id));
+  head.querySelector(".nm").textContent = name;
+  row.appendChild(
+    hpRound("edit", _T(zone ? "app_edit_zone" : "app_edit_room"), function () {
+      hpEditGroup(id);
+    })
+  );
+  var done = mk("button", "act", "");
+  done.type = "button";
+  done.textContent = _T("done");
+  done.addEventListener("click", function () {
+    HPAPP.editRoom = null;
+    showPopup("app-room:" + id, false);
+  });
+  row.appendChild(done);
+  body.appendChild(head);
+
+  var page = mk("div", "rbody editing");
+  body.appendChild(page);
+  page.appendChild(mk("div", "lb")).textContent = _T("app_my_scenes");
+  hpFolderRows(page, id);
+  hpRoomSections(page, id);
+
+  var bar = mk("div", "editbar");
+  root.appendChild(bar);
+
+  function chosen() {
+    return Array.prototype.slice.call(page.querySelectorAll(".sel"));
+  }
+  function tilesOf(label) {
+    var box = label.nextElementSibling;
+    return box ? Array.prototype.slice.call(box.querySelectorAll(".ftile,.ltile,.ctile")) : [];
+  }
+  function action(icon, text, fn) {
+    var b = mk("button", "", svg(icon) + "<span></span>");
+    b.type = "button";
+    b.querySelector("span").textContent = text;
+    b.addEventListener("click", fn);
+    bar.appendChild(b);
+  }
+  function redraw() {
+    showPopup("app-room:" + id, false);
+  }
+  function paint() {
+    var sel = chosen();
+    Array.prototype.forEach.call(page.querySelectorAll(".lb"), function (label) {
+      var all = tilesOf(label),
+        b = label.querySelector(".selall");
+      if (!b) return;
+      b.textContent = _T(
+        all.length &&
+          all.every(function (t) {
+            return t.classList.contains("sel");
+          })
+          ? "app_deselect"
+          : "app_select_all"
+      );
+    });
+    bar.innerHTML = "";
+    if (!sel.length) {
+      action("swap", _T("app_rearrange"), function () {
+        toast(_T("app_hold_and_drag"));
+      });
+      return;
+    }
+    action("leave", _T("app_move_to"), function () {
+      hpEditMove(id, sel);
+    });
+    action("edit", _T("app_edit"), function () {
+      hpEditOne(id, sel);
+    });
+    action("trash", _T("hm_delete"), function () {
+      hpEditDelete(id, sel, redraw);
+    });
+  }
+
+  /* The labels get SELECT ALL; the lights' label also the button that puts them back in the order of their names. */
+  function dress() {
+    Array.prototype.forEach.call(page.querySelectorAll(".lb"), function (label) {
+      if (label.querySelector(".selall")) return;
+      label.classList.add("lbrow");
+      var text = mk("span", "");
+      text.textContent = label.textContent;
+      label.textContent = "";
+      label.appendChild(text);
+      var box = label.nextElementSibling;
+      if (box && box.classList.contains("ltiles")) {
+        var sort = hpRound("swap", _T("app_sort_by_name"), function () {
+          hpOrderSet("lights:" + id, []);
+          redraw();
+        });
+        sort.classList.add("sortb");
+        label.appendChild(sort);
+        hpSortable(
+          box,
+          ".ltile",
+          function (el) {
+            return el.dataset.lid;
+          },
+          function (ids) {
+            hpOrderSet("lights:" + id, ids);
+          },
+          { live: false }
+        );
+      }
+      var all = mk("button", "act selall", "");
+      all.type = "button";
+      all.addEventListener("click", function () {
+        var tiles = tilesOf(label),
+          every =
+            tiles.length &&
+            tiles.every(function (t) {
+              return t.classList.contains("sel");
+            });
+        tiles.forEach(function (t) {
+          t.classList.toggle("sel", !every);
+        });
+        paint();
+      });
+      label.appendChild(all);
+    });
+    paint();
+  }
+  /* A tap on a tile chooses it; nothing a tile does outside the edit mode (opening, switching a light) happens here. */
+  page.addEventListener(
+    "click",
+    function (e) {
+      var t = e.target.closest ? e.target.closest(".ftile,.ltile,.ctile") : null;
+      if (!t || !page.contains(t)) return;
+      e.stopPropagation();
+      e.preventDefault();
+      t.classList.toggle("sel");
+      paint();
+    },
+    true
+  );
+  dress();
+  /* The controls are drawn when the bridge has been read, which may be after this. */
+  hmReady().then(dress, function () {});
+}
+
+/* What a chosen tile is: a light (its entity), a switch (its id and name on the bridge), a folder or a scene outside the folders. */
+function hpEditKind(t) {
+  if (t.dataset.lid) return { kind: "light", id: t.dataset.lid, name: A(t.dataset.lid).friendly_name || t.dataset.lid };
+  if (t.dataset.acc) return { kind: "switch", id: t.dataset.acc, name: t.dataset.name };
+  var key = String(t.dataset.key || "");
+  if (key.indexOf("s:") === 0) return { kind: "scene", id: key.slice(2), name: A(key.slice(2)).name || key.slice(2) };
+  return { kind: "folder", id: key, name: t.textContent };
+}
+
+/* EDIT: the settings of the one thing that is chosen. */
+function hpEditOne(room, sel) {
+  if (sel.length !== 1) {
+    toast(_T("app_choose_one"));
+    return;
+  }
+  var x = hpEditKind(sel[0]);
+  if (x.kind === "light") showPopup("hue-light:" + x.id, true);
+  else if (x.kind === "switch") showPopup("hue-switch:" + x.id, true);
+  else if (x.kind === "scene") showPopup("app-scene:" + x.id + "~" + room, true);
+  else if (x.id.indexOf("u:") === 0)
+    hpPrompt(_T("app_group_name"), x.name, function (name) {
+      hpSaveUserFolders(
+        room,
+        hpUserFolders(room).map(function (f) {
+          return { id: f.id, name: "u:" + f.id === x.id ? name : f.name, scenes: f.scenes };
+        })
+      );
+      showPopup("app-room:" + room, false);
+    });
+  else toast(_T("app_not_for_this"));
+}
+
+/* DELETE: a light or a switch leaves the bridge, a scene is deleted, a folder of the person's is undone (its scenes stay). Asked first, once. */
+function hpEditDelete(room, sel, after) {
+  var items = sel.map(hpEditKind).filter(function (x) {
+    return x.kind !== "folder" || x.id.indexOf("u:") === 0;
+  });
+  if (!items.length) {
+    toast(_T("app_not_for_this"));
+    return;
+  }
+  confirmDlg(
+    _T("hm_delete") +
+      ": " +
+      items
+        .map(function (x) {
+          return x.name;
+        })
+        .join(", ") +
+      "?",
+    function () {
+      var job = Promise.resolve();
+      items.forEach(function (x) {
+        job = job.then(function () {
+          if (x.kind === "light" || x.kind === "switch") return hpCall("hue_plus", "remove_device", { device: x.name, confirm: true });
+          if (x.kind === "scene") return hpCall("hue_plus", "delete_scene", { scene: hueSceneUid(x.id), confirm: true });
+          hpSaveUserFolders(
+            room,
+            hpUserFolders(room).filter(function (f) {
+              return "u:" + f.id !== x.id;
+            })
+          );
+        });
+      });
+      job.then(
+        function () {
+          HM_READY = false;
+          hmReady().then(after, after);
+        },
+        function () {
+          toast(_T("hm_the_bridge_did_not_accept_this"));
+        }
+      );
+    }
+  );
+}
+
+/* MOVE TO: the chosen lights and switches go to another room (a device is in one room: the bridge takes it out of the one it was in). */
+function hpEditMove(room, sel) {
+  var devices = sel.map(hpEditKind).filter(function (x) {
+    return x.kind === "light" || x.kind === "switch";
+  });
+  if (!devices.length) {
+    toast(_T("app_not_for_this"));
+    return;
+  }
+  hmReady().then(function () {
+    var here = A(room).friendly_name,
+      rooms = (HM.rooms || []).filter(function (g) {
+        return g.name !== here;
+      });
+    if (!rooms.length) {
+      toast(_T("nothing_found"));
+      return;
+    }
+    hpActions(
+      rooms.map(function (g) {
+        return {
+          label: g.name,
+          fn: function () {
+            var members = (g.children || [])
+              .map(function (c) {
+                return c.id;
+              })
+              .concat(
+                devices.map(function (x) {
+                  return x.name;
+                })
+              );
+            hpCall("hue_plus", "update_room", { room: g.id, members: members }).then(
+              function () {
+                HM_READY = false;
+                HPAPP.editRoom = null;
+                hmReady().then(function () {
+                  showPopup("app-room:" + room, false);
+                });
+              },
+              function () {
+                toast(_T("hm_the_bridge_did_not_accept_this"));
+              }
+            );
+          },
+        };
+      })
+    );
+  }, function () {});
+}
 
 
   /* Registration with the dashboard. */

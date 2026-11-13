@@ -309,6 +309,8 @@ def entertainment_areas(snap: Snapshot) -> list[dict[str, Any]]:
                     "x": position.get("x"),
                     "y": position.get("y"),
                     "z": position.get("z"),
+                    # Every position the bridge holds for the light: one for a lamp, the ends (or more) of a strip or tube.
+                    "positions": [{axis: p.get(axis) for axis in "xyz"} for p in loc.get("positions") or []],
                 }
             )
         streamer = area.get("active_streamer")
@@ -416,6 +418,8 @@ def light_states(snap: Snapshot) -> list[dict[str, Any]]:
                 "brightness": (light.get("dimming") or {}).get("brightness"),
                 "xy": [round(xy["x"], 4), round(xy["y"], 4)] if "x" in xy and "y" in xy else None,
                 "mirek": temperature.get("mirek") if temperature.get("mirek_valid") else None,
+                # The light's icon type, which the app draws the light with and lets the person change.
+                "archetype": (light.get("metadata") or {}).get("archetype"),
             }
         )
     return out
