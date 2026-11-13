@@ -188,7 +188,9 @@ class HuePlusConfigFlow(_CredentialsMixin, AbstractOAuth2FlowHandler, domain=DOM
                     return self.async_abort(reason="use_hue_integration")
                 else:
                     await self.async_set_unique_id(bridge_id)
-                    self._abort_if_unique_id_configured(updates={CONF_HOST: host})
+                    # The entry reloads itself when its data changes (its update listener), so the flow does not reload it too: Home Assistant
+                    # 2026.11 reports a flow that does, and 2026.12 stops allowing it.
+                    self._abort_if_unique_id_configured(updates={CONF_HOST: host}, reload_on_update=False)
                     self._host, self._fingerprint = host, fingerprint.hex()
                     return await self.async_step_bridge_link()
         return self.async_show_form(step_id="bridge_direct", data_schema=HOST_SCHEMA, errors=errors)
