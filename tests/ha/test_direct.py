@@ -277,6 +277,18 @@ async def test_the_same_bridge_is_not_added_twice_and_its_address_is_updated(has
     assert entry.data[CONF_HOST] == "192.0.2.99"
 
 
+async def test_a_loaded_bridge_whose_address_changes_is_not_reloaded_by_the_flow(hass):
+    """The entry's own update listener reloads it; the flow must not reload it as well (Home Assistant 2026.12 refuses that)."""
+    entry = make_direct(hass)
+    entry.mock_state(hass, ConfigEntryState.LOADED)
+    discover, fingerprint = _bridge_calls()
+    with discover, fingerprint, patch.object(hass.config_entries, "async_schedule_reload") as reload:
+        result = await _start_direct(hass, host="192.0.2.98")
+    assert result["type"] is FlowResultType.ABORT and result["reason"] == "already_configured"
+    assert entry.data[CONF_HOST] == "192.0.2.98"
+    reload.assert_not_called()
+
+
 # ---- reconfigure, re-authentication, removal ----
 
 
