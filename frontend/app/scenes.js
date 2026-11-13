@@ -313,6 +313,16 @@ function hpFolderCard(folder, room, from) {
   }).forEach(function (sid) {
     grid.appendChild(hpSceneItem(sid, room, close));
   });
+  /* Two rows that scroll sideways, filled as the app fills them: the first half of the scenes along the top row, the rest along the bottom. */
+  function rows() {
+    var items = grid.querySelectorAll(".sitem"),
+      half = Math.ceil(items.length / 2);
+    Array.prototype.forEach.call(items, function (it, i) {
+      it.style.gridRow = i < half ? "1" : "2";
+      it.style.gridColumn = String((i < half ? i : i - half) + 1);
+    });
+  }
+  rows();
   hpSortable(
     grid,
     ".sitem",
@@ -322,6 +332,7 @@ function hpFolderCard(folder, room, from) {
     function (ids) {
       hpOrderSet("scenes:" + room + ":" + folder.key, ids);
       folder.scenes = ids;
+      rows();
       card.refresh();
     },
     {
