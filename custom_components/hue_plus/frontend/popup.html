@@ -153,6 +153,16 @@ body.lg .wrap{zoom:1!important}
    that light's icon, not the number, and brightness, colour and effects act on that light alone). Only dragging the marker then takes that light out, and the others stay where they are.
    Home Control's own code (lights/) is not changed: this wraps its functions in this frame. */
   var HPM = {};
+  /* The lights in the order the panel gives them (the room page's row): the tiles follow it, whatever the wheel joins. */
+  var HPORDER = [];
+  function hpRank(n) {
+    var i = HPORDER.indexOf(n.key);
+    if (i < 0)
+      HPORDER.forEach(function (e, j) {
+        if (i < 0 && n.cmd && n.cmd.length && n.cmd[0] === e) i = j;
+      });
+    return i < 0 ? 1e6 : i;
+  }
   function hpPickable(S) {
     window.HPS = S;
     S.focus = null;
@@ -217,6 +227,17 @@ body.lg .wrap{zoom:1!important}
         return m;
       };
       window.lpMarker.hp = true;
+    }
+    if (window.lpTrayNodes && !window.lpTrayNodes.hp) {
+      var trayNodes = window.lpTrayNodes;
+      window.lpTrayNodes = function (S) {
+        return trayNodes(S)
+          .slice()
+          .sort(function (a, b) {
+            return hpRank(a) - hpRank(b);
+          });
+      };
+      window.lpTrayNodes.hp = true;
     }
     if (window.eaSelect && !window.eaSelect.hp) {
       var pickArea = window.eaSelect;
@@ -400,6 +421,7 @@ body.lg .wrap{zoom:1!important}
     panel: function (ids, name, focus, fromY, scrollX, icons) {
       if (!ready) return false;
       /* Each light is drawn with the icon the panel gives it (from the bridge's icon type), on its tile and in its marker. */
+      HPORDER = ids.slice();
       Object.keys(icons || {}).forEach(function (e) {
         LNAME[e] = [A(e).friendly_name || e, icons[e]];
       });
