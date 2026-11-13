@@ -4,6 +4,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+### Fixed
+- Importing a Hue scene (`import_hue_scene`, used by Home Control to import a Hue scene and to tell static scenes from live ones) failed for every scene with "is not a Hue scene": it looked for the core Hue integration's scene entities, which do not exist when Hue Plus runs on its own connection. Hue Plus's scenes are now read through Hue Plus's own entry.
+- Adding a bridge that is already set up with a new address no longer makes the flow reload the entry as well as the entry's own update listener (Home Assistant 2026.11 reports it; 2026.12 stops allowing it).
+
 ## [0.18.0] - 2026-11-14
 
 ### Added
