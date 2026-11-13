@@ -11430,7 +11430,38 @@ function hpLightsPage(body, key) {
  puts them back as they were. o = { name, lights, onSave(acts), after }; onSave answers true (or a promise of true) when it kept the scene. */
 var HPEDIT = null;
 
+/* Lights in the order of the room (or zone) they are all in, as its row shows them (the person's order, or by name); lights of no single room keep their order. */
+function hpInRoomOrder(lights) {
+  var h = H(),
+    room = Object.keys(h.states).filter(function (e) {
+      var t = A(e).hue_type;
+      if (e.indexOf("light.") !== 0 || !A(e).is_hue_group || (t !== "room" && t !== "zone")) return false;
+      var members = hpGroupLights(e);
+      return (
+        lights.length &&
+        lights.every(function (l) {
+          return members.indexOf(l) >= 0;
+        })
+      );
+    })
+    /* a room before a zone */
+    .sort(function (x, y) {
+      return (A(x).hue_type === "room" ? 0 : 1) - (A(y).hue_type === "room" ? 0 : 1);
+    })[0];
+  if (!room) return lights;
+  return hpLightsByName(room)
+    .filter(function (l) {
+      return lights.indexOf(l) >= 0;
+    })
+    .concat(
+      lights.filter(function (l) {
+        return hpGroupLights(room).indexOf(l) < 0;
+      })
+    );
+}
+
 function hpEditLights(o) {
+  o.lights = hpInRoomOrder(o.lights || []);
   HPEDIT = { o: o, snap: null };
   call("light", "turn_on", { entity_id: o.lights });
   showPopup("app-edit", true);
