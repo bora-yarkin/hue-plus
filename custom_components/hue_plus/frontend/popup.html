@@ -12,8 +12,8 @@ body.rise{opacity:1}
 /* As the Hue app moves it (read frame by frame from a screen recording): the wheel drops in from the top, the mode buttons and the brightness button drop further, over the same short time, and the tiles of the lights slide down from where the room page had them. */
 body.rise .lp-view{animation:lpwheel .42s cubic-bezier(.2,.8,.2,1) backwards}
 body.rise .lp-bar{animation:lpchips .42s cubic-bezier(.2,.8,.2,1) backwards}
-@keyframes lpwheel{from{transform:translateY(-36vh)}to{transform:none}}
-@keyframes lpchips{from{transform:translateY(-55vh)}to{transform:none}}
+@keyframes lpwheel{from{transform:translateY(-68vh)}to{transform:none}}
+@keyframes lpchips{from{transform:translateY(-58vh);opacity:0}to{transform:none;opacity:1}}
 /* Colour, white and effects follow each other by fading, not by sliding across the screen */
 .lp-track{transition:none!important}
 .lp-pane:not(.off){animation:lpfade .3s ease-out}
@@ -232,11 +232,12 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
         ease = "transform .42s cubic-bezier(.8,0,.8,.2)";
       shutSheets();
       document.body.classList.remove("rise");
-      [[view, "-36vh"], [bar, "-55vh"]].forEach(function (p) {
+      [[view, "-68vh"], [bar, "-58vh"]].forEach(function (p) {
         if (!p[0]) return;
         p[0].style.animation = "none";
-        p[0].style.transition = ease;
+        p[0].style.transition = ease + (p[0] === bar ? ",opacity .42s cubic-bezier(.8,0,.8,.2)" : "");
         p[0].style.transform = "translateY(" + p[1] + ")";
+        if (p[0] === bar) p[0].style.opacity = "0";
       });
       if (tray && typeof toY === "number") {
         tray.style.transition = ease;

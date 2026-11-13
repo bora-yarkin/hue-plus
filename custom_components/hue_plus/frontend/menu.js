@@ -1352,6 +1352,11 @@ function hmActions(buttons) {
 }
 
 /* An information box. */
+/* A note that something was not tried on a real bridge: the Hue app's clone leaves it out. */
+function hmExperimental(key) {
+  return HC.hueApp ? document.createComment("") : hmCallout(_T(key));
+}
+
 function hmCallout(text) {
   var n = mk("div", "hm-note", "<span class='hm-ni'>" + svg("info") + "</span><span class='hm-nt'></span>");
   n.querySelector(".hm-nt").textContent = text;
@@ -1850,7 +1855,7 @@ function hmLight(b, id) {
     b.appendChild(hmLabel(_T("hm_general")));
     b.appendChild(hmGroup(general));
   }
-  if (a().hue_function || a().hue_gradient_order) b.appendChild(hmCallout(_T("experimental_not_yet_tried_on_a_real_bridge")));
+  if (a().hue_function || a().hue_gradient_order) b.appendChild(hmExperimental("experimental_not_yet_tried_on_a_real_bridge"));
   var info = [];
   if (a().hue_min_brightness !== undefined)
     info.push(
@@ -1885,25 +1890,27 @@ function hmLight(b, id) {
     b.appendChild(hmLabel(_T("hm_device_info")));
     b.appendChild(hmGroup(info));
   }
-  b.appendChild(hmLabel(_T("hm_timed_effects")));
-  b.appendChild(hmChips([5, 15, 30, 60], function () { return minutes; }, function (v) { minutes = v; }, function (v) { return v + " " + _T("hm_min"); }));
-  b.appendChild(
-    hmGroup(
-      [
-        ["sunrise", "bright"],
-        ["sunset", "moon"],
-        ["no_effect", "stop"],
-      ].map(function (x) {
-        return hmRow({
-          icon: x[1],
-          title: _T("hp_" + x[0]),
-          tap: function () {
-            call("hue_plus", "timed_effect", { light: hue, effect: x[0], duration: minutes * 60 });
-          },
-        });
-      })
-    )
-  );
+  if (!HC.hueApp) {
+    b.appendChild(hmLabel(_T("hm_timed_effects")));
+    b.appendChild(hmChips([5, 15, 30, 60], function () { return minutes; }, function (v) { minutes = v; }, function (v) { return v + " " + _T("hm_min"); }));
+    b.appendChild(
+      hmGroup(
+        [
+          ["sunrise", "bright"],
+          ["sunset", "moon"],
+          ["no_effect", "stop"],
+        ].map(function (x) {
+          return hmRow({
+            icon: x[1],
+            title: _T("hp_" + x[0]),
+            tap: function () {
+              call("hue_plus", "timed_effect", { light: hue, effect: x[0], duration: minutes * 60 });
+            },
+          });
+        })
+      )
+    );
+  }
   b.appendChild(
     hmActions([
       X.identify
@@ -2412,7 +2419,7 @@ function hmArea(b, id) {
         }),
       ])
     );
-    box.appendChild(hmCallout(_T("experimental_only_the_last_state_has_been_seen_on_a_real_bridge")));
+    box.appendChild(hmExperimental("experimental_only_the_last_state_has_been_seen_on_a_real_bridge"));
     box.appendChild(
       hmActions([
         hmButton(_T("hm_delete"), "danger", function () {
@@ -2548,7 +2555,7 @@ function hmPerf(b, id) {
         )
       )
     );
-    box.appendChild(hmCallout(_T("experimental_not_yet_tried_on_a_real_bridge")));
+    box.appendChild(hmExperimental("experimental_not_yet_tried_on_a_real_bridge"));
   });
 }
 
@@ -2767,7 +2774,7 @@ function hmButtonPage(b, id) {
     );
     box.appendChild(hmLabel(_T("hm_behavior")));
     box.appendChild(hmGroup([hmRow({ title: _T("hm_selected_lights"), val: t.name || _T("hm_the_whole_home") })]));
-    box.appendChild(hmCallout(_T("hm_experimental_buttons")));
+    box.appendChild(hmExperimental("hm_experimental_buttons"));
   });
 }
 

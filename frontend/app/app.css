@@ -511,7 +511,8 @@ body{position:relative;width:min(100vw,calc(100vh * 9 / 16));width:min(100vw,cal
 .pg.lightout .lbar{opacity:0;transition:opacity .35s}
 
 /* One phone at any width: the root font size follows the panel's width (16px at the Hue app's 393 points), and the build writes every px of this sheet as a rem. */
-html{font-size:calc(min(100vw,100vh * 9 / 16) / 393 * 16);font-size:calc(min(100vw,100dvh * 9 / 16) / 393 * 16)}
+html{width:100%;height:100%}
+body{width:100%;height:100%}
 /* The tab bar stays, as in the app: a page that slides in sits under it; a popup sheet, a wizard and the colour screen cover it. */
 .pg:not(.modalpg):not(.wizpg):not(.lightpg){bottom:calc(var(--tabs) + var(--sab))}
 .pg:not(.modalpg):not(.wizpg):not(.lightpg) .pbody,.pg.roompg .pbody{padding-bottom:24px}
@@ -544,3 +545,16 @@ html{font-size:calc(min(100vw,100vh * 9 / 16) / 393 * 16);font-size:calc(min(100
 /* Closing the colour screen is its opening backwards: the dark background stays until the wheel has nearly left, and the room's content comes back last (the opening's fades, mirrored in time). */
 .pg.leaving::after{transition:opacity .42s cubic-bezier(.75,0,.75,.9)}
 .pg.leaving .pbody,.pg.leaving .pbar{transition:opacity .3s .12s cubic-bezier(.75,0,.75,.9)}
+
+/* The folder card, as the app has it: under the first row of folders, nearly as wide as the screen, its scenes in two rows that scroll sideways (three and a bit across). */
+.fwrap{display:block}
+.fcard{position:absolute;left:14px;width:calc(100% - 44px);max-height:none;overflow:visible;padding:12px 14px 14px;border-radius:14px}
+.fcard .ft{font-size:12px;margin:4px 2px 12px}
+.fcard .fedit{right:10px;top:8px;width:26px;height:26px}
+.fg{display:grid;grid-template-rows:repeat(2,102px);grid-auto-flow:column;grid-auto-columns:93px;gap:11px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;margin:0 -14px;padding:0 14px 2px;scrollbar-width:none;overscroll-behavior-x:contain}
+.fg::-webkit-scrollbar{display:none}
+.fg .sitem{width:93px;height:102px}
+.fg .sitem .dc{width:44px;height:44px}
+/* A page opened inside a popup goes back to the popup's page: it has the arrow, not the X. */
+.pg.modalpg.subpg .back{display:flex!important}
+.pg.modalpg.subpg .x{display:none!important}

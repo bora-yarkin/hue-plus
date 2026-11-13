@@ -799,6 +799,9 @@
     if (/^(hue-(wz|mw)-|app-(adddev2?|link2?|newarea)$|hue-newauto$|hue-add-scene$)/.test(String(key).split(":")[0])) root.classList.add("wizpg");
     var okb = root.querySelector(".ok"),
       modal = isModalKey(key);
+    /* A popup's page that was opened from another page of the popup goes back to it. */
+    var under = LAYERS.length > 1 && LAYERS[LAYERS.length - 1] === layer ? LAYERS[LAYERS.length - 2] : null;
+    root.classList.toggle("subpg", !!(modal && under && under.key && isModalKey(under.key)));
     if (modal) {
       root.classList.add("modalpg");
       okb.textContent = T("done");
@@ -1039,6 +1042,8 @@
     },
     /* What the pages read from the bridge is kept between popups (see hmSession). */
     keepsBridgeData: true,
+    /* This host is the Hue app's clone: the pages leave out what the app does not have (Hue Plus's timed effects, notes about what was tried). */
+    hueApp: true,
     ui: {
       attachSlide: attachSlide,
       briControl: briControl,

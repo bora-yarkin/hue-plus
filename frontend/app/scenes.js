@@ -270,7 +270,18 @@ function hpFolderCard(folder, room, from) {
   var OPEN = ".17s cubic-bezier(.3,0,.3,1)",
     SHUT = ".17s cubic-bezier(.7,0,.7,1)",
     pulse = null;
+  /* Where the app puts it: its top where the first row of folders ends. */
+  function place() {
+    var rows = from && from.closest ? from.closest(".frows") : null,
+      first = rows && rows.querySelector(".ftile");
+    if (!first) {
+      card.style.top = "30%";
+      return;
+    }
+    card.style.top = (first.getBoundingClientRect().bottom - document.body.getBoundingClientRect().top) / hpZoom() + "px";
+  }
   function aim() {
+    place();
     card.style.transition = "none";
     card.style.transform = "none";
     card.style.opacity = "1";
