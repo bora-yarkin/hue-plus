@@ -884,9 +884,10 @@ var HOST_CSS = ":root{--bg:#1b1c20;--bg-warm:#2b2926;--bar:#14151a;--head:#23242
       var row = below.root.querySelector(".ltiles");
       below.root.classList.add("leaving");
       gone.root.classList.add("lightout");
-      HOST.onLeave(row ? row.getBoundingClientRect().top : undefined, function () {
+      HOST.onLeave(row ? row.getBoundingClientRect().top : undefined, function (reopened) {
         below.root.classList.remove("leaving");
-        if (HOST.onRender) HOST.onRender();
+        /* A light tapped while the screen was still leaving has the frame again: it is not taken away under it. */
+        if (!reopened && HOST.onRender) HOST.onRender();
       });
     } else if (HOST.onRender) HOST.onRender();
     if (HOST.onResume) HOST.onResume(below.key);
@@ -1039,6 +1040,8 @@ var HOST_CSS = ":root{--bg:#1b1c20;--bg-warm:#2b2926;--bar:#14151a;--head:#23242
     editing: function () {
       return false;
     },
+    /* What the pages read from the bridge is kept between popups (see hmSession). */
+    keepsBridgeData: true,
     ui: {
       attachSlide: attachSlide,
       briControl: briControl,
@@ -2371,23 +2374,26 @@ var HM_READY = false;
 var HM_READING = null;
 
 /* The one read. Every page that needs the data waits for the same answer. */
+function hmRead() {
+  HM_READING = hueplus.resources(HM_KINDS).then(
+    function (r) {
+      HM_KINDS.forEach(function (k) {
+        HM[k] = (r || {})[k];
+      });
+      HM_READY = true;
+      HM_READING = null;
+    },
+    function (e) {
+      HM_READING = null;
+      throw e;
+    }
+  );
+  return HM_READING;
+}
+
 function hmReady() {
   if (HM_READY) return Promise.resolve();
-  if (!HM_READING)
-    HM_READING = hueplus.resources(HM_KINDS).then(
-      function (r) {
-        HM_KINDS.forEach(function (k) {
-          HM[k] = (r || {})[k];
-        });
-        HM_READY = true;
-        HM_READING = null;
-      },
-      function (e) {
-        HM_READING = null;
-        throw e;
-      }
-    );
-  return HM_READING;
+  return HM_READING || hmRead();
 }
 
 /* A page that draws from HM by itself (its rows read it when they refresh) only needs the data to be there. */
@@ -2401,6 +2407,12 @@ var HM_SHEET = null;
 function hmSession() {
   if (HM_SHEET === currentSheet()) return;
   HM_SHEET = currentSheet();
+  /* A host that is all Hue (Hue Plus's own panel) keeps what it read, so a page is drawn at once; it is read again behind the page, which then shows what changed. */
+  if (HC.keepsBridgeData && HM_READY) {
+    hmdClear();
+    if (!HM_READING) hmRead().then(refresh, function () {});
+    return;
+  }
   HM = {};
   HM_READY = false;
   HM_READING = null;
@@ -8589,9 +8601,6 @@ function hpWatch() {
 }
 
 function hpStart() {
-  /* What the room pages need (their controls, the colours of their scenes) is read now, while Home is looked at. */
-  hmReady().then(function () {}, function () {});
-  hpLoadLightStates();
   HPAPI.ws({ type: "hue_plus/capabilities" }).then(
     function (r) {
       var b = ((r && r.bridges) || [])[0];
@@ -8643,6 +8652,9 @@ window.HuePlusApp = {
     HPAPP.main.appendChild(mk("div", "empty")).textContent = _T("loading");
     /* The colour panel takes a few seconds to start (it is Home Control's whole dashboard code), so it starts now, while Home is being read, and is ready when a light is tapped. */
     hpLightFrame(function () {});
+    /* Everything the pages need from the bridge (rooms, scenes and their colours, controls, what each light was last set to) is read now, before anything is tapped. */
+    hmReady().then(refresh, function () {});
+    hpLoadLightStates();
     /* The panel starts when the registries are in, or after a short wait; the lists fill in by themselves. */
     Promise.race([
       HPAPI.ready(),
@@ -10768,6 +10780,8 @@ function hpFrameShow(on) {
   HPLF.el.style.top = top + "px";
   HPLF.el.style.height = "calc(100% - " + top + "px)";
   HPLF.el.classList.toggle("show", !!on);
+  /* Counts the times the frame was put on a screen, so a screen that is leaving knows another has taken the frame. */
+  if (on) HPLF.shown = (HPLF.shown || 0) + 1;
 }
 
 /* Closing a colour screen: the frame animates out (its wheel goes up, its tiles go to the room page's row) before it is taken away. */
@@ -10776,8 +10790,11 @@ window.HueHost.onLeave = function (toY, done) {
     done();
     return;
   }
-  var top = parseFloat(HPLF.el.style.top) || 0;
-  HPLF.win.HuePopup.leave(typeof toY === "number" ? toY - top : undefined, done);
+  var top = parseFloat(HPLF.el.style.top) || 0,
+    shown = HPLF.shown;
+  HPLF.win.HuePopup.leave(typeof toY === "number" ? toY - top : undefined, function () {
+    done(HPLF.shown !== shown);
+  });
 };
 
 /* Every page that is drawn takes the frame away; a light screen puts it back. */
@@ -11089,17 +11106,19 @@ function hpSyColorCard(E) {
 
 /* The brightness slider rises out of its button: the same width, the button at its foot, the percentage above it. */
 function hpSyBrightness(E, button) {
+  /* The slider is placed inside the phone (the page's body), which on a wide screen is not the window. */
   var r = button.getBoundingClientRect(),
-    tall = Math.min(window.innerHeight * 0.45, 210);
+    phone = document.body.getBoundingClientRect(),
+    tall = Math.min(phone.height * 0.45, 210);
   hpSyPop(function (close) {
     var bar = mk("div", "sybri", "<span class='pc'></span><div class='fillb'></div><span class='ic'></span>"),
       fill = bar.querySelector(".fillb"),
       pc = bar.querySelector(".pc"),
       value = hsNumber(E.brightness) || 0;
     bar.querySelector(".ic").innerHTML = svg("bright");
-    bar.style.left = r.left + "px";
+    bar.style.left = r.left - phone.left + "px";
     bar.style.width = r.width + "px";
-    bar.style.bottom = window.innerHeight - r.bottom + "px";
+    bar.style.bottom = phone.bottom - r.bottom + "px";
     bar.style.height = tall + "px";
     function paint(v) {
       value = v;
@@ -11123,10 +11142,12 @@ function hpSyBrightness(E, button) {
       var up = function () {
         bar.removeEventListener("pointermove", move);
         bar.removeEventListener("pointerup", up);
+        bar.removeEventListener("pointercancel", up);
         call("number", "set_value", { entity_id: E.brightness, value: Math.max(1, value) });
       };
       bar.addEventListener("pointermove", move);
       bar.addEventListener("pointerup", up);
+      bar.addEventListener("pointercancel", up);
     });
     bar.addEventListener("away", close);
     return bar;
@@ -11560,7 +11581,7 @@ function hpUpdatesPage(b) {
     hmGroup(
       list.map(function (id) {
         return hmRow({
-          title: hpName(id).replace(/ firmware$/i, ""),
+          title: hpName(id).replace(/ (bridge )?firmware$/i, ""),
           sub: function () {
             return A(id).installed_version || "";
           },

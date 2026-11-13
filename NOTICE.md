@@ -10,3 +10,7 @@ the v1 API branches (`light.py`, `sensor.py`, `binary_sensor.py`) differ from th
 https://www.apache.org/licenses/LICENSE-2.0.
 
 To compare them with a newer Home Assistant, diff each file against `homeassistant/components/hue/` of that release.
+
+`custom_components/hue_plus/frontend/icon.js` holds the outline of the Hue logo, shown as the icon of the Hue panel in Home Assistant's
+sidebar. Philips Hue and its logo are trademarks of Signify; Hue Plus is not made or endorsed by Signify, and the logo only names the
+product the panel controls.

@@ -25,14 +25,17 @@ from .runtime import HuePlusConfigEntry
 PANEL_URL_PATH = "hue-plus"
 PANEL_ELEMENT = "hue-plus-panel"
 PANEL_TITLE = "Hue"
-PANEL_ICON = "mdi:lightbulb-group"
+# The Hue logo, from the icon set that icon.js gives Home Assistant's pages.
+PANEL_ICON = "hueplus:logo"
+ICON_SCRIPT = "icon.js"
 STATIC_URL = f"/{DOMAIN}_static"
 FRONTEND = Path(__file__).parent / "frontend"
 # The files of the panel: the loader Home Assistant opens, and the application it loads.
-FILES = ("panel.js", "app.js")
+FILES = ("panel.js", "app.js", ICON_SCRIPT)
 
 _LOGGER = logging.getLogger(__name__)
 _USERS = f"{DOMAIN}_dashboard_panel"
+_ICON_URL = f"{DOMAIN}_dashboard_icon"
 
 
 def _version() -> str:
@@ -53,6 +56,10 @@ async def async_enable(hass: HomeAssistant, entry: HuePlusConfigEntry) -> None:
             del hass.data[_USERS]
             return
         version = await hass.async_add_executor_job(_version)
+        # The sidebar is outside the panel's frame, so its icon is a script of Home Assistant's own pages (loaded when a page is next opened).
+        icon_url = f"{STATIC_URL}/{ICON_SCRIPT}?v={version}"
+        frontend.add_extra_js_url(hass, icon_url)
+        hass.data[_ICON_URL] = icon_url
         await panel_custom.async_register_panel(
             hass,
             frontend_url_path=PANEL_URL_PATH,
@@ -75,3 +82,7 @@ def async_disable(hass: HomeAssistant, entry: HuePlusConfigEntry) -> None:
     if not users and _USERS in hass.data:
         del hass.data[_USERS]
         frontend.async_remove_panel(hass, PANEL_URL_PATH)
+        icon_url = hass.data.pop(_ICON_URL, None)
+        # Unloading must not fail when Home Assistant's frontend has already gone (it is stopping).
+        if icon_url and frontend.DATA_EXTRA_MODULE_URL in hass.data:
+            frontend.remove_extra_js_url(hass, icon_url)

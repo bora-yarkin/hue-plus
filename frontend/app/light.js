@@ -63,6 +63,8 @@ function hpFrameShow(on) {
   HPLF.el.style.top = top + "px";
   HPLF.el.style.height = "calc(100% - " + top + "px)";
   HPLF.el.classList.toggle("show", !!on);
+  /* Counts the times the frame was put on a screen, so a screen that is leaving knows another has taken the frame. */
+  if (on) HPLF.shown = (HPLF.shown || 0) + 1;
 }
 
 /* Closing a colour screen: the frame animates out (its wheel goes up, its tiles go to the room page's row) before it is taken away. */
@@ -71,8 +73,11 @@ window.HueHost.onLeave = function (toY, done) {
     done();
     return;
   }
-  var top = parseFloat(HPLF.el.style.top) || 0;
-  HPLF.win.HuePopup.leave(typeof toY === "number" ? toY - top : undefined, done);
+  var top = parseFloat(HPLF.el.style.top) || 0,
+    shown = HPLF.shown;
+  HPLF.win.HuePopup.leave(typeof toY === "number" ? toY - top : undefined, function () {
+    done(HPLF.shown !== shown);
+  });
 };
 
 /* Every page that is drawn takes the frame away; a light screen puts it back. */

@@ -10,23 +10,26 @@ var HM_READY = false;
 var HM_READING = null;
 
 /* The one read. Every page that needs the data waits for the same answer. */
+function hmRead() {
+  HM_READING = hueplus.resources(HM_KINDS).then(
+    function (r) {
+      HM_KINDS.forEach(function (k) {
+        HM[k] = (r || {})[k];
+      });
+      HM_READY = true;
+      HM_READING = null;
+    },
+    function (e) {
+      HM_READING = null;
+      throw e;
+    }
+  );
+  return HM_READING;
+}
+
 function hmReady() {
   if (HM_READY) return Promise.resolve();
-  if (!HM_READING)
-    HM_READING = hueplus.resources(HM_KINDS).then(
-      function (r) {
-        HM_KINDS.forEach(function (k) {
-          HM[k] = (r || {})[k];
-        });
-        HM_READY = true;
-        HM_READING = null;
-      },
-      function (e) {
-        HM_READING = null;
-        throw e;
-      }
-    );
-  return HM_READING;
+  return HM_READING || hmRead();
 }
 
 /* A page that draws from HM by itself (its rows read it when they refresh) only needs the data to be there. */
@@ -40,6 +43,12 @@ var HM_SHEET = null;
 function hmSession() {
   if (HM_SHEET === currentSheet()) return;
   HM_SHEET = currentSheet();
+  /* A host that is all Hue (Hue Plus's own panel) keeps what it read, so a page is drawn at once; it is read again behind the page, which then shows what changed. */
+  if (HC.keepsBridgeData && HM_READY) {
+    hmdClear();
+    if (!HM_READING) hmRead().then(refresh, function () {});
+    return;
+  }
   HM = {};
   HM_READY = false;
   HM_READING = null;

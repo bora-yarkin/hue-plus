@@ -178,17 +178,19 @@ function hpSyColorCard(E) {
 
 /* The brightness slider rises out of its button: the same width, the button at its foot, the percentage above it. */
 function hpSyBrightness(E, button) {
+  /* The slider is placed inside the phone (the page's body), which on a wide screen is not the window. */
   var r = button.getBoundingClientRect(),
-    tall = Math.min(window.innerHeight * 0.45, 210);
+    phone = document.body.getBoundingClientRect(),
+    tall = Math.min(phone.height * 0.45, 210);
   hpSyPop(function (close) {
     var bar = mk("div", "sybri", "<span class='pc'></span><div class='fillb'></div><span class='ic'></span>"),
       fill = bar.querySelector(".fillb"),
       pc = bar.querySelector(".pc"),
       value = hsNumber(E.brightness) || 0;
     bar.querySelector(".ic").innerHTML = svg("bright");
-    bar.style.left = r.left + "px";
+    bar.style.left = r.left - phone.left + "px";
     bar.style.width = r.width + "px";
-    bar.style.bottom = window.innerHeight - r.bottom + "px";
+    bar.style.bottom = phone.bottom - r.bottom + "px";
     bar.style.height = tall + "px";
     function paint(v) {
       value = v;
@@ -212,10 +214,12 @@ function hpSyBrightness(E, button) {
       var up = function () {
         bar.removeEventListener("pointermove", move);
         bar.removeEventListener("pointerup", up);
+        bar.removeEventListener("pointercancel", up);
         call("number", "set_value", { entity_id: E.brightness, value: Math.max(1, value) });
       };
       bar.addEventListener("pointermove", move);
       bar.addEventListener("pointerup", up);
+      bar.addEventListener("pointercancel", up);
     });
     bar.addEventListener("away", close);
     return bar;

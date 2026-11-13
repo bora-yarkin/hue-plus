@@ -227,7 +227,7 @@ function hpUpdatesPage(b) {
     hmGroup(
       list.map(function (id) {
         return hmRow({
-          title: hpName(id).replace(/ firmware$/i, ""),
+          title: hpName(id).replace(/ (bridge )?firmware$/i, ""),
           sub: function () {
             return A(id).installed_version || "";
           },

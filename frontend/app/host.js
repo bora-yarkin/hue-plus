@@ -881,9 +881,10 @@
       var row = below.root.querySelector(".ltiles");
       below.root.classList.add("leaving");
       gone.root.classList.add("lightout");
-      HOST.onLeave(row ? row.getBoundingClientRect().top : undefined, function () {
+      HOST.onLeave(row ? row.getBoundingClientRect().top : undefined, function (reopened) {
         below.root.classList.remove("leaving");
-        if (HOST.onRender) HOST.onRender();
+        /* A light tapped while the screen was still leaving has the frame again: it is not taken away under it. */
+        if (!reopened && HOST.onRender) HOST.onRender();
       });
     } else if (HOST.onRender) HOST.onRender();
     if (HOST.onResume) HOST.onResume(below.key);
@@ -1036,6 +1037,8 @@
     editing: function () {
       return false;
     },
+    /* What the pages read from the bridge is kept between popups (see hmSession). */
+    keepsBridgeData: true,
     ui: {
       attachSlide: attachSlide,
       briControl: briControl,

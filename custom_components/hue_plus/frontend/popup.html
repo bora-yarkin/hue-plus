@@ -94,7 +94,15 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
   var ready = false;
   var HPLAST = {};
 
+  /* A sheet opened over the screen (a light's Style) belongs to that screen: it goes when the screen does, and is not found open over the next one. */
+  function shutSheets() {
+    try {
+      if (typeof SHEET !== "undefined" && SHEET) closeSheet();
+    } catch (e) {}
+  }
+
   function body() {
+    shutSheets();
     var b = document.getElementById("body");
     b.innerHTML = "";
     return b;
@@ -216,6 +224,7 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
         tray = document.querySelector(".lp-tray"),
         /* the opening's curve, mirrored: cubic-bezier(.2,.8,.2,1) run backwards is (.8,0,.8,.2) */
         ease = "transform .42s cubic-bezier(.8,0,.8,.2)";
+      shutSheets();
       document.body.classList.remove("rise");
       [[view, "-36vh"], [bar, "-55vh"]].forEach(function (p) {
         if (!p[0]) return;

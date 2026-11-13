@@ -19,8 +19,10 @@ def panel():
         patch("custom_components.hue_plus.dashboard.async_setup_component", AsyncMock(return_value=True)) as setup,
         patch("custom_components.hue_plus.dashboard.panel_custom.async_register_panel", AsyncMock()) as register,
         patch("custom_components.hue_plus.dashboard.frontend.async_remove_panel") as remove,
+        patch("custom_components.hue_plus.dashboard.frontend.add_extra_js_url") as icon,
+        patch("custom_components.hue_plus.dashboard.frontend.remove_extra_js_url") as icon_gone,
     ):
-        yield type("Panel", (), {"setup": setup, "register": register, "remove": remove})
+        yield type("Panel", (), {"setup": setup, "register": register, "remove": remove, "icon": icon, "icon_gone": icon_gone})
 
 
 def test_the_module_is_offered_but_is_not_on_by_default():
@@ -42,10 +44,14 @@ async def test_the_module_registers_an_administrators_only_panel_of_its_own(make
     assert kwargs["require_admin"] is True
     assert kwargs["embed_iframe"] is True
     assert kwargs["module_url"].startswith("/hue_plus_static/panel.js?v=")
+    # The sidebar shows the Hue logo, from the icon set Hue Plus adds to Home Assistant's pages.
+    assert kwargs["sidebar_icon"] == "hueplus:logo"
+    assert panel.icon.call_args.args[1].startswith("/hue_plus_static/icon.js?v=")
 
 
 async def test_the_panel_is_registered_once_and_stays_until_the_last_bridge_stops(hass, panel):
     first, second = SimpleNamespace(entry_id="one"), SimpleNamespace(entry_id="two")
+    hass.data[dashboard.frontend.DATA_EXTRA_MODULE_URL] = object()  # Home Assistant's frontend is running
     await dashboard.async_enable(hass, first)
     await dashboard.async_enable(hass, second)
     panel.register.assert_awaited_once()
@@ -54,6 +60,7 @@ async def test_the_panel_is_registered_once_and_stays_until_the_last_bridge_stop
     panel.remove.assert_not_called()
     dashboard.async_disable(hass, second)
     panel.remove.assert_called_once_with(hass, dashboard.PANEL_URL_PATH)
+    panel.icon_gone.assert_called_once_with(hass, panel.icon.call_args.args[1])
 
 
 async def test_the_address_of_the_panel_changes_with_its_files(hass, panel):
