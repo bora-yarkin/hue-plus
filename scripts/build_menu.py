@@ -98,7 +98,10 @@ def build_lights() -> str:
     """The files of Home Control's dashboard that the light frame runs (the list FILES in popup.html), in one answer: the frame asks for this instead of
     some sixty files one after another, which took many seconds through a proxy. Each file is still run as a script of its own, so nothing about it changes."""
     listed = json.loads(re.search(r"var FILES = (\[.*?\]);", POPUP.read_text(encoding="utf-8"), flags=re.S).group(1))
-    return json.dumps([[name, (LIGHTS / name).read_text(encoding="utf-8")] for name in listed], separators=(",", ":"), ensure_ascii=False) + "\n"
+    return (
+        json.dumps([[name, (LIGHTS / name).read_text(encoding="utf-8")] for name in listed], separators=(",", ":"), ensure_ascii=False)
+        + "\n"
+    )
 
 
 def build_effects() -> str:
