@@ -829,6 +829,23 @@ async def configure_button(api, snap, data):
     await api.put("behavior_instance", instance["id"], {"configuration": configuration})
 
 
+@action("set_button_lights")
+async def set_button_lights(api, snap, data):
+    """Sets the room or zone one button of an accessory acts on (the Hue app's "Selected lights"). Not tried on a real switch."""
+    accessory = resolve(models.accessories(snap), data["accessory"], "accessory")
+    number = int(data["button"])
+    button = next((b for b in accessory["buttons"] if b["number"] == number), None)
+    if button is None:
+        raise ValueError(f"{accessory['name']} has buttons {', '.join(str(b['number']) for b in accessory['buttons'])}")
+    if accessory["automation_id"] is None:
+        raise ValueError(f"{accessory['name']} has no automation yet: set it up in the Hue app first")
+    group_type = data.get("group_type", "room")
+    group = _group(snap, group_type, data["group"])
+    instance = next(a for a in snap.behavior_instance if a["id"] == accessory["automation_id"])
+    configuration = payloads.button_where(instance["configuration"], button["id"], group["id"], group_type)
+    await api.put("behavior_instance", instance["id"], {"configuration": configuration})
+
+
 @action("create_daily_smart_scene", response=True)
 async def create_daily_smart_scene(api, snap, data):
     """A smart scene that changes through the day: ``slots`` is a list of {time, scene}, the same on the chosen days."""

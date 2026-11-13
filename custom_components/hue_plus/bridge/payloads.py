@@ -723,6 +723,16 @@ def button_configuration(configuration: dict[str, Any], button_id: str, press: s
     return updated
 
 
+def button_where(configuration: dict[str, Any], button_id: str, group_id: str, group_type: str) -> dict[str, Any]:
+    """The automation's configuration with the room or zone one button acts on changed (the Hue app's "Selected lights") and
+    everything else as it was. What the presses do is kept; a scene of another room stays that scene."""
+    buttons = configuration.get("buttons") or {}
+    if button_id not in buttons:
+        raise ValueError("This button has no action set up yet: set it up in the Hue app first")
+    where = [{"group": {"rid": group_id, "rtype": group_type}}]
+    return {**configuration, "buttons": {**buttons, button_id: {**buttons[button_id], "where": where}}}
+
+
 # ---- smart scenes that change through the day ----
 
 

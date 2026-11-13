@@ -652,6 +652,8 @@ var PLUGIN_STRINGS = {
   "app_room": "Room",
   "app_button_controls": "Button controls…",
   "app_selected_lights": "Selected lights",
+  "app_rooms": "Rooms",
+  "app_matter_controller": "Matter controller",
   "app_entire_room": "Entire Room",
   "app_btn_onoff": "On/Off button",
   "app_btn_brighten": "Brighten button",

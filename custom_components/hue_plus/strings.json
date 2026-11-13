@@ -1236,6 +1236,28 @@
         }
       }
     },
+    "set_button_lights": {
+      "name": "Set button lights",
+      "description": "Sets the room or zone one button of a dimmer, smart button or tap switch acts on (the Hue app's Selected lights). What its presses do stays as it is. Not tried on a real switch.",
+      "fields": {
+        "accessory": {
+          "name": "Accessory",
+          "description": "The accessory (id or name)."
+        },
+        "button": {
+          "name": "Button",
+          "description": "The button's number on the accessory."
+        },
+        "group": {
+          "name": "Group",
+          "description": "The room or zone (id or name)."
+        },
+        "group_type": {
+          "name": "Group type",
+          "description": "Whether it is a room or a zone."
+        }
+      }
+    },
     "configure_button": {
       "name": "Configure button",
       "description": "Sets what one press of one button of a dimmer, smart button or tap switch does. The button must already have an action set up in the Hue app.",

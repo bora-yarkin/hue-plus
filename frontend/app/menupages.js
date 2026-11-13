@@ -273,7 +273,7 @@ function hpSmartHomePage(b) {
         f.map(function (x) {
           return hmRow({
             icon: "home",
-            title: x.label || x.vendor || x.id,
+            title: x.label || x.vendor || _T("app_matter_controller"),
             sub: [x.vendor, x.status].filter(Boolean).join(" · "),
             tap: function () {
               confirmDlg(_T("disconnect_this_matter_app_from_the_bridge"), function () {

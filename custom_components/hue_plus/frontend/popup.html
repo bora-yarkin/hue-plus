@@ -48,6 +48,8 @@ body.areamode .ae-card.picked{outline:2.5px solid #fff;outline-offset:-2px}
 body.areamode .ae-card svg{width:24px;height:24px}
 body.areamode .ae-cn{font-size:12px;font-weight:500}
 .lp-tray{padding-bottom:2px}
+/* never Home Control's large display */
+body.lg .wrap{zoom:1!important}
 </style>
 </head>
 <body>
@@ -149,6 +151,10 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
           if (root.kids) {
             S.ex[root.key] = true;
             S.joined.length = 0;
+            /* The tiles are in the order of the room page's row (by name), so each slides to its own place. */
+            root.kids.sort(function (a, b) {
+              return String(a.name || "").localeCompare(String(b.name || ""));
+            });
             var groups = [];
             root.kids.forEach(function (k) {
               var look = lpNodeLook(k),
@@ -317,6 +323,13 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
               });
           },
         };
+        /* What Home Control keeps for this browser (its large display, its theme, what it last showed) is Home Control's: the Hue panel shares its address, so it would read it, and must not. */
+        window.deviceGet = function (key, fallback) {
+          return fallback;
+        };
+        window.deviceSet = function () {};
+        LG = false;
+        applyLG();
         window.lightScenesRow = function () {};
         var lookOn = window.lpLook;
         window.lpLook = function (e) {

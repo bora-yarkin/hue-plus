@@ -32,6 +32,9 @@ function hpLightFrame(then) {
   f.src = new URL("popup.html", HP_BASE).href + (HP_VERSION ? "?v=" + encodeURIComponent(HP_VERSION) : "");
   document.body.appendChild(f);
   HPLF.el = f;
+  /* The frame has its size from the start and is hidden by visibility, never by display: Safari, with the page zoomed, draws a frame that was made without a box with the zoom applied
+     twice (its content larger than its box). */
+  hpFrameShow(false);
   var wait = setInterval(function () {
     var w = f.contentWindow;
     if (!w || !w.HuePopup) return;

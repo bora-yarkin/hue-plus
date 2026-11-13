@@ -373,6 +373,16 @@ SPEC: dict[str, dict[str, Any]] = {
             },
         },
     },
+    "set_button_lights": {
+        "description": "Sets the room or zone one button of a dimmer, smart button or tap switch acts on (the Hue app's Selected lights). "
+        "What its presses do stays as it is. Not tried on a real switch.",
+        "fields": {
+            "accessory": f("text", "The accessory (id or name).", True, example="Hue dimmer switch 1"),
+            "button": f("int", "The button's number on the accessory.", True, min=1, max=8),
+            "group": f("text", "The room or zone (id or name).", True),
+            "group_type": f("select", "Whether it is a room or a zone.", options=["room", "zone"], default="room"),
+        },
+    },
     "configure_button": {
         "description": "Sets what one press of one button of a dimmer, smart button or tap switch does. The button must already have an action set up in the Hue app.",
         "fields": {
