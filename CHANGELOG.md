@@ -4,6 +4,25 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-11-14
+
+### Added
+- **Hue panel, closer to the app:**
+  - **Room edit mode** (the room's three dots, Edit): SELECT ALL per section, chosen tiles, REARRANGE (hold and drag the lights; the order is kept on the device and is the same in the room's row and on the colour screen, or back to names with one button), MOVE TO another room, EDIT, DELETE.
+  - **My scenes** in two rows that scroll sideways, filled along the top row first; a scene dragged out of a folder card stands on its own, and dropped on a folder goes back in. Folder cards open under the first row, as a two-row strip.
+  - **The colour screen**: its row of lights is the room page's row (same tiles, order and sideways position), so the row moves rather than being replaced. A light tapped while it shares a marker with others keeps the marker whole: the marker is picked for that light, its drop shows the light's icon, brightness, colour and effects act on that light, and only dragging takes it out. Closing follows the app frame by frame (about a quarter of a second; the wheel leaves past the top, the background gives way in the second half).
+  - **Light settings**: *Edit name and type* (the name and the bridge's icon type), Device info as the app lists it (device type, manufacturer, model, MAC address, hardware version, software); lights are drawn with the icon of their type.
+  - **Switch settings**: the Room row opens the room, Button controls and **Selected lights** (a room or zone, new service `set_button_lights`).
+  - **Light placement**: a strip or tube is drawn between its real end positions, with **Orientation setup** (lying flat or standing up, parallel or perpendicular, cord at left or right); saving writes every position.
+  - The Hue logo in the sidebar; another tab opens at once; pages inside a popup go back with an arrow.
+- `get_resources`: entertainment area lights list every `positions` entry; `lights` gives each light's `archetype`. `update_entertainment_area` takes `positions` per light.
+
+### Fixed
+- The panel is a full-height column whose lengths follow the browser's zoom (it no longer fills a wide window as a blown-up phone), and the light screen is drawn at the right size in a zoomed Safari.
+- Everything the panel needs from the bridge is read when it opens and kept between popups, so the colour wheel and the room's scenes and controls are there at once; the light screen's code comes in one request (it took many seconds through a proxy).
+- The Sync screen fits its height; its brightness slider opens inside the panel.
+- The colour screen no longer comes back empty when a light is tapped while it closes, and a sheet left open on it no longer reappears.
+
 ## [0.16.0] - 2026-11-13
 
 ### Added
