@@ -98,7 +98,10 @@ window.HueHost.onLeave = function (toY, done) {
     return;
   }
   var top = parseFloat(HPLF.el.style.top) || 0,
-    shown = HPLF.shown;
+    shown = HPLF.shown,
+    row = document.querySelector(".pg.leaving .ltiles");
+  /* The room page's row is where the colour screen's row was left, sideways: it is one row. */
+  if (row) row.scrollLeft = HPLF.win.HuePopup.trayScroll() * hpFrameScale() * hpZoom();
   HPLF.win.HuePopup.leave(typeof toY === "number" ? (toY / hpZoom() - top) / hpFrameScale() : undefined, function () {
     done(HPLF.shown !== shown);
   });
@@ -125,7 +128,7 @@ function hpLightScreen(body, ids, name, focus, from) {
     if (HPLIGHTS) win.HuePopup.seed(HPLIGHTS);
     hpFrameShow(true);
     var top = parseFloat(HPLF.el.style.top) || 0;
-    win.HuePopup.panel(ids, name, focus, typeof from === "number" ? (from / hpZoom() - top) / hpFrameScale() : undefined);
+    win.HuePopup.panel(ids, name, focus, typeof from === "number" ? (from / hpZoom() - top) / hpFrameScale() : undefined, typeof HPAPP.lightScroll === "number" ? HPAPP.lightScroll / hpZoom() / hpFrameScale() : undefined);
   });
 }
 

@@ -309,6 +309,8 @@ def entertainment_areas(snap: Snapshot) -> list[dict[str, Any]]:
                     "x": position.get("x"),
                     "y": position.get("y"),
                     "z": position.get("z"),
+                    # Every position the bridge holds for the light: one for a lamp, the ends (or more) of a strip or tube.
+                    "positions": [{axis: p.get(axis) for axis in "xyz"} for p in loc.get("positions") or []],
                 }
             )
         streamer = area.get("active_streamer")

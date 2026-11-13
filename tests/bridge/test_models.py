@@ -171,6 +171,7 @@ class ModelTests(unittest.TestCase):
                     "x": 0.5,
                     "y": -1,
                     "z": 0,
+                    "positions": [{"x": 0.5, "y": -1, "z": 0}],
                 }
             ],
         )

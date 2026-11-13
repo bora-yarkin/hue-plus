@@ -61,15 +61,21 @@ function hpZoom() {
   return styled ? document.body.getBoundingClientRect().width / styled || 1 : 1;
 }
 
-/* The panel is a phone: as high as its page and 9:16 wide, or as wide as the page when that is narrower. Its size and the root font size (16px when the phone is 393 wide, the width the Hue app's screens
+/* The panel is a phone. Its size and the root font size (16px when the phone is 393 wide, the width the Hue app's screens
  were measured at; every length of the style sheet is a rem) are set here from the page's computed size, which is right in a zoomed browser too; viewport units are not (Safari, in a frame). */
 function hpFit() {
   var page = getComputedStyle(document.documentElement),
     wide = parseFloat(page.width),
     high = parseFloat(page.height);
   if (!wide || !high) return;
-  var phone = Math.min(wide, (high * 9) / 16);
+  /* On a phone the panel is the page. On a larger page it is a phone of the Hue app's own size (393 by 852 CSS px at most), in the middle: it is not blown up to fill the window, so the
+     browser's zoom makes it larger or smaller as it does any page. */
+  var isPhone = wide <= 500,
+    phone = isPhone ? wide : 393,
+    tall = isPhone ? high : Math.min(high, 852);
   document.body.style.width = phone + "px";
+  document.body.style.height = tall + "px";
+  document.body.style.marginTop = Math.max(0, (high - tall) / 2) + "px";
   document.documentElement.style.fontSize = (phone / 393) * 16 + "px";
 }
 
@@ -89,7 +95,8 @@ function hpStart() {
     b.dataset.tab = t.id;
     b.querySelector("span").textContent = t.title;
     b.addEventListener("click", function () {
-      if (HPAPI.hasSheet()) HPAPI.closeSheet();
+      /* Another tab is shown at once, as in the app: the pages that were open are taken away, they do not slide back first. */
+      if (HPAPI.hasSheet()) HPAPI.closeSheet(true);
       hpShowTab(t.id);
     });
     HPAPP.nav.querySelector(".in").appendChild(b);

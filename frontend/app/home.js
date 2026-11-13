@@ -57,11 +57,15 @@ function hpGroupLights(id) {
 
 /* A room's lights in the order the app lists them: by name. */
 function hpLightsByName(id) {
-  return hpGroupLights(id)
+  var named = hpGroupLights(id)
     .slice()
     .sort(function (a, b) {
       return String(A(a).friendly_name || a).localeCompare(String(A(b).friendly_name || b));
     });
+  /* The person's own order (made in the room's edit mode, kept on this device as the app keeps it in the app) comes first; without one the lights are by name. */
+  return hpOrdered(named, "lights:" + id, function (x) {
+    return x;
+  });
 }
 
 function hpGroupIcon(id) {
@@ -333,9 +337,11 @@ function hpLightTile(lid, room) {
   t.querySelector(".ic").innerHTML = svg(hpLightIcon(lid));
   t.querySelector("b").textContent = name;
   t.setAttribute("aria-label", name);
+  t.dataset.lid = lid;
   t.querySelector(".dn").appendChild(hpLightToggle(lid, name));
   hpActive(t, function () {
     HPAPP.lightFrom = t.getBoundingClientRect().top;
+    HPAPP.lightScroll = t.parentNode ? t.parentNode.scrollLeft : 0;
     showPopup("app-lights:" + room + "~" + lid, true);
   });
   t.refresh = function () {
@@ -384,6 +390,8 @@ function hpControls(box, id) {
       var c = mk("div", "ctile", "<span class='ic'></span><div><b></b><i></i></div>");
       c.querySelector(".ic").innerHTML = svg("switch");
       c.querySelector("b").textContent = x.name;
+      c.dataset.acc = x.id;
+      c.dataset.name = x.name;
       c.querySelector("i").textContent = hpLastUsed(x.name) || cntS((x.buttons || []).length, _T("hm_button"), _T("hm_buttons"));
       hpActive(c, function () {
         showPopup("hue-switch:" + x.id, true);
@@ -428,6 +436,11 @@ function hpRoomPage(body, id) {
     return;
   }
   body.parentNode.classList.add("roompg");
+  if (HPAPP.editRoom === id && isAdmin()) {
+    hpRoomEditPage(body, id);
+    return;
+  }
+  HPAPP.editRoom = null;
   hpLoadLightStates();
   var name = A(id).friendly_name,
     zone = A(id).hue_type === "zone",
@@ -448,7 +461,9 @@ function hpRoomPage(body, id) {
           {
             label: _T(zone ? "app_edit_zone" : "app_edit_room"),
             fn: function () {
-              hpEditGroup(id);
+              /* The app's edit mode of the room: its tiles are chosen, then moved, edited or deleted. */
+              HPAPP.editRoom = id;
+              showPopup("app-room:" + id, false);
             },
           },
           {
@@ -477,6 +492,11 @@ function hpRoomPage(body, id) {
   hpFolderRows(page, id);
   if (!hpScenesOf(id).length) page.appendChild(mk("div", "empty")).textContent = _T("hw_no_scenes_here");
 
+  hpRoomSections(page, id);
+}
+
+/* The lights and the controls of a room, under their labels. */
+function hpRoomSections(page, id) {
   page.appendChild(mk("div", "lb")).textContent = _T("lights");
   var tiles = mk("div", "ltiles");
   hpLightsByName(id).forEach(function (lid) {

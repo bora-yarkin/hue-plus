@@ -259,7 +259,7 @@ SPEC: dict[str, dict[str, Any]] = {
             "area_type": f("select", "A new type.", options=["music", "screen", "monitor", "3dspace", "other"]),
             "lights": f(
                 "lights",
-                "The lights with their positions, as a list of items with light, x, y and z (and balance, the brightness balance, more than 0; "
+                "The lights with their positions, as a list of items with light, x, y and z (and balance, the brightness balance, more than 0; positions, every position of a strip or tube as a list of x, y and z; "
                 "it stays as it is when left out). A light that stays keeps its balance and the other positions of its segments.",
             ),
             "performance": f(

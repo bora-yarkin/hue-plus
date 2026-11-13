@@ -58,6 +58,7 @@ APP_INSIDE = (
     "light.js",
     "syncpage.js",
     "menupages.js",
+    "roomedit.js",
 )
 
 

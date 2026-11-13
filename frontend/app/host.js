@@ -916,7 +916,7 @@
     else closeSheet();
   }
 
-  function closeSheet() {
+  function closeSheet(now) {
     if (POPGUARD && POPGUARD(closeSheet)) return;
     POPGUARD = null;
     CHECK = null;
@@ -925,7 +925,11 @@
     LAYERS = [];
     activate(null);
     SHEET_LIST = [];
-    all.forEach(function (l, i) {
+    all.forEach(function (l) {
+      if (now === true) {
+        l.root.remove();
+        return;
+      }
       leaveStyle(l.root);
       l.root.classList.remove("in");
       setTimeout(function () {
@@ -1108,7 +1112,7 @@
       },
       open: function () {},
       clamp: function (v) {
-        return v;
+        return Math.max(-1, Math.min(1, v));
       },
       identifyOff: function () {},
       rebuild: function () {},

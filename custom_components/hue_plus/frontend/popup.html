@@ -48,6 +48,22 @@ body.areamode .ae-card.picked{outline:2.5px solid #fff;outline-offset:-2px}
 body.areamode .ae-card svg{width:24px;height:24px}
 body.areamode .ae-cn{font-size:12px;font-weight:500}
 .lp-tray{padding-bottom:2px}
+/* The row of lights is the room page's row, moved: the same tiles (size, gaps, look, the gold of a light that is on, the switch) at the same place sideways, so the row that slides here and the
+ row the room page shows are one to the eye. */
+.lp-tray{gap:11px;margin:0 -16px 0;padding:0 11px;scroll-padding:0 11px}
+.lp-tile{flex:0 0 93px;height:146px;border-radius:12px;padding:0 6px 51px;gap:8px;justify-content:center;background:#3a3b3e!important;color:#fff;overflow:hidden;box-shadow:none}
+.lp-tile::after{content:"";position:absolute;left:0;right:0;bottom:0;height:51px;background:rgba(0,0,0,.14);pointer-events:none}
+.lp-tile>svg{width:28px;height:28px;stroke-width:1.8}
+.lp-tn{flex:0 0 auto;font-size:12px;font-weight:500;display:block;white-space:nowrap;text-overflow:ellipsis}
+.lp-sw{position:absolute;left:50%;bottom:12px;margin-left:-23px;width:46px;height:27px;z-index:1;background:rgba(255,255,255,.2)}
+.lp-sw i{left:3px;top:3px;width:21px;height:21px;background:#fff}
+.lp-tile.on .lp-sw i{transform:translateX(19px)}
+.lp-tile.on,.lp-tile.on.lt{background:linear-gradient(180deg,#fbdb90,#d6ab5b)!important;color:#2a2116;text-shadow:none}
+.lp-tile.on .lp-sw,.lp-tile.on.lt .lp-sw{background:rgba(70,52,12,.35)}
+.lp-tile.on::after{background:rgba(70,52,12,.16)}
+.lp-tile .lp-tfx{display:none!important}
+.lp-tile.picked{box-shadow:inset 0 0 0 2.5px #fff}
+@supports (corner-shape:squircle){.lp-tile{border-radius:18px;corner-shape:squircle}}
 /* never Home Control's large display */
 body.lg .wrap{zoom:1!important}
 </style>
@@ -131,7 +147,7 @@ body.lg .wrap{zoom:1!important}
       return ready;
     },
     /* Draws the colour, white and effects panel of the lights of a room or a scene, with a tile for each. */
-    panel: function (ids, name, focus, fromY) {
+    panel: function (ids, name, focus, fromY, scrollX) {
       if (!ready) return false;
       document.body.classList.remove("areamode");
       var b = body();
@@ -151,9 +167,11 @@ body.lg .wrap{zoom:1!important}
           if (root.kids) {
             S.ex[root.key] = true;
             S.joined.length = 0;
-            /* The tiles are in the order of the room page's row (by name), so each slides to its own place. */
+            /* The tiles are in the order of the room page's row (the order the panel gives the lights in), so each slides to its own place. */
             root.kids.sort(function (a, b) {
-              return String(a.name || "").localeCompare(String(b.name || ""));
+              var x = ids.indexOf(a.key),
+                y = ids.indexOf(b.key);
+              return x >= 0 && y >= 0 ? x - y : String(a.name || "").localeCompare(String(b.name || ""));
             });
             var groups = [];
             root.kids.forEach(function (k) {
@@ -177,6 +195,7 @@ body.lg .wrap{zoom:1!important}
       window.refresh();
       /* The app opens this screen out of the room page: the row of lights slides down to the bottom while the wheel and its controls come in. */
       var tray = b.querySelector(".lp-tray");
+      if (tray && typeof scrollX === "number") tray.scrollLeft = scrollX;
       if (tray && typeof fromY === "number") {
         var shift = fromY - tray.getBoundingClientRect().top / zoom();
         tray.style.transition = "none";
@@ -251,6 +270,11 @@ body.lg .wrap{zoom:1!important}
       }
       document.body.style.opacity = "1";
       setTimeout(done, 420);
+    },
+    /* How far the row of lights is scrolled sideways, so the room page's row can be put at the same place. */
+    trayScroll: function () {
+      var tray = document.querySelector(".lp-tray");
+      return tray ? tray.scrollLeft : 0;
     },
     /* Takes the screen away before another is drawn, so what was there is not seen again. */
     hide: function () {

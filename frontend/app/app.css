@@ -558,3 +558,24 @@ body{width:100%;height:100%}
 /* A page opened inside a popup goes back to the popup's page: it has the arrow, not the X. */
 .pg.modalpg.subpg .back{display:flex!important}
 .pg.modalpg.subpg .x{display:none!important}
+
+/* A scene outside the folders: one large disc and its name. */
+.ftile.loose .dots{top:14px;padding:0}
+.ftile.loose .dots .disc{width:44px;height:44px}
+
+/* The room's edit mode */
+.rhead.edit .rr .ic svg{width:24px;height:24px}
+.rhead.edit .rr .nm{margin-left:10px}
+.rhead.edit .act{border:0;background:var(--tile);color:#fff;border-radius:16px;padding:8px 14px;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
+.rhead.edit .sl.off{height:8px;border-radius:4px;background:rgba(255,255,255,.12);margin-top:14px}
+.rhead.edit .sl.off:before{display:none}
+.lb.lbrow{display:flex;align-items:center;gap:8px;min-height:30px}
+.lb.lbrow>span{flex:1}
+.lb.lbrow .selall{border:1px solid #45464d;background:#1f2024;color:#fff;border-radius:15px;padding:7px 13px;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.lb.lbrow .sortb{width:28px;height:28px;background:#2d2e33}
+.rbody.editing .ftile,.rbody.editing .ltile,.rbody.editing .ctile{transition:box-shadow .15s,opacity .15s}
+.rbody.editing .sel{box-shadow:0 0 0 2.5px var(--acc)}
+.rbody.editing .tg{pointer-events:none}
+.editbar{position:absolute;left:0;right:0;bottom:calc(0px - var(--tabs) - var(--sab));height:calc(var(--tabs) + var(--sab));padding-bottom:var(--sab);z-index:6;display:flex;justify-content:space-around;align-items:center;background:linear-gradient(180deg,#17181c,#101115)}
+.editbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;color:#fff;font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
+.editbar button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}

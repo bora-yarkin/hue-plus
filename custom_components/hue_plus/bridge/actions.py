@@ -88,6 +88,9 @@ def _placements(snap: models.Snapshot, lights: list[dict[str, Any]]) -> list[pay
     for entry in lights:
         if not isinstance(entry, dict) or "light" not in entry:
             raise ValueError("Each light needs a light and a position, for example {light: Bed Light, x: 0, y: 1, z: 0}")
+        every = entry.get("positions")
+        if every is not None and not (isinstance(every, list) and every and all(isinstance(p, dict) for p in every)):
+            raise ValueError("positions is a list of {x, y, z}")
         out.append(
             (
                 _entertainment_service(snap, _light(snap, str(entry["light"]))),
@@ -95,6 +98,7 @@ def _placements(snap: models.Snapshot, lights: list[dict[str, Any]]) -> list[pay
                 float(entry.get("y", 0)),
                 float(entry.get("z", 0)),
                 float(entry["balance"]) if entry.get("balance") is not None else None,
+                [{axis: float(p.get(axis, 0)) for axis in "xyz"} for p in every] if every else None,
             )
         )
     return out

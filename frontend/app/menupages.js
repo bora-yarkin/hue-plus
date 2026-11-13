@@ -449,7 +449,9 @@ hmSaveArea = function (id, ch) {
     if (ch.name) data.name = ch.name;
     if (ch.lights)
       data.lights = ch.lights.map(function (l) {
-        return { light: l.light, x: l.x, y: l.y, z: l.z, balance: l.balance };
+        var item = { light: l.light, x: l.x, y: l.y, z: l.z, balance: l.balance };
+        if (l.positions) item.positions = l.positions;
+        return item;
       });
     job = hpCall("hue_plus", "update_entertainment_area", data);
   }
@@ -636,7 +638,9 @@ function hpPlacePage(b, id) {
             return { light: k.light, name: names[k.light] || String(k.light), x: k.x, y: k.y, z: k.z, balance: typeof k.balance === "number" ? k.balance : 1 };
           });
           (d.lights || []).forEach(function (l) {
-            lights.push({ light: hpHueId(l.id), name: hpName(l.id), x: l.x, y: hpFlip(l.y), z: l.z, balance: typeof l.balance === "number" ? l.balance : 1 });
+            var every = hpBarPositions(l),
+              first = every ? every[0] : { x: l.x, y: hpFlip(l.y), z: l.z };
+            lights.push({ light: hpHueId(l.id), name: hpName(l.id), x: first.x, y: first.y, z: first.z, positions: every || undefined, balance: typeof l.balance === "number" ? l.balance : 1 });
           });
           if (lights.length) hpStageLights(x, lights);
         }

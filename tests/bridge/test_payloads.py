@@ -73,6 +73,13 @@ class PayloadTests(unittest.TestCase):
                 bad()
         self.assertEqual(p.entertainment_action("stop"), {"action": "stop"})
 
+    def test_every_position_of_a_strip_can_be_given_and_is_written_as_it_is(self):
+        ends = [{"x": -0.5, "y": 0.0, "z": 0.2}, {"x": 0.5, "y": 0.4, "z": 0.2}]
+        body = p.entertainment_put(None, None, [("e1", -0.5, 0.0, 0.2, None, ends)], [])
+        self.assertEqual(body["locations"]["service_locations"][0]["positions"], ends)
+        with self.assertRaises(ValueError):
+            p.entertainment_put(None, None, [("e1", 0.0, 0.0, 0.0, None, [{"x": 2.0, "y": 0.0, "z": 0.0}])], [])
+
     def test_moving_a_light_keeps_its_brightness_balance_and_the_other_positions_of_its_segments(self):
         existing = [
             {
