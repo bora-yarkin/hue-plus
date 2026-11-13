@@ -30,8 +30,8 @@ PANEL_ICON = "hueplus:logo"
 ICON_SCRIPT = "icon.js"
 STATIC_URL = f"/{DOMAIN}_static"
 FRONTEND = Path(__file__).parent / "frontend"
-# The files of the panel: the loader Home Assistant opens, and the application it loads.
-FILES = ("panel.js", "app.js", ICON_SCRIPT)
+# The files of the panel: the loader Home Assistant opens, the application it loads, the sidebar icon and what the light frame runs.
+FILES = ("panel.js", "app.js", ICON_SCRIPT, "popup.html", "lights/bundle.json", "effects.json")
 
 _LOGGER = logging.getLogger(__name__)
 _USERS = f"{DOMAIN}_dashboard_panel"

@@ -541,3 +541,6 @@ html{font-size:calc(min(100vw,100vh * 9 / 16) / 393 * 16);font-size:calc(min(100
 .btile{width:101px;height:106px}
 /* The colour screen has no tab bar: the background that fades in over the room page covers the bar too. */
 .pg:not(.modalpg):not(.wizpg):not(.lightpg)::after{bottom:calc(0px - var(--tabs) - var(--sab))}
+/* Closing the colour screen is its opening backwards: the dark background stays until the wheel has nearly left, and the room's content comes back last (the opening's fades, mirrored in time). */
+.pg.leaving::after{transition:opacity .42s cubic-bezier(.75,0,.75,.9)}
+.pg.leaving .pbody,.pg.leaving .pbar{transition:opacity .3s .12s cubic-bezier(.75,0,.75,.9)}
