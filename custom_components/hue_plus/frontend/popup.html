@@ -168,10 +168,16 @@ body.lg .wrap{zoom:1!important}
             S.ex[root.key] = true;
             S.joined.length = 0;
             /* The tiles are in the order of the room page's row (the order the panel gives the lights in), so each slides to its own place. */
+            var names = ids.map(function (e) {
+              return A(e).friendly_name || e;
+            });
+            var rank = function (k) {
+              var i = ids.indexOf(k.key);
+              if (i < 0) i = names.indexOf(k.name);
+              return i < 0 ? 1e6 : i;
+            };
             root.kids.sort(function (a, b) {
-              var x = ids.indexOf(a.key),
-                y = ids.indexOf(b.key);
-              return x >= 0 && y >= 0 ? x - y : String(a.name || "").localeCompare(String(b.name || ""));
+              return rank(a) - rank(b) || String(a.name || "").localeCompare(String(b.name || ""));
             });
             var groups = [];
             root.kids.forEach(function (k) {
