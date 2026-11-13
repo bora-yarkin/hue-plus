@@ -375,3 +375,37 @@ if __name__ == "__main__":
         self.assertEqual(
             (models.entertainment_areas(auto)[0]["performance"], models.entertainment_areas(auto)[0]["performance_light"]), ("auto", None)
         )
+
+
+class DeviceDetailTests(unittest.TestCase):
+    def test_a_device_lists_what_the_apps_device_info_shows_and_its_lights(self):
+        s = snap(
+            device=[
+                {
+                    "id": "d1",
+                    "metadata": {"name": "Bed Light"},
+                    "product_data": {
+                        "product_name": "Play gradient tube",
+                        "model_id": "915005988001",
+                        "manufacturer_name": "Signify Netherlands B.V.",
+                        "hardware_platform_type": "100b-118",
+                        "software_version": "1.163.5",
+                    },
+                    "services": [{"rid": "l1", "rtype": "light"}, {"rid": "z1", "rtype": "zigbee_connectivity"}],
+                }
+            ],
+            zigbee_connectivity=[{"id": "z1", "owner": {"rid": "d1", "rtype": "device"}, "mac_address": "00:17:88:01:0b:e4:b2:b1"}],
+        )
+        (d,) = models.device_details(s)
+        self.assertEqual(
+            {k: d[k] for k in ("model", "model_id", "manufacturer", "hardware", "firmware", "mac", "lights")},
+            {
+                "model": "Play gradient tube",
+                "model_id": "915005988001",
+                "manufacturer": "Signify Netherlands B.V.",
+                "hardware": "100b-118",
+                "firmware": "1.163.5",
+                "mac": "00:17:88:01:0b:e4:b2:b1",
+                "lights": ["l1"],
+            },
+        )

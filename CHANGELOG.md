@@ -4,6 +4,15 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-11-14
+
+### Added
+- **Hue settings in Home Control** (Settings, Hue Plus) have what the Hue panel has: a light's **Edit name and type** (the pencil by its name: the name and the bridge's icon type), **Device info** as the Hue app lists it (device type, manufacturer, model, MAC address, hardware version and software, read from the bridge), and a button's **Selected lights** (a room or zone, `set_button_lights`).
+- `get_resources` `devices` lists each device's model number, maker, hardware platform, MAC address and lights.
+
+### Changed
+- The Hue panel's colour screen picks a light inside a shared marker with Home Control 0.10.0's own code (the copy in `lights/`), and its Orientation setup uses Home Control's orientation choices; the panel's own versions of both are gone.
+
 ## [0.17.0] - 2026-11-14
 
 ### Added

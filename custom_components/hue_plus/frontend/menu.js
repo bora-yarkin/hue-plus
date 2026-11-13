@@ -3494,18 +3494,36 @@ function hpDeviceInfoPage(b, id) {
   function row(title, value) {
     if (value) rows.push(hmRow({ title: title, sub: String(value), stack: true }));
   }
-  if (dev) {
-    var mac = (dev.connections || []).filter(function (c) {
-      return c[0] === "zigbee" || c[0] === "mac";
-    })[0];
-    row(_T("app_device_type"), dev.model);
-    row(_T("app_manufacturer"), dev.manufacturer);
-    row(_T("app_model"), dev.model_id);
-    row(_T("app_mac_address"), mac ? mac[1] : "");
-    row(_T("app_hardware_version"), dev.hw_version);
-    row(_T("app_software"), dev.sw_version);
+  /* What the bridge says of the device (it knows more than Home Assistant's device record), and Home Assistant's record where the bridge says nothing. */
+  var hue = A(id).hue_light_id,
+    group = mk("div");
+  b.appendChild(group);
+  function draw(bridge) {
+    rows = [];
+    var mac = dev
+      ? (dev.connections || []).filter(function (c) {
+          return c[0] === "zigbee" || c[0] === "mac";
+        })[0]
+      : null;
+    bridge = bridge || {};
+    row(_T("app_device_type"), bridge.model || (dev && dev.model));
+    row(_T("app_manufacturer"), bridge.manufacturer || (dev && dev.manufacturer));
+    row(_T("app_model"), bridge.model_id || (dev && dev.model_id));
+    row(_T("app_mac_address"), bridge.mac || (mac ? mac[1] : ""));
+    row(_T("app_hardware_version"), bridge.hardware || (dev && dev.hw_version));
+    row(_T("app_software"), bridge.firmware || (dev && dev.sw_version));
+    group.textContent = "";
+    if (rows.length) group.appendChild(hmGroup(rows));
   }
-  if (rows.length) b.appendChild(hmGroup(rows));
+  draw(null);
+  if (hue)
+    hueplus.resources(["devices"]).then(function (r) {
+      draw(
+        ((r && r.devices) || []).filter(function (x) {
+          return (x.lights || []).indexOf(hue) >= 0;
+        })[0]
+      );
+    }, function () {});
   var extra = hpDeviceInfoRows(id);
   if (extra.length) b.appendChild(hmGroup(extra));
 }
