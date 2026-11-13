@@ -52,9 +52,11 @@ body.areamode .ae-cn{font-size:12px;font-weight:500}
 .hp-orient{display:none;position:absolute;right:10px;width:36px;height:36px;margin-top:-86px;border:0;border-radius:50%;background:#2d2e33;color:#fff;align-items:center;justify-content:center;cursor:pointer;z-index:3}
 .hp-orient.on{display:flex}
 .hp-orient svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8}
-.hp-osheet{position:fixed;inset:0;z-index:50;background:#1b1c20;display:flex;flex-direction:column;animation:hpo .3s cubic-bezier(.2,.8,.2,1)}
+.hp-osheet{position:fixed;left:0;right:0;bottom:0;z-index:50;background:#1b1c20;display:flex;flex-direction:column;padding-top:18px;animation:hpo .3s cubic-bezier(.2,.8,.2,1)}
+/* while it is open the room stays in view above it, as in the app; the tray and the Location/Height switch give way */
+body.orienting .ae-tray,body.orienting .hp-orient,body.orienting #body>.seg{display:none!important}
 @keyframes hpo{from{transform:translateY(100%)}to{transform:none}}
-.hp-osheet p{margin:auto 16px 16px;text-align:center;font-size:14px;font-weight:500}
+.hp-osheet p{margin:0 16px 16px;text-align:center;font-size:14px;font-weight:500}
 .hp-ogrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 10px calc(var(--sab,0px) + 20px)}
 .hp-ochoice{min-height:64px;border:0;border-radius:12px;background:#2d2e33;color:#fff;font:inherit;font-size:12.5px;cursor:pointer}
 .hp-ochoice.on{box-shadow:inset 0 0 0 2px #2e68f7}
@@ -333,6 +335,7 @@ body.lg .wrap{zoom:1!important}
     function shut() {
       restore();
       sheet.remove();
+      document.body.classList.remove("orienting");
     }
     if (host && host.frameBar)
       restore = host.frameBar(
@@ -345,6 +348,7 @@ body.lg .wrap{zoom:1!important}
           shut();
         }
       );
+    document.body.classList.add("orienting");
     document.body.appendChild(sheet);
   }
 
