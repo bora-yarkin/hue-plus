@@ -56,11 +56,30 @@ async def test_the_entities_show_what_the_service_said(hass, sync):
     assert "a" * 27 not in str(playing.attributes)
 
 
-async def test_the_area_choice_lists_the_music_areas_of_the_bridge(hass, sync):
+async def test_the_area_choice_lists_the_entertainment_areas_of_the_bridge(hass, sync):
     await sync._async_load_areas("c42996fffec4a182")
     area = hass.states.get(entity_id(hass, "select", "area"))
     assert area.attributes["options"] == ["Bedroom"] and area.state == "Bedroom"
     assert set(area.attributes["light_ids"]) == {LAMP, TUBE}
+
+
+@pytest.mark.parametrize("area_type", ["screen", "monitor", "music", "3dspace", "other"])
+async def test_the_area_choice_lists_an_area_whatever_its_type(hass, sync, bridge, area_type):
+    """The choice follows the bridge: an area made for a monitor, a TV or a room is offered like a music area."""
+    bridge.resources["entertainment_configuration"].append(
+        {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "metadata": {"name": "Desk"},
+            "configuration_type": area_type,
+            "status": "inactive",
+            "active_streamer": None,
+            "locations": {"service_locations": []},
+            "light_services": [{"rid": TUBE, "rtype": "light"}],
+        }
+    )
+    await sync._async_load_areas("c42996fffec4a182")
+    area = hass.states.get(entity_id(hass, "select", "area"))
+    assert area.attributes["options"] == ["Bedroom", "Desk"]
 
 
 async def test_turning_the_switch_on_sends_start_and_leaves_the_state_to_the_service(hass, sync):

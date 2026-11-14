@@ -4,6 +4,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.18.2] - 2026-11-15
+
+### Fixed
+- The Spotify sync's area choice (the Hue Plus panel's Sync screen and Home Control's) listed only entertainment areas of the type "music", so an area made for a monitor, a screen, a room or anything else (for example "Bora's Monitor") was missing. It now lists every entertainment area of the bridge, as the bridge reports them.
+
 ## [0.18.1] - 2026-11-14
 
 ### Fixed
