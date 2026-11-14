@@ -19,9 +19,6 @@ from .oauth import SyncOAuth
 
 _LOGGER = logging.getLogger(__name__)
 
-# The Spotify sync only works in entertainment areas that were created for music.
-MUSIC_AREA_TYPE = "music"
-
 
 class SyncCoordinator(DataUpdateCoordinator[SyncState]):
     """Push-based: the service sends every change, so there is nothing to poll."""
@@ -44,7 +41,7 @@ class SyncCoordinator(DataUpdateCoordinator[SyncState]):
         self.oauth = oauth
         self.uuid = uuid
         self.connected = False
-        # Entertainment area id -> name, for the music areas of the bridge the service is tied to.
+        # Entertainment area id -> name, for the entertainment areas of the bridge the service is tied to.
         self.areas: dict[str, str] = {}
         # Entertainment area id -> the Hue light ids in it, so a dashboard can show which lights the sync plays on.
         self.area_lights: dict[str, list[str]] = {}
@@ -79,16 +76,15 @@ class SyncCoordinator(DataUpdateCoordinator[SyncState]):
         self.config_entry.async_start_reauth(self.hass, context={"reauth_for": "sync"})
 
     async def _async_load_areas(self, bridge_id: str) -> None:
-        """Asks the bridge, over the Hue integration's connection, which music areas exist."""
+        """Asks the bridge, over the Hue integration's connection, which entertainment areas exist."""
         link = self.runtime.link
         if not same_bridge(bridge_id, link.uid):
             _LOGGER.warning("The sync service is tied to bridge %s, which is not the bridge this entry is for", bridge_id)
         try:
             areas = await read(link.api, "clip/v2/resource/entertainment_configuration")
-            music_areas = [area for area in areas if area.get("configuration_type") == MUSIC_AREA_TYPE]
-            self.areas = {area["id"]: area["metadata"]["name"] for area in music_areas}
-            self.area_lights = {area["id"]: area_light_ids(area) for area in music_areas}
+            self.areas = {area["id"]: area["metadata"]["name"] for area in areas}
+            self.area_lights = {area["id"]: area_light_ids(area) for area in areas}
         except (AttributeError, KeyError, TypeError, aiohttp.ClientError, TimeoutError) as err:
-            _LOGGER.warning("The music areas of bridge %s could not be listed: %s: %s", bridge_id, type(err).__name__, err)
+            _LOGGER.warning("The entertainment areas of bridge %s could not be listed: %s: %s", bridge_id, type(err).__name__, err)
             return
         self.async_update_listeners()
