@@ -517,7 +517,7 @@ body{width:100%;height:100%}
 .pg:not(.modalpg):not(.wizpg):not(.lightpg){bottom:calc(var(--tabs) + var(--sab))}
 .pg:not(.modalpg):not(.wizpg):not(.lightpg) .pbody,.pg.roompg .pbody{padding-bottom:24px}
 
-/* Sizes measured on the Hue app's screens (Hue-Screenshots, a phone 393 points wide): the side margin is 11, tiles are 93 wide with 11 between them. */
+/* Sizes measured on the Hue app's screens (screenshots from a phone 393 points wide): the side margin is 11, tiles are 93 wide with 11 between them. */
 :root{--tabs:50px;--side:11px}
 #hp .view{padding-left:var(--side);padding-right:var(--side)}
 #hp .view .hm .hm-group{margin-left:calc(0px - var(--side));margin-right:calc(0px - var(--side))}
