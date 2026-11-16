@@ -1,4 +1,4 @@
-/* The edit mode of a room, as the Hue app has it (Hue-Screenshots/IMG_0576, 0577): the header is the room's icon and name with a pencil and DONE; every section has SELECT ALL; a tile that is tapped is
+/* The edit mode of a room, as the Hue app has it (its room edit screens): the header is the room's icon and name with a pencil and DONE; every section has SELECT ALL; a tile that is tapped is
  chosen (a blue line around it); the tab bar gives way to what can be done: REARRANGE while nothing is chosen (the tiles are then held and dragged), MOVE TO, EDIT and DELETE for what is chosen. */
 
 function hpRoomEditPage(body, id) {

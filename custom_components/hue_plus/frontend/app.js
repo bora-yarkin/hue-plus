@@ -4728,7 +4728,7 @@ function hpDeviceInfoPage(b, id) {
   if (extra.length) b.appendChild(hmGroup(extra));
 }
 
-/* The pencil by the light's name: its name and its icon type, as the app's "Edit name and type" (Hue-Screenshots/IMG_0579): the icon, the name in a field, and the types in their groups. DONE
+/* The pencil by the light's name: its name and its icon type, as the app's "Edit name and type" (its edit name and type screen): the icon, the name in a field, and the types in their groups. DONE
  writes both to the bridge. */
 var HPRENAME = {};
 
@@ -12685,7 +12685,7 @@ HP_PAGES["app-place"] = ["hm_light_placement", "target", hpPlacePage];
 HP_PAGES["app-balance"] = ["app_balancer", "tune", hpBalancePage];
 HP_PAGES["app-newarea"] = ["app_new_area", "plus", hpNewAreaPage];
 
-/* The edit mode of a room, as the Hue app has it (Hue-Screenshots/IMG_0576, 0577): the header is the room's icon and name with a pencil and DONE; every section has SELECT ALL; a tile that is tapped is
+/* The edit mode of a room, as the Hue app has it (its room edit screens): the header is the room's icon and name with a pencil and DONE; every section has SELECT ALL; a tile that is tapped is
  chosen (a blue line around it); the tab bar gives way to what can be done: REARRANGE while nothing is chosen (the tiles are then held and dragged), MOVE TO, EDIT and DELETE for what is chosen. */
 
 function hpRoomEditPage(body, id) {

@@ -2220,7 +2220,7 @@ function hpDeviceInfoPage(b, id) {
   if (extra.length) b.appendChild(hmGroup(extra));
 }
 
-/* The pencil by the light's name: its name and its icon type, as the app's "Edit name and type" (Hue-Screenshots/IMG_0579): the icon, the name in a field, and the types in their groups. DONE
+/* The pencil by the light's name: its name and its icon type, as the app's "Edit name and type" (its edit name and type screen): the icon, the name in a field, and the types in their groups. DONE
  writes both to the bridge. */
 var HPRENAME = {};
 
