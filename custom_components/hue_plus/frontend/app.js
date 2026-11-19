@@ -9049,18 +9049,25 @@ window.HuePlusApp = {
     HPAPP.main = el.querySelector(".view>.in");
     HPAPP.nav = el.querySelector("nav");
     HPAPP.main.appendChild(mk("div", "empty")).textContent = _T("loading");
-    /* The colour panel takes a few seconds to start (it is Home Control's whole dashboard code), so it starts now, while Home is being read, and is ready when a light is tapped. */
+    /* The colour panel takes a few seconds to start (it is Home Control's whole dashboard code), so it starts now, while the rest is read, and is ready when a light is tapped. */
     hpLightFrame(function () {});
-    /* Everything the pages need from the bridge (rooms, scenes and their colours, controls, what each light was last set to) is read now, before anything is tapped. */
-    hmReady().then(refresh, function () {});
-    hpLoadLightStates();
-    /* The panel starts when the registries are in, or after a short wait; the lists fill in by themselves. */
+    /* One loading screen, then the panel: everything the pages draw from the bridge is read first (the registries of Home Assistant, rooms, scenes and their colours, controls, the icon type of every room and
+       light, and what each light was last set to), so no page is drawn from a guess and corrected a moment later (a wrong icon, a missing light). A reading that fails does not stop the panel, and
+       neither does a slow one past twelve seconds: the pages fill in by themselves as before. */
+    function quiet(p) {
+      return Promise.resolve(p).then(null, function () {});
+    }
     Promise.race([
-      HPAPI.ready(),
-      new Promise(function (resolve) {
-        setTimeout(resolve, 6000);
+      quiet(HPAPI.ready()).then(function () {
+        return Promise.all([quiet(hmReady()), quiet(hpLoadLightStates()), quiet(hpLoadArchetypes())]);
       }),
-    ]).then(hpStart);
+      new Promise(function (resolve) {
+        setTimeout(resolve, 12000);
+      }),
+    ]).then(function () {
+      refresh();
+      hpStart();
+    });
   },
 };
 
@@ -9278,11 +9285,22 @@ function hpGroupLights(id) {
     });
   if (listed.length) return listed;
   var names = Array.isArray(a.lights) ? a.lights : [];
-  return Object.keys(h.states)
-    .filter(function (m) {
+  /* A light is the room's whether or not Home Assistant hides it (a Home Assistant group of lights hides its members, and the Hue app still shows them). The only ones left out are the Hue integration's own
+     twins of the lights Hue Plus made: of the entities of one Hue light, Hue Plus's is used, else a visible one, else the first. */
+  var byLight = {};
+  Object.keys(h.states)
+    .sort()
+    .forEach(function (m) {
       var b = h.states[m].attributes,
         e = h.entities[m];
-      return m.indexOf("light.") === 0 && b.hue_light_id && !b.is_hue_group && !(e && e.hidden) && names.indexOf(b.friendly_name) >= 0;
+      if (m.indexOf("light.") !== 0 || !b.hue_light_id || b.is_hue_group || names.indexOf(b.friendly_name) < 0) return;
+      var rank = e && e.platform === "hue_plus" ? 0 : e && e.hidden ? 2 : 1,
+        had = byLight[b.hue_light_id];
+      if (!had || rank < had.rank) byLight[b.hue_light_id] = { id: m, rank: rank };
+    });
+  return Object.keys(byLight)
+    .map(function (k) {
+      return byLight[k].id;
     })
     .sort();
 }
@@ -9308,9 +9326,10 @@ function hpGroupIcon(id) {
 /* The icon type of each room and zone, read from the bridge once. */
 var HP_ROOM_ARCHETYPES = {};
 
+/* Gives a promise that is done when the icon types are read (or could not be). */
 function hpLoadArchetypes() {
-  if (!hueplus.has(H(), "get_resources")) return;
-  hueplus.resources(["rooms", "zones"]).then(
+  if (!hueplus.has(H(), "get_resources")) return Promise.resolve();
+  return hueplus.resources(["rooms", "zones"]).then(
     function (r) {
       (r.rooms || []).forEach(function (g) {
         HP_ROOM_ARCHETYPES["room|" + g.name] = g.archetype;
@@ -11275,8 +11294,8 @@ var HPLIGHTS = null;
 
 /* What the bridge says each light was last set to; read again whenever a room is opened. The icon of each light on the page comes from it (its icon type), so when it arrives the icons on the page are drawn again: a room page opened before the first reading had icons guessed from the names (a bulb for "Bed Light"). */
 function hpLoadLightStates() {
-  if (!hueplus.has(H(), "get_resources")) return;
-  hueplus.resources(["lights"]).then(
+  if (!hueplus.has(H(), "get_resources")) return Promise.resolve();
+  return hueplus.resources(["lights"]).then(
     function (r) {
       HPLIGHTS = r.lights || null;
       hpPaintLightIcons();

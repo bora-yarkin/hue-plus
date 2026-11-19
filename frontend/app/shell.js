@@ -133,17 +133,24 @@ window.HuePlusApp = {
     HPAPP.main = el.querySelector(".view>.in");
     HPAPP.nav = el.querySelector("nav");
     HPAPP.main.appendChild(mk("div", "empty")).textContent = _T("loading");
-    /* The colour panel takes a few seconds to start (it is Home Control's whole dashboard code), so it starts now, while Home is being read, and is ready when a light is tapped. */
+    /* The colour panel takes a few seconds to start (it is Home Control's whole dashboard code), so it starts now, while the rest is read, and is ready when a light is tapped. */
     hpLightFrame(function () {});
-    /* Everything the pages need from the bridge (rooms, scenes and their colours, controls, what each light was last set to) is read now, before anything is tapped. */
-    hmReady().then(refresh, function () {});
-    hpLoadLightStates();
-    /* The panel starts when the registries are in, or after a short wait; the lists fill in by themselves. */
+    /* One loading screen, then the panel: everything the pages draw from the bridge is read first (the registries of Home Assistant, rooms, scenes and their colours, controls, the icon type of every room and
+       light, and what each light was last set to), so no page is drawn from a guess and corrected a moment later (a wrong icon, a missing light). A reading that fails does not stop the panel, and
+       neither does a slow one past twelve seconds: the pages fill in by themselves as before. */
+    function quiet(p) {
+      return Promise.resolve(p).then(null, function () {});
+    }
     Promise.race([
-      HPAPI.ready(),
-      new Promise(function (resolve) {
-        setTimeout(resolve, 6000);
+      quiet(HPAPI.ready()).then(function () {
+        return Promise.all([quiet(hmReady()), quiet(hpLoadLightStates()), quiet(hpLoadArchetypes())]);
       }),
-    ]).then(hpStart);
+      new Promise(function (resolve) {
+        setTimeout(resolve, 12000);
+      }),
+    ]).then(function () {
+      refresh();
+      hpStart();
+    });
   },
 };

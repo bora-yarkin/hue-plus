@@ -10,6 +10,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 - **The pencil and the three dots of a scene stand right next to the scene that plays**, in the height of its tile. The tiles after it in its row slide right to make room and slide back when another scene plays (from the second tile playing to the fourth, the third and fourth slide left and the rest stay); they used to be put wherever the grid had room.
 
 ### Fixed
+- **A light hidden in Home Assistant is still in its room.** A Home Assistant group of lights (the Group helper, which hides its members by default) hid its lights from the Hue panel's room page and colour screen, so lights added to the bridge and put in a group (the Hue Irises) were missing, while the Hue app shows them. A room lists all its lights; only the Hue integration's own twin of a light Hue Plus has made is left out.
+- **The panel opens once everything is read.** It showed the Home screen as soon as Home Assistant's lists were in and filled the rest in as the bridge answered, which is why a page could be drawn wrong for a moment (a bulb for a light's icon, a light missing). There is now one loading screen until the lists of Home Assistant, the bridge's rooms, scenes, controls, icon types and lights are read (at most twelve seconds; a reading that fails does not stop it), and then the panel opens.
 - A light on the room page had a bulb for its icon until the bridge's list of lights had been read (the first room opened after the panel started, or after a reload): the icon was guessed from the name ("Bed Light" gave a bulb) and the colour screen then showed the right one. The icons on the page are now drawn again when the list arrives.
 
 ## [0.18.2] - 2026-11-15

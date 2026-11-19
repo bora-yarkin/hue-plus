@@ -46,11 +46,22 @@ function hpGroupLights(id) {
     });
   if (listed.length) return listed;
   var names = Array.isArray(a.lights) ? a.lights : [];
-  return Object.keys(h.states)
-    .filter(function (m) {
+  /* A light is the room's whether or not Home Assistant hides it (a Home Assistant group of lights hides its members, and the Hue app still shows them). The only ones left out are the Hue integration's own
+     twins of the lights Hue Plus made: of the entities of one Hue light, Hue Plus's is used, else a visible one, else the first. */
+  var byLight = {};
+  Object.keys(h.states)
+    .sort()
+    .forEach(function (m) {
       var b = h.states[m].attributes,
         e = h.entities[m];
-      return m.indexOf("light.") === 0 && b.hue_light_id && !b.is_hue_group && !(e && e.hidden) && names.indexOf(b.friendly_name) >= 0;
+      if (m.indexOf("light.") !== 0 || !b.hue_light_id || b.is_hue_group || names.indexOf(b.friendly_name) < 0) return;
+      var rank = e && e.platform === "hue_plus" ? 0 : e && e.hidden ? 2 : 1,
+        had = byLight[b.hue_light_id];
+      if (!had || rank < had.rank) byLight[b.hue_light_id] = { id: m, rank: rank };
+    });
+  return Object.keys(byLight)
+    .map(function (k) {
+      return byLight[k].id;
     })
     .sort();
 }
@@ -76,9 +87,10 @@ function hpGroupIcon(id) {
 /* The icon type of each room and zone, read from the bridge once. */
 var HP_ROOM_ARCHETYPES = {};
 
+/* Gives a promise that is done when the icon types are read (or could not be). */
 function hpLoadArchetypes() {
-  if (!hueplus.has(H(), "get_resources")) return;
-  hueplus.resources(["rooms", "zones"]).then(
+  if (!hueplus.has(H(), "get_resources")) return Promise.resolve();
+  return hueplus.resources(["rooms", "zones"]).then(
     function (r) {
       (r.rooms || []).forEach(function (g) {
         HP_ROOM_ARCHETYPES["room|" + g.name] = g.archetype;
