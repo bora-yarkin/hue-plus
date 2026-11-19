@@ -147,7 +147,11 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 /* ---- dialogs and the message ---- */
 .scrim{position:fixed;inset:0;opacity:0;transition:opacity .25s;z-index:80;background:rgba(0,0,0,.6)}
 .scrim.in{opacity:1}
-.dlg{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:90;width:min(360px,88%);border-radius:var(--r-xl);padding:22px;text-align:center;background:var(--head);box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.dlg{position:fixed;left:8px;right:8px;bottom:calc(var(--sab) + 8px);z-index:90;max-width:520px;margin:0 auto;border-radius:var(--r-xl);padding:22px;text-align:center;background:var(--head);box-shadow:0 20px 50px rgba(0,0,0,.5)}
+/* every sheet of the panel comes up from the bottom and goes back down */
+.dlg,.asheet{transform:translateY(calc(100% + 24px));transition:transform .32s cubic-bezier(.2,.8,.2,1)}
+.dlg.in,.asheet.in{transform:none}
+@media(prefers-reduced-motion:reduce){.dlg,.asheet{transition:none}}
 .dlg p{margin:0 0 20px;font-size:var(--fs-l);line-height:1.4}
 .dlg .rrow{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp)}
 .rbtn{min-height:46px;display:flex;align-items:center;justify-content:center;border-radius:999px;background:var(--tile);cursor:pointer;font-weight:600;user-select:none}
@@ -260,7 +264,7 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .fcard{position:relative;pointer-events:auto;width:min(520px,calc(100% - 34px));max-height:80vh;overflow:auto;background:#26272b;border-radius:18px;padding:20px 17px 20px;box-shadow:0 24px 60px rgba(0,0,0,.55);opacity:0}
 .fcard .ft{font-size:13.5px;font-weight:500;margin:2px 3px 18px}
 .fg{display:flex;flex-wrap:wrap;gap:10px 13px}
-.sitem{width:102px;flex:none;border-radius:11px;background:var(--tile);height:113px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:6px;cursor:pointer;color:#fff;transition:background .25s,transform .12s}
+.sitem{width:102px;flex:none;border-radius:11px;background:var(--tile);height:113px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:6px;cursor:pointer;color:#fff;transition:background .25s,transform .12s,translate .32s cubic-bezier(.2,.8,.2,1)}
 .sitem:active{transform:scale(.96)}
 .sitem .dc{position:relative;width:50px;height:50px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.35))}
 .sitem .stop{position:absolute;inset:0;display:none;align-items:center;justify-content:center}
@@ -270,7 +274,8 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .sitem.moving .stop{display:flex}
 .sitem.on:not(.moving){background:linear-gradient(180deg,var(--gold1),var(--gold2));color:var(--gold-ink)}
 .sitem b{font-size:11.5px;font-weight:500;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.sside{display:flex;flex-direction:column;justify-content:center;gap:10px;width:34px;flex:none;animation:hpin .2s}
+.sside{position:absolute;display:flex;flex-direction:column;justify-content:center;gap:10px;width:34px;opacity:0;pointer-events:none;transition:left .32s cubic-bezier(.2,.8,.2,1),top .32s cubic-bezier(.2,.8,.2,1),opacity .2s}
+.sside.on{opacity:1;pointer-events:auto}
 .sside .rbt{background:var(--tile)}
 
 /* ---- the colour screen of a room's lights: the frame's own bar, SAVE and DONE ---- */
@@ -552,7 +557,7 @@ body{width:100%;height:100%}
 .fcard{position:absolute;left:14px;width:calc(100% - 44px);max-height:none;overflow:visible;padding:12px 14px 14px;border-radius:14px}
 .fcard .ft{font-size:12px;margin:4px 2px 12px}
 .fcard .fedit{right:10px;top:8px;width:26px;height:26px}
-.fg{display:grid;grid-template-rows:repeat(2,102px);grid-auto-flow:column;grid-auto-columns:93px;gap:11px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;margin:0 -14px;padding:0 14px 2px;scrollbar-width:none;overscroll-behavior-x:contain}
+.fg{position:relative;display:grid;grid-template-rows:repeat(2,102px);grid-auto-flow:column;grid-auto-columns:93px;gap:11px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;margin:0 -14px;padding:0 14px 2px;scrollbar-width:none;overscroll-behavior-x:contain}
 .fg::-webkit-scrollbar{display:none}
 .fg .sitem{width:93px;height:102px}
 .fg .sitem .dc{width:44px;height:44px}

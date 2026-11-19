@@ -49,9 +49,11 @@ function edMark(el, open, hidden) {
   return el;
 }
 
-function edAdd(label, fn, icon) {
+/* `soft`: the add row of a section that lists devices; it is shown only while the section is empty, the page's Add and the + in the section's heading do the rest. */
+function edAdd(label, fn, icon, soft) {
   var p = pill(icon || "plus", label, { tap: fn });
   p.classList.add("ed-add", "edok");
+  if (soft) p.classList.add("ed-add-soft");
   return p;
 }
 
@@ -719,14 +721,10 @@ function editPageSettings(b, key) {
         }
       )
     );
-    var cn = mk("div", "hint");
-    cn.textContent = _T("on_wide_screens_phones_always_use_on");
-    box.appendChild(cn);
+    box.appendChild(hintRow(_T("on_wide_screens_phones_always_use_on")));
     box.appendChild(sep(_T("hidden_sections"), "lock"));
     if (!hid.length) {
-      var hn = mk("div", "hint");
-      hn.textContent = _T("none_hide_a_section_from_its_setting");
-      box.appendChild(hn);
+      box.appendChild(hintRow(_T("none_hide_a_section_from_its_setting")));
     }
     hid.forEach(function (s) {
       box.appendChild(
@@ -743,45 +741,24 @@ function editPageSettings(b, key) {
         })
       );
     });
-    box.appendChild(sep(_T("share_this_page"), "sd"));
-    var ta = mk("textarea", "ta");
-    ta.setAttribute("spellcheck", "false");
-    ta.placeholder = _T("paste_a_page_here_to_import_it");
+    box.appendChild(sep(_T("export_and_import"), "sd"));
     box.appendChild(
-      pill("sd", _T("copy_this_page_as_text"), {
+      pill("sd", _T("export_this_page"), {
         sub: function () {
-          return _T("sections_and_the_scenes_they_list");
+          return _T("export_this_page_sub");
         },
         tap: function () {
-          var txt = pageExportJSON(sc);
-          try {
-            navigator.clipboard.writeText(txt).then(
-              function () {
-                toast(_T("copied"));
-              },
-              function () {
-                ta.value = txt;
-                ta.select();
-                toast(_T("select_and_copy_the_text_below"));
-              }
-            );
-          } catch (e) {
-            ta.value = txt;
-            ta.select();
-            toast(_T("select_and_copy_the_text_below"));
-          }
+          pageExportFile(sc);
         },
       })
     );
-    box.appendChild(ta);
     box.appendChild(
-      pill("check", _T("replace_this_page_with_the_text_abov"), {
+      pill("plus", _T("import_a_page"), {
+        sub: function () {
+          return _T("import_a_page_sub");
+        },
         tap: function () {
-          if (!ta.value.trim()) {
-            toast(_T("paste_a_page_first"));
-            return;
-          }
-          pageImport(sc, ta.value);
+          pageImportFile(sc);
         },
       })
     );
@@ -828,6 +805,19 @@ function editDecorate(sc, s) {
     setSecOrder(sc, secOrder(sc));
     uiChanged();
   });
+  var kindNow = ent() && ent().k,
+    ty = SECTYPES[kindNow] || {};
+  if (ty.add) {
+    var pl = mk("div", "rnd pane sm", svg("plus"));
+    pl.tabIndex = 0;
+    pl.setAttribute("role", "button");
+    pl.setAttribute("aria-label", widgetAddLabel(kindNow));
+    pl.title = widgetAddLabel(kindNow);
+    pl.addEventListener("click", function () {
+      widgetAdd("~" + scopeId + "~" + s.id, kindNow);
+    });
+    tb.appendChild(pl);
+  }
   tb.appendChild(cg);
   tb.appendChild(ey);
   /* The toolbar goes in the section heading, wherever the section keeps it (a section that rebuilds its content calls _attach again). */
@@ -868,6 +858,7 @@ function addDevToPage(room, d) {
     arr.push(s);
   }
   (s.devs = s.devs || []).push(d);
+  return { rid: "~" + room + "~" + s.id, i: s.devs.length - 1 };
 }
 
 function allSectionLists() {
@@ -1054,34 +1045,14 @@ function secEditor(b, key) {
       );
     if (k === "lights" && e.master)
       box.appendChild(
-        pill("lights", _T("master_changes_the_whole_room"), {
-          on: function () {
-            return !!e.mall;
-          },
+        pill("edit", _T("lights_master_settings"), {
           sub: function () {
-            return e.mall ? _T("every_light_of_the_section_even_those_") : _T("only_the_lights_that_are_on_or_all_if_none_is");
+            return _T("name_whole_room_and_the_order_of_the_lights");
           },
           tap: function () {
-            if (e.mall) delete e.mall;
-            else e.mall = 1;
-            save();
-            redrawBox(box, draw);
+            showPopup("lmaster-edit:" + key, true);
           },
         })
-      );
-    if (k === "lights" && e.master)
-      box.appendChild(
-        textRow(
-          "edit",
-          _T("all_lights"),
-          e.mn || "",
-          function (v) {
-            if (v) e.mn = v.slice(0, 40);
-            else delete e.mn;
-            save();
-          },
-          40
-        )
       );
     if (k === "lights")
       box.appendChild(

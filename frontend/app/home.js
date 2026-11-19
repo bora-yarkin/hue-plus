@@ -342,10 +342,21 @@ function hpLightIcon(lid) {
   return "light";
 }
 
+/* Every light tile on the page shows the icon its light has now. */
+function hpPaintLightIcons() {
+  Array.prototype.forEach.call(document.querySelectorAll(".ltile[data-lid]"), function (t) {
+    var name = hpLightIcon(t.dataset.lid);
+    if (t.dataset.icon === name) return;
+    t.dataset.icon = name;
+    t.querySelector(".ic").innerHTML = svg(name);
+  });
+}
+
 function hpLightTile(lid, room) {
   var name = A(lid).friendly_name || lid,
     t = mk("div", "ltile", "<div class='up'><span class='ic'></span><b></b></div><div class='dn'></div>");
-  t.querySelector(".ic").innerHTML = svg(hpLightIcon(lid));
+  t.dataset.icon = hpLightIcon(lid);
+  t.querySelector(".ic").innerHTML = svg(t.dataset.icon);
   t.querySelector("b").textContent = name;
   t.setAttribute("aria-label", name);
   t.dataset.lid = lid;
@@ -415,30 +426,45 @@ function hpControls(box, id) {
   else hmReady().then(draw, function () {});
 }
 
+/* A sheet from the bottom of the screen, for every list of choices, question and line to write in: the page behind is dimmed, the sheet slides up and, closed, slides down again. `scrim` and `sheet` are made by the caller (classes "scrim" and "asheet" or "dlg"); gives the function that closes it. */
+function hpSheetOpen(scrim, sheet, after) {
+  var shut = false;
+  document.body.appendChild(scrim);
+  document.body.appendChild(sheet);
+  void sheet.offsetHeight;
+  scrim.classList.add("in");
+  sheet.classList.add("in");
+  if (after) after();
+  scrim.addEventListener("click", close);
+  function close() {
+    if (shut) return;
+    shut = true;
+    scrim.classList.remove("in");
+    sheet.classList.remove("in");
+    setTimeout(function () {
+      scrim.remove();
+      sheet.remove();
+    }, 320);
+  }
+  return close;
+}
+
 /* The list under the three dots of the room's page, as the app's: a sheet from the bottom with its choices and Cancel. */
 function hpActions(items) {
   var scrim = mk("div", "scrim"),
-    sheet = mk("div", "asheet");
+    sheet = mk("div", "asheet"),
+    close = null;
   items.concat([{ label: _T("cancel") }]).forEach(function (it, i, all) {
     var b = mk("button", "arow" + (it.danger ? " danger" : "") + (i === all.length - 1 ? " cancel" : ""));
     b.type = "button";
     b.textContent = it.label;
     b.addEventListener("click", function () {
-      scrim.remove();
-      sheet.remove();
+      close();
       if (it.fn) it.fn();
     });
     sheet.appendChild(b);
   });
-  scrim.addEventListener("click", function () {
-    scrim.remove();
-    sheet.remove();
-  });
-  document.body.appendChild(scrim);
-  document.body.appendChild(sheet);
-  requestAnimationFrame(function () {
-    scrim.classList.add("in");
-  });
+  close = hpSheetOpen(scrim, sheet);
 }
 
 function hpRoomPage(body, id) {

@@ -175,13 +175,10 @@ function hpMakeFolder(room, a, b, close) {
 function hpPrompt(title, value, done) {
   var scrim = mk("div", "scrim"),
     box = mk("div", "dlg", "<p></p><input class='sq pin' type='text' maxlength='40'><div class='rrow'></div>"),
-    input = box.querySelector("input");
+    input = box.querySelector("input"),
+    close = null;
   box.querySelector("p").textContent = title;
   input.value = value;
-  function close() {
-    scrim.remove();
-    box.remove();
-  }
   var go = mk("div", "rbtn go");
   go.textContent = _T("done");
   go.addEventListener("click", function () {
@@ -191,17 +188,15 @@ function hpPrompt(title, value, done) {
   });
   var no = mk("div", "rbtn");
   no.textContent = _T("cancel");
-  no.addEventListener("click", close);
+  no.addEventListener("click", function () {
+    close();
+  });
   box.querySelector(".rrow").appendChild(no);
   box.querySelector(".rrow").appendChild(go);
   input.addEventListener("keydown", function (e) {
     if (e.key === "Enter") go.click();
   });
-  scrim.addEventListener("click", close);
-  document.body.appendChild(scrim);
-  document.body.appendChild(box);
-  requestAnimationFrame(function () {
-    scrim.classList.add("in");
+  close = hpSheetOpen(scrim, box, function () {
     input.focus();
     input.select();
   });
@@ -438,17 +433,43 @@ function hpFolderCard(folder, room, from) {
       if (on) hpSceneActions(on, room, close);
     })
   );
+  /* The pencil and the three dots stand right of the scene that plays, in the height of its tile. The tiles of its row that come after it make room by sliding right, by the width of the pair and one gap, and slide back when
+     another scene plays: from 2 playing to 4, the tiles 3 and 4 slide left and the others stay where they are. Only the row of the playing tile moves. */
+  var SIDE_W = 34,
+    GAP = 11;
   card.refresh = function () {
     var on = folder.scenes.filter(function (s) {
       return HUESCENES.active(H(), s);
     })[0];
-    var item = on && [].filter.call(grid.querySelectorAll(".sitem"), function (x) {
-      return x.dataset.sid === on;
-    })[0];
-    if (item) {
-      if (side.previousSibling !== item) grid.insertBefore(side, item.nextSibling);
-    } else if (side.parentNode) side.remove();
+    var items = [].slice.call(grid.querySelectorAll(".sitem")),
+      item = on && items.filter(function (x) {
+        return x.dataset.sid === on;
+      })[0];
+    if (!item) {
+      side.classList.remove("on");
+      items.forEach(function (it) {
+        it.style.translate = "";
+      });
+      return;
+    }
+    var row = item.style.gridRow,
+      col = +item.style.gridColumn;
+    items.forEach(function (it) {
+      it.style.translate = it.style.gridRow === row && +it.style.gridColumn > col ? SIDE_W + GAP + "px 0" : "";
+    });
+    /* Coming into view it appears where it belongs; it glides only from one tile to another. */
+    var shown = side.classList.contains("on");
+    if (!shown) side.style.transition = "none";
+    side.style.left = item.offsetLeft + item.offsetWidth + GAP + "px";
+    side.style.top = item.offsetTop + "px";
+    side.style.height = item.offsetHeight + "px";
+    if (!shown) {
+      void side.offsetWidth;
+      side.style.transition = "";
+    }
+    side.classList.add("on");
   };
+  grid.appendChild(side);
   reg(card.refresh);
   scrim.addEventListener("click", close);
   wrap.appendChild(card);

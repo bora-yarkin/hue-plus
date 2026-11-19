@@ -518,6 +518,54 @@ function closeMenu(instant) {
   }
 }
 
+/* A small grey line of explanation in a popup, under the row or choice it explains. */
+function hintRow(text) {
+  var h = mk("div", "hint");
+  h.textContent = text;
+  return h;
+}
+
+/* A row that switches one yes/no setting of an object, kept as a flag that is there when it is on (and removed when it is off, so saved settings stay small). `sub(on)` words the state;
+   `inverted` is for a flag that names the exception (noadv: "no advanced button"), where the row is on while the flag is absent. Every change is saved at once. */
+function flagPill(icon, title, obj, key, sub, inverted) {
+  function on() {
+    return inverted ? !obj[key] : !!obj[key];
+  }
+  return pill(icon, title, {
+    on: on,
+    sub: function () {
+      return sub(on());
+    },
+    tap: function () {
+      if (obj[key]) delete obj[key];
+      else obj[key] = 1;
+      uiChanged();
+    },
+  });
+}
+
+/* A short explanation and the segmented choice it explains, added to `parent`. */
+function segField(parent, label, options, current, pick) {
+  parent.appendChild(hintRow(label));
+  parent.appendChild(seg(options, current, pick));
+}
+
+/* A row of round icon buttons, the one in `current` marked: the icons that fit what is being edited, one tap from picking. */
+function iconChoices(names, current, pick) {
+  var row = mk("div", "pre ico");
+  names.forEach(function (n) {
+    var c = mk("div", "rnd pane" + (current === n ? " act" : ""), svg(n));
+    c.setAttribute("role", "button");
+    c.setAttribute("aria-label", iconLabel(n));
+    c.title = iconLabel(n);
+    c.addEventListener("click", function () {
+      pick(n);
+    });
+    row.appendChild(c);
+  });
+  return row;
+}
+
 function sep(name, icon) {
   return mk("div", "sep", svg(icon || "info") + "<span></span>").appendChild(
     document.createTextNode(name)
@@ -567,41 +615,75 @@ function actionPill(icon, name, fn, confirmText) {
   });
 }
 
-function confirmDlg(text, fn) {
-  var bg = mk("div", "scrim");
-  bg.style.zIndex = 69;
-  var d = mk("div", "dlg pane");
-  d.innerHTML = "<p></p><div class='rrow'></div>";
-  d.querySelector("p").textContent = text;
-  function close() {
-    bg.remove();
-    d.remove();
-  }
-  var row = d.querySelector(".rrow");
-  var no = mk("div", "rbtn pane", _T("cancel")),
-    yes = mk("div", "rbtn pane", _T("confirm"));
-  yes.style.background = "linear-gradient(180deg,rgba(255,196,130,.62),rgba(150,92,44,.66))";
-  no.addEventListener("click", close);
-  yes.addEventListener("click", function () {
-    close();
-    fn();
-  });
-  bg.addEventListener("click", close);
-  row.appendChild(no);
-  row.appendChild(yes);
-  document.body.appendChild(bg);
-  document.body.appendChild(d);
-  requestAnimationFrame(function () {
-    bg.classList.add("in");
-  });
+/* Files, for every export and import: one place that saves a text file on this device and one that asks for a file and reads it as text, so each can say what went wrong. */
+function fileStamp() {
+  var d = new Date(),
+    p = function (n) {
+      return ("0" + n).slice(-2);
+    };
+  return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + "-" + p(d.getHours()) + p(d.getMinutes());
 }
 
-/* A question that slides up from the bottom and stays there, as in the Hue app: a line of text, the choices (each a function), and Cancel last. */
-function askSheet(text, choices) {
+/* A name that is safe in a file name: letters and digits, dashes between them. */
+function fileSlug(text, fallback) {
+  var t = String(text || "")
+    .toLowerCase()
+    .replace(/\u0131/g, "i")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40);
+  return t || fallback || "file";
+}
+
+function downloadText(name, text, type) {
+  var blob = new Blob([text], { type: type || "application/json" }),
+    a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () {
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  }, 1000);
+}
+
+/* Asks for a file and gives its text to `onText` (or the file itself when `o.asFile` is set, for a picture). `o.accept` (".json,application/json"), `o.maxBytes` (a file larger than that is refused, with a message). */
+function pickTextFile(o, onText) {
+  var fi = document.createElement("input");
+  fi.type = "file";
+  fi.accept = o.accept || ".json,application/json";
+  fi.addEventListener("change", function () {
+    var f = fi.files && fi.files[0];
+    if (!f) return;
+    if (f.size > (o.maxBytes || 5 * 1024 * 1024)) {
+      toast(_T("that_file_is_too_large"));
+      return;
+    }
+    if (o.asFile) {
+      onText(f, f.name);
+      return;
+    }
+    var rd = new FileReader();
+    rd.onload = function () {
+      onText(String(rd.result), f.name);
+    };
+    rd.onerror = function () {
+      toast(_T("couldn_t_read_that_file"));
+    };
+    rd.readAsText(f);
+  });
+  fi.click();
+}
+
+/* Every question and every short entry is one sheet that slides up from the bottom and stays there, as in the Hue app: "Are you sure", "Unsaved changes", the TV's keyboard. Nothing
+   opens in the middle of the screen. `build(box, close)` fills the sheet and gets the function that closes it; `keep()` (optional) says whether a tap outside must not close it. */
+function bottomSheet(build, keep) {
   var bg = mk("div", "scrim blur"),
     box = mk("div", "asheet pane");
   bg.style.zIndex = 70;
-  box.appendChild(mk("div", "as-t")).textContent = text;
   function close() {
     bg.classList.remove("in");
     box.classList.remove("in");
@@ -610,19 +692,10 @@ function askSheet(text, choices) {
       box.remove();
     }, 340);
   }
-  choices
-    .concat([{ label: _T("cancel"), cancel: true }])
-    .forEach(function (c) {
-      var r = mk("div", "as-b" + (c.cancel ? " cancel" : ""));
-      r.setAttribute("role", "button");
-      r.textContent = c.label;
-      r.addEventListener("click", function () {
-        close();
-        if (c.fn) c.fn();
-      });
-      box.appendChild(r);
-    });
-  bg.addEventListener("click", close);
+  build(box, close);
+  bg.addEventListener("click", function () {
+    if (!(keep && keep())) close();
+  });
   document.body.appendChild(bg);
   document.body.appendChild(box);
   requestAnimationFrame(function () {
@@ -631,6 +704,31 @@ function askSheet(text, choices) {
       box.classList.add("in");
     });
   });
+  return close;
+}
+
+/* A question: a line of text, then the choices (each a full-width button); Cancel is always last. */
+function askSheet(text, choices) {
+  return bottomSheet(function (box, close) {
+    box.appendChild(mk("div", "as-t")).textContent = text;
+    choices
+      .concat([{ label: _T("cancel"), cancel: true }])
+      .forEach(function (c) {
+        var r = mk("div", "as-b" + (c.cancel ? " cancel" : "") + (c.danger ? " danger" : ""));
+        r.setAttribute("role", "button");
+        r.textContent = c.label;
+        r.addEventListener("click", function () {
+          close();
+          if (c.fn) c.fn();
+        });
+        box.appendChild(r);
+      });
+  });
+}
+
+/* "Are you sure": the text, Confirm, Cancel. `label` names the button for what it does (Delete, Remove). */
+function confirmDlg(text, fn, label) {
+  return askSheet(text, [{ label: label || _T("confirm"), fn: fn, danger: !!label }]);
 }
 
 function rbtn(icon, fn, label, hold) {
@@ -880,6 +978,11 @@ function svOk(id) {
   return s && s !== "unavailable" && s !== "unknown";
 }
 
+/* The key of a device made on this dashboard (an appliance, a remote): different even for two made in the same millisecond. */
+function newKey(prefix) {
+  return prefix + Date.now().toString(36).slice(-5) + Math.random().toString(36).slice(2, 7);
+}
+
 function imgOk(u) {
   return (
     typeof u === "string" &&
@@ -938,8 +1041,9 @@ var BUILD = "3.82",
 
 /* entity picker */
 /* 'taken' (optional) says which entities are already used and are left out of the list. */
-function pickEntity(title, doms, cls, cb, taken) {
-  PICK = { title: title, doms: doms, cls: cls || null, cb: cb, taken: taken || null, q: "" };
+/* `near` is a list of entities already chosen for the same thing: the entities of their Home Assistant devices are listed first. */
+function pickEntity(title, doms, cls, cb, taken, near) {
+  PICK = { title: title, doms: doms, cls: cls || null, cb: cb, taken: taken || null, near: near || null, q: "" };
   showPopup("pick-ent", true);
 }
 
@@ -957,6 +1061,16 @@ function pickBuild(b) {
   w.appendChild(inp);
   b.appendChild(w);
   b.appendChild(box);
+  /* The devices of the entities in `near`. */
+  var nearDevices = {};
+  (P.near || []).forEach(function (id) {
+    var e = h.entities && h.entities[id];
+    if (e && e.device_id) nearDevices[e.device_id] = true;
+  });
+  function isNear(id) {
+    var e = h.entities && h.entities[id];
+    return !!(e && e.device_id && nearDevices[e.device_id]);
+  }
   function list() {
     redrawBox(box, function () {
       var tk = norm(P.q).trim().split(/\s+/).filter(Boolean),
@@ -975,10 +1089,10 @@ function pickBuild(b) {
           })
         )
           return;
-        out.push({ id: id, name: nm });
+        out.push({ id: id, name: nm, near: isNear(id) });
       });
       out.sort(function (a, c) {
-        return a.name.localeCompare(c.name);
+        return (c.near ? 1 : 0) - (a.near ? 1 : 0) || a.name.localeCompare(c.name);
       });
       if (!out.length) box.appendChild(pill("info", _T("nothing_found"), {}));
       out.slice(0, 40).forEach(function (c) {

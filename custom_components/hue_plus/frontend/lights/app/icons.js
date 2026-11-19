@@ -130,6 +130,30 @@ function pathOk(d) {
   );
 }
 
+/* The path data of an SVG file, to be kept as an icon: the file must be a drawing of paths on a 24 by 24 grid (or one with no grid given). Gives { path } or { problem }. */
+function iconFromSvg(text) {
+  var doc;
+  try {
+    doc = new DOMParser().parseFromString(String(text), "image/svg+xml");
+  } catch (e) {
+    return { problem: _T("that_isn_t_an_svg_file") };
+  }
+  var root = doc.documentElement;
+  if (!root || root.nodeName.toLowerCase() !== "svg" || doc.getElementsByTagName("parsererror").length) return { problem: _T("that_isn_t_an_svg_file") };
+  var vb = (root.getAttribute("viewBox") || "").trim().split(/[\s,]+/).map(Number);
+  if (vb.length === 4 && (vb[2] !== 24 || vb[3] !== 24 || vb[0] !== 0 || vb[1] !== 0)) return { problem: _T("the_icon_must_be_drawn_on_a_24_by_24_grid") };
+  var d = [].slice
+    .call(root.getElementsByTagName("path"))
+    .map(function (p) {
+      return (p.getAttribute("d") || "").trim();
+    })
+    .filter(Boolean)
+    .join(" ");
+  if (!d) return { problem: _T("that_svg_has_no_paths") };
+  if (!pathOk(d)) return { problem: _T("that_path_data_isn_t_valid") };
+  return { path: d };
+}
+
 function svg(n) {
   if (IC[n]) return "<svg viewBox='0 0 24 24'>" + IC[n] + "</svg>";
   var p = STORE.icons && STORE.icons[n];
@@ -299,52 +323,29 @@ function iconPick(list, cur, fn) {
   var foot = mk("div", "idd-foot"),
     addBtn = mk("div", "idd-add");
   addBtn.textContent = _T("add_your_own_icon");
+  addBtn.setAttribute("role", "button");
   foot.appendChild(addBtn);
   panel.appendChild(foot);
-  var form = mk("div");
-  form.style.display = "none";
-  foot.appendChild(form);
-  var ni = mk("input", "sq"),
-    pi = mk("input", "sq");
-  ni.type = "text";
-  ni.maxLength = 24;
-  ni.placeholder = _T("icon_name_like_garage");
-  pi.type = "text";
-  pi.placeholder = _T("path_data_of_a_24_by_24_svg_icon");
-  [ni, pi].forEach(function (x) {
-    var w2 = mk("div", "sqw pane");
-    w2.appendChild(x);
-    form.appendChild(w2);
-  });
-  var go2 = mk("div", "rbtn pane");
-  go2.textContent = _T("add_and_use_this_icon");
-  form.appendChild(go2);
+  /* An icon of the person's own is an SVG file: its paths are read, checked and kept as an icon named after the file. */
   addBtn.addEventListener("click", function () {
-    form.style.display = form.style.display === "none" ? "" : "none";
-  });
-  go2.addEventListener("click", function () {
-    var nm = ni.value
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9_-]+/g, "-")
-        .replace(/^-+|-+$/g, "")
-        .slice(0, 24),
-      d = pi.value.trim();
-    if (!nm) {
-      toast(_T("give_the_icon_a_name"));
-      return;
-    }
-    if (!pathOk(d)) {
-      toast(_T("that_path_data_isn_t_valid"));
-      return;
-    }
-    STORE.icons = STORE.icons || {};
-    if (Object.keys(STORE.icons).length >= 300) {
-      toast(_T("too_many_extra_icons_remove_some_fir"));
-      return;
-    }
-    STORE.icons["custom:" + nm] = d;
-    done("custom:" + nm);
+    pickTextFile({ accept: ".svg,image/svg+xml", maxBytes: 200 * 1024 }, function (text, fileName) {
+      var r = iconFromSvg(text);
+      if (r.problem) {
+        toast(r.problem);
+        return;
+      }
+      STORE.icons = STORE.icons || {};
+      if (Object.keys(STORE.icons).length >= 300) {
+        toast(_T("too_many_extra_icons_remove_some_fir"));
+        return;
+      }
+      var nm = "custom:" + fileSlug(String(fileName || "").replace(/\.svg$/i, ""), "icon").slice(0, 24),
+        base = nm,
+        n = 1;
+      while (STORE.icons[nm] && STORE.icons[nm] !== r.path) nm = base + "-" + ++n;
+      STORE.icons[nm] = r.path;
+      done(nm);
+    });
   });
   function done(n) {
     cur = n;
@@ -417,7 +418,7 @@ function iconPick(list, cur, fn) {
     shown = end;
   }
   function row(n) {
-    var r = mk("div", "idd-row" + (n === cur ? " sel" : "")),
+    var r = mk("div", "idd-row" + (n === cur ? " on" : "")),
       p = (STORE.icons && STORE.icons[n]) || ICONPATH[n],
       g = mk("span", "ic", IC[n] ? svg(n) : p ? iconSvg(p) : svg("info")),
       l = mk("span", "idd-n");
@@ -458,10 +459,40 @@ function iconPick(list, cur, fn) {
     q = inp.value;
     filter();
   });
+  /* The panel opens and closes by sliding its height, so what is under it moves down and up instead of jumping. */
+  function slide(open, after) {
+    panel.style.overflow = "hidden";
+    if (open) {
+      panel.style.display = "";
+      var h = panel.scrollHeight;
+      panel.style.maxHeight = "0px";
+      panel.style.opacity = "0";
+      requestAnimationFrame(function () {
+        panel.style.transition = "max-height .3s cubic-bezier(.2,.9,.3,1),opacity .22s";
+        panel.style.maxHeight = h + "px";
+        panel.style.opacity = "1";
+      });
+    } else {
+      panel.style.maxHeight = panel.scrollHeight + "px";
+      requestAnimationFrame(function () {
+        panel.style.transition = "max-height .24s cubic-bezier(.4,0,.2,1),opacity .18s";
+        panel.style.maxHeight = "0px";
+        panel.style.opacity = "0";
+      });
+    }
+    setTimeout(function () {
+      panel.style.transition = "";
+      panel.style.overflow = "";
+      panel.style.maxHeight = "";
+      panel.style.opacity = "";
+      if (after) after();
+    }, open ? 340 : 280);
+  }
   function openIt() {
     isOpen = true;
-    panel.style.display = "";
+    wrap.classList.add("open");
     build();
+    slide(true);
     iconListLoad(function () {
       if (isOpen) {
         build();
@@ -476,8 +507,11 @@ function iconPick(list, cur, fn) {
   }
   function close() {
     isOpen = false;
-    panel.style.display = "none";
+    wrap.classList.remove("open");
     if (io) io.disconnect();
+    slide(false, function () {
+      if (!isOpen) panel.style.display = "none";
+    });
   }
   btn.addEventListener("click", function () {
     if (isOpen) close();

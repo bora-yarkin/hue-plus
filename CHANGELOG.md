@@ -4,6 +4,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+### Changed
+- **The Hue panel's colour screen is Home Control 0.16.0's**: the circle of separated lights and the drops open and close as the app does (measured from a 60 frames a second recording), a tap on a light inside the circle only picks it, joined lights stay where they were dropped, a light that is off opens a black drop (dragging it turns it on), lights without an icon of their own take their group's, a tile is the same colour for every light at the same temperature, and the lights on the white wheel start in a column in the middle. The copy in `lights/` is made again with `scripts/sync_light_popup.py`.
+- **Every sheet comes up from the bottom**: the list under the three dots, questions ("Delete this scene?") and the line to write a folder's name in slide up over the dimmed page and slide back down; they only faded in before. (The card a folder opens still opens out of the folder and the Sync cards still rise as they did, as they were copied from the app.)
+- **The pencil and the three dots of a scene stand right next to the scene that plays**, in the height of its tile. The tiles after it in its row slide right to make room and slide back when another scene plays (from the second tile playing to the fourth, the third and fourth slide left and the rest stay); they used to be put wherever the grid had room.
+
+### Fixed
+- A light on the room page had a bulb for its icon until the bridge's list of lights had been read (the first room opened after the panel started, or after a reload): the icon was guessed from the name ("Bed Light" gave a bulb) and the colour screen then showed the right one. The icons on the page are now drawn again when the list arrives.
+
 ## [0.18.2] - 2026-11-15
 
 ### Fixed

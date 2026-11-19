@@ -326,15 +326,12 @@
   function ask(text, buttons) {
     var bg = mk("div", "scrim"),
       d = mk("div", "dlg"),
-      row = mk("div", "rrow");
+      row = mk("div", "rrow"),
+      close = null;
     bg.style.zIndex = 69;
     d.setAttribute("role", "dialog");
     d.setAttribute("aria-modal", "true");
     d.appendChild(mk("p")).textContent = text;
-    function close() {
-      bg.remove();
-      d.remove();
-    }
     buttons = [{ label: T("cancel") }].concat(buttons);
     d.style.display = "block";
     row.style.gridTemplateColumns = "repeat(" + buttons.length + ",1fr)";
@@ -357,12 +354,8 @@
       row.appendChild(r);
     });
     d.appendChild(row);
-    bg.addEventListener("click", close);
-    document.body.appendChild(bg);
-    document.body.appendChild(d);
-    requestAnimationFrame(function () {
-      bg.classList.add("in");
-    });
+    /* Like every sheet of the panel it comes up from the bottom (hpSheetOpen). */
+    close = hpSheetOpen(bg, d);
   }
 
   function confirmDlg(text, fn) {
