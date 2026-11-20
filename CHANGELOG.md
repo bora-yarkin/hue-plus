@@ -4,6 +4,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+### Added
+- **Home Control's Settings popup has what the Hue Plus panel got**: a moving Hue scene's popup (edit mode) has Scene settings, with the speed the scene starts with, Auto-play, Colors (gives the palette to the lights again in another order) and Reset scene; the scene choice of a switch press has the plus for a new scene, the Bright, Off and Do nothing suggestions and Show preview. The pieces the pages draw in the Hue app's way (round pictures at the ends of rows, round marks, cards, tiles, wheel labels) are styled in the plugin itself, so Home Control shows them too.
+
 ## [0.21.10] - 2026-11-20
 
 ### Changed

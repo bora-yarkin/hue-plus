@@ -1668,6 +1668,19 @@ function hmScenePick(b, id) {
     var scenes = hmBtnScenes(r, hmBtnTargets(r, f.acc, f.btn)),
       current = hmPressScenes(f.spec)[0];
     if (!scenes.length) box.appendChild(hmCallout(_T("nothing_found")));
+    /* the entity of a bridge scene, to play it as a preview */
+    function entityOf(sceneId) {
+      return Object.keys(H().entities).filter(function (e) {
+        return H().entities[e].unique_id === sceneId;
+      })[0];
+    }
+    function choose(what, sceneId) {
+      hmStagePress(k, f, what);
+      var ent = sceneId && HM_PREVIEW ? entityOf(sceneId) : null;
+      if (ent) call("scene", "turn_on", { entity_id: ent });
+      popBack();
+      popBack();
+    }
     box.appendChild(
       hmGroup(
         scenes.map(function (s) {
@@ -1678,16 +1691,78 @@ function hmScenePick(b, id) {
               return current === s.id;
             },
             tap: function () {
-              hmStagePress(k, f, { action: "scene", scene: s.id, with_off: hmPressWithOff(f.spec) });
-              popBack();
-              popBack();
+              choose({ action: "scene", scene: s.id, with_off: hmPressWithOff(f.spec) }, s.id);
             },
           });
         })
       )
     );
+    /* a new scene for the room, the other things a press can do with a scene's place, and the preview */
+    var more = [
+      hmRow({
+        icon: "plus",
+        title: _T("hn_add_a_scene"),
+        tap: function () {
+          hueStartMaker("home");
+        },
+      }),
+    ];
+    var bright = scenes.filter(function (s) {
+      return /^bright$/i.test(s.name);
+    })[0];
+    if (bright)
+      more.push(
+        hmRow({
+          icon: "bright",
+          title: _T("app_bright"),
+          check: function () {
+            return current === bright.id;
+          },
+          tap: function () {
+            choose({ action: "scene", scene: bright.id, with_off: hmPressWithOff(f.spec) }, bright.id);
+          },
+        })
+      );
+    more.push(
+      hmRow({
+        icon: "power",
+        title: _T("app_off"),
+        tap: function () {
+          choose({ action: "all_off" });
+        },
+      }),
+      hmRow({
+        icon: "minus",
+        title: _T("hm_do_nothing"),
+        tap: function () {
+          choose({ action: "do_nothing" });
+        },
+      })
+    );
+    box.appendChild(hmLabel(_T("app_suggestions")));
+    box.appendChild(hmGroup(more));
+    box.appendChild(
+      hmGroup([
+        hmRow({
+          title: _T("app_show_preview"),
+          sub: _T("app_show_preview_sub"),
+          toggle: {
+            get: function () {
+              return HM_PREVIEW;
+            },
+            set: function () {
+              HM_PREVIEW = !HM_PREVIEW;
+              refresh();
+            },
+          },
+        }),
+      ])
+    );
   });
 }
+
+/* Show preview of the scene choice: a scene that is chosen plays in its room at once. */
+var HM_PREVIEW = false;
 
 /* A cycle of scenes: the order is the order of the presses. The draft is kept here and written when it is saved, since a cycle needs at least two scenes. */
 var HM_CYCLE = null;

@@ -119,9 +119,11 @@ function hueAddScenePage(b) {
       ["cam", "hn_from_photo", "hn_from_photo_sub", "photo"],
     ];
   /* the title and the line under it, as the app has them, then the ways to make a scene as tiles */
-  var heading = mk("div", "addtitle");
-  heading.textContent = _T("hn_add_a_scene");
-  b.appendChild(heading);
+  if (b.parentNode && b.parentNode.querySelector && b.parentNode.querySelector(".pbar")) {
+    var heading = mk("div", "addtitle");
+    heading.textContent = _T("hn_add_a_scene");
+    b.appendChild(heading);
+  }
   b.appendChild(mkHint(_T("hn_add_a_scene_hint")));
   items.forEach(function (it) {
     grid.appendChild(
