@@ -22,5 +22,5 @@
   "requirements": [
     "aiohue>=4.9.0"
   ],
-  "version": "0.21.2"
+  "version": "0.21.3"
 }
