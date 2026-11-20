@@ -4,6 +4,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.21.10] - 2026-11-20
+
 ### Changed
 - **Screens compared again and redrawn**: the area page lists its times with their scenes and has the name's pencil, calibrating shows the seconds left in the bottom bar, Add a scene is a title with tiles and goes straight on for the room of the page, a press's scene choice is the room's name with the plus, the scenes in two rows with the pencil by the chosen one, the Bright, Off and Do nothing suggestions and Show preview, the Style and other choices of a wizard are sheets with round pictures, the lighting schedule has its start, end and days in one card (a start or an end opens its own sheet with the choices and the wheels), the wheels are smaller, and Edit name and type is a sheet.
 
