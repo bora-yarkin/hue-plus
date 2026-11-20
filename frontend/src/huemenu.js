@@ -620,7 +620,9 @@ function hmLights(b) {
     });
     t.refresh = function () {
       t.classList.toggle("on", isOn(id));
-      t.querySelector("i").textContent = V_(id) === "unavailable" ? _T("hm_unreachable") : isOn(id) ? _T("on_2") : _T("off");
+      var where = hpRoomOfLight(id),
+        state = V_(id) === "unavailable" ? _T("hm_unreachable") : isOn(id) ? _T("on_2") : _T("off");
+      t.querySelector("i").textContent = where ? where.name + " · " + state : state;
     };
     reg(t.refresh);
     grid.appendChild(t);
@@ -740,7 +742,7 @@ function hmLight(b, id) {
           })
         : null,
       hmButton(_T("hm_delete"), "danger", function () {
-        hmRemoveDevice(hpName(id), id);
+        hmRemoveDevice(null, id);
       }),
     ])
   );
@@ -749,7 +751,9 @@ function hmLight(b, id) {
 /* Takes a light or an accessory off the bridge, after asking. The device must be reset before it can be added again. */
 function hmRemoveDevice(device, entity) {
   confirmDlg(_T("hm_remove_this_device"), function () {
-    hpCall("hue_plus", "remove_device", { device: device, confirm: true }).then(
+    /* a light goes by its own id (lights of different rooms can have one name); an accessory by its device's id */
+    var what = entity && A(entity).hue_light_id ? { light: A(entity).hue_light_id } : { device: device };
+    hpCall("hue_plus", "remove_device", Object.assign({ confirm: true }, what)).then(
       function () {
         HM_READY = false;
         closeLayer();

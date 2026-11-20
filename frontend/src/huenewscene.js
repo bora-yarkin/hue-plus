@@ -154,8 +154,9 @@ function hueChooseLights(mode) {
   HUENEW.sel = {};
   HUENEW.g = null;
   if (g) hueSelectGroup(g);
-  /* The scene is for the room or zone the page is of ("save to this Room"), so there is no room to choose: the app goes straight on. */
-  if (g && mode !== "edit") {
+  /* In the Hue Plus panel the scene is for the room the page is of ("save to this Room"), as in the Hue app, so it goes straight on. Home Control keeps the choice:
+     the scene can be for any room or zone, whatever page it was started from. */
+  if (g && mode !== "edit" && typeof window !== "undefined" && window.HueHost) {
     hueAfterLights();
     return;
   }
@@ -203,7 +204,7 @@ function hueLightsPage(b) {
       /* The lights of the room or zone, for information: the scene sets all of them (any one can be set to off in the light popup). */
       var grid = mk("div", "gridl g2");
       g.lights.forEach(function (id) {
-        grid.appendChild(pill("light", hueLightName(id), {}));
+        grid.appendChild(pill("light", hpLightLabel(hueLightName(id), id), {}));
       });
       wrap.appendChild(grid);
     }

@@ -1,15 +1,6 @@
 /* A light's settings, as the app has them: the light and its name, the room it is in (the bridge's), General (function, power on, orientation), and Support, with the light's device info one tap away. What
  this adds to the app's page, Hue Plus's own timed effects, stays at the end. It is the menu's page (hmLight) with those parts changed, so what is edited and saved is the same. */
 
-function hpRoomOfLight(id) {
-  var hue = A(id).hue_light_id,
-    found = null;
-  (HM.rooms || []).concat(HM.zones || []).forEach(function (g) {
-    if (hue && (g.lights || []).indexOf(hue) >= 0) found = found || g;
-  });
-  return found;
-}
-
 function hpLightSettings(b, id) {
   hmLight(b, id);
   var kids = [].slice.call(b.children);

@@ -681,7 +681,7 @@ function hpScenePage(body, key) {
       });
     });
   var lights = hpSceneLights(sid);
-  if (lights.length) {
+  if (lights.length || (isAdmin() && hueplus.has(H(), "update_scene"))) {
     /* The Lights title has the Colors button of a moving scene: it gives the scene's colours out to the lights again, in another order (kept until SAVE). */
     var bar = mk("div", "lbrow lightsbar");
     var title = mk("div", "lbtitle");
@@ -697,10 +697,16 @@ function hpScenePage(body, key) {
       });
       bar.appendChild(shuffle);
     }
+    if (isAdmin() && hueplus.has(H(), "update_scene")) bar.appendChild(hpRound("edit", _T("hn_scene_lights"), function () {
+      showPopup("hue-scene-lights:" + sid, true);
+    }));
     body.appendChild(bar);
     var tiles = mk("div", "ltiles");
     lights.forEach(function (lid) {
-      tiles.appendChild(hpLightTile(lid, room));
+      var tile = hpLightTile(lid, room);
+      /* a zone can have lights of several rooms, and two of them can be named alike: the tile says the room too */
+      if (room && A(room).hue_type === "zone") tile.querySelector("b").textContent = hpEntityLabel(lid);
+      tiles.appendChild(tile);
     });
     body.appendChild(tiles);
   }

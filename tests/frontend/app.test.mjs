@@ -95,3 +95,32 @@ test("no function declares two helpers of the same name (the second silently rep
   }
   assert.deepEqual(dupes, []);
 });
+
+test("two lights with one name in different rooms are each in their own room, by the bridge's ids and not by name", () => {
+  const source = readFileSync(new URL("../../frontend/app/home.js", import.meta.url), "utf8");
+  const start = source.indexOf("function hpGroupLights(id)");
+  const end = source.indexOf("/* A room's lights in the order");
+  const state = (name, hue, extra = {}) => ({ attributes: { friendly_name: name, hue_light_id: hue, ...extra } });
+  const states = {
+    "light.kitchen_room": { attributes: { friendly_name: "Kitchen", hue_type: "room", lights: ["Ceiling"] } },
+    "light.hall_room": { attributes: { friendly_name: "Hall", hue_type: "room", lights: ["Ceiling"] } },
+    "light.ceiling_a": state("Ceiling", "hue-a"),
+    "light.ceiling_b": state("Ceiling", "hue-b"),
+  };
+  const entities = { "light.ceiling_a": { platform: "hue_plus" }, "light.ceiling_b": { platform: "hue_plus" } };
+  const context = vm.createContext({
+    H: () => ({ states, entities }),
+    A: (id) => (states[id] || {}).attributes || {},
+    HM: {
+      rooms: [
+        { id: "r1", name: "Kitchen", lights: ["hue-a"] },
+        { id: "r2", name: "Hall", lights: ["hue-b"] },
+      ],
+      zones: [],
+    },
+  });
+  vm.runInContext(source.slice(start, end), context);
+  const lightsOf = (room) => JSON.parse(JSON.stringify(vm.runInContext(`hpGroupLights("${room}")`, context)));
+  assert.deepEqual(lightsOf("light.kitchen_room"), ["light.ceiling_a"]);
+  assert.deepEqual(lightsOf("light.hall_room"), ["light.ceiling_b"]);
+});

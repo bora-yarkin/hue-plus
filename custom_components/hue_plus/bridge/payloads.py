@@ -94,6 +94,26 @@ def scene_recolor(scene: dict[str, Any], light_ids: list[str], mode: str, rng: r
     return actions
 
 
+def scene_with_lights(
+    scene: dict[str, Any], wanted: list[str], group_lights: list[str], lights: dict[str, dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """The actions of a scene for the lights it should have: a light it already had keeps its action, a light that is added gets what the scene would
+    give it (a colour of a moving scene's palette, else the look the light has now) and a light left out is dropped. Only lights of the scene's own
+    room or zone can be in it, and it needs one."""
+    if not wanted:
+        raise ValueError("A scene needs at least one light")
+    foreign = [light_id for light_id in wanted if light_id not in group_lights]
+    if foreign:
+        raise ValueError("A scene can only have lights of its own room or zone")
+    have = {(a.get("target") or {}).get("rid"): a for a in scene.get("actions") or []}
+    added = [light_id for light_id in wanted if light_id not in have]
+    if added and scene.get("palette"):
+        given = {a["target"]["rid"]: a for a in scene_recolor({"palette": scene["palette"], "actions": []}, added, "reset")}
+    else:
+        given = {a["target"]["rid"]: a for a in scene_actions_from_lights([lights[i] for i in added if i in lights])}
+    return [have[light_id] if light_id in have else given[light_id] for light_id in wanted if light_id in have or light_id in given]
+
+
 def scene_post(
     name: str, group_id: str, group_type: str, actions: list[dict[str, Any]], speed: float | None, auto_dynamic: bool | None
 ) -> dict[str, Any]:

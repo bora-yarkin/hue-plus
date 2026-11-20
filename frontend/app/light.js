@@ -150,6 +150,17 @@ window.HueHost.frameBar = function (title, onDone, onCancel) {
 window.HueHost.lightType = function (id) {
   return hpArchetypeOf(id);
 };
+window.HueHost.onSceneChanged = function () {
+  hueplus.resources(["scenes"]).then(function (r) {
+    if (r && r.scenes) HM.scenes = r.scenes;
+    HPSC.loaded = false;
+    HPSC.byId = {};
+    hpSceneData(function () {
+      refresh();
+    });
+  }, function () {});
+};
+
 window.HueHost.onRenamed = function () {
   hpLoadLightStates();
 };

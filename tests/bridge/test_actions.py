@@ -414,18 +414,47 @@ class ActionTests(unittest.IsolatedAsyncioTestCase):
         ]
         return snap
 
-    async def test_a_moving_scene_gives_its_palette_out_again_to_every_light_of_its_room(self):
-        calls, _ = await self.go("update_scene", {"scene": "Aurora", "recolor": "reset"}, snap=self.moving_scene())
+    async def test_a_moving_scene_gives_its_palette_out_again_to_the_lights_it_has(self):
+        snap = self.moving_scene()
+        snap.scene[0]["actions"].append(
+            {"target": {"rid": "l2", "rtype": "light"}, "action": {"on": {"on": True}, "dimming": {"brightness": 40.0}}}
+        )
+        calls, _ = await self.go("update_scene", {"scene": "Aurora", "recolor": "reset"}, snap=snap)
         (call,) = calls
         self.assertEqual(call[:3], ("put", "scene", "m1"))
         given = call[3]["actions"]
-        self.assertEqual([a["target"]["rid"] for a in given], ["l1", "l2"], "the light the scene did not list is in it now")
+        self.assertEqual([a["target"]["rid"] for a in given], ["l1", "l2"])
         self.assertEqual([a["action"]["color"]["xy"] for a in given], [{"x": 0.2, "y": 0.4}, {"x": 0.1, "y": 0.1}])
         self.assertEqual({a["action"]["dimming"]["brightness"] for a in given}, {26.0}, "reset uses the palette's own brightness")
-        calls, _ = await self.go("update_scene", {"scene": "Aurora", "recolor": "shuffle"}, snap=self.moving_scene())
+        calls, _ = await self.go("update_scene", {"scene": "Aurora", "recolor": "shuffle"}, snap=snap)
         shuffled = calls[0][3]["actions"]
         self.assertEqual(sorted(a["action"]["color"]["xy"]["x"] for a in shuffled), [0.1, 0.2], "every colour is used once for two lights")
         self.assertEqual(next(a for a in shuffled if a["target"]["rid"] == "l1")["action"]["dimming"]["brightness"], 70.0)
+
+    async def test_colors_keeps_to_the_lights_of_the_scene_and_reset_starts_it_over_for_the_room(self):
+        calls, _ = await self.go("update_scene", {"scene": "Aurora", "recolor": "shuffle"}, snap=self.moving_scene())
+        self.assertEqual(
+            [a["target"]["rid"] for a in calls[0][3]["actions"]], ["l1"], "the scene lists one light of the room, and Colors keeps to it"
+        )
+        calls, _ = await self.go("update_scene", {"scene": "Aurora", "recolor": "reset"}, snap=self.moving_scene())
+        self.assertEqual(
+            [a["target"]["rid"] for a in calls[0][3]["actions"]], ["l1", "l2"], "Reset scene gives the palette to every light of the room"
+        )
+
+    async def test_the_lights_of_a_scene_are_chosen_from_its_own_room_or_zone(self):
+        snap = self.moving_scene()
+        calls, _ = await self.go("update_scene", {"scene": "Aurora", "lights": ["l1", "l2"]}, snap=snap)
+        actions = calls[0][3]["actions"]
+        self.assertEqual([a["target"]["rid"] for a in actions], ["l1", "l2"])
+        self.assertEqual(actions[0]["action"]["dimming"]["brightness"], 70.0, "a light it had keeps its action")
+        self.assertEqual(actions[1]["action"]["color"]["xy"], {"x": 0.2, "y": 0.4}, "a light that is added gets a colour of the palette")
+        calls, _ = await self.go("update_scene", {"scene": "Aurora", "lights": ["l1", "l2"], "recolor": "reset"}, snap=snap)
+        self.assertEqual([a["action"]["color"]["xy"]["x"] for a in calls[0][3]["actions"]], [0.2, 0.1], "added and recoloured in one call")
+        calls, _ = await self.go("update_scene", {"scene": "Aurora", "lights": ["l1"]}, snap=snap)
+        self.assertEqual([a["target"]["rid"] for a in calls[0][3]["actions"]], ["l1"])
+        for bad, message in (([], "at least one light"), (["l1", "elsewhere"], "own room or zone")):
+            with self.assertRaisesRegex(ValueError, message):
+                await self.go("update_scene", {"scene": "Aurora", "lights": bad}, snap=snap)
 
     async def test_recolouring_needs_a_palette_and_is_not_combined_with_other_changes(self):
         with self.assertRaisesRegex(ValueError, "no palette"):
@@ -554,6 +583,20 @@ class ActionTests(unittest.IsolatedAsyncioTestCase):
     async def test_removing_a_device(self):
         calls, _ = await self.go("remove_device", {"device": "Bed Light", "confirm": True})
         self.assertEqual(calls, [("delete", "device", "d2", None)])
+
+    async def test_two_lights_with_the_same_name_are_removed_by_their_own_id(self):
+        snap = world()
+        twin_device, twin_light, _twin_ent = lamp("d3", "Bed Light", "l3", "e3")
+        snap.device.append(twin_device)
+        snap.light.append(twin_light)
+        with self.assertRaisesRegex(ValueError, "More than one device"):
+            await self.go("remove_device", {"device": "Bed Light", "confirm": True}, snap=snap)
+        calls, _ = await self.go("remove_device", {"light": "l3", "confirm": True}, snap=snap)
+        self.assertEqual(calls, [("delete", "device", "d3", None)], "the light of the other room is the one that goes")
+        calls, _ = await self.go("remove_device", {"light": "l2", "confirm": True}, snap=snap)
+        self.assertEqual(calls, [("delete", "device", "d2", None)])
+        with self.assertRaisesRegex(ValueError, "Give the device or the light"):
+            await self.go("remove_device", {"confirm": True}, snap=snap)
 
     # --- raw and information
     async def test_raw_requests_are_limited_to_known_resources_and_changes_need_confirm(self):

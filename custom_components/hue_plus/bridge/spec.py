@@ -176,9 +176,14 @@ SPEC: dict[str, dict[str, Any]] = {
             "speed": f("number", "From 0 to 1."),
             "auto_dynamic": f("bool", "Whether it starts moving when recalled."),
             "actions": f("object", "New actions as the bridge writes them."),
+            "lights": f(
+                "object",
+                "The lights the scene should have, as a list of light ids (only lights of its own room or zone): one it had keeps what it does, one added gets "
+                "a colour of the palette of a moving scene (else how it looks now), one left out is dropped.",
+            ),
             "recolor": f(
                 "select",
-                "Gives the palette of a moving scene out again to every light of its room or zone: shuffle mixes the colours (the Hue app's Colors button), "
+                "Gives the palette of a moving scene out again to the lights it has: shuffle mixes the colours (the Hue app's Colors button), "
                 "reset hands them out in the palette's order at its own brightness (Reset scene).",
                 options=["shuffle", "reset"],
             ),
@@ -356,7 +361,12 @@ SPEC: dict[str, dict[str, Any]] = {
     },
     "remove_device": {
         "description": "Removes a light or accessory from the bridge. It has to be reset before it can be added again.",
-        "fields": {"device": f("text", "The device (id or name).", True)},
+        "fields": {
+            "device": f("text", "The device (id; a name only when no other device has it)."),
+            "light": f(
+                "text", "Or the light by its id: its device is removed. Lights of different rooms can have the same name, so give an id."
+            ),
+        },
     },
     # routines and accessories
     "create_routine": {

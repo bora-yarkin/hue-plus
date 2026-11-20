@@ -202,7 +202,8 @@ function hpEditDelete(room, sel, after) {
       var job = Promise.resolve();
       items.forEach(function (x) {
         job = job.then(function () {
-          if (x.kind === "light" || x.kind === "switch") return hpCall("hue_plus", "remove_device", { device: x.name, confirm: true });
+          if (x.kind === "light") return hpCall("hue_plus", "remove_device", { light: A(x.id).hue_light_id, confirm: true });
+          if (x.kind === "switch") return hpCall("hue_plus", "remove_device", { device: x.id, confirm: true });
           if (x.kind === "scene") return hpCall("hue_plus", "delete_scene", { scene: hueSceneUid(x.id), confirm: true });
           hpSaveUserFolders(
             room,

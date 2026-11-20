@@ -611,9 +611,13 @@
           "name": "Actions",
           "description": "New actions as the bridge writes them."
         },
+        "lights": {
+          "name": "Lights",
+          "description": "The lights the scene should have, as a list of light ids (only lights of its own room or zone): one it had keeps what it does, one added gets a colour of the palette of a moving scene (else how it looks now), one left out is dropped."
+        },
         "recolor": {
           "name": "Recolor",
-          "description": "Gives the palette of a moving scene out again to every light of its room or zone: shuffle mixes the colours (the Hue app's Colors button), reset hands them out in the palette's order at its own brightness (Reset scene)."
+          "description": "Gives the palette of a moving scene out again to the lights it has: shuffle mixes the colours (the Hue app's Colors button), reset hands them out in the palette's order at its own brightness (Reset scene)."
         },
         "record_current": {
           "name": "Record current",
@@ -1052,7 +1056,11 @@
       "fields": {
         "device": {
           "name": "Device",
-          "description": "The device (id or name)."
+          "description": "The device (id; a name only when no other device has it)."
+        },
+        "light": {
+          "name": "Light",
+          "description": "Or the light by its id: its device is removed. Lights of different rooms can have the same name, so give an id."
         },
         "confirm": {
           "name": "Confirm",

@@ -123,6 +123,10 @@ function hpLightsListPage(b) {
         return hmRow({
           icon: "lamp",
           title: hpName(id),
+          sub: function () {
+            var where = hpRoomOfLight(id);
+            return where ? where.name : "";
+          },
           val: function () {
             return V_(id) === "unavailable" ? _T("hm_unreachable") : "";
           },
@@ -511,7 +515,7 @@ function hpAreaPage(b, id) {
         minus.type = "button";
         minus.setAttribute("aria-label", _T("app_remove"));
         t.querySelector(".ic").innerHTML = svg("lamp");
-        t.querySelector("b").textContent = l.name;
+        t.querySelector("b").textContent = hpLightLabel(l.name, l.light);
         minus.addEventListener("click", function () {
           var rest = hpAreaLights(x).filter(function (o) {
             return o.light !== l.light;
@@ -593,7 +597,7 @@ function hpAreaAddPage(b, id) {
         free.map(function (e) {
           return hmRow({
             icon: "lamp",
-            title: hpName(e),
+            title: hpEntityLabel(e),
             tap: function () {
               hpStageLights(x, hpAreaLights(x).concat([{ light: hpHueId(e), name: hpName(e), x: 0, y: 0, z: 0, balance: 1 }]));
               popBack();

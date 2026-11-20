@@ -37,7 +37,7 @@ function hpGroups() {
     });
 }
 
-/* The lights of a room or zone. The group lists them by entity when it can; the bridge's rooms list them by name (the `lights` attribute), and then the Hue Plus lights of those names are the room's. */
+/* The lights of a room or zone. The group lists them by entity when it can; else the bridge's own list of the room's lights (their ids) says which Hue Plus lights are the room's, and only without it the names the group lists. */
 function hpGroupLights(id) {
   var h = H(),
     a = A(id),
@@ -45,7 +45,12 @@ function hpGroupLights(id) {
       return m.indexOf("light.") === 0 && h.states[m];
     });
   if (listed.length) return listed;
-  var names = Array.isArray(a.lights) ? a.lights : [];
+  /* The bridge says which lights a room has by their ids; only when it has not been read are the names the group lists used (two lights of different rooms can have one name, and by name they would be in both rooms). */
+  var names = Array.isArray(a.lights) ? a.lights : [],
+    bridge = ((a.hue_type === "zone" ? HM.zones : HM.rooms) || []).filter(function (g) {
+      return g.name === a.friendly_name;
+    }),
+    ids = bridge.length === 1 ? bridge[0].lights || [] : null;
   /* A light is the room's whether or not Home Assistant hides it (a Home Assistant group of lights hides its members, and the Hue app still shows them). The only ones left out are the Hue integration's own
      twins of the lights Hue Plus made: of the entities of one Hue light, Hue Plus's is used, else a visible one, else the first. */
   var byLight = {};
@@ -54,7 +59,8 @@ function hpGroupLights(id) {
     .forEach(function (m) {
       var b = h.states[m].attributes,
         e = h.entities[m];
-      if (m.indexOf("light.") !== 0 || !b.hue_light_id || b.is_hue_group || names.indexOf(b.friendly_name) < 0) return;
+      if (m.indexOf("light.") !== 0 || !b.hue_light_id || b.is_hue_group) return;
+      if (ids ? ids.indexOf(b.hue_light_id) < 0 : names.indexOf(b.friendly_name) < 0) return;
       var rank = e && e.platform === "hue_plus" ? 0 : e && e.hidden ? 2 : 1,
         had = byLight[b.hue_light_id];
       if (!had || rank < had.rank) byLight[b.hue_light_id] = { id: m, rank: rank };

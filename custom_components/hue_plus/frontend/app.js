@@ -2006,8 +2006,14 @@ var PLUGIN_STRINGS = {
   "app_speed": "Speed",
   "app_default_in_brackets": "(Default)",
   "app_speed_text": "Drag to change the default speed at which your lights cycle through the colors of the scene.",
+  "more_than_one_area_has_this_name": "More than one area on the bridge has this name: rename one of them first",
+  "hn_scene_lights_sub": "Which lights the scene has",
+  "hn_scene_lights_hint": "The lights of this scene's room or zone. The scene has the ticked ones; one that is added plays a color of the scene.",
+  "hn_all_lights": "All lights",
+  "hn_a_scene_needs_a_light": "A scene needs at least one light",
+  "hn_the_scene_has_these_lights": "The scene has these lights now",
+  "hn_scene_lights": "Scene lights",
   "hn_scene_settings": "Scene settings",
-  "hn_default_speed": "Speed it starts with",
   "hn_colors_sub": "In another order",
   "hn_colors_done": "The colors are given out again",
   "hn_reset_sub": "In its own order",
@@ -2285,6 +2291,33 @@ function hpFlip(y) {
   return y ? -y : 0;
 }
 
+/* The room (else a zone) a light is in, by the bridge's own id of the light: two lights can have the same name in different rooms, so a list of lights says which room each is in. */
+function hpRoomOfHueLight(hue) {
+  if (!hue) return null;
+  /* the rooms are read from the bridge once, when a page first asks which room a light is in; the page is drawn again when they are in */
+  if (typeof HM_READY !== "undefined" && !HM_READY && !HM_READING) hmEnsure();
+  function within(kind) {
+    return ((HM && HM[kind]) || []).filter(function (g) {
+      return (g.lights || []).indexOf(hue) >= 0;
+    })[0];
+  }
+  return within("rooms") || within("zones") || null;
+}
+
+function hpRoomOfLight(id) {
+  return hpRoomOfHueLight(A(id).hue_light_id);
+}
+
+/* "Ceiling light · Living room". */
+function hpLightLabel(name, hue) {
+  var room = hpRoomOfHueLight(hue);
+  return room ? name + " · " + room.name : name;
+}
+
+function hpEntityLabel(id) {
+  return hpLightLabel(hpName(id), A(id).hue_light_id);
+}
+
 function hpHueId(entity) {
   return A(entity).hue_light_id || null;
 }
@@ -2346,9 +2379,15 @@ function hpSendArea(draft) {
   }
   hueplus.resources(["entertainment_areas"]).then(
     function (r) {
-      var found = ((r && r.entertainment_areas) || []).filter(function (a) {
-        return String(a.name).toLowerCase() === name.toLowerCase();
-      })[0];
+      var named = ((r && r.entertainment_areas) || []).filter(function (a) {
+          return String(a.name).toLowerCase() === name.toLowerCase();
+        }),
+        found = named[0];
+      /* more than one area with this name: which one is meant cannot be guessed, so none is changed */
+      if (named.length > 1) {
+        toast(_T("more_than_one_area_has_this_name"));
+        return;
+      }
       if (found) call("hue_plus", "update_entertainment_area", { area: found.id, lights: lights });
       else call("hue_plus", "create_entertainment_area", { name: name, area_type: "other", lights: lights });
       toast(_T("sent_to_the_hue_bridge"));
@@ -2522,7 +2561,7 @@ function hpEditOnBridge(area, after) {
 /* The lights that can be put in a bridge area: the Hue Plus lights (the ones Hue lights, not groups). */
 function hpBridgeLights() {
   return hueplus.lights(H()).map(function (id) {
-    return { id: id, name: hpName(id), icon: "lamp" };
+    return { id: id, name: hpEntityLabel(id), icon: "lamp" };
   });
 }
 
@@ -3192,7 +3231,9 @@ function hmLights(b) {
     });
     t.refresh = function () {
       t.classList.toggle("on", isOn(id));
-      t.querySelector("i").textContent = V_(id) === "unavailable" ? _T("hm_unreachable") : isOn(id) ? _T("on_2") : _T("off");
+      var where = hpRoomOfLight(id),
+        state = V_(id) === "unavailable" ? _T("hm_unreachable") : isOn(id) ? _T("on_2") : _T("off");
+      t.querySelector("i").textContent = where ? where.name + " · " + state : state;
     };
     reg(t.refresh);
     grid.appendChild(t);
@@ -3312,7 +3353,7 @@ function hmLight(b, id) {
           })
         : null,
       hmButton(_T("hm_delete"), "danger", function () {
-        hmRemoveDevice(hpName(id), id);
+        hmRemoveDevice(null, id);
       }),
     ])
   );
@@ -3321,7 +3362,9 @@ function hmLight(b, id) {
 /* Takes a light or an accessory off the bridge, after asking. The device must be reset before it can be added again. */
 function hmRemoveDevice(device, entity) {
   confirmDlg(_T("hm_remove_this_device"), function () {
-    hpCall("hue_plus", "remove_device", { device: device, confirm: true }).then(
+    /* a light goes by its own id (lights of different rooms can have one name); an accessory by its device's id */
+    var what = entity && A(entity).hue_light_id ? { light: A(entity).hue_light_id } : { device: device };
+    hpCall("hue_plus", "remove_device", Object.assign({ confirm: true }, what)).then(
       function () {
         HM_READY = false;
         closeLayer();
@@ -9189,11 +9232,10 @@ function hueSceneToggle(id) {
 }
 
 
-/* The scene settings of the bridge for a moving scene (the speed it starts with, Auto-play, Colors and Reset scene), written with update_scene. */
-function hueSceneBridge(b, id) {
-  var P = HUESCENES,
-    uid = hueSceneUid(id),
-    st = { speed: 0.5, auto: false };
+/* The settings of a scene on the bridge, as the Hue app's scene settings has them: its name, whether it plays by itself, the lights it has, and (for a moving scene) Colors and Reset scene. Written with update_scene. */
+function hueSceneBridge(b, id, stat) {
+  var uid = hueSceneUid(id),
+    st = { auto: false };
   function save(change, done) {
     return Promise.resolve(callRaw("hue_plus", "update_scene", Object.assign({ scene: uid }, change))).then(
       function () {
@@ -9205,34 +9247,35 @@ function hueSceneBridge(b, id) {
     );
   }
   b.appendChild(sep(_T("hn_scene_settings"), "tune"));
+  b.appendChild(
+    pill("edit", _T("hn_rename"), {
+      sub: function () {
+        return A(id).name || A(id).friendly_name || "";
+      },
+      tap: function () {
+        hueSceneRename(id);
+      },
+    })
+  );
+  b.appendChild(
+    pill("light", _T("lights"), {
+      sub: function () {
+        return _T("hn_scene_lights_sub");
+      },
+      tap: function () {
+        showPopup("hue-scene-lights:" + id, true);
+      },
+    })
+  );
+  if (stat) return;
   hueplus.resources(["scenes"]).then(function (r) {
     var s = ((r || {}).scenes || []).filter(function (x) {
       return x.id === uid;
     })[0];
     if (!s) return;
-    st.speed = s.speed;
     st.auto = !!s.auto_dynamic;
     refresh();
   }, function () {});
-  b.appendChild(
-    sliderRow({
-      icon: "tune",
-      name: _T("hn_default_speed"),
-      min: 1,
-      max: P.speedSteps,
-      step: 1,
-      get: function () {
-        return P.speedToStep(Math.round(st.speed * 100));
-      },
-      fmt: function (v) {
-        return v + " / " + P.speedSteps;
-      },
-      commit: function (v) {
-        st.speed = P.stepToSpeed(v) / 100;
-        save({ speed: st.speed });
-      },
-    })
-  );
   b.appendChild(
     pill("play", _T("app_auto_play"), {
       sub: function () {
@@ -9272,6 +9315,108 @@ function hueSceneBridge(b, id) {
     })
   );
   b.appendChild(g);
+}
+
+/* The lights a scene has: the lights of its own room or zone, each with its room (lights of different rooms can have one name), a tick for the ones in the scene. */
+function hueSceneLightsPage(b, key) {
+  var sid = String(key).split("~")[0],
+    uid = hueSceneUid(sid),
+    box = mk("div"),
+    chosen = {},
+    all = [];
+  b.appendChild(box);
+  box.appendChild(mkHint(_T("loading")));
+  hueplus.resources(["scenes", "rooms", "zones"]).then(
+    function (r) {
+      var s = ((r || {}).scenes || []).filter(function (x) {
+          return x.id === uid;
+        })[0],
+        group = s && ((s.group_type === "zone" ? r.zones : r.rooms) || []).filter(function (g) {
+          return g.id === s.group_id;
+        })[0];
+      box.innerHTML = "";
+      if (!s || !group) {
+        box.appendChild(mkHint(_T("nothing_found")));
+        return;
+      }
+      var roomOf = {};
+      (r.rooms || []).forEach(function (g) {
+        (g.lights || []).forEach(function (l) {
+          roomOf[l] = g.name;
+        });
+      });
+      all = group.light_items || [];
+      (s.lights || []).forEach(function (l) {
+        chosen[l] = true;
+      });
+      box.appendChild(mkHint(_T("hn_scene_lights_hint")));
+      box.appendChild(
+        pill("light", _T("hn_all_lights"), {
+          check: function () {
+            return all.every(function (l) {
+              return chosen[l.id];
+            });
+          },
+          tap: function () {
+            var every = all.every(function (l) {
+              return chosen[l.id];
+            });
+            all.forEach(function (l) {
+              chosen[l.id] = !every;
+            });
+            refresh();
+          },
+        })
+      );
+      all.forEach(function (l) {
+        box.appendChild(
+          pill("light", l.name, {
+            sub: function () {
+              return roomOf[l.id] || "";
+            },
+            check: function () {
+              return !!chosen[l.id];
+            },
+            tap: function () {
+              chosen[l.id] = !chosen[l.id];
+              refresh();
+            },
+          })
+        );
+      });
+      function save() {
+        var wanted = all
+          .filter(function (l) {
+            return chosen[l.id];
+          })
+          .map(function (l) {
+            return l.id;
+          });
+        if (!wanted.length) {
+          toast(_T("hn_a_scene_needs_a_light"));
+          return;
+        }
+        Promise.resolve(callRaw("hue_plus", "update_scene", { scene: uid, lights: wanted })).then(
+          function () {
+            toast(_T("hn_the_scene_has_these_lights"));
+            /* a host that keeps the bridge's scenes (the Hue Plus panel) reads them again */
+            if (window.HueHost && window.HueHost.onSceneChanged) window.HueHost.onSceneChanged();
+            popBack();
+          },
+          function () {
+            toast(_T("hn_couldn_t_save_the_scene"));
+          }
+        );
+      }
+      /* the panel has DONE in the bar of the page; Home Control has a row at the end */
+      if (typeof HC !== "undefined" && HC.keepsBridgeData) HC.onDone = save;
+      else box.appendChild(pill("check", _T("hn_save"), { tap: save }));
+    },
+    function () {
+      box.innerHTML = "";
+      box.appendChild(mkHint(_T("couldn_t_read_the_hue_bridge")));
+    }
+  );
 }
 
 /* The popup of a Hue scene. A static scene has only what a classic scene has (importing it as one, hiding it); a live one has: brightness (follows the room live), speed (starts the scene again at the new speed), play (live) and freeze (a still picture). */
@@ -9337,6 +9482,9 @@ function hueScenePopup(b, id, room) {
           var st = hueSceneSet(id);
           st.speed = P.stepToSpeed(v);
           hueSceneSave(id, st);
+          /* the speed is also the one the scene starts with on the bridge (and in the Hue app) */
+          if (isAdmin() && hueplus.has(H(), "update_scene"))
+            callRaw("hue_plus", "update_scene", { scene: hueSceneUid(id), speed: st.speed / 100 });
           if (playing()) hueSceneStart(id);
         },
       })
@@ -9394,8 +9542,8 @@ function hueScenePopup(b, id, room) {
       })
     );
   }
-  /* What the bridge keeps of a moving scene, as the Hue app's scene settings have it: the speed it starts with, whether it plays by itself, and the two buttons that give its colours to the lights again. */
-  if (isEditing() && isAdmin() && hueplus.has(H(), "update_scene") && !stat) hueSceneBridge(b, id);
+  /* What the bridge keeps of the scene, as the Hue app's scene settings has it (not only in edit mode). */
+  if (isAdmin() && hueplus.has(H(), "update_scene")) hueSceneBridge(b, id, stat);
   if (isEditing() && isAdmin() && hueplus.has(H(), "delete_scene"))
     b.appendChild(
       pill("trash", _T("hn_delete_scene"), {
@@ -9421,6 +9569,9 @@ function hueScenePopup(b, id, room) {
       })
     );
 }
+
+/* The page of the lights a scene has (the loaded file stands alone in the tests, which have no pages). */
+if (typeof HP_PAGES !== "undefined") HP_PAGES["hue-scene-lights"] = ["hn_scene_lights", "light", hueSceneLightsPage];
 
 /* Making and changing Hue scenes from the dashboard's scenes section, the way the Hue app does ("Add a scene"): choose the room or zone, then a custom scene (the lights set
  in the dashboard's light popup, then saved), the current settings saved as a scene, an all-day scene (scenes by time of day) or a colour palette taken from a photo. Everything is written
@@ -9578,8 +9729,9 @@ function hueChooseLights(mode) {
   HUENEW.sel = {};
   HUENEW.g = null;
   if (g) hueSelectGroup(g);
-  /* The scene is for the room or zone the page is of ("save to this Room"), so there is no room to choose: the app goes straight on. */
-  if (g && mode !== "edit") {
+  /* In the Hue Plus panel the scene is for the room the page is of ("save to this Room"), as in the Hue app, so it goes straight on. Home Control keeps the choice:
+     the scene can be for any room or zone, whatever page it was started from. */
+  if (g && mode !== "edit" && typeof window !== "undefined" && window.HueHost) {
     hueAfterLights();
     return;
   }
@@ -9627,7 +9779,7 @@ function hueLightsPage(b) {
       /* The lights of the room or zone, for information: the scene sets all of them (any one can be set to off in the light popup). */
       var grid = mk("div", "gridl g2");
       g.lights.forEach(function (id) {
-        grid.appendChild(pill("light", hueLightName(id), {}));
+        grid.appendChild(pill("light", hpLightLabel(hueLightName(id), id), {}));
       });
       wrap.appendChild(grid);
     }
@@ -10564,7 +10716,7 @@ function hpGroups() {
     });
 }
 
-/* The lights of a room or zone. The group lists them by entity when it can; the bridge's rooms list them by name (the `lights` attribute), and then the Hue Plus lights of those names are the room's. */
+/* The lights of a room or zone. The group lists them by entity when it can; else the bridge's own list of the room's lights (their ids) says which Hue Plus lights are the room's, and only without it the names the group lists. */
 function hpGroupLights(id) {
   var h = H(),
     a = A(id),
@@ -10572,7 +10724,12 @@ function hpGroupLights(id) {
       return m.indexOf("light.") === 0 && h.states[m];
     });
   if (listed.length) return listed;
-  var names = Array.isArray(a.lights) ? a.lights : [];
+  /* The bridge says which lights a room has by their ids; only when it has not been read are the names the group lists used (two lights of different rooms can have one name, and by name they would be in both rooms). */
+  var names = Array.isArray(a.lights) ? a.lights : [],
+    bridge = ((a.hue_type === "zone" ? HM.zones : HM.rooms) || []).filter(function (g) {
+      return g.name === a.friendly_name;
+    }),
+    ids = bridge.length === 1 ? bridge[0].lights || [] : null;
   /* A light is the room's whether or not Home Assistant hides it (a Home Assistant group of lights hides its members, and the Hue app still shows them). The only ones left out are the Hue integration's own
      twins of the lights Hue Plus made: of the entities of one Hue light, Hue Plus's is used, else a visible one, else the first. */
   var byLight = {};
@@ -10581,7 +10738,8 @@ function hpGroupLights(id) {
     .forEach(function (m) {
       var b = h.states[m].attributes,
         e = h.entities[m];
-      if (m.indexOf("light.") !== 0 || !b.hue_light_id || b.is_hue_group || names.indexOf(b.friendly_name) < 0) return;
+      if (m.indexOf("light.") !== 0 || !b.hue_light_id || b.is_hue_group) return;
+      if (ids ? ids.indexOf(b.hue_light_id) < 0 : names.indexOf(b.friendly_name) < 0) return;
       var rank = e && e.platform === "hue_plus" ? 0 : e && e.hidden ? 2 : 1,
         had = byLight[b.hue_light_id];
       if (!had || rank < had.rank) byLight[b.hue_light_id] = { id: m, rank: rank };
@@ -11868,7 +12026,7 @@ function hpScenePage(body, key) {
       });
     });
   var lights = hpSceneLights(sid);
-  if (lights.length) {
+  if (lights.length || (isAdmin() && hueplus.has(H(), "update_scene"))) {
     /* The Lights title has the Colors button of a moving scene: it gives the scene's colours out to the lights again, in another order (kept until SAVE). */
     var bar = mk("div", "lbrow lightsbar");
     var title = mk("div", "lbtitle");
@@ -11884,10 +12042,16 @@ function hpScenePage(body, key) {
       });
       bar.appendChild(shuffle);
     }
+    if (isAdmin() && hueplus.has(H(), "update_scene")) bar.appendChild(hpRound("edit", _T("hn_scene_lights"), function () {
+      showPopup("hue-scene-lights:" + sid, true);
+    }));
     body.appendChild(bar);
     var tiles = mk("div", "ltiles");
     lights.forEach(function (lid) {
-      tiles.appendChild(hpLightTile(lid, room));
+      var tile = hpLightTile(lid, room);
+      /* a zone can have lights of several rooms, and two of them can be named alike: the tile says the room too */
+      if (room && A(room).hue_type === "zone") tile.querySelector("b").textContent = hpEntityLabel(lid);
+      tiles.appendChild(tile);
     });
     body.appendChild(tiles);
   }
@@ -12648,15 +12812,6 @@ HP_PAGES["hue-cycle"] = ["hm_scene_cycle", "swap", hpCyclePage];
 /* A light's settings, as the app has them: the light and its name, the room it is in (the bridge's), General (function, power on, orientation), and Support, with the light's device info one tap away. What
  this adds to the app's page, Hue Plus's own timed effects, stays at the end. It is the menu's page (hmLight) with those parts changed, so what is edited and saved is the same. */
 
-function hpRoomOfLight(id) {
-  var hue = A(id).hue_light_id,
-    found = null;
-  (HM.rooms || []).concat(HM.zones || []).forEach(function (g) {
-    if (hue && (g.lights || []).indexOf(hue) >= 0) found = found || g;
-  });
-  return found;
-}
-
 function hpLightSettings(b, id) {
   hmLight(b, id);
   var kids = [].slice.call(b.children);
@@ -12966,6 +13121,17 @@ window.HueHost.frameBar = function (title, onDone, onCancel) {
 window.HueHost.lightType = function (id) {
   return hpArchetypeOf(id);
 };
+window.HueHost.onSceneChanged = function () {
+  hueplus.resources(["scenes"]).then(function (r) {
+    if (r && r.scenes) HM.scenes = r.scenes;
+    HPSC.loaded = false;
+    HPSC.byId = {};
+    hpSceneData(function () {
+      refresh();
+    });
+  }, function () {});
+};
+
 window.HueHost.onRenamed = function () {
   hpLoadLightStates();
 };
@@ -13691,6 +13857,10 @@ function hpLightsListPage(b) {
         return hmRow({
           icon: "lamp",
           title: hpName(id),
+          sub: function () {
+            var where = hpRoomOfLight(id);
+            return where ? where.name : "";
+          },
           val: function () {
             return V_(id) === "unavailable" ? _T("hm_unreachable") : "";
           },
@@ -14079,7 +14249,7 @@ function hpAreaPage(b, id) {
         minus.type = "button";
         minus.setAttribute("aria-label", _T("app_remove"));
         t.querySelector(".ic").innerHTML = svg("lamp");
-        t.querySelector("b").textContent = l.name;
+        t.querySelector("b").textContent = hpLightLabel(l.name, l.light);
         minus.addEventListener("click", function () {
           var rest = hpAreaLights(x).filter(function (o) {
             return o.light !== l.light;
@@ -14161,7 +14331,7 @@ function hpAreaAddPage(b, id) {
         free.map(function (e) {
           return hmRow({
             icon: "lamp",
-            title: hpName(e),
+            title: hpEntityLabel(e),
             tap: function () {
               hpStageLights(x, hpAreaLights(x).concat([{ light: hpHueId(e), name: hpName(e), x: 0, y: 0, z: 0, balance: 1 }]));
               popBack();
@@ -14486,7 +14656,8 @@ function hpEditDelete(room, sel, after) {
       var job = Promise.resolve();
       items.forEach(function (x) {
         job = job.then(function () {
-          if (x.kind === "light" || x.kind === "switch") return hpCall("hue_plus", "remove_device", { device: x.name, confirm: true });
+          if (x.kind === "light") return hpCall("hue_plus", "remove_device", { light: A(x.id).hue_light_id, confirm: true });
+          if (x.kind === "switch") return hpCall("hue_plus", "remove_device", { device: x.id, confirm: true });
           if (x.kind === "scene") return hpCall("hue_plus", "delete_scene", { scene: hueSceneUid(x.id), confirm: true });
           hpSaveUserFolders(
             room,

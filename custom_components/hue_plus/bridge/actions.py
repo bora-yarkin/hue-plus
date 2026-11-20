@@ -428,20 +428,38 @@ async def update_scene(api, snap, data):
     scene = resolve(snap.scene, data["scene"], "scene")
     if sum(1 for key in ("record_current", "recolor") if data.get(key)) + (data.get("actions") is not None) > 1:
         raise ValueError("Give one of actions, record_current or recolor")
-    if data.get("recolor"):
+    if data.get("lights") is not None and (data.get("record_current") or data.get("actions") is not None):
+        raise ValueError("Give the lights with a recolor or on their own, not with actions or record_current")
+    actions = None
+    if data.get("lights") is not None or data.get("recolor"):
         kind = scene.get("group", {}).get("rtype")
         group = next((g for g in models.groups(snap, kind) if g["id"] == scene["group"]["rid"]), None) if kind in ("room", "zone") else None
         if group is None:
             raise ValueError("This scene's room or zone was not found")
-        actions = payloads.scene_recolor(scene, group["lights"], data["recolor"])
+        if data.get("lights") is not None:
+            wanted = (
+                [str(ref) for ref in _json(data["lights"], "lights")]
+                if isinstance(data["lights"], str)
+                else [str(ref) for ref in data["lights"]]
+            )
+            actions = payloads.scene_with_lights(scene, wanted, group["lights"], {item["id"]: item for item in snap.light})
+            scene = {**scene, "actions": actions}
+        if data.get("recolor"):
+            # Colors (shuffle) mixes the palette among the lights the scene has. Reset scene starts the scene over: the palette in its own order for every light of
+            # the room or zone, as a scene from the Hue gallery has it, unless the lights were chosen in the same call.
+            own = [
+                (a.get("target") or {}).get("rid") for a in scene.get("actions") or [] if (a.get("target") or {}).get("rtype") == "light"
+            ]
+            every = data["recolor"] == "reset" and data.get("lights") is None
+            actions = payloads.scene_recolor(scene, group["lights"] if every else own, data["recolor"])
     elif data.get("record_current"):
         # The look of the scene's own lights as they are now (after being adjusted): the same recording create_scene makes.
         wanted = {(a.get("target") or {}).get("rid") for a in scene.get("actions") or []}
         actions = payloads.scene_actions_from_lights([light for light in snap.light if light["id"] in wanted])
         if not actions:
             raise ValueError("This scene has no light to record")
-    else:
-        actions = _json(data["actions"], "actions") if data.get("actions") is not None else None
+    elif data.get("actions") is not None:
+        actions = _json(data["actions"], "actions")
     await api.put("scene", scene["id"], payloads.scene_put(data.get("name"), data.get("speed"), data.get("auto_dynamic"), actions))
 
 
@@ -647,7 +665,14 @@ async def search_for_devices(api, snap, data):
 @action("remove_device", destructive=True)
 async def remove_device(api, snap, data):
     """Removes a light or accessory from the bridge. It has to be reset before it can be added again."""
-    await api.delete("device", _device(snap, data["device"])["id"])
+    if data.get("light"):
+        owner = (_light(snap, data["light"]).get("owner") or {}).get("rid")
+        device = _device(snap, owner or "")
+    elif data.get("device"):
+        device = _device(snap, data["device"])
+    else:
+        raise ValueError("Give the device or the light to remove")
+    await api.delete("device", device["id"])
 
 
 @action("remove_matter_fabric", destructive=True)
