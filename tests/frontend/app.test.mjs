@@ -2,7 +2,7 @@
 // The Hue dashboard panel (frontend/app, the dashboard module): its texts exist, its bundle is complete and plain script, and its pages only reach the services Hue Plus and Home Assistant have.
 // Run: node --test tests/frontend
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 
@@ -78,4 +78,20 @@ test("no two pages of the Hue Plus menu share a key (one used to hide another: t
     assert.ok(!seen.has(key), `${key} is registered twice`);
     seen.add(key);
   }
+});
+
+test("no function declares two helpers of the same name (the second silently replaces the first: a folder opened to an invisible card because of it)", () => {
+  const files = [...readdirSync(new URL("../../frontend/app/", import.meta.url)).filter((n) => n.endsWith(".js")).map((n) => `frontend/app/${n}`), ...readdirSync(new URL("../../frontend/src/", import.meta.url)).filter((n) => n.endsWith(".js")).map((n) => `frontend/src/${n}`)];
+  const dupes = [];
+  for (const file of files) {
+    const text = read(file);
+    for (const body of text.split(/\n(?=function )/)) {
+      const seen = new Set();
+      for (const m of body.matchAll(/^ {2}function ([A-Za-z_$][\w$]*)\(/gm)) {
+        if (seen.has(m[1])) dupes.push(`${file}: ${m[1]}`);
+        seen.add(m[1]);
+      }
+    }
+  }
+  assert.deepEqual(dupes, []);
 });

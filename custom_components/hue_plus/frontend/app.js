@@ -10531,11 +10531,11 @@ function hpFolderCard(folder, room, from) {
   var SIDE_W = 34,
     GAP = 11,
     side = null; /* { el, item }: the pair that is out now */
-  function makeSide() {
+  function sideMake() {
     var el = mk("div", "sside");
     el.appendChild(
       hpRound("edit", _T("hn_rename"), function () {
-        var on = activeScene();
+        var on = sideActiveScene();
         if (on) {
           close();
           showPopup("app-scene:" + on + "~" + room, true);
@@ -10544,50 +10544,50 @@ function hpFolderCard(folder, room, from) {
     );
     el.appendChild(
       hpRound("dots", _T("app_more"), function () {
-        var on = activeScene();
+        var on = sideActiveScene();
         if (on) hpSceneActions(on, room, close);
       })
     );
     return el;
   }
-  function activeScene() {
+  function sideActiveScene() {
     return folder.scenes.filter(function (s) {
       return HUESCENES.active(H(), s);
     })[0];
   }
   /* Where the pair is when it is inside its tile (behind it, at its right edge), and where it stands when it is out. */
-  function inside(item) {
+  function sideInside(item) {
     return item.offsetLeft + item.offsetWidth - SIDE_W + "px";
   }
-  function out(item) {
+  function sideOut(item) {
     return item.offsetLeft + item.offsetWidth + GAP + "px";
   }
-  function place(el, item, left) {
+  function sidePlace(el, item, left) {
     el.style.left = left;
     el.style.top = item.offsetTop + "px";
     el.style.height = item.offsetHeight + "px";
   }
-  function retract(old) {
+  function sideRetract(old) {
     old.el.classList.remove("on");
     old.el.classList.add("away");
-    place(old.el, old.item, inside(old.item));
+    sidePlace(old.el, old.item, sideInside(old.item));
     setTimeout(function () {
       old.el.remove();
     }, 360);
   }
-  function enter(item) {
-    var el = makeSide();
+  function sideEnter(item) {
+    var el = sideMake();
     el.style.transition = "none";
-    place(el, item, inside(item));
+    sidePlace(el, item, sideInside(item));
     grid.appendChild(el);
     void el.offsetWidth;
     el.style.transition = "";
     el.classList.add("on");
-    el.style.left = out(item);
+    el.style.left = sideOut(item);
     return { el: el, item: item };
   }
   card.refresh = function () {
-    var on = activeScene(),
+    var on = sideActiveScene(),
       items = [].slice.call(grid.querySelectorAll(".sitem")),
       item =
         on &&
@@ -10595,7 +10595,7 @@ function hpFolderCard(folder, room, from) {
           return x.dataset.sid === on;
         })[0];
     if (!item) {
-      if (side) retract(side);
+      if (side) sideRetract(side);
       side = null;
       items.forEach(function (it) {
         it.style.translate = "";
@@ -10608,11 +10608,11 @@ function hpFolderCard(folder, room, from) {
       it.style.translate = it.style.gridRow === row && +it.style.gridColumn > col ? SIDE_W + GAP + "px 0" : "";
     });
     if (side && side.item === item) {
-      place(side.el, item, out(item));
+      sidePlace(side.el, item, sideOut(item));
       return;
     }
-    if (side) retract(side);
-    side = enter(item);
+    if (side) sideRetract(side);
+    side = sideEnter(item);
   };
   reg(card.refresh);
   scrim.addEventListener("click", close);
