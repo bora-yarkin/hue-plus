@@ -114,6 +114,12 @@ function hmRow(o) {
     sb = r.querySelector(".hm-s"),
     vl = r.querySelector(".hm-v");
   if (o.disc) r.querySelector(".hm-disc").style.background = o.disc;
+  /* a round dark picture at the end of the row (what a choice does), as the app draws them */
+  if (o.endicon) {
+    var edisc = mk("span", "hm-edisc");
+    edisc.innerHTML = svg(o.endicon);
+    r.appendChild(edisc);
+  }
   if (o.tap || o.toggle) {
     r.setAttribute("role", o.toggle ? "switch" : o.check ? "radio" : "button");
     r.tabIndex = 0;

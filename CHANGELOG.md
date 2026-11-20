@@ -5,6 +5,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 ## [Unreleased]
 
 ### Changed
+- **The wizards' pages follow the app's screens**: the card starts lower under the blue top, "How should Go to sleep start?" has its two paragraphs and its choices are cards with round icons (as are "When should your lights turn on"), Mimic presence has its first page (a house at night, what it does) and its summary has the round pictures at the end of its rows. The MotionAware room is drawn without outlines and taller.
+
+### Changed
 - **Settings and MotionAware compared with the app's screens again**: Devices rows end with a count and an arrow, the rooms of Add devices, the bridge and the entertainment areas have no arrow, the bridge's name has its pencil and its page shows the IP address (the bridge's `ip_address` is in `get_resources`), "Everything is up to date" has the green tick, an entertainment area's Lights is a title with its plus, the MotionAware intro and tips have the cut-away room above their card with the app's smaller text, the room choice has round marks, and the Power on choice has the app's tip and round icons.
 
 ### Changed

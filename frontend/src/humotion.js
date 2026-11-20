@@ -71,12 +71,13 @@ function hmwArt(shape) {
   var art = mk(
     "div",
     "mwart " + shape,
-    "<svg viewBox='0 0 300 230' aria-hidden='true'><defs><linearGradient id='mwfl' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#4a4970'/><stop offset='1' stop-color='#6d6b95'/></linearGradient><radialGradient id='mwht'><stop offset='0' stop-color='#ff8f4a'/><stop offset='.45' stop-color='#d9c55c'/><stop offset='1' stop-color='#5f8fe6' stop-opacity='0'/></radialGradient></defs>" +
-      "<polygon points='28,140 150,202 272,140 150,78' fill='url(#mwfl)'/><polygon points='28,140 150,78 150,16 28,78' fill='#8c89a8'/><polygon points='150,78 272,140 272,78 150,16' fill='#6f6c90'/>" +
-      "<polygon points='64,102 86,91 86,50 64,61' fill='#7c799a' stroke='#6a6788' stroke-width='1'/><polygon points='180,42 238,71 238,92 180,63' fill='#23233a'/><polygon points='176,70 242,103 242,110 176,77' fill='#23233a'/><path d='M60 150 L108 174 L124 166 L76 142 Z M60 136 L76 142 L76 150 L60 144 Z' fill='#26263a'/>" +
-      "<ellipse class='heat' cx='120' cy='160' rx='84' ry='30' fill='url(#mwht)' opacity='.9'/>" +
-      "<path class='cone' d='M48 112 C80 70 150 20 118 45 C160 80 205 120 206 168 C150 190 90 170 48 112 Z' fill='none' stroke='#7fc4ff' stroke-width='1.4'/>" +
-      "<g fill='#0d0d14'><circle cx='118' cy='45' r='4.5'/><circle cx='252' cy='84' r='4.5'/><circle cx='206' cy='168' r='4.5'/><circle cx='48' cy='112' r='4.5'/></g></svg>"
+    "<svg viewBox='0 0 300 250' aria-hidden='true'><defs><linearGradient id='mwfl' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#4a4970'/><stop offset='1' stop-color='#6d6b95'/></linearGradient><radialGradient id='mwht'><stop offset='0' stop-color='#ff8f4a'/><stop offset='.45' stop-color='#d9c55c'/><stop offset='1' stop-color='#5f8fe6' stop-opacity='0'/></radialGradient></defs>" +
+      "<polygon points='28,160 150,222 272,160 150,98' fill='url(#mwfl)'/><polygon points='28,160 150,98 150,8 28,70' fill='#8c89a8'/><polygon points='150,98 272,160 272,70 150,8' fill='#6f6c90'/>" +
+      "<polygon points='60,143 86,130 86,62 60,75' fill='#7c799a'/><polygon points='180,36 238,65 238,90 180,61' fill='#23233a'/><polygon points='176,92 242,125 242,132 176,99' fill='#23233a'/>" +
+      "<path d='M62 172 L108 196 L126 187 L80 163 Z M62 156 L80 163 L80 172 L62 165 Z' fill='#26263a'/>" +
+      "<ellipse class='heat' cx='118' cy='186' rx='84' ry='30' fill='url(#mwht)' opacity='.9'/>" +
+      "<path class='cone' d='M48 135 C80 80 150 30 120 42 C170 90 210 150 206 190 C150 214 90 190 48 135 Z' fill='none' stroke='#7fc4ff' stroke-width='1.4'/>" +
+      "<g fill='#0d0d14'><circle cx='120' cy='42' r='4.5'/><circle cx='252' cy='92' r='4.5'/><circle cx='206' cy='190' r='4.5'/><circle cx='48' cy='135' r='4.5'/></g></svg>"
   );
   return art;
 }

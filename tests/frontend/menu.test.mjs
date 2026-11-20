@@ -49,7 +49,7 @@ test("every text of the menu is defined", () => {
 
 test("the menu puts no name of a device or of the bridge into the page as markup", () => {
   // Markup is only a fixed string and an icon; the only names allowed besides are the switches of a row (is there a toggle, a tick, an arrow, an icon, the picture of a style).
-  const allowed = new Set(["o", "icon", "toggle", "check", "key", "svg", "disc"]);
+  const allowed = new Set(["o", "icon", "toggle", "check", "key", "svg", "disc", "endicon"]);
   const risky = [...menu.matchAll(/innerHTML\s*=\s*([^;]+);/g)]
     .map((m) => m[1].replace(/"(?:[^"\\]|\\.)*"/g, "S"))
     .flatMap((v) => v.match(/[A-Za-z_]+/g) || [])

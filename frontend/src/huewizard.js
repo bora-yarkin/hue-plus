@@ -219,7 +219,7 @@ var HW_AUTOMATIONS = [
   { kind: "go_to_sleep", icon: "moon", title: "hw_go_to_sleep", sub: "hw_go_to_sleep_sub", steps: ["hue-wz-lights", "hue-wz-start", "hue-wz-when", "hue-wz-settings", "hue-wz-name"] },
   { kind: "coming_home", icon: "home", title: "hw_coming_home", sub: "hw_coming_home_sub", steps: ["hue-wz-lights", "hue-wz-whenhome", "hue-wz-scene", "hue-wz-name"] },
   { kind: "leaving_home", icon: "home", title: "hw_leaving_home", sub: "hw_leaving_home_sub", steps: ["hue-wz-lights", "hue-wz-name"] },
-  { kind: "mimic_presence", icon: "home", title: "hw_mimic_presence", sub: "hw_mimic_presence_sub", steps: ["hue-wz-lights", "hue-wz-mimic", "hue-wz-summary"], one: "PM" },
+  { kind: "mimic_presence", icon: "home", title: "hw_mimic_presence", sub: "hw_mimic_presence_sub", steps: ["hue-wz-mimicintro", "hue-wz-lights", "hue-wz-mimic", "hue-wz-summary"], one: "PM" },
   { kind: "timer", icon: "clock", title: "hw_timer", sub: "hw_timer_sub", steps: ["hue-wz-lights", "hue-wz-length", "hue-wz-scene", "hue-wz-name"] },
   { kind: "schedule", icon: "clock", title: "hw_lighting_schedule", sub: "hw_lighting_schedule_sub", steps: ["hue-wz-lights", "hue-wz-when", "hue-wz-scene", "hue-wz-name"] },
 ];
@@ -504,9 +504,55 @@ function hwWhenPage(b) {
 }
 
 /* "How should Go to sleep start?": at a time, or only by the play button. */
+/* A choice that is a card of its own with a round icon, as the app lays out "how should it start" and "when should it turn on". */
+function hwCards(rows) {
+  var g = hmGroup(rows);
+  g.classList.add("cards");
+  rows.forEach(function (r) {
+    r.classList.add("discic");
+  });
+  return g;
+}
+
+/* The Mimic presence page that comes first: a house at night with a clock, what the automation does and a Next. */
+function hwMimicIntroPage(b) {
+  if (!hwOpen(b, "hue-wz-mimicintro")) return;
+  var root = b.parentNode,
+    bar = root && root.querySelector(".pbar");
+  if (bar) {
+    [].slice.call(bar.querySelectorAll(".mwart")).forEach(function (old) {
+      old.remove();
+    });
+    bar.appendChild(
+      mk(
+        "div",
+        "mwart house",
+        "<svg viewBox='0 0 300 260' aria-hidden='true'><defs><linearGradient id='mhsk' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#1d2c55'/><stop offset='1' stop-color='#3a3f68'/></linearGradient><clipPath id='mhcl'><circle cx='140' cy='125' r='118'/></clipPath></defs>" +
+          "<circle cx='140' cy='125' r='118' fill='url(#mhsk)'/><g clip-path='url(#mhcl)'><rect x='0' y='190' width='300' height='80' fill='#16161f'/>" +
+          "<polygon points='60,190 60,92 170,70 230,92 230,190' fill='#6f6a8d'/><polygon points='170,70 230,92 230,190 170,190' fill='#57537a'/><polygon points='60,92 170,70 170,190 60,190' fill='#8a86a6'/>" +
+          "<rect x='78' y='100' width='36' height='34' fill='#9fe3f2'/><rect x='128' y='96' width='24' height='30' fill='#23233a'/><rect x='188' y='108' width='30' height='28' fill='#23233a'/><rect x='84' y='152' width='70' height='38' fill='#2a2a40'/><rect x='186' y='156' width='34' height='34' fill='#2a2a40'/></g>" +
+          "<circle cx='226' cy='204' r='32' fill='#f4f4f4'/><path d='M226 204 L226 182 M226 204 L240 212' stroke='#222' stroke-width='3' stroke-linecap='round' fill='none'/></svg>"
+      )
+    );
+    root.classList.add("artpg");
+  }
+  b.appendChild(hmTitle("home", _T("hw_mimic_presence")));
+  hwHint(b, _T("hw_mimic_intro_text"));
+  b.appendChild(hwNext());
+}
+
 function hwStartPage(b) {
   if (!hwOpen(b, "hue-wz-start")) return;
   b.appendChild(hmTitle("moon", _T("hw_how_should_go_to_sleep_start")));
+  hwHint(b, _T("hw_start_hint_1"));
+  /* the second paragraph names the places of the app in bold */
+  var way = mk("div", "notec pane dim");
+  [_T("hw_start_hint_2"), _T("hm_settings"), " > ", _T("hm_devices"), " > ", _T("hm_switches"), "."].forEach(function (part, i) {
+    var node = i === 1 || i === 3 || i === 5 ? mk("b") : document.createTextNode("");
+    node.textContent = part;
+    way.appendChild(node);
+  });
+  b.appendChild(way);
   function row(manual, icon, title, sub) {
     return hmRow({
       icon: icon,
@@ -523,7 +569,7 @@ function hwStartPage(b) {
     });
   }
   b.appendChild(
-    hmGroup([
+    hwCards([
       row(false, "clock", _T("hw_at_a_certain_time"), _T("hw_at_a_certain_time_sub")),
       row(true, "play", _T("hw_with_a_button_press"), _T("hw_with_a_button_press_sub")),
     ])
@@ -583,7 +629,7 @@ function hwMimicPage(b) {
     });
   }
   b.appendChild(
-    hmGroup([
+    hwCards([
       row("24h", "bright", _T("hw_all_day"), _T("hw_all_day_sub")),
       row("nighttime", "moon", _T("hw_only_when_its_dark"), _T("hw_only_when_its_dark_sub")),
     ])
@@ -616,6 +662,7 @@ function hwSummaryPage(b) {
       hmRow({ title: _T("hw_where"), val: hwGroupName }),
       hmRow({
         title: _T("hw_when"),
+        endicon: "bright",
         val: function () {
           return _T(HW.mode === "24h" ? "hw_all_day" : "hw_only_when_its_dark");
         },
@@ -626,6 +673,7 @@ function hwSummaryPage(b) {
       }),
       hmRow({
         title: _T("hw_end_with"),
+        endicon: "minus",
         val: function () {
           return _T(HW.endState === "turn_off" ? "hw_lights_off" : "hw_do_nothing");
         },
@@ -974,6 +1022,7 @@ HP_PAGES["hue-wz-settings"] = ["hw_choose_your_settings", "tune", hwSettingsPage
 HP_PAGES["hue-wz-start"] = ["hw_go_to_sleep", "moon", hwStartPage];
 HP_PAGES["hue-wz-whenhome"] = ["hw_coming_home", "home", hwHomeWhenPage];
 HP_PAGES["hue-wz-mimic"] = ["hw_mimic_presence", "home", hwMimicPage];
+HP_PAGES["hue-wz-mimicintro"] = ["hw_mimic_presence", "home", hwMimicIntroPage];
 HP_PAGES["hue-wz-summary"] = ["hw_mimic_presence", "home", hwSummaryPage];
 HP_PAGES["hue-wz-scene"] = ["hm_scene", "scene", hwScenePage];
 HP_PAGES["hue-wz-length"] = ["hw_timer", "clock", hwLengthPage];
