@@ -11,7 +11,7 @@ const read = (path) => readFileSync(new URL(path, root), "utf8");
 const APP_FILES = ["shell.js", "home.js", "sortable.js", "scenes.js", "switchpages.js", "cyclepage.js", "lightsettings.js", "autotab.js", "light.js", "syncpage.js", "menupages.js", "roomedit.js"].map((f) => read(`frontend/app/${f}`));
 const host = read("frontend/app/host.js");
 const bundle = read("custom_components/hue_plus/frontend/app.js");
-const plugin = [...APP_FILES, ...["huemenu.js", "huepicker.js", "huewizard.js", "humotion.js", "huerooms.js", "huesync.js", "huescenes.js", "huestyle.js"].map((f) => read(`frontend/src/${f}`))].join("\n");
+const plugin = [...APP_FILES, ...["huemenu.js", "huepicker.js", "huewizard.js", "hueedit.js", "humotion.js", "huerooms.js", "huesync.js", "huescenes.js", "huestyle.js"].map((f) => read(`frontend/src/${f}`))].join("\n");
 const strings = read("frontend/src/strings.js");
 
 // The words the host itself holds, the table (EN) in host.js.
@@ -71,7 +71,7 @@ test("a room's scenes are the app's folders and a scene's page has only what the
 });
 
 test("no two pages of the Hue Plus menu share a key (one used to hide another: the scene wizard's lights page hid Lights & smart plugs)", () => {
-  const sources = ["huemenu.js", "huepicker.js", "huewizard.js", "humotion.js", "huerooms.js", "huesync.js", "huescenes.js", "huestyle.js", "huenewscene.js", "hueplus.js", "epilogue.js"].map((f) => read(`frontend/src/${f}`)).join("\n");
+  const sources = ["huemenu.js", "huepicker.js", "huewizard.js", "hueedit.js", "humotion.js", "huerooms.js", "huesync.js", "huescenes.js", "huestyle.js", "huenewscene.js", "hueplus.js", "epilogue.js"].map((f) => read(`frontend/src/${f}`)).join("\n");
   const keys = [...sources.matchAll(/HP_PAGES\["([a-z0-9-]+)"\]\s*=/g), ...sources.matchAll(/HC\.registerPage\(\s*"([a-z0-9-]+)"/g), ...sources.matchAll(/^\s*"([a-z0-9-]+)": \[$/gm)].map((m) => m[1]);
   const seen = new Set();
   for (const key of keys) {

@@ -1095,74 +1095,6 @@ function hmRoutines(b) {
   });
 }
 
-function hmRoutine(b, id) {
-  hmBox(b);
-  hmLoad(b, ["automations"], function (box, r, again) {
-    var x = (r.automations || []).filter(function (y) {
-      return y.id === id;
-    })[0];
-    if (!x) {
-      box.appendChild(hmCallout(_T("nothing_found")));
-      return;
-    }
-    box.appendChild(hmTitle("clock", x.name, x.script || ""));
-    box.appendChild(
-      hmGroup([
-        hmRow({
-          title: _T("hm_enabled"),
-          toggle: {
-            get: function () {
-              return !!x.enabled;
-            },
-            set: function () {
-              x.enabled = !x.enabled;
-              hpDo(again, "update_automation", { automation: x.id, enabled: x.enabled });
-            },
-          },
-        }),
-      ])
-    );
-    if (hwEditable(x))
-      box.appendChild(
-        hmGroup([
-          hmRow({
-            icon: "edit",
-            title: _T("hw_edit_settings"),
-            tap: function () {
-              hwStartAutomation(hwKindOf(x), x);
-            },
-          }),
-        ])
-      );
-    if (hwRunnable(x))
-      box.appendChild(
-        hmGroup(
-          [["start", "play", "hw_start"], ["stop", "stop", "hw_stop"]].map(function (t) {
-            return hmRow({
-              icon: t[1],
-              title: _T(t[2]),
-              sub: t[0] === "start" ? hwRunText(x) : "",
-              tap: function () {
-                hpDo(again, "trigger_automation", { automation: x.id, action: t[0] });
-              },
-            });
-          })
-        )
-      );
-    if (x.last_error) box.appendChild(hmCallout(x.last_error));
-    box.appendChild(
-      hmActions([
-        hmButton(_T("hm_delete"), "danger", function () {
-          confirmDlg(_T("delete_this_routine_from_the_bridge"), function () {
-            call("hue_plus", "delete_automation", { automation: x.id, confirm: true });
-            closeLayer();
-          });
-        }),
-      ])
-    );
-  });
-}
-
 /* ---- entertainment areas ---- */
 
 var HM_END = ["last_state", "off", "pause", "scene"];
@@ -2103,7 +2035,6 @@ HP_PAGES["hue-updates"] = ["hm_software_update", "restart", hmUpdates];
 HP_PAGES["hue-matter"] = ["hm_smart_home", "scene", hmMatter];
 HP_PAGES["hue-apps"] = ["hm_applications", "lock", hmApps];
 HP_PAGES["hue-routines"] = ["routines_and_automations", "clock", hmRoutines];
-HP_PAGES["hue-routine"] = ["routine", "clock", hmRoutine];
 HP_PAGES["hue-ent"] = ["entertainment_areas", "target", hmAreas];
 HP_PAGES["hue-area"] = ["entertainment_area", "target", hmArea];
 HP_PAGES["hue-end"] = ["hm_when_sync_stops", "target", hmEnd];

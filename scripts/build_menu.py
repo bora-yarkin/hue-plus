@@ -32,6 +32,7 @@ ORDER = (
     "huemenu.js",
     "huepicker.js",
     "huewizard.js",
+    "hueedit.js",
     "humotion.js",
     "huerooms.js",
     "huesync.js",
