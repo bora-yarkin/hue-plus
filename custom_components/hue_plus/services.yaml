@@ -648,6 +648,10 @@ create_routine:
     "until":
       selector:
         time: {}
+    "repeat":
+      default: true
+      selector:
+        boolean: {}
     "days":
       selector:
         select:
@@ -745,6 +749,10 @@ update_routine:
     "until":
       selector:
         time: {}
+    "repeat":
+      default: true
+      selector:
+        boolean: {}
     "days":
       selector:
         select:

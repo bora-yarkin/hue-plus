@@ -800,6 +800,7 @@ def _routine_configuration(snap: models.Snapshot, kind: str, data: dict[str, Any
         until_type=data.get("until_type") or "time",
         action=data.get("action") or "scene",
         light_ids=light_ids,
+        repeat=data.get("repeat", True),
     )
 
 

@@ -20,6 +20,7 @@ ROUTINE_FIELDS: dict[str, Any] = {
     ),
     "time": f("time", "The time of day (wake-up, go-to-sleep and schedule), or the time coming home starts."),
     "until": f("time", "Schedule: the time it ends. Coming home: the time it stops (give both or neither)."),
+    "repeat": f("bool", "Wake-up: repeat on the days (the default). Off runs it once, the next time it is that time.", default=True),
     "days": f(
         "select_list",
         "The days. Every day when empty.",

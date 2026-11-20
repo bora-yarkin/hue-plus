@@ -1088,6 +1088,10 @@
           "name": "Until",
           "description": "Schedule: the time it ends. Coming home: the time it stops (give both or neither)."
         },
+        "repeat": {
+          "name": "Repeat",
+          "description": "Wake-up: repeat on the days (the default). Off runs it once, the next time it is that time."
+        },
         "days": {
           "name": "Days",
           "description": "The days. Every day when empty."
@@ -1181,6 +1185,10 @@
         "until": {
           "name": "Until",
           "description": "Schedule: the time it ends. Coming home: the time it stops (give both or neither)."
+        },
+        "repeat": {
+          "name": "Repeat",
+          "description": "Wake-up: repeat on the days (the default). Off runs it once, the next time it is that time."
         },
         "days": {
           "name": "Days",

@@ -622,3 +622,13 @@ class TargetTests(unittest.IsolatedAsyncioTestCase):
             configuration["buttons"]["b1"]["where"], [{"group": {"rid": "r1", "rtype": "room"}, "items": [{"rid": "l2", "rtype": "light"}]}]
         )
         self.assertEqual(configuration["buttons"]["b1"]["on_short_release"], {"action": "all_off"})
+
+
+class RepeatTests(unittest.TestCase):
+    """A wake-up that does not repeat has no recurrence_days: the bridge accepts that and refuses an empty list (tried 2026-11-20)."""
+
+    def test_a_wake_up_repeats_on_the_chosen_days_or_runs_once(self):
+        every = payloads.routine_configuration("wake_up", where=[ROOM_GROUP], at=time(6, 0), days=["wednesday"])
+        self.assertEqual(every["when"]["recurrence_days"], ["wednesday"])
+        once = payloads.routine_configuration("wake_up", where=[ROOM_GROUP], at=time(6, 0), repeat=False)
+        self.assertEqual(once["when"], {"time_point": {"type": "time", "time": {"hour": 6, "minute": 0}}})

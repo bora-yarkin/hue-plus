@@ -359,6 +359,7 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .pg.modalpg{top:66px;border-radius:18px 18px 0 0;box-shadow:0 0 0 100vmax rgba(0,0,0,0);transform:translateY(calc(100% + 66px));opacity:1;transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s}
 .pg.modalpg.in{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.55)}
 .pg.modalpg .pbar{border-radius:18px 18px 0 0;padding-top:14px}
+.pg.modalpg.shortpg{top:auto;bottom:0}
 .pg.modalpg .pbody{overflow-x:hidden}
 .pg.lightpg{transform:none;opacity:1;transition:none}
 
@@ -564,8 +565,6 @@ body{width:100%;height:100%}
 .fg .sitem{width:93px;height:102px}
 .fg .sitem .dc{width:44px;height:44px}
 /* A page opened inside a popup goes back to the popup's page: it has the arrow, not the X. */
-.pg.modalpg.subpg .back{display:flex!important}
-.pg.modalpg.subpg .x{display:none!important}
 
 /* A scene outside the folders: one large disc and its name. */
 .ftile.loose .dots{top:14px;padding:0}

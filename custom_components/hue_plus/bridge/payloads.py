@@ -404,8 +404,12 @@ def _days(days: list[str] | None) -> list[str]:
     return chosen
 
 
-def _when(at: time, days: list[str] | None) -> dict[str, Any]:
-    return {"time_point": {"type": "time", "time": {"hour": at.hour, "minute": at.minute}}, "recurrence_days": _days(days)}
+def _when(at: time, days: list[str] | None, repeat: bool = True) -> dict[str, Any]:
+    """A time of day, on the chosen days, or, when it does not repeat, once: the bridge accepts a `when` with no `recurrence_days` (tried 2026-11-20), but not an empty list."""
+    when: dict[str, Any] = {"time_point": {"type": "time", "time": {"hour": at.hour, "minute": at.minute}}}
+    if repeat:
+        when["recurrence_days"] = _days(days)
+    return when
 
 
 def _recall(where: list[dict[str, Any]], scene_id: str | None) -> list[dict[str, Any]]:
@@ -517,12 +521,13 @@ def _wake_up_routine(
     end_brightness: float | None,
     style: str | None,
     turn_off_after_minutes: int | None,
+    repeat: bool = True,
 ) -> dict[str, Any]:
     brightness = 100.0 if end_brightness is None else _percent(end_brightness, "end_brightness")
     configuration: dict[str, Any] = {
         "fade_in_duration": {"seconds": _seconds(minutes, 15)},
         "end_brightness": brightness,
-        "when": _when(at, days),
+        "when": _when(at, days, repeat),
         "where": where,
         **_style(style, WAKE_UP_STYLES),
     }
@@ -590,6 +595,7 @@ def routine_configuration(
     until_type: str = "time",
     action: str = "scene",
     light_ids: list[str] | None = None,
+    repeat: bool = True,
 ) -> dict[str, Any]:
     """The configuration of a routine for a room or zone. Every shape here was accepted by a real bridge (as a disabled routine).
 
@@ -614,7 +620,7 @@ def routine_configuration(
     if at is None:
         raise ValueError("Give the time of day")
     if kind == "wake_up":
-        return _wake_up_routine(where, at, days, minutes, end_brightness, style, turn_off_after_minutes)
+        return _wake_up_routine(where, at, days, minutes, end_brightness, style, turn_off_after_minutes, repeat)
     return _go_to_sleep_routine(where, at, days, minutes, style, end_state)
 
 

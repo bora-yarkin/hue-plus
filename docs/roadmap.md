@@ -141,6 +141,8 @@ Requirement from the owner: where the app asks for lights, it shows *My entire h
 
 Bridge facts (tried 2026-11-20 with throwaway disabled automations, deleted; see `bridge-findings.md`): the `where` of an automation is a list; an item is `{group: {rid, rtype: room | zone | bridge_home}, items?: [{rid, rtype: "light"}]}`: several groups are accepted, the whole home is a `bridge_home` item, a subset of a room's lights is `items`; a light alone as a group is refused.
 
+Rules for every child (owner, 2026-11-20): (1) after building a screen, render it and compare it side by side with the same Hue screenshot, the whole screen, and fix every difference before calling it done; (2) a control of the app that looks useless or whose purpose is unknown (the shuffle button of the live scene editor, which reassigns the colours to the lights) is never left out without asking the owner; (3) standard conventions: an expander that is closed does not point left; in the app's round button it points down and, open, up.
+
 Children, in order:
 - HP-15.1 `targets`: the services that take a room or zone (`create_routine`, `update_routine`, `set_button_lights`) take a list of targets (room, zone or the whole home, each whole or with chosen lights); the shared picker; used by the automation wizard and a button's lights. AC: `tests/bridge` for the payloads, `tests/frontend` for the picker, the test page for the screens.
 - HP-15.2 Switches and dimmers: Switch settings, Button controls, Edit lights, Press, scene cycle, Smart on/off, scene choice (`06-switches`).

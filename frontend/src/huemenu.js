@@ -2249,22 +2249,19 @@ function hpButtonLightsPage(b, id) {
     box.appendChild(mkHint(_T("hpk_select_lights_for")));
     box.appendChild(pick);
     hpkPicker(pick, { groups: groups, state: state });
-    box.appendChild(
-      hmActions([
-        hmButton(_T("hm_done"), "primary", function () {
-          var targets = hpkTargets(state, groups);
-          if (!targets.length) {
-            toast(_T("hpk_choose_lights"));
-            return;
-          }
-          hpCall("hue_plus", "set_button_lights", { accessory: f.acc.id, button: f.btn.number, targets: targets }).then(function () {
-            return hmReread("accessories", f.acc.id).then(function () {
-              popBack();
-            });
-          }, function () {});
-        }),
-      ])
-    );
+    /* DONE is in the bar of the page, as in the app. */
+    HC.onDone = function () {
+      var targets = hpkTargets(state, groups);
+      if (!targets.length) {
+        toast(_T("hpk_choose_lights"));
+        return;
+      }
+      hpCall("hue_plus", "set_button_lights", { accessory: f.acc.id, button: f.btn.number, targets: targets }).then(function () {
+        return hmReread("accessories", f.acc.id).then(function () {
+          popBack();
+        });
+      }, function () {});
+    };
   });
 }
 

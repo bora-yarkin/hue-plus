@@ -80,12 +80,20 @@ function hpkPicker(box, o) {
     if (o.state.home) o.state.picked = {};
     done();
   }
+  /* My entire home is every light of every room and zone chosen one by one the moment a single choice is made inside it. */
+  function leaveHome() {
+    if (!o.state.home) return;
+    o.state.home = false;
+    o.state.picked = {};
+    o.groups.forEach(function (g) {
+      if (g.type === "room") o.state.picked[g.id] = g.lights.map(function (l) {
+        return l.id;
+      });
+    });
+  }
   function setGroup(g) {
+    leaveHome();
     var all = chosen(g) === g.lights.length && g.lights.length > 0;
-    if (o.state.home) {
-      o.state.home = false;
-      o.state.picked = {};
-    }
     if (o.one) o.state.picked = {};
     o.state.picked[g.id] = all ? [] : g.lights.map(function (l) {
       return l.id;
@@ -94,10 +102,7 @@ function hpkPicker(box, o) {
     done();
   }
   function setLight(g, l) {
-    if (o.state.home) {
-      o.state.home = false;
-      o.state.picked = {};
-    }
+    leaveHome();
     var ids = (o.state.picked[g.id] || []).slice(),
       at = ids.indexOf(l.id);
     if (at >= 0) ids.splice(at, 1);
@@ -113,7 +118,33 @@ function hpkPicker(box, o) {
   function sub(g) {
     var n = chosen(g);
     if (!n) return "";
-    return n === g.lights.length ? _T("hpk_entire_" + g.type) : cntS(n, _T("hm_light"), _T("hm_lights"));
+    return n === g.lights.length ? _T("hpk_entire_" + g.type) : n + " " + _T("hpk_of") + " " + g.lights.length + " " + _T("hpk_lights_selected");
+  }
+  /* A light as a tile: its icon and name (and "Recommended" where the automation asks for it) over a darker strip with the round check. */
+  function lightTile(g, l) {
+    var on = o.state.home || (o.state.picked[g.id] || []).indexOf(l.id) >= 0,
+      t = mk("div", "hpk-tile", "<div class='hpk-top'><span class='hpk-ic'></span><b></b></div><div class='hpk-strip'></div>"),
+      icon = hpArchetypeIcon(l.archetype) || "lamp";
+    t.querySelector(".hpk-ic").innerHTML = svg(icon);
+    t.querySelector("b").textContent = l.name;
+    if (o.recommend && o.recommend(l)) {
+      var rec = mk("span", "hpk-rec");
+      rec.textContent = _T("hpk_recommended");
+      t.querySelector(".hpk-top").appendChild(rec);
+    }
+    t.querySelector(".hpk-strip").appendChild(circle(on, false));
+    t.setAttribute("role", "checkbox");
+    t.setAttribute("aria-checked", on ? "true" : "false");
+    t.tabIndex = 0;
+    t.addEventListener("click", function () {
+      setLight(g, l);
+    });
+    return t;
+  }
+  function anyPicked() {
+    return Object.keys(o.state.picked).some(function (k) {
+      return o.state.picked[k].length;
+    });
   }
   function groupRow(g) {
     var n = chosen(g),
@@ -146,19 +177,7 @@ function hpkPicker(box, o) {
     if (canOpen && open[g.id]) {
       var tiles = mk("div", "hpk-tiles");
       g.lights.forEach(function (l) {
-        var on = o.state.home || (o.state.picked[g.id] || []).indexOf(l.id) >= 0,
-          t = mk("div", "hpk-tile", "<span class='hpk-ic'></span><b></b>");
-        var icon = hpArchetypeIcon(l.archetype) || "lamp";
-        t.querySelector(".hpk-ic").innerHTML = svg(icon);
-        t.querySelector("b").textContent = l.name;
-        t.appendChild(circle(on, false));
-        t.setAttribute("role", "checkbox");
-        t.setAttribute("aria-checked", on ? "true" : "false");
-        t.tabIndex = 0;
-        t.addEventListener("click", function () {
-          setLight(g, l);
-        });
-        tiles.appendChild(t);
+        tiles.appendChild(lightTile(g, l));
       });
       row.appendChild(tiles);
     }
@@ -167,13 +186,34 @@ function hpkPicker(box, o) {
   function draw() {
     box.innerHTML = "";
     if (!o.one) {
-      var home = mk("div", "hpk-row"),
-        head = mk("div", "hpk-head", "<span class='hpk-t'><span class='hpk-n'></span></span>");
+      var home = mk("div", "hpk-row" + (open.home ? " open" : "") + (!o.state.home && anyPicked() ? " dim" : "")),
+        head = mk("div", "hpk-head", "<span class='hpk-t'><span class='hpk-n'></span></span>"),
+        chev = mk("span", "hpk-chev");
       head.querySelector(".hpk-n").textContent = _T("hpk_my_entire_home");
       head.insertBefore(circle(o.state.home, false), head.firstChild);
-      head.addEventListener("click", setHome);
+      chev.innerHTML = svg("chev");
+      head.appendChild(chev);
+      head.firstChild.addEventListener("click", function (e) {
+        e.stopPropagation();
+        setHome();
+      });
+      head.addEventListener("click", function () {
+        open.home = !open.home;
+        draw();
+      });
       home.appendChild(head);
-      box.appendChild(home);
+      if (open.home) {
+        var all = mk("div", "hpk-tiles");
+        o.groups.forEach(function (g) {
+          g.lights.forEach(function (l) {
+            all.appendChild(lightTile(g, l));
+          });
+        });
+        home.appendChild(all);
+      }
+      var homeList = mk("div", "hpk-list");
+      homeList.appendChild(home);
+      box.appendChild(homeList);
     }
     [
       ["room", "hn_rooms"],

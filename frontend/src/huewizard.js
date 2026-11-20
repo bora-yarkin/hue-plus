@@ -286,6 +286,7 @@ function hwAutomationState(kind, x) {
       until: hwClock(ext.end_at),
       untilType: ext.end_at ? hwPointType(ext.end_at) : "none",
       days: (when.recurrence_days || ext.recurrence_days || HW_WEEK).slice(),
+      repeat: !x || kind !== "wake_up" || !!when.recurrence_days,
       minutes: c.fade_in_duration ? c.fade_in_duration.seconds / 60 : c.fade_out_duration ? c.fade_out_duration.seconds / 60 : kind === "go_to_sleep" ? 15 : 30,
       brightness: c.end_brightness ? Math.round(c.end_brightness) : 100,
       style: c.style || (kind === "go_to_sleep" ? "sunset" : "sunrise"),
@@ -871,6 +872,7 @@ function hwSaveAutomation(after) {
     body.days = d.days.length === 7 ? [] : d.days;
   }
   if (d.kind === "wake_up") {
+    if (d.repeat === false) body.repeat = false;
     body.minutes = d.minutes;
     body.end_brightness = d.brightness;
     body.style = d.style;

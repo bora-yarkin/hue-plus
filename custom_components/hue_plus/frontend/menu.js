@@ -305,6 +305,9 @@ var PLUGIN_STRINGS = {
   "hpk_entire_zone": "Entire Zone selected",
   "hpk_select_lights_for": "Select the Rooms, Zones, or lights that you want to control with this button.",
   "hpk_choose_lights": "Choose the lights",
+  "hpk_recommended": "Recommended",
+  "hpk_of": "of",
+  "hpk_lights_selected": "lights selected",
   "hpk_select_lights_for_automation": "Select the Rooms, Zones, or lights that this automation should control.",
   "hm_third": "Third",
   "hm_this_area_is_on_the_bridge": "The bridge's own area: saving writes it to the bridge",
@@ -451,6 +454,11 @@ var PLUGIN_STRINGS = {
   "hw_save": "Save",
   "hw_edit_settings": "Edit settings",
   "hw_edit_automation": "Edit automation",
+  "hw_lights_will_start": "Lights will start brightening at",
+  "hw_with_a_fade_duration_of": "with a fade duration of",
+  "hw_fade_for": "FADE FOR",
+  "hw_minutes_word": "minutes",
+  "hw_start_at_upper": "START AT",
   "hw_edit_lights": "Edit lights",
   "hw_when_label": "Time",
   "hw_choose": "Choose",
@@ -801,8 +809,11 @@ var PLUGIN_STRINGS = {
 /* The styles of the Spotify sync and sync box popups, added to the dashboard's page by the plugin (the dashboard's own styles are for its own parts). */
 var HUE_PLUS_CSS = ".hs-now{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:4px 0 var(--sp)}\n.hs-art{width:min(62%,248px);aspect-ratio:1;border-radius:var(--r-m);background:var(--f-raise);border:1px solid var(--f-line);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--ink2);position:relative}\n.hs-art svg{width:44px;height:44px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}\n.hs-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}\n.hs-art.has-art svg{visibility:hidden}\n.hs-st{margin-top:12px;font-size:var(--fs-xs);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}\n.hs-tt{font-size:19px;font-weight:600;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}\n.hs-sub{font-size:var(--fs-m);color:var(--ink2);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.hs-set{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-s);margin:var(--sp) 0}\n.hs-set.one{grid-template-columns:minmax(0,1fr)}\n.hs-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}\n.hs-cap{font-size:var(--fs-xs);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}\n.hs-tile{display:flex;align-items:center;justify-content:center;width:76px;height:50px;border-radius:25px;box-sizing:border-box;background:var(--f-card);border:1px solid var(--f-line);color:var(--ink);cursor:pointer;min-width:0;transition:background .2s}\n.hs-tile:active{background:var(--f-line)}\n.hs-tile.hs-grad{border-color:transparent}\n.hs-i{display:flex;align-items:center;justify-content:center}\n.hs-i svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}\n\n.hs-now,.hs-bar,.hs>.pill,.hs-col{transition:opacity .25s}\n.hs.bri-open .hs-now,.hs.bri-open .hs-bar,.hs.bri-open>.pill,.hs.bri-open .hs-col:not(:last-child){opacity:.25;pointer-events:none}\n.hs-bar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:var(--sp);padding:14px 12px;margin:var(--sp) 0;border-radius:var(--r-l)}\n.hs-side{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;text-align:center}\n.hs-btn{cursor:pointer}\n.hs-nm{font-size:var(--fs-s);color:var(--ink);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.hs-go{width:76px;height:76px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--f-raise);border:2px solid var(--f-line2);color:var(--ink);cursor:pointer;transition:background .2s,border-color .2s}\n.hs-go svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}\n.hs-go.on{background:color-mix(in srgb,var(--acc) 40%,var(--f-raise));border-color:var(--acc)}\n.hs-go.on svg{animation:hs-spin 14s linear infinite}\n@keyframes hs-spin{to{transform:rotate(360deg)}}\n@media(prefers-reduced-motion:reduce){.hs-go.on svg{animation:none}}\n.hs-tile:focus-visible,.hs-go:focus-visible,.hs-btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}\n.hs-off{opacity:.5;pointer-events:none}\n.hs-sw{width:54px;height:16px;border-radius:999px;flex:none;margin-left:auto;border:1px solid var(--f-line2)}\n.hs-sw+.ck{margin-left:10px}\n.lp-mode.hs-m svg{fill:none}";
 HUE_PLUS_CSS += "\n/* Edit name and type */\n.hm-title{position:relative}\n.hm-title .hm-pen{position:absolute;right:16px;bottom:10px;width:30px;height:30px;border:0;border-radius:50%;background:var(--f-raise,#3a3b3e);color:inherit;display:flex;align-items:center;justify-content:center;cursor:pointer}\n.hm-title .hm-pen svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}\n.rnbig{display:flex;justify-content:center;padding:18px 0 10px}\n.rnbig svg{width:44px;height:44px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}\n.rnname{display:block;box-sizing:border-box;width:calc(100% - 22px);margin:8px 11px 4px;padding:13px 12px;border:0;border-radius:8px;background:var(--f-raise,#3a3b3e);color:inherit;font:inherit;font-size:14px}\n.rngrid{display:grid;grid-template-columns:repeat(3,1fr);background:var(--f-card,#25262a);margin:0 0 6px;border-radius:var(--r-row,0)}\n.rntype{display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px 4px 14px;border:0;background:none;color:inherit;cursor:pointer;font:inherit}\n.rntype .ic{width:38px;height:38px;border-radius:50%;background:var(--f-line2,#4a4b50);display:flex;align-items:center;justify-content:center}\n.rntype .ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}\n.rntype b{font-size:11px;font-weight:500;text-align:center}\n.rntype.on .ic{background:#fff;color:#1b1c20}\n";
-HUE_PLUS_CSS += "\n/* The lights picker (huepicker.js) */\n.hpk-list{display:flex;flex-direction:column;gap:6px;margin:0 0 var(--sp,10px)}\n.hpk-row{background:var(--f-raise,var(--tile,#26272b));border-radius:var(--r-row,14px);overflow:hidden}\n.hpk-head{display:flex;align-items:center;gap:14px;padding:14px 16px;cursor:pointer;min-height:56px;box-sizing:border-box}\n.hpk-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}\n.hpk-n{font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.hpk-s{font-size:12px;color:var(--ink2,#9a9ca3)}\n.hpk-s:empty{display:none}\n.hpk-ck{flex:none;width:24px;height:24px;box-sizing:border-box;border-radius:50%;border:2px solid var(--ink2,#6f7178);display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer}\n.hpk-ck svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}\n.hpk-ck.on{background:var(--acc,#3b6cf6);border-color:var(--acc,#3b6cf6)}\n.hpk-ck.part{border-color:var(--acc,#3b6cf6);background:radial-gradient(circle,var(--acc,#3b6cf6) 0 36%,transparent 40%)}\n.hpk-chev{flex:none;width:22px;height:22px;display:flex;color:var(--ink2,#9a9ca3);transform:rotate(90deg);transition:transform .25s}\n.hpk-chev svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transform:none}\n.hpk-row.open .hpk-chev{transform:rotate(-90deg)}\n.hpk-tiles{display:flex;gap:10px;overflow-x:auto;padding:2px 16px 16px;scrollbar-width:none}\n.hpk-tiles::-webkit-scrollbar{display:none}\n.hpk-tile{flex:none;width:104px;height:116px;box-sizing:border-box;border-radius:var(--r-row,14px);background:var(--f-card,var(--head,#1f2024));display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:12px 8px 10px;cursor:pointer}\n.hpk-ic{display:flex}\n.hpk-ic svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}\n.hpk-tile b{font-size:12px;font-weight:500;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n";
-HUE_PLUS_CSS += "/* Edit automation (hueedit.js) */\n.hwe-head{position:relative}\n.hwe-pen{position:absolute;right:16px;top:50%;margin-top:-16px;width:32px;height:32px;border:0;border-radius:50%;background:var(--f-raise,var(--tile,#2a2b2f));color:inherit;display:flex;align-items:center;justify-content:center;cursor:pointer}\n.hwe-pen svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}\n";
+
+HUE_PLUS_CSS += "\n/* The lights picker (huepicker.js), drawn as the Hue app draws \"Choose your lights\" and \"Edit lights\": full-width rows in a group, a round check on the left, a round chevron button on the right, and tiles with a darker strip for the check. */\n.hpk-list{background:var(--f-raise,var(--tile,#26272b));margin:0 0 var(--sp,10px);border-radius:0}\n.hpk-row{position:relative}\n.hpk-row+.hpk-row:before{content:\"\";position:absolute;left:68px;right:0;top:0;height:1px;background:var(--f-line,rgba(255,255,255,.08))}\n.hpk-head{display:flex;align-items:center;gap:16px;padding:12px 16px;cursor:pointer;min-height:64px;box-sizing:border-box}\n.hpk-row.dim .hpk-head{opacity:.5}\n.hpk-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}\n.hpk-n{font-size:16px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.hpk-s{font-size:13px;color:var(--ink2,#9a9ca3)}\n.hpk-s:empty{display:none}\n.hpk-ck{flex:none;width:26px;height:26px;box-sizing:border-box;border-radius:50%;border:2px solid var(--ink2,#5d5f66);display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer}\n.hpk-ck svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}\n.hpk-ck.on{background:var(--acc,#2f6bff);border-color:var(--acc,#2f6bff)}\n.hpk-ck.part{background:var(--acc,#2f6bff);border-color:var(--acc,#2f6bff)}\n.hpk-ck.part:after{content:\"\";width:10px;height:2.5px;border-radius:2px;background:#fff}\n.hpk-chev{flex:none;width:34px;height:34px;border-radius:50%;background:var(--f-line2,rgba(255,255,255,.14));color:#fff;display:flex;align-items:center;justify-content:center;transition:transform .25s}\n.hpk-chev svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}\n.hpk-row.open .hpk-chev{transform:rotate(180deg)}\n.hpk-tiles{display:flex;gap:12px;overflow-x:auto;padding:4px 16px 18px 68px;scrollbar-width:none}\n.hpk-tiles::-webkit-scrollbar{display:none}\n.hpk-tile{flex:none;width:116px;height:160px;box-sizing:border-box;border-radius:16px;background:rgba(255,255,255,.09);overflow:hidden;display:flex;flex-direction:column;cursor:pointer}\n.hpk-top{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:8px 6px 4px;min-height:0}\n.hpk-ic{display:flex}\n.hpk-ic svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}\n.hpk-tile b{font-size:14px;font-weight:500;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.hpk-rec{font-size:12px;color:#7ed321;margin-top:-3px}\n.hpk-strip{flex:none;height:56px;background:rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center}\n";
+HUE_PLUS_CSS += "\n/* Edit automation (hueedit.js), drawn from the app's screen */\n.hwe-head{position:relative;padding-bottom:8px}\n.hwe-head .hm-title{padding-right:64px}\n.hwe-head .hm-title b,.hwe-head .hm-tt b{font-size:34px;line-height:1.1;font-weight:700}\n.hwe-pen{position:absolute;right:16px;top:50%;margin-top:-17px;width:34px;height:34px;border:0;border-radius:50%;background:var(--f-line2,rgba(255,255,255,.14));color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}\n.hwe-pen svg{width:17px;height:17px;fill:currentColor;stroke:none}\n.hwe-lh{position:relative;display:flex;align-items:center;justify-content:space-between;padding:22px 16px 10px;font-size:17px;font-weight:600}\n.hwe-lh .hwe-pen{position:static;margin:0}\n.hwe-wheel{position:relative;display:flex;justify-content:center;gap:34px;height:200px;overflow:hidden}\n.hwe-band{position:absolute;left:12px;right:12px;top:80px;height:40px;border-radius:10px;background:var(--f-line2,rgba(255,255,255,.12));pointer-events:none}\n.hwe-col{position:relative;z-index:1;width:70px;height:200px;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;padding:80px 0}\n.hwe-col::-webkit-scrollbar{display:none}\n.hwe-opt{height:40px;line-height:40px;text-align:center;font-size:24px;font-variant-numeric:tabular-nums;scroll-snap-align:center;opacity:.45}\n.hwe-days{display:flex;justify-content:space-between;padding:6px 16px 16px}\n.hwe-day{width:34px;height:34px;border:0;border-radius:50%;background:var(--f-line2,rgba(255,255,255,.14));color:#fff;font-size:14px;font-weight:600;cursor:pointer}\n.hwe-day.on{background:var(--acc,#2f6bff)}\n.hwe-day:disabled{opacity:.4;cursor:default}\n.hwe-fade{display:flex;justify-content:space-between;padding:18px 16px 4px}\n.hwe-fl span,.hwe-fr span{display:block;font-size:12px;letter-spacing:.12em;color:var(--ink2,#9a9ca3)}\n.hwe-fl b,.hwe-fr b{display:block;font-size:20px;font-weight:600}\n.hwe-fr{text-align:center}\n.hwe-slider{padding:14px 16px 18px}\n.hwe-track{position:relative;height:6px;border-radius:3px;background:rgba(255,255,255,.22);touch-action:none;margin:14px 0 8px;cursor:pointer}\n.hwe-fill{position:absolute;top:0;bottom:0;right:0;border-radius:3px;background:linear-gradient(90deg,#2a4a9a,var(--acc,#2f6bff))}\n.hwe-thumb{position:absolute;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.4)}\n.hwe-ticks{display:flex;justify-content:space-between;font-size:14px;color:var(--ink2,#9a9ca3);padding-top:8px}\n";
+HUE_PLUS_CSS += "\n.hwe-lcard{background:var(--f-raise,var(--tile,#232428));padding-bottom:18px}\n.hwe-lcard .selroom{margin:0 16px}\n.hwe-lh{padding:20px 16px 12px}\n.hwe-wheel+.hm-row{border-top:1px solid var(--f-line,rgba(255,255,255,.08))}\n.hwe-col{box-sizing:border-box}\n.hwe-opt{transform-origin:center;transition:opacity .1s}\n";
+HUE_PLUS_CSS += "\n.hwe-fade{display:grid;grid-template-columns:1fr 1fr;text-align:center;padding:18px 16px 4px}\n.hwe-fl,.hwe-fr{text-align:center}\n.hwe-track{height:8px;border-radius:4px}\n.hwe-fill{border-radius:4px}\n.hwe-thumb{width:18px;height:18px;margin:-9px 0 0 -9px}\n";
 
 /* What Hue Plus offers, read from Home Assistant's registry and states (so a page shows only what exists): the bridge's entities, the lights, what belongs to one light, the
  updates, and the bridge's own data (a service that answers). It was the dashboard's `Integrations.hueplus`; now it is this plugin's. */
@@ -3568,22 +3579,19 @@ function hpButtonLightsPage(b, id) {
     box.appendChild(mkHint(_T("hpk_select_lights_for")));
     box.appendChild(pick);
     hpkPicker(pick, { groups: groups, state: state });
-    box.appendChild(
-      hmActions([
-        hmButton(_T("hm_done"), "primary", function () {
-          var targets = hpkTargets(state, groups);
-          if (!targets.length) {
-            toast(_T("hpk_choose_lights"));
-            return;
-          }
-          hpCall("hue_plus", "set_button_lights", { accessory: f.acc.id, button: f.btn.number, targets: targets }).then(function () {
-            return hmReread("accessories", f.acc.id).then(function () {
-              popBack();
-            });
-          }, function () {});
-        }),
-      ])
-    );
+    /* DONE is in the bar of the page, as in the app. */
+    HC.onDone = function () {
+      var targets = hpkTargets(state, groups);
+      if (!targets.length) {
+        toast(_T("hpk_choose_lights"));
+        return;
+      }
+      hpCall("hue_plus", "set_button_lights", { accessory: f.acc.id, button: f.btn.number, targets: targets }).then(function () {
+        return hmReread("accessories", f.acc.id).then(function () {
+          popBack();
+        });
+      }, function () {});
+    };
   });
 }
 
@@ -3673,12 +3681,20 @@ function hpkPicker(box, o) {
     if (o.state.home) o.state.picked = {};
     done();
   }
+  /* My entire home is every light of every room and zone chosen one by one the moment a single choice is made inside it. */
+  function leaveHome() {
+    if (!o.state.home) return;
+    o.state.home = false;
+    o.state.picked = {};
+    o.groups.forEach(function (g) {
+      if (g.type === "room") o.state.picked[g.id] = g.lights.map(function (l) {
+        return l.id;
+      });
+    });
+  }
   function setGroup(g) {
+    leaveHome();
     var all = chosen(g) === g.lights.length && g.lights.length > 0;
-    if (o.state.home) {
-      o.state.home = false;
-      o.state.picked = {};
-    }
     if (o.one) o.state.picked = {};
     o.state.picked[g.id] = all ? [] : g.lights.map(function (l) {
       return l.id;
@@ -3687,10 +3703,7 @@ function hpkPicker(box, o) {
     done();
   }
   function setLight(g, l) {
-    if (o.state.home) {
-      o.state.home = false;
-      o.state.picked = {};
-    }
+    leaveHome();
     var ids = (o.state.picked[g.id] || []).slice(),
       at = ids.indexOf(l.id);
     if (at >= 0) ids.splice(at, 1);
@@ -3706,7 +3719,33 @@ function hpkPicker(box, o) {
   function sub(g) {
     var n = chosen(g);
     if (!n) return "";
-    return n === g.lights.length ? _T("hpk_entire_" + g.type) : cntS(n, _T("hm_light"), _T("hm_lights"));
+    return n === g.lights.length ? _T("hpk_entire_" + g.type) : n + " " + _T("hpk_of") + " " + g.lights.length + " " + _T("hpk_lights_selected");
+  }
+  /* A light as a tile: its icon and name (and "Recommended" where the automation asks for it) over a darker strip with the round check. */
+  function lightTile(g, l) {
+    var on = o.state.home || (o.state.picked[g.id] || []).indexOf(l.id) >= 0,
+      t = mk("div", "hpk-tile", "<div class='hpk-top'><span class='hpk-ic'></span><b></b></div><div class='hpk-strip'></div>"),
+      icon = hpArchetypeIcon(l.archetype) || "lamp";
+    t.querySelector(".hpk-ic").innerHTML = svg(icon);
+    t.querySelector("b").textContent = l.name;
+    if (o.recommend && o.recommend(l)) {
+      var rec = mk("span", "hpk-rec");
+      rec.textContent = _T("hpk_recommended");
+      t.querySelector(".hpk-top").appendChild(rec);
+    }
+    t.querySelector(".hpk-strip").appendChild(circle(on, false));
+    t.setAttribute("role", "checkbox");
+    t.setAttribute("aria-checked", on ? "true" : "false");
+    t.tabIndex = 0;
+    t.addEventListener("click", function () {
+      setLight(g, l);
+    });
+    return t;
+  }
+  function anyPicked() {
+    return Object.keys(o.state.picked).some(function (k) {
+      return o.state.picked[k].length;
+    });
   }
   function groupRow(g) {
     var n = chosen(g),
@@ -3739,19 +3778,7 @@ function hpkPicker(box, o) {
     if (canOpen && open[g.id]) {
       var tiles = mk("div", "hpk-tiles");
       g.lights.forEach(function (l) {
-        var on = o.state.home || (o.state.picked[g.id] || []).indexOf(l.id) >= 0,
-          t = mk("div", "hpk-tile", "<span class='hpk-ic'></span><b></b>");
-        var icon = hpArchetypeIcon(l.archetype) || "lamp";
-        t.querySelector(".hpk-ic").innerHTML = svg(icon);
-        t.querySelector("b").textContent = l.name;
-        t.appendChild(circle(on, false));
-        t.setAttribute("role", "checkbox");
-        t.setAttribute("aria-checked", on ? "true" : "false");
-        t.tabIndex = 0;
-        t.addEventListener("click", function () {
-          setLight(g, l);
-        });
-        tiles.appendChild(t);
+        tiles.appendChild(lightTile(g, l));
       });
       row.appendChild(tiles);
     }
@@ -3760,13 +3787,34 @@ function hpkPicker(box, o) {
   function draw() {
     box.innerHTML = "";
     if (!o.one) {
-      var home = mk("div", "hpk-row"),
-        head = mk("div", "hpk-head", "<span class='hpk-t'><span class='hpk-n'></span></span>");
+      var home = mk("div", "hpk-row" + (open.home ? " open" : "") + (!o.state.home && anyPicked() ? " dim" : "")),
+        head = mk("div", "hpk-head", "<span class='hpk-t'><span class='hpk-n'></span></span>"),
+        chev = mk("span", "hpk-chev");
       head.querySelector(".hpk-n").textContent = _T("hpk_my_entire_home");
       head.insertBefore(circle(o.state.home, false), head.firstChild);
-      head.addEventListener("click", setHome);
+      chev.innerHTML = svg("chev");
+      head.appendChild(chev);
+      head.firstChild.addEventListener("click", function (e) {
+        e.stopPropagation();
+        setHome();
+      });
+      head.addEventListener("click", function () {
+        open.home = !open.home;
+        draw();
+      });
       home.appendChild(head);
-      box.appendChild(home);
+      if (open.home) {
+        var all = mk("div", "hpk-tiles");
+        o.groups.forEach(function (g) {
+          g.lights.forEach(function (l) {
+            all.appendChild(lightTile(g, l));
+          });
+        });
+        home.appendChild(all);
+      }
+      var homeList = mk("div", "hpk-list");
+      homeList.appendChild(home);
+      box.appendChild(homeList);
     }
     [
       ["room", "hn_rooms"],
@@ -4075,6 +4123,7 @@ function hwAutomationState(kind, x) {
       until: hwClock(ext.end_at),
       untilType: ext.end_at ? hwPointType(ext.end_at) : "none",
       days: (when.recurrence_days || ext.recurrence_days || HW_WEEK).slice(),
+      repeat: !x || kind !== "wake_up" || !!when.recurrence_days,
       minutes: c.fade_in_duration ? c.fade_in_duration.seconds / 60 : c.fade_out_duration ? c.fade_out_duration.seconds / 60 : kind === "go_to_sleep" ? 15 : 30,
       brightness: c.end_brightness ? Math.round(c.end_brightness) : 100,
       style: c.style || (kind === "go_to_sleep" ? "sunset" : "sunrise"),
@@ -4660,6 +4709,7 @@ function hwSaveAutomation(after) {
     body.days = d.days.length === 7 ? [] : d.days;
   }
   if (d.kind === "wake_up") {
+    if (d.repeat === false) body.repeat = false;
     body.minutes = d.minutes;
     body.end_brightness = d.brightness;
     body.style = d.style;
@@ -4760,7 +4810,7 @@ function hweSnapshot() {
 /* The name at the top, with a pencil that makes it a field. */
 function hweHead(box) {
   var head = mk("div", "hwe-head"),
-    title = hmTitle(HW.icon || "clock", HW.name),
+    title = hmTitle(HW.kind === "wake_up" && typeof HOST_ICONS !== "undefined" && HOST_ICONS.sunrise ? "sunrise" : HW.icon || "clock", HW.name),
     pen = mk("button", "hwe-pen");
   pen.type = "button";
   pen.setAttribute("aria-label", _T("hn_rename"));
@@ -4785,21 +4835,52 @@ function hweHead(box) {
   box.appendChild(head);
 }
 
-/* The lights the automation is for: a tile with a pencil that opens the picker over this screen. */
+/* How many lights the choice has. */
+function hweLightCount(groups) {
+  if (HW.lights.home) {
+    var seen = {};
+    groups.forEach(function (g) {
+      g.lights.forEach(function (l) {
+        seen[l.id] = 1;
+      });
+    });
+    return Object.keys(seen).length;
+  }
+  var ids = {};
+  Object.keys(HW.lights.picked).forEach(function (k) {
+    HW.lights.picked[k].forEach(function (id) {
+      ids[id] = 1;
+    });
+  });
+  return Object.keys(ids).length;
+}
+
+/* The lights the automation is for, as the app draws them: "Selected lights" with a pencil that opens the picker over this screen, and a tile with the room's icon, its name and how many lights. */
 function hweLights(box, groups) {
-  box.appendChild(hmLabel(_T("app_selected_lights")));
-  var tile = mk("div", "selroom", "<span class='ic'></span><div><b></b><i></i></div>");
-  var icon = HW.lights && HW.lights.home ? "home" : "lamp";
-  tile.querySelector(".ic").innerHTML = svg(icon);
-  tile.querySelector("b").textContent = hwGroupName() || _T("hn_choose_a_room");
-  var chosen = hpkTargets(HW.lights, groups),
-    n = chosen.length === 1 && chosen[0].lights ? chosen[0].lights.length : 0;
-  tile.querySelector("i").textContent = HW.lights.home ? "" : n ? cntS(n, _T("hm_light"), _T("hm_lights")) : "";
-  tile.setAttribute("role", "button");
-  tile.tabIndex = 0;
+  var card = mk("div", "hwe-lcard"),
+    head = mk("div", "hwe-lh", "<span></span>"),
+    pen = mk("button", "hwe-pen");
+  head.querySelector("span").textContent = _T("app_selected_lights");
+  pen.type = "button";
+  pen.setAttribute("aria-label", _T("hn_rename"));
+  pen.innerHTML = svg("edit");
   function open() {
     showPopup("hue-ed-lights", true);
   }
+  pen.addEventListener("click", open);
+  head.appendChild(pen);
+  card.appendChild(head);
+  var tile = mk("div", "selroom", "<span class='ic'></span><div><b></b><i></i></div>"),
+    first = groups.filter(function (g) {
+      return (HW.lights.picked[g.id] || []).length;
+    })[0],
+    icon = HW.lights.home || !first ? "home" : first.type === "zone" ? "target" : (typeof HP_ROOM_ICONS !== "undefined" && HP_ROOM_ICONS[first.archetype]) || "home";
+  tile.querySelector(".ic").innerHTML = svg(icon);
+  tile.querySelector("b").textContent = hwGroupName() || _T("hn_choose_a_room");
+  var n = hweLightCount(groups);
+  tile.querySelector("i").textContent = n ? cntS(n, _T("hm_light"), _T("hm_lights")) : "";
+  tile.setAttribute("role", "button");
+  tile.tabIndex = 0;
   tile.addEventListener("click", open);
   tile.addEventListener("keydown", function (e) {
     if (e.key === "Enter" || e.key === " ") {
@@ -4807,7 +4888,8 @@ function hweLights(box, groups) {
       open();
     }
   });
-  box.appendChild(tile);
+  card.appendChild(tile);
+  box.appendChild(card);
 }
 
 /* The choice of lights, over the edit screen: the picker, and DONE puts the choice back on it. */
@@ -4820,28 +4902,29 @@ function hweLightsPage(b) {
   var one = HW_ONE_ROOM.indexOf(HW.kind) >= 0,
     work = JSON.parse(JSON.stringify(HW.lights)),
     pick = mk("div");
-  b.appendChild(mkHint(_T("hpk_select_lights_for_automation")));
   b.appendChild(pick);
-  hpkPicker(pick, { groups: HW.groups, state: work, one: one, whole: one });
-  b.appendChild(
-    hmActions([
-      hmButton(_T("hm_done"), "primary", function () {
-        var targets = hpkTargets(work, HW.groups);
-        if (!targets.length) {
-          toast(_T("hpk_choose_lights"));
-          return;
-        }
-        HW.lights = work;
-        HW.targets = targets;
-        var first = HW.groups.filter(function (g) {
-          return (work.picked[g.id] || []).length;
-        })[0];
-        HW.group = first ? { id: first.id, type: first.type } : null;
-        popBack();
-        showPopup("hue-routine:" + HW.edit, false);
-      }),
-    ])
-  );
+  hpkPicker(pick, { groups: HW.groups, state: work, one: one, whole: one, recommend: hweRecommend });
+  /* DONE is in the bar of the page, as in the app: it puts the choice back on the edit screen. */
+  HC.onDone = function () {
+    var targets = hpkTargets(work, HW.groups);
+    if (!targets.length) {
+      toast(_T("hpk_choose_lights"));
+      return;
+    }
+    HW.lights = work;
+    HW.targets = targets;
+    var first = HW.groups.filter(function (g) {
+      return (work.picked[g.id] || []).length;
+    })[0];
+    HW.group = first ? { id: first.id, type: first.type } : null;
+    popBack();
+    showPopup("hue-routine:" + HW.edit, false);
+  };
+}
+
+/* Wake up and go to sleep are best on lights that can show a gradient (the app says so under them). */
+function hweRecommend(light) {
+  return (HW.kind === "wake_up" || HW.kind === "go_to_sleep") && /lightstrip|gradient/.test(String(light.archetype || ""));
 }
 
 /* When the lights are chosen again while the screen is open, the screen is drawn again with the choice. */
@@ -4952,10 +5035,178 @@ function hwEditPage(b, id) {
   });
 }
 
+/* The time of day as the app has it: two wheels (hours and minutes) that turn under a band that marks the chosen time, and wrap round. */
+function hweWheel(get, set) {
+  var box = mk("div", "hwe-wheel"),
+    band = mk("div", "hwe-band"),
+    cols = [];
+  function column(count, value, change) {
+    var col = mk("div", "hwe-col"),
+      timer = 0;
+    /* a row is as high as the page draws it (the panel scales every length with the phone's width) */
+    function ROW() {
+      return col.children[0].offsetHeight || 40;
+    }
+    for (var rep = 0; rep < 3; rep++)
+      for (var i = 0; i < count; i++) {
+        var o = mk("div", "hwe-opt");
+        o.textContent = (i < 10 ? "0" : "") + i;
+        col.appendChild(o);
+      }
+    function go(v, smooth) {
+      col.scrollTo({ top: (count + v) * ROW(), behavior: smooth ? "smooth" : "auto" });
+      shade();
+    }
+    function shade() {
+      var c = col.scrollTop / ROW(),
+        first = Math.max(0, Math.floor(c) - 3),
+        last = Math.min(col.children.length - 1, Math.ceil(c) + 3);
+      for (var k = first; k <= last; k++) {
+        var d = Math.abs(k - c),
+          o = col.children[k];
+        o.style.opacity = d < 0.5 ? "1" : d < 1.5 ? ".55" : ".25";
+        o.style.transform = "scale(" + (d < 0.5 ? 1 : d < 1.5 ? 0.9 : 0.78) + ")";
+      }
+    }
+    col.addEventListener("scroll", function () {
+      shade();
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        var at = Math.round(col.scrollTop / ROW()) % count;
+        /* back to the middle copy, so the wheel never ends */
+        col.scrollTo({ top: (count + at) * ROW(), behavior: "auto" });
+        change(at);
+      }, 90);
+    });
+    cols.push({ col: col, go: go, value: value });
+    return col;
+  }
+  var parts = String(get() || "06:00").split(":");
+  box.appendChild(band);
+  box.appendChild(
+    column(24, Number(parts[0]), function (h) {
+      var m = String(get() || "06:00").split(":")[1];
+      set((h < 10 ? "0" : "") + h + ":" + m);
+    })
+  );
+  box.appendChild(
+    column(60, Number(parts[1]), function (m) {
+      var h = String(get() || "06:00").split(":")[0];
+      set(h + ":" + (m < 10 ? "0" : "") + m);
+    })
+  );
+  /* The wheels are put at the time once they are in the page. */
+  var tries = 0;
+  (function place() {
+    if (!box.isConnected || box.clientHeight === 0) {
+      if (tries++ < 30) setTimeout(place, 50);
+      return;
+    }
+    var t = String(get() || "06:00").split(":");
+    cols[0].go(Number(t[0]), false);
+    cols[1].go(Number(t[1]), false);
+  })();
+  return box;
+}
+
+/* "05:30" from a time and a length in minutes before it. */
+function hweMinus(time, minutes) {
+  var p = String(time || "06:00").split(":"),
+    at = (((Number(p[0]) * 60 + Number(p[1]) - minutes) % 1440) + 1440) % 1440,
+    h = Math.floor(at / 60),
+    m = at % 60;
+  return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m;
+}
+
+/* The days, as the app draws them: S M T W T F S in round buttons, the chosen ones blue. */
+function hweDays() {
+  var order = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
+    box = mk("div", "hwe-days");
+  order.forEach(function (day) {
+    var b = mk("button", "hwe-day");
+    b.type = "button";
+    b.textContent = _T("hw_day_long_" + day).charAt(0).toUpperCase();
+    b.setAttribute("aria-label", _T("hw_day_long_" + day));
+    b.addEventListener("click", function () {
+      if (HW.repeat === false) return;
+      var at = HW.days.indexOf(day);
+      if (at >= 0) HW.days.splice(at, 1);
+      else HW.days.push(day);
+      refresh();
+    });
+    b.refresh = function () {
+      var on = HW.days.indexOf(day) >= 0 && HW.repeat !== false;
+      b.classList.toggle("on", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      b.disabled = HW.repeat === false;
+    };
+    reg(b.refresh);
+    b.refresh();
+    box.appendChild(b);
+  });
+  return box;
+}
+
+/* The pieces of the screen: the time (wheels and the fade), Repeat and its days, the lights. */
+function hweTime(box, kind) {
+  box.appendChild(hmLabel(_T("hw_when_label")));
+  var group = mk("div", "hm-group");
+  group.appendChild(hweWheel(function () { return HW.time; }, function (v) { HW.time = v; refresh(); }));
+  if (kind === "wake_up") {
+    group.appendChild(
+      hmRow({
+        title: _T("hw_fade_duration"),
+        val: function () {
+          return hwMinutesText(HW.minutes);
+        },
+        tap: function () {
+          showPopup("hue-ed-fade", true);
+        },
+      })
+    );
+  }
+  box.appendChild(group);
+  if (kind === "wake_up") {
+    var note = mkHint("");
+    note.refresh = function () {
+      note.textContent = _T("hw_lights_will_start") + " " + hweMinus(HW.time, HW.minutes) + " " + _T("hw_with_a_fade_duration_of") + " " + HW.minutes + " " + _T("hw_minutes_word") + ".";
+    };
+    reg(note.refresh);
+    note.refresh();
+    box.appendChild(note);
+  }
+}
+
+function hweRepeat(box, kind) {
+  /* One card: the Repeat switch and the days. Only a wake-up can run once (the bridge takes it without days, tried 2026-11-20); the other kinds have the days alone. */
+  var card = mk("div", "hm-group");
+  if (kind === "wake_up")
+    card.appendChild(
+      hmRow({
+        title: _T("hw_repeat"),
+        toggle: {
+          get: function () {
+            return HW.repeat !== false;
+          },
+          set: function () {
+            HW.repeat = HW.repeat === false;
+            refresh();
+          },
+        },
+      })
+    );
+  else card.appendChild(hmLabel(_T("hw_repeat")));
+  card.appendChild(hweDays());
+  box.appendChild(card);
+}
+
 /* The settings that belong to each kind, one under the other. */
 function hweBody(box, r, kind, groups) {
   hweHead(box);
-  if (kind === "wake_up" || kind === "go_to_sleep" || kind === "schedule") {
+  if (kind === "wake_up" || kind === "go_to_sleep") {
+    hweTime(box, kind);
+    hweRepeat(box, kind);
+  } else if (kind === "schedule") {
     box.appendChild(hmLabel(_T("hw_when_label")));
     hwWhenRows(box);
   }
@@ -5014,6 +5265,74 @@ function hweBody(box, r, kind, groups) {
   }
 }
 
+/* Fade duration: a page of its own over the screen, as the app opens it: how long, and when it starts because of it. */
+function hweFadePage(b) {
+  hmBox(b);
+  /* as short as its content, up from the bottom of the screen, as the app has it */
+  if (b.parentNode) b.parentNode.classList.add("shortpg");
+  if (!HW) {
+    b.appendChild(hmCallout(_T("nothing_found")));
+    return;
+  }
+  var head = mk("div", "hwe-fade"),
+    left = mk("div", "hwe-fl", "<span></span><b></b>"),
+    right = mk("div", "hwe-fr", "<span></span><b></b>"),
+    track = mk("div", "hwe-track", "<div class='hwe-fill'></div><div class='hwe-thumb'></div>"),
+    ticks = mk("div", "hwe-ticks"),
+    MAX = 60,
+    STEP = 5;
+  left.querySelector("span").textContent = _T("hw_fade_for");
+  right.querySelector("span").textContent = _T("hw_start_at_upper");
+  head.appendChild(left);
+  head.appendChild(right);
+  [60, 50, 40, 30, 20, 10, 0].forEach(function (n) {
+    ticks.appendChild(mk("span")).textContent = String(n);
+  });
+  var wrap = mk("div", "hwe-slider");
+  wrap.appendChild(track);
+  wrap.appendChild(ticks);
+  var group = mk("div", "hm-group");
+  group.appendChild(head);
+  group.appendChild(wrap);
+  b.appendChild(group);
+  var fill = track.querySelector(".hwe-fill"),
+    thumb = track.querySelector(".hwe-thumb");
+  function paint() {
+    /* the scale runs from 60 on the left to 0 on the right, the blue is what is left of it */
+    var at = 1 - HW.minutes / MAX;
+    thumb.style.left = at * 100 + "%";
+    fill.style.left = at * 100 + "%";
+    left.querySelector("b").textContent = hwMinutesText(HW.minutes);
+    right.querySelector("b").textContent = hweMinus(HW.time, HW.minutes);
+  }
+  function from(e) {
+    var r = track.getBoundingClientRect(),
+      x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)),
+      m = Math.max(STEP, Math.round(((1 - x) * MAX) / STEP) * STEP);
+    HW.minutes = m;
+    paint();
+  }
+  track.addEventListener("pointerdown", function (e) {
+    track.setPointerCapture(e.pointerId);
+    from(e);
+    function move(ev) {
+      from(ev);
+    }
+    function up() {
+      track.removeEventListener("pointermove", move);
+      track.removeEventListener("pointerup", up);
+      track.removeEventListener("pointercancel", up);
+    }
+    track.addEventListener("pointermove", move);
+    track.addEventListener("pointerup", up);
+    track.addEventListener("pointercancel", up);
+  });
+  paint();
+  HC.onDone = function () {
+    popBack();
+  };
+}
+
 /* SAVE: checks what the kind needs, then writes it; on success the screen is left. */
 function hweSave(leave) {
   var kind = HW.kind;
@@ -5036,6 +5355,7 @@ function hweSave(leave) {
 
 HP_PAGES["hue-routine"] = ["hw_edit_automation", "clock", hwEditPage];
 HP_PAGES["hue-ed-lights"] = ["hw_edit_lights", "lamp", hweLightsPage];
+HP_PAGES["hue-ed-fade"] = ["hw_fade_duration", "clock", hweFadePage];
 
 /* MotionAware areas as the Hue app has them: "Create a MotionAware area" (three pages of advice, the room, three or four devices, a name, then what the area does when it senses motion)
  and the area's own page (name, on or off, the times and scenes of "Control lights", the motion-sensitive devices, sensitivity and daylight). The steps use the wizard pieces of huewizard.js;
