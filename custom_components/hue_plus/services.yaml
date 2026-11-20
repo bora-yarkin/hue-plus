@@ -632,7 +632,6 @@ create_routine:
       selector:
         text: {}
     "group":
-      required: true
       selector:
         text: {}
     "group_type":
@@ -640,6 +639,9 @@ create_routine:
       selector:
         select:
           options: ["room", "zone"]
+    "targets":
+      selector:
+        object: {}
     "time":
       selector:
         time: {}
@@ -727,7 +729,6 @@ update_routine:
       selector:
         text: {}
     "group":
-      required: true
       selector:
         text: {}
     "group_type":
@@ -735,6 +736,9 @@ update_routine:
       selector:
         select:
           options: ["room", "zone"]
+    "targets":
+      selector:
+        object: {}
     "time":
       selector:
         time: {}
@@ -826,7 +830,6 @@ set_button_lights:
           max: 8
           step: 1
     "group":
-      required: true
       selector:
         text: {}
     "group_type":
@@ -834,6 +837,9 @@ set_button_lights:
       selector:
         select:
           options: ["room", "zone"]
+    "targets":
+      selector:
+        object: {}
 
 configure_button:
   fields:

@@ -567,3 +567,58 @@ class OtherTests(unittest.IsolatedAsyncioTestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TargetTests(unittest.IsolatedAsyncioTestCase):
+    """Where an automation or a button acts: rooms, zones, the whole home and chosen lights, as the bridge accepted them (docs/bridge-findings.md, 2026-11-20)."""
+
+    async def where_of(self, targets, snap=None):
+        rec = Recorder()
+        snap = snap or snapshot()
+        snap.bridge_home = [{"id": "home1", "type": "bridge_home"}]
+        await actions.run("create_routine", rec, snap, {"routine": "leaving_home", "name": "Out", "targets": targets})
+        return rec.calls[0][3]["configuration"]["where"]
+
+    async def test_a_room_and_a_zone_are_two_items(self):
+        where = await self.where_of([{"group": "Bedroom"}, {"group": "Reading", "group_type": "zone"}])
+        self.assertEqual(where, [{"group": {"rid": "r1", "rtype": "room"}}, {"group": {"rid": "z1", "rtype": "zone"}}])
+
+    async def test_the_whole_home_is_a_bridge_home_item(self):
+        self.assertEqual(await self.where_of([{"group_type": "home"}]), [{"group": {"rid": "home1", "rtype": "bridge_home"}}])
+
+    async def test_chosen_lights_of_a_room_are_its_items_and_all_of_them_are_the_whole_room(self):
+        some = await self.where_of([{"group": "Bedroom", "lights": ["Floor Light"]}])
+        self.assertEqual(some, [{"group": {"rid": "r1", "rtype": "room"}, "items": [{"rid": "l1", "rtype": "light"}]}])
+        every = await self.where_of([{"group": "Bedroom", "lights": ["Floor Light", "Bed Light"]}])
+        self.assertEqual(every, [{"group": {"rid": "r1", "rtype": "room"}}])
+
+    async def test_a_light_that_is_not_in_the_group_the_whole_home_with_lights_and_nothing_chosen_are_refused(self):
+        with self.assertRaisesRegex(ValueError, "is not in it"):
+            await self.where_of([{"group": "Reading", "group_type": "zone", "lights": ["Bed Light"]}])
+        with self.assertRaisesRegex(ValueError, "whole home"):
+            await self.where_of([{"group_type": "home", "lights": ["Bed Light"]}])
+        with self.assertRaisesRegex(ValueError, "list of rooms"):
+            await self.where_of([])
+        snap = snapshot()
+        with self.assertRaisesRegex(ValueError, "no home"):
+            await actions.run(
+                "create_routine", Recorder(), snap, {"routine": "leaving_home", "name": "Out", "targets": [{"group_type": "home"}]}
+            )
+
+    async def test_a_button_takes_the_same_targets_and_keeps_what_its_presses_do(self):
+        rec = Recorder()
+        snap = snapshot()
+        snap.behavior_instance[0]["id"] = "acc"
+        accessory = models.accessories(snap)[0]
+        snap.device[-1]["id"] = accessory["id"]
+        await actions.run(
+            "set_button_lights",
+            rec,
+            snap,
+            {"accessory": accessory["name"], "button": 1, "targets": [{"group": "Bedroom", "lights": ["Bed Light"]}]},
+        )
+        configuration = rec.calls[0][3]["configuration"]
+        self.assertEqual(
+            configuration["buttons"]["b1"]["where"], [{"group": {"rid": "r1", "rtype": "room"}, "items": [{"rid": "l2", "rtype": "light"}]}]
+        )
+        self.assertEqual(configuration["buttons"]["b1"]["on_short_release"], {"action": "all_off"})

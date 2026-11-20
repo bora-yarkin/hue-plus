@@ -35,6 +35,7 @@ RESOURCES = (
     "motion",
     "geofence_client",
     "geolocation",
+    "bridge_home",
 )
 
 # Matter vendor ids the bridge reports for the ecosystems it is shared with.
@@ -70,6 +71,7 @@ class Snapshot:
     motion: list[dict[str, Any]] = field(default_factory=list)
     geofence_client: list[dict[str, Any]] = field(default_factory=list)
     geolocation: list[dict[str, Any]] = field(default_factory=list)
+    bridge_home: list[dict[str, Any]] = field(default_factory=list)
 
 
 def _name(resource: dict[str, Any]) -> str:

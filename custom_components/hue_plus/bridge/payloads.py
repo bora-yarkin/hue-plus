@@ -552,16 +552,32 @@ def _go_to_sleep_routine(
     }
 
 
+def where_of(targets: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The ``where`` of an automation or a button from its targets. A target is ``{"id", "type", "lights"}``: a room, a zone or the whole home
+    (type ``bridge_home``), and, when only some of a room's or zone's lights are meant, the ids of those lights (they become the item's ``items``).
+    Several targets are several items. The bridge accepts all of these (tried 2026-11-20, docs/bridge-findings.md); a light alone as a group it refuses."""
+    if not targets:
+        raise ValueError("Choose the lights: a room, a zone or the whole home")
+    where = []
+    for target in targets:
+        item: dict[str, Any] = {"group": {"rid": target["id"], "rtype": target["type"]}}
+        if target.get("lights"):
+            item["items"] = [{"rid": rid, "rtype": "light"} for rid in target["lights"]]
+        where.append(item)
+    return where
+
+
 def routine_configuration(
     kind: str,
     *,
-    group_id: str,
-    group_type: str,
-    at: time | None,
-    days: list[str] | None,
-    minutes: float | None,
-    end_brightness: float | None,
-    scene_id: str | None,
+    group_id: str | None = None,
+    group_type: str = "room",
+    where: list[dict[str, Any]] | None = None,
+    at: time | None = None,
+    days: list[str] | None = None,
+    minutes: float | None = None,
+    end_brightness: float | None = None,
+    scene_id: str | None = None,
     until: time | None = None,
     style: str | None = None,
     turn_off_after_minutes: int | None = None,
@@ -581,7 +597,10 @@ def routine_configuration(
     say which lights they are for (what they do is the template's)."""
     if kind not in ROUTINE_TEMPLATES:
         raise ValueError(f"The routine is one of {', '.join(ROUTINE_TEMPLATES)}")
-    where = [{"group": {"rid": group_id, "rtype": group_type}}]
+    if where is None:
+        if group_id is None:
+            raise ValueError("Choose the lights: a room, a zone or the whole home")
+        where = [{"group": {"rid": group_id, "rtype": group_type}}]
     if kind in ("leaving_home", "smoke_alarm"):
         return {"where": where}
     if kind == "mimic_presence":
@@ -727,13 +746,21 @@ def button_configuration(configuration: dict[str, Any], button_id: str, press: s
     return updated
 
 
-def button_where(configuration: dict[str, Any], button_id: str, group_id: str, group_type: str) -> dict[str, Any]:
-    """The automation's configuration with the room or zone one button acts on changed (the Hue app's "Selected lights") and
-    everything else as it was. What the presses do is kept; a scene of another room stays that scene."""
+def button_where(
+    configuration: dict[str, Any],
+    button_id: str,
+    group_id: str | None = None,
+    group_type: str = "room",
+    where: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """The automation's configuration with the lights one button acts on changed (the Hue app's "Selected lights": one room or zone, or `where`,
+    which several rooms, zones, the whole home and chosen lights make) and everything else as it was. What the presses do is kept; a scene of
+    another room stays that scene."""
     buttons = configuration.get("buttons") or {}
     if button_id not in buttons:
         raise ValueError("This button has no action set up yet: set it up in the Hue app first")
-    where = [{"group": {"rid": group_id, "rtype": group_type}}]
+    if where is None:
+        where = [{"group": {"rid": group_id, "rtype": group_type}}]
     return {**configuration, "buttons": {**buttons, button_id: {**buttons[button_id], "where": where}}}
 
 
