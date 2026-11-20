@@ -741,15 +741,41 @@ def button_action(
     return {"action": action}
 
 
+DIM_ACTIONS = ("dim_up", "dim_down")
+
+
+def _dims(press_spec: dict[str, Any] | None) -> bool:
+    return isinstance((press_spec or {}).get("action"), str) and press_spec["action"] in DIM_ACTIONS
+
+
 def button_configuration(configuration: dict[str, Any], button_id: str, press: str, what: dict[str, Any]) -> dict[str, Any]:
-    """The automation's configuration with one press of one button changed and everything else as it was."""
+    """The automation's configuration with one press of one button changed and everything else as it was.
+
+    The bridge accepts a button only in the shapes the Hue app writes: a brighten or dim button holds the same action on a short press and on
+    the repeat of a held press and has no long press; every other button has a short press and a long press and no repeat. So brightening or
+    dimming sets both of its presses, anything else takes the repeat away and gives the button the long press the app writes (do nothing)."""
     if press not in BUTTON_PRESSES:
         raise ValueError(f"The press is one of {', '.join(BUTTON_PRESSES)}")
     buttons = configuration.get("buttons") or {}
     if button_id not in buttons:
         raise ValueError("This button has no action set up yet: set it up in the Hue app first")
-    updated = {**configuration, "buttons": {**buttons, button_id: {**buttons[button_id], BUTTON_PRESSES[press]: what}}}
-    return updated
+    button = dict(buttons[button_id])
+    if press == "short":
+        if _dims(what):
+            button.pop("on_long_press", None)
+            button["on_short_release"] = what
+            button["on_repeat"] = what
+        else:
+            button.pop("on_repeat", None)
+            button["on_short_release"] = what
+            button.setdefault("on_long_press", {"action": "do_nothing"})
+    elif _dims(button.get("on_short_release")):
+        raise ValueError("A button that brightens or dims has its action on the short press only: its held press repeats it")
+    elif press == "repeat":
+        raise ValueError("Only a button that brightens or dims repeats a held press")
+    else:
+        button[BUTTON_PRESSES[press]] = what
+    return {**configuration, "buttons": {**buttons, button_id: button}}
 
 
 def button_where(

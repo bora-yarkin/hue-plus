@@ -2872,7 +2872,10 @@ function hmSaveSwitch(id, ch) {
   var x = hmAccessory(id),
     job = Promise.resolve();
   Object.keys(ch).forEach(function (field) {
-    var st = ch[field];
+    var st = ch[field],
+      shortChange = ch[field.split("|")[0] + "|short"];
+    /* a long press staged before the button was made to brighten or dim has no place any more: the bridge gives such a button none */
+    if (field.split("|")[1] === "long" && shortChange && (shortChange.what.action === "dim_up" || shortChange.what.action === "dim_down")) return;
     job = job
       .then(function () {
         return hpCall("hue_plus", "configure_button", Object.assign({ accessory: st.k.acc, button: st.k.n, press: st.k.press }, st.what));
@@ -3928,8 +3931,21 @@ function hmBtnKey(id) {
   return { acc: p[0], n: Number(p[1]), press: p[2] || "short", slot: p[3] === undefined ? -1 : Number(p[3]) };
 }
 
-/* What a press does: the staged choice if the switch has one (the bridge's way of writing it, see hmSpecFrom), else what the bridge holds. */
+/* What the short press of a button does: the staged choice if the switch has one (the bridge's way of writing it, see hmSpecFrom), else what the bridge holds. */
+function hmShortSpec(acc, btn) {
+  var staged = hmdStaged(hmdKey("acc", acc.id), btn.id + "|short");
+  return staged ? hmSpecFrom(staged.what) : ((acc.actions || {})[btn.id] || {}).on_short_release;
+}
+
+/* A button that brightens or dims repeats it while it is held, and the bridge gives it no long press of its own. */
+function hmHoldRepeats(acc, btn) {
+  var kind = hmPressKind(hmShortSpec(acc, btn));
+  return kind === "brighten" || kind === "dim";
+}
+
+/* What a press does: the staged choice if the switch has one, else what the bridge holds. A held brighten or dim button does what its short press does. */
 function hmPressSpec(acc, btn, press) {
+  if (press === "long" && hmHoldRepeats(acc, btn)) return hmShortSpec(acc, btn);
   var staged = hmdStaged(hmdKey("acc", acc.id), btn.id + "|" + press);
   if (staged) return hmSpecFrom(staged.what);
   return ((acc.actions || {})[btn.id] || {})[HM_PRESSES.filter(function (x) { return x[0] === press; })[0][2]];
@@ -4043,7 +4059,7 @@ function hmButtonPage(b, id) {
             val: function () {
               return hmPressSummary(r, hmPressSpec(f.acc, f.btn, p[0]));
             },
-            tap: "hue-press:" + f.acc.id + "|" + k.n + "|" + p[0],
+            tap: p[0] === "long" && hmHoldRepeats(f.acc, f.btn) ? null : "hue-press:" + f.acc.id + "|" + k.n + "|" + p[0],
           });
         })
       )
@@ -11642,7 +11658,7 @@ function hpSwitchPage(b, id) {
             },
             disc: scenes[0] ? hpDiscOf(scenes[0].colours) : null,
             icon: scenes[0] ? null : hpKindIcon(hmPressKind(spec())),
-            tap: "app-press:" + x.id + "|" + btn.number + "|" + p[0],
+            tap: p[0] === "long" && hmHoldRepeats(x, btn) ? null : "app-press:" + x.id + "|" + btn.number + "|" + p[0],
           });
         })
       )

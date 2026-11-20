@@ -373,8 +373,35 @@ class ButtonTests(unittest.IsolatedAsyncioTestCase):
         (call,) = await self.go({"accessory": "Dimmer", "button": 1, "press": "short", "action": "dim_up"})
         self.assertEqual(call[:3], ("put", "behavior_instance", "acc"))
         buttons = call[3]["configuration"]["buttons"]
-        self.assertEqual(buttons["b1"], {"on_short_release": {"action": "dim_up"}, "where": [ROOM_GROUP]})
+        self.assertEqual(
+            buttons["b1"], {"on_short_release": {"action": "dim_up"}, "on_repeat": {"action": "dim_up"}, "where": [ROOM_GROUP]}
+        )
         self.assertEqual(buttons["b2"], {"on_repeat": {"action": "dim_up"}})
+
+    def test_a_button_is_written_in_the_shapes_the_bridge_accepts(self):
+        dims = {"on_short_release": {"action": "dim_up"}, "on_repeat": {"action": "dim_up"}}
+        plain = {"on_short_release": {"action": "all_off"}, "on_long_press": {"action": "do_nothing"}}
+        config = {"buttons": {"dim": dims, "plain": plain}}
+        scene = {"recall_single_extended": {"actions": [], "with_off": {"enabled": False}}}
+        # a dimming button turned into a scene button loses its repeat and gets the long press the app writes
+        self.assertEqual(
+            payloads.button_configuration(config, "dim", "short", scene)["buttons"]["dim"],
+            {"on_short_release": scene, "on_long_press": {"action": "do_nothing"}},
+        )
+        # a plain button turned into a dimming one has both dim presses and no long press
+        self.assertEqual(
+            payloads.button_configuration(config, "plain", "short", {"action": "dim_down"})["buttons"]["plain"],
+            {"on_short_release": {"action": "dim_down"}, "on_repeat": {"action": "dim_down"}},
+        )
+        # a dimming button has no long press of its own, and a plain one has no repeat
+        with self.assertRaises(ValueError):
+            payloads.button_configuration(config, "dim", "long", {"action": "do_nothing"})
+        with self.assertRaises(ValueError):
+            payloads.button_configuration(config, "plain", "repeat", {"action": "dim_up"})
+        self.assertEqual(
+            payloads.button_configuration(config, "plain", "long", {"action": "home_off"})["buttons"]["plain"]["on_long_press"],
+            {"action": "home_off"},
+        )
 
     async def test_the_lights_a_button_acts_on_change_and_its_presses_stay(self):
         rec = Recorder()
