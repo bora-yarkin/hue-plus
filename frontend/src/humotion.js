@@ -273,6 +273,7 @@ function hmwCalibratingPage(b) {
     box = hmGroup([status]),
     stopped = false,
     timer = null;
+  box.classList.add("calbar");
   b.appendChild(box);
   function leave() {
     stopped = true;
@@ -460,6 +461,17 @@ function hmwSorted() {
 }
 
 /* One row for each time: from when to when, the scene (or no lights), the minutes without motion before the lights go off. `plain` rows are not pressable. */
+/* The picture of a scene at the end of a row: its colours as a round swatch. */
+function hmwSceneDisc(sceneId) {
+  var scene = hmList("scenes").filter(function (x) {
+      return x.id === sceneId;
+    })[0],
+    cols = ((scene && scene.colours) || []).map(function (c) {
+      return typeof window.hpColourCss === "function" ? window.hpColourCss(c) : "#f9d27a";
+    });
+  return !cols.length ? "#f9d27a" : cols.length === 1 ? cols[0] : "conic-gradient(" + cols.concat(cols[0]).join(",") + ")";
+}
+
 function hmwSlotRows(plain) {
   var sorted = hmwSorted();
   return hmGroup(
@@ -741,14 +753,18 @@ function hmMotionArea(b, id) {
         return hmdValue(key, "sensitivity", svc && svc.sensitivity ? svc.sensitivity.sensitivity : 0);
       },
       a = hmwAutomationOf(id);
-    box.appendChild(hmTitle("motion", name));
+    var title = hmTitle("motion", name),
+      pen = mk("button", "hm-pen", svg("edit"));
+    box.appendChild(title);
+    /* The name is changed with the pencil by it, as in the Hue app. */
+    pen.type = "button";
+    pen.setAttribute("aria-label", _T("hmw_name"));
+    pen.addEventListener("click", function () {
+      showPopup("hue-mname:" + id, true);
+    });
+    title.appendChild(pen);
     box.appendChild(
       hmGroup([
-        hmRow({
-          title: _T("hmw_name"),
-          val: name,
-          tap: "hue-mname:" + id,
-        }),
         hmRow({
           title: _T("hm_enabled"),
           toggle: {
@@ -764,16 +780,30 @@ function hmMotionArea(b, id) {
         }),
       ])
     );
-    box.appendChild(hmLabel(_T("hmw_what_it_does")));
+    /* What the area does: each time with the scene it recalls, a tap opens them to be changed. */
+    var slots = a ? hmwSlotsFrom(a) : [];
     box.appendChild(
-      hmGroup([
-        hmRow({
-          icon: "lamp",
-          title: _T("hmw_control_lights"),
-          sub: a ? cntS(hmwSlotsFrom(a).length, _T("hmw_time_n"), _T("hmw_times_n")) : _T("hmw_nothing_set"),
-          tap: "hue-mslots:" + id,
-        }),
-      ])
+      hmGroup(
+        slots.length
+          ? slots.map(function (sl, i) {
+              var to = slots[(i + 1) % slots.length];
+              return hmRow({
+                title: hmwStartText(sl),
+                sub: _T("hmw_until") + " " + hmwStartText(to),
+                val: (sl.scene ? hmwSceneName(sl.scene) : _T("hmw_no_lights")) + (sl.scene && sl.off ? " · " + hwMinutesText(sl.off) : ""),
+                disc: sl.scene ? hmwSceneDisc(sl.scene) : null,
+                tap: "hue-mslots:" + id,
+              });
+            })
+          : [
+              hmRow({
+                icon: "lamp",
+                title: _T("hmw_control_lights"),
+                sub: _T("hmw_nothing_set"),
+                tap: "hue-mslots:" + id,
+              }),
+            ]
+      )
     );
     box.appendChild(hmLabel(_T("hmw_general_settings")));
     box.appendChild(

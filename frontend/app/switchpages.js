@@ -313,39 +313,99 @@ function hpPressScenePage(b, id) {
       box.appendChild(hmCallout(_T("nothing_found")));
       return;
     }
-    var scenes = hmBtnScenes(r, hmBtnTargets(r, f.acc, f.btn)),
-      current = hmPressScenes(f.spec)[0];
-    box.appendChild(hmLabel(_T("app_my_scenes")));
-    var grid = mk("div", "pgrid");
-    scenes.forEach(function (s) {
-      var t = mk("div", "sitem" + (current === s.id ? " on" : ""), "<span class='dc'></span><b></b>");
-      t.querySelector(".dc").appendChild(hpDiscOf(s.colours));
-      t.querySelector("b").textContent = s.name;
-      hpActive(t, function () {
-        hmStagePress(k, f, { action: "scene", scene: s.id, with_off: hmPressWithOff(f.spec) });
+    var targets = hmBtnTargets(r, f.acc, f.btn),
+      scenes = hmBtnScenes(r, targets),
+      current = hmPressScenes(f.spec)[0],
+      preview = HPSW.preview === true,
+      done = function () {
         popBack();
         popBack();
+      };
+    /* The room's name is the title of the page, as in the app. */
+    var ttl = b.parentNode && b.parentNode.querySelector(".pbar .ttl");
+    if (ttl) ttl.textContent = targets.name || _T("hm_the_whole_home");
+    /* My scenes: the label with the blue plus that makes a new scene, then the scenes in two rows; the one chosen has its pencil beside it. */
+    var bar = mk("div", "lbrow");
+    bar.appendChild(hmLabel(_T("app_my_scenes")));
+    if (hueplus.has(H(), "create_scene")) {
+      var plus = hpRound("plus", _T("hn_add_a_scene"), function () {
+        hueStartMaker("home");
       });
-      grid.appendChild(t);
+      plus.classList.add("blue");
+      bar.appendChild(plus);
+    }
+    box.appendChild(bar);
+    var grid = mk("div", "pgrid scrows"),
+      rowsOf = [mk("div", "scr"), mk("div", "scr")];
+    grid.appendChild(rowsOf[0]);
+    grid.appendChild(rowsOf[1]);
+    function entityOf(sceneId) {
+      return Object.keys(H().entities).filter(function (e) {
+        return H().entities[e].unique_id === sceneId;
+      })[0];
+    }
+    scenes.forEach(function (sc, at) {
+      var t = mk("div", "sitem" + (current === sc.id ? " on" : ""), "<span class='dc'></span><b></b>"),
+        lane = rowsOf[at % 2];
+      t.querySelector(".dc").appendChild(hpDiscOf(sc.colours));
+      t.querySelector("b").textContent = sc.name;
+      hpActive(t, function () {
+        hmStagePress(k, f, { action: "scene", scene: sc.id, with_off: hmPressWithOff(f.spec) });
+        var ent = entityOf(sc.id);
+        if (preview && ent) call("scene", "turn_on", { entity_id: ent });
+        done();
+      });
+      lane.appendChild(t);
+      if (current === sc.id && entityOf(sc.id)) {
+        var pen = hpRound("edit", _T("hn_rename"), function () {
+          showPopup("app-scene:" + entityOf(sc.id) + "~", true);
+        });
+        pen.classList.add("scpen");
+        lane.appendChild(pen);
+      }
     });
     box.appendChild(grid);
     box.appendChild(hmLabel(_T("app_suggestions")));
     var sug = mk("div", "pgrid");
+    var bright = scenes.filter(function (sc) {
+      return /^bright$/i.test(sc.name);
+    })[0];
     [
-      ["off", "all_off", "hm_lights_off", "power"],
-      ["nothing", "do_nothing", "hm_do_nothing", "minus"],
-    ].forEach(function (c) {
-      var t = mk("div", "sitem", "<span class='dc'></span><b></b>");
-      t.querySelector(".dc").innerHTML = "<span class='disc dark'>" + svg(c[3]) + "</span>";
-      t.querySelector("b").textContent = _T(c[2]);
-      hpActive(t, function () {
-        hmStagePress(k, f, { action: c[1] });
-        popBack();
-        popBack();
+      bright ? ["bright", { action: "scene", scene: bright.id, with_off: hmPressWithOff(f.spec) }, "app_bright", "bright"] : null,
+      ["off", { action: "all_off" }, "app_off", "target"],
+      ["nothing", { action: "do_nothing" }, "hm_do_nothing", "minus"],
+    ]
+      .filter(Boolean)
+      .forEach(function (c) {
+        var t = mk("div", "sitem", "<span class='dc'></span><b></b>");
+        t.querySelector(".dc").innerHTML = "<span class='disc dark'>" + svg(c[3]) + "</span>";
+        t.querySelector("b").textContent = _T(c[2]);
+        hpActive(t, function () {
+          hmStagePress(k, f, c[1]);
+          done();
+        });
+        sug.appendChild(t);
       });
-      sug.appendChild(t);
-    });
     box.appendChild(sug);
+    /* Show preview: with it on, a scene that is chosen plays in the room at once. */
+    box.appendChild(
+      hmGroup([
+        hmRow({
+          title: _T("app_show_preview"),
+          sub: _T("app_show_preview_sub"),
+          toggle: {
+            get: function () {
+              return HPSW.preview === true;
+            },
+            set: function () {
+              HPSW.preview = !HPSW.preview;
+              preview = HPSW.preview;
+              refresh();
+            },
+          },
+        }),
+      ])
+    );
   });
 }
 

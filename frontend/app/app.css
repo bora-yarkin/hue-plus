@@ -683,3 +683,26 @@ body{width:100%;height:100%}
 .hwe-wheel.dur:before,.hwe-wheel.dur:after{position:absolute;top:50%;margin-top:-7px;font-size:10px;font-weight:600;z-index:2;pointer-events:none}
 .hwe-wheel.dur:before{content:attr(data-h);left:calc(25% + 22px)}
 .hwe-wheel.dur:after{content:attr(data-m);left:calc(75% + 18px)}
+/* the seconds that are left of the calibration, in the bottom bar with a turning ring */
+.pg.wizpg .hm-group.calbar{position:fixed;left:0;right:0;bottom:0;margin:0;border-radius:0;background:var(--bg);border-top:1px solid var(--line);z-index:5;padding-bottom:var(--sab,0px)}
+.calbar .hm-row{justify-content:center;background:none;min-height:70px;gap:12px}
+.calbar .hm-row:before{content:"";position:static;width:22px;height:22px;box-sizing:border-box;border-radius:50%;border:3px solid #4a4b50;border-top-color:#a8aab2;background:none;animation:calspin 1s linear infinite;flex:none}
+.calbar .hm-n{font-size:10px;color:var(--ink2);font-weight:400}
+@keyframes calspin{to{transform:rotate(360deg)}}
+/* Add a scene as the app draws it: a title, a line, and tiles with their picture above their name */
+.addtitle{padding:6px 18px 4px;font-size:20px;font-weight:600}
+.pg.wizpg .gridl.g2{gap:12px;padding:6px 16px 0}
+.pg.wizpg .gridl.g2 .pill{flex-direction:column;align-items:flex-start;justify-content:space-between;gap:0;height:98px;padding:16px 14px 14px;background:#2d2e32;border-radius:14px}
+.pg.wizpg .gridl.g2 .pill .ic{background:none;width:auto;height:auto}
+.pg.wizpg .gridl.g2 .pill .ic svg{width:26px;height:26px}
+.pg.wizpg .gridl.g2 .pill .tx{display:block}
+.pg.wizpg .gridl.g2 .pill .nm{font-size:10.5px;font-weight:600}
+.pg.wizpg .gridl.g2 .pill .sb,.pg.wizpg .gridl.g2 .pill .vl{display:none}
+/* the scene choice of a press: the scenes in two rows that scroll sideways, the pencil standing by the chosen one */
+.pgrid.scrows{display:block;overflow-x:auto;padding:4px 16px 12px;scrollbar-width:none}
+.pgrid.scrows .scr{display:flex;align-items:center;gap:12px;width:max-content;margin-bottom:12px}
+.pgrid.scrows::-webkit-scrollbar{display:none}
+.pgrid.scrows .sitem{width:94px;height:104px}
+.pgrid.scrows .scpen{flex:none}
+.pg .pgrid:not(.scrows){display:flex;flex-wrap:wrap;gap:12px;padding:4px 16px 12px}
+.hm-ldisc{flex:none;width:46px;height:46px;border-radius:50%;margin-right:12px}

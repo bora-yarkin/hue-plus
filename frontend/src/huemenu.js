@@ -104,6 +104,7 @@ function hmRow(o) {
   var key = typeof o.tap === "string" ? o.tap : null,
     r = mk("div", "hm-row" + (o.tap || o.toggle ? " tap" : "") + (o.danger ? " danger" : "") + (o.stack ? " stack" : "") + (o.blue ? " blueic" : "") + (o.chev ? " keepchev" : "") + (o.radio ? " radio" : ""));
   r.innerHTML =
+    (o.ldisc ? "<span class='hm-ldisc'></span>" : "") +
     (o.icon ? "<span class='hm-i'>" + svg(o.icon) + "</span>" : "") +
     "<span class='hm-t'><span class='hm-n'></span><span class='hm-s'></span></span><span class='hm-v'></span>" +
     (o.disc ? "<span class='hm-disc'></span>" : "") +
@@ -114,6 +115,7 @@ function hmRow(o) {
     sb = r.querySelector(".hm-s"),
     vl = r.querySelector(".hm-v");
   if (o.disc) r.querySelector(".hm-disc").style.background = o.disc;
+  if (o.ldisc) r.querySelector(".hm-ldisc").style.background = o.ldisc;
   /* a round dark picture at the end of the row (what a choice does), as the app draws them */
   if (o.endicon) {
     var edisc = mk("span", "hm-edisc");
@@ -2194,6 +2196,7 @@ var HPRENAME = {};
 
 function hpRenamePage(b, id) {
   hmBox(b);
+  if (b.parentNode) b.parentNode.classList.add("shortpg");
   var hue = A(id).hue_light_id,
     st = HPRENAME[id] || (HPRENAME[id] = { name: hpName(id), type: null, read: false }),
     big = mk("div", "rnbig");

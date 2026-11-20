@@ -91,7 +91,7 @@
 /* The text of this plugin's pages (the dashboard adds it to its own table when the plugin starts). */
 
 var PLUGIN_STRINGS = {
-  "hn_add_a_scene_hint": "Create scenes to save to the Hue bridge. You choose the lights next.",
+  "hn_add_a_scene_hint": "Browse, customize, or create scenes to save to this Room",
   "hn_choose_your_lights": "Choose your lights",
   "hn_zones": "Zones",
   "hn_rooms": "Rooms",
@@ -779,6 +779,10 @@ var PLUGIN_STRINGS = {
   "app_btn_hue": "Hue button",
   "app_set_what_happens": "Set what should happen when you ",
   "app_the_button": "the",
+  "app_bright": "Bright",
+  "app_off": "Off",
+  "app_show_preview": "Show preview",
+  "app_show_preview_sub": "When a scene is selected",
   "app_suggestions": "Suggestions",
   "app_disabled": "Disabled",
   "app_enabled": "Enabled",
@@ -794,6 +798,7 @@ var PLUGIN_STRINGS = {
   "app_slow": "Slow",
   "app_medium": "Medium",
   "app_fast": "Fast",
+  "hmw_until": "Until",
   "app_edit_area": "Edit area",
   "app_ip_address": "IP address",
   "app_speed": "Speed",
@@ -837,7 +842,7 @@ var HUE_PLUS_CSS = ".hs-now{display:flex;flex-direction:column;align-items:cente
 HUE_PLUS_CSS += "\n/* Edit name and type */\n.hm-title{position:relative}\n.hm-title .hm-pen{position:absolute;right:16px;bottom:10px;width:30px;height:30px;border:0;border-radius:50%;background:var(--f-raise,#3a3b3e);color:inherit;display:flex;align-items:center;justify-content:center;cursor:pointer}\n.hm-title .hm-pen svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}\n.rnbig{display:flex;justify-content:center;padding:18px 0 10px}\n.rnbig svg{width:44px;height:44px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}\n.rnname{display:block;box-sizing:border-box;width:calc(100% - 22px);margin:8px 11px 4px;padding:13px 12px;border:0;border-radius:8px;background:var(--f-raise,#3a3b3e);color:inherit;font:inherit;font-size:14px}\n.rngrid{display:grid;grid-template-columns:repeat(3,1fr);background:var(--f-card,#25262a);margin:0 0 6px;border-radius:var(--r-row,0)}\n.rntype{display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px 4px 14px;border:0;background:none;color:inherit;cursor:pointer;font:inherit}\n.rntype .ic{width:38px;height:38px;border-radius:50%;background:var(--f-line2,#4a4b50);display:flex;align-items:center;justify-content:center}\n.rntype .ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}\n.rntype b{font-size:11px;font-weight:500;text-align:center}\n.rntype.on .ic{background:#fff;color:#1b1c20}\n";
 
 HUE_PLUS_CSS += "\n/* The lights picker (huepicker.js), drawn as the Hue app draws \"Choose your lights\" and \"Edit lights\": full-width rows in a group, a round check on the left, a round chevron button on the right, and tiles with a darker strip for the check. */\n.hpk-list{background:var(--f-raise,var(--tile,#26272b));margin:0 0 var(--sp,10px);border-radius:0}\n.hpk-row{position:relative}\n.hpk-row+.hpk-row:before{content:\"\";position:absolute;left:68px;right:0;top:0;height:1px;background:var(--f-line,rgba(255,255,255,.08))}\n.hpk-head{display:flex;align-items:center;gap:16px;padding:12px 16px;cursor:pointer;min-height:64px;box-sizing:border-box}\n.hpk-row.dim .hpk-head{opacity:.5}\n.hpk-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}\n.hpk-n{font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.hpk-s{font-size:10px;color:var(--ink2,#9a9ca3)}\n.hpk-s:empty{display:none}\n.hpk-ck{flex:none;width:22px;height:22px;box-sizing:border-box;border-radius:50%;border:2px solid var(--ink2,#5d5f66);display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer}\n.hpk-ck svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}\n.hpk-ck.on{background:var(--acc,#2f6bff);border-color:var(--acc,#2f6bff)}\n.hpk-ck.part{background:var(--acc,#2f6bff);border-color:var(--acc,#2f6bff)}\n.hpk-ck.part:after{content:\"\";width:10px;height:2.5px;border-radius:2px;background:#fff}\n.hpk-chev{flex:none;width:30px;height:30px;border-radius:50%;background:var(--f-line2,rgba(255,255,255,.14));color:#fff;display:flex;align-items:center;justify-content:center;transition:transform .25s}\n.hpk-chev svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}\n.hpk-row.open .hpk-chev{transform:rotate(180deg)}\n.hpk-tiles{display:flex;gap:12px;overflow-x:auto;padding:4px 16px 18px 68px;scrollbar-width:none}\n.hpk-tiles::-webkit-scrollbar{display:none}\n.hpk-tile{flex:none;width:116px;height:160px;box-sizing:border-box;border-radius:16px;background:rgba(255,255,255,.09);overflow:hidden;display:flex;flex-direction:column;cursor:pointer}\n.hpk-top{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:8px 6px 4px;min-height:0}\n.hpk-ic{display:flex}\n.hpk-ic svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}\n.hpk-tile b{font-size:11px;font-weight:500;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.hpk-rec{font-size:10px;color:#7ed321;margin-top:-3px}\n.hpk-strip{flex:none;height:56px;background:rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center}\n";
-HUE_PLUS_CSS += "\n/* Edit automation (hueedit.js), drawn from the app's screen */\n.hwe-head{position:relative;padding-bottom:8px}\n.hwe-head .hm-title{padding-right:64px}\n.hwe-head .hm-title b,.hwe-head .hm-tt b{font-size:34px;line-height:1.1;font-weight:700}\n.hwe-pen{position:absolute;right:16px;top:50%;margin-top:-17px;width:34px;height:34px;border:0;border-radius:50%;background:var(--f-line2,rgba(255,255,255,.14));color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}\n.hwe-pen svg{width:17px;height:17px;fill:currentColor;stroke:none}\n.hwe-lh{position:relative;display:flex;align-items:center;justify-content:space-between;padding:22px 16px 10px;font-size:17px;font-weight:600}\n.hwe-lh .hwe-pen{position:static;margin:0}\n.hwe-wheel{position:relative;display:flex;justify-content:center;gap:34px;height:200px;overflow:hidden}\n.hwe-band{position:absolute;left:12px;right:12px;top:80px;height:40px;border-radius:10px;background:var(--f-line2,rgba(255,255,255,.12));pointer-events:none}\n.hwe-col{position:relative;z-index:1;width:70px;height:200px;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;padding:80px 0}\n.hwe-col::-webkit-scrollbar{display:none}\n.hwe-opt{height:40px;line-height:40px;text-align:center;font-size:24px;font-variant-numeric:tabular-nums;scroll-snap-align:center;opacity:.45}\n.hwe-days{display:flex;justify-content:space-between;padding:6px 16px 16px}\n.hwe-day{width:34px;height:34px;border:0;border-radius:50%;background:var(--f-line2,rgba(255,255,255,.14));color:#fff;font-size:14px;font-weight:600;cursor:pointer}\n.hwe-day.on{background:var(--acc,#2f6bff)}\n.hwe-day:disabled{opacity:.4;cursor:default}\n.hwe-fade{display:flex;justify-content:space-between;padding:18px 16px 4px}\n.hwe-fl span,.hwe-fr span{display:block;font-size:12px;letter-spacing:.12em;color:var(--ink2,#9a9ca3)}\n.hwe-fl b,.hwe-fr b{display:block;font-size:20px;font-weight:600}\n.hwe-fr{text-align:center}\n.hwe-slider{padding:14px 16px 18px}\n.hwe-track{position:relative;height:6px;border-radius:3px;background:rgba(255,255,255,.22);touch-action:none;margin:14px 0 8px;cursor:pointer}\n.hwe-fill{position:absolute;top:0;bottom:0;right:0;border-radius:3px;background:linear-gradient(90deg,#2a4a9a,var(--acc,#2f6bff))}\n.hwe-thumb{position:absolute;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.4)}\n.hwe-ticks{display:flex;justify-content:space-between;font-size:14px;color:var(--ink2,#9a9ca3);padding-top:8px}\n";
+HUE_PLUS_CSS += "\n/* Edit automation (hueedit.js), drawn from the app's screen */\n.hwe-head{position:relative;padding-bottom:8px}\n.hwe-head .hm-title{padding-right:64px}\n.hwe-head .hm-title b,.hwe-head .hm-tt b{font-size:34px;line-height:1.1;font-weight:700}\n.hwe-pen{position:absolute;right:16px;top:50%;margin-top:-17px;width:34px;height:34px;border:0;border-radius:50%;background:var(--f-line2,rgba(255,255,255,.14));color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}\n.hwe-pen svg{width:17px;height:17px;fill:currentColor;stroke:none}\n.hwe-lh{position:relative;display:flex;align-items:center;justify-content:space-between;padding:22px 16px 10px;font-size:17px;font-weight:600}\n.hwe-lh .hwe-pen{position:static;margin:0}\n.hwe-wheel{position:relative;display:flex;justify-content:center;gap:34px;height:150px;overflow:hidden}\n.hwe-band{position:absolute;left:8px;right:8px;top:60px;height:30px;border-radius:10px;background:var(--f-line2,rgba(255,255,255,.12));pointer-events:none}\n.hwe-col{position:relative;z-index:1;width:70px;height:150px;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;padding:60px 0}\n.hwe-col::-webkit-scrollbar{display:none}\n.hwe-opt{height:30px;line-height:30px;text-align:center;font-size:18px;font-variant-numeric:tabular-nums;scroll-snap-align:center;opacity:.45}\n.hwe-days{display:flex;justify-content:space-between;padding:6px 16px 16px}\n.hwe-day{width:27px;height:27px;border:0;border-radius:50%;background:var(--f-line2,rgba(255,255,255,.14));color:#fff;font-size:14px;font-weight:600;cursor:pointer}\n.hwe-day.on{background:var(--acc,#2f6bff)}\n.hwe-day:disabled{opacity:.4;cursor:default}\n.hwe-fade{display:flex;justify-content:space-between;padding:18px 16px 4px}\n.hwe-fl span,.hwe-fr span{display:block;font-size:12px;letter-spacing:.12em;color:var(--ink2,#9a9ca3)}\n.hwe-fl b,.hwe-fr b{display:block;font-size:20px;font-weight:600}\n.hwe-fr{text-align:center}\n.hwe-slider{padding:14px 16px 18px}\n.hwe-track{position:relative;height:6px;border-radius:3px;background:rgba(255,255,255,.22);touch-action:none;margin:14px 0 8px;cursor:pointer}\n.hwe-fill{position:absolute;top:0;bottom:0;right:0;border-radius:3px;background:linear-gradient(90deg,#2a4a9a,var(--acc,#2f6bff))}\n.hwe-thumb{position:absolute;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.4)}\n.hwe-ticks{display:flex;justify-content:space-between;font-size:14px;color:var(--ink2,#9a9ca3);padding-top:8px}\n";
 HUE_PLUS_CSS += "\n.hwe-lcard{background:var(--f-raise,var(--tile,#232428));padding-bottom:18px}\n.hwe-lcard .selroom{margin:0 16px}\n.hwe-lh{padding:20px 16px 12px}\n.hwe-wheel+.hm-row{border-top:1px solid var(--f-line,rgba(255,255,255,.08))}\n.hwe-col{box-sizing:border-box}\n.hwe-opt{transform-origin:center;transition:opacity .1s}\n";
 HUE_PLUS_CSS += "\n.hwe-fade{display:grid;grid-template-columns:1fr 1fr;text-align:center;padding:18px 16px 4px}\n.hwe-fl,.hwe-fr{text-align:center}\n.hwe-track{height:8px;border-radius:4px}\n.hwe-fill{border-radius:4px}\n.hwe-thumb{width:18px;height:18px;margin:-9px 0 0 -9px}\n";
 HUE_PLUS_CSS += "\n/* Wizard pages, as the app draws them: cards with rounded corners, a small Next */\n.pg.wizpg .hm .hm-group,.pg.wizpg .hpk-list{margin-left:16px;margin-right:16px;border-radius:14px;overflow:hidden}\n.pg.wizpg .hm .hm-actions .hm-btn{min-width:72px;padding:8px 20px;font-size:10px}\n.pg.wizpg .hm .hm-actions{padding:14px 0}\n.pg.wizpg .hm .hm-title+.hm-group{margin-top:75px}\n.hm-disc{flex:none;width:46px;height:46px;box-shadow:0 2px 6px rgba(0,0,0,.35);border-radius:50%;margin-left:8px}\n.hwe-fill2{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:linear-gradient(90deg,#2a4a9a,var(--acc,#2f6bff))}\n.hw-field{position:relative;margin:0 16px;border:1.5px solid rgba(255,255,255,.45);border-radius:6px;background:var(--f-raise,#2a2b30);padding:20px 44px 8px 12px}\n.hw-flabel{position:absolute;left:12px;top:6px;font-size:8px;font-weight:600;letter-spacing:.06em;color:var(--ink2,#9a9ca3)}\n.hw-input{width:100%;border:0;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:500;outline:none;padding:0}\n.hw-clear{position:absolute;right:10px;top:50%;margin-top:-12px;width:24px;height:24px;border:0;background:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}\n.hw-clear svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}\n";
@@ -1461,6 +1466,7 @@ function hmRow(o) {
   var key = typeof o.tap === "string" ? o.tap : null,
     r = mk("div", "hm-row" + (o.tap || o.toggle ? " tap" : "") + (o.danger ? " danger" : "") + (o.stack ? " stack" : "") + (o.blue ? " blueic" : "") + (o.chev ? " keepchev" : "") + (o.radio ? " radio" : ""));
   r.innerHTML =
+    (o.ldisc ? "<span class='hm-ldisc'></span>" : "") +
     (o.icon ? "<span class='hm-i'>" + svg(o.icon) + "</span>" : "") +
     "<span class='hm-t'><span class='hm-n'></span><span class='hm-s'></span></span><span class='hm-v'></span>" +
     (o.disc ? "<span class='hm-disc'></span>" : "") +
@@ -1471,6 +1477,7 @@ function hmRow(o) {
     sb = r.querySelector(".hm-s"),
     vl = r.querySelector(".hm-v");
   if (o.disc) r.querySelector(".hm-disc").style.background = o.disc;
+  if (o.ldisc) r.querySelector(".hm-ldisc").style.background = o.ldisc;
   /* a round dark picture at the end of the row (what a choice does), as the app draws them */
   if (o.endicon) {
     var edisc = mk("span", "hm-edisc");
@@ -3551,6 +3558,7 @@ var HPRENAME = {};
 
 function hpRenamePage(b, id) {
   hmBox(b);
+  if (b.parentNode) b.parentNode.classList.add("shortpg");
   var hue = A(id).hue_light_id,
     st = HPRENAME[id] || (HPRENAME[id] = { name: hpName(id), type: null, read: false }),
     big = mk("div", "rnbig");
@@ -4094,11 +4102,16 @@ function hwPickPage(b) {
     b.appendChild(hmCallout(_T("nothing_found")));
     return;
   }
+  /* the sheet is called what is chosen (Style, Fade duration...), and each choice can have its picture in front */
+  var ttl = b.parentNode && b.parentNode.querySelector(".pbar .ttl");
+  if (ttl && p.title) ttl.textContent = p.title;
+  if (b.parentNode) b.parentNode.classList.add("shortpg");
   hwHint(b, p.hint);
   b.appendChild(
     hmGroup(
       p.options.map(function (o) {
         return hmRow({
+          ldisc: o.disc,
           title: o.title,
           sub: o.sub,
           check: function () {
@@ -4312,6 +4325,7 @@ function hwPointRow(title, key, withNone) {
     },
     tap: function () {
       hwChoose({
+        title: title,
         hint: hwHasLocation() ? "" : _T("hw_sun_needs_home_location"),
         options: (withNone ? ["none"] : []).concat(HW_POINTS).map(function (t) {
           return { value: t, title: hwPointText(t) };
@@ -4336,17 +4350,23 @@ function hwWhenRows(b) {
   var kind = HW.kind,
     schedule = kind === "schedule";
   if (schedule) {
-    b.appendChild(hmGroup([hwPointRow(_T("hw_start_at"), "startType", false)]));
-    if (HW.startType === "time") b.appendChild(hmGroup([hwTimeRow(_T("time"), function () { return HW.time; }, function (v) { HW.time = v; })]));
-    b.appendChild(hmGroup([hwPointRow(_T("hw_end_at"), "untilType", true)]));
-    if (HW.untilType === "time") b.appendChild(hmGroup([hwTimeRow(_T("time"), function () { return HW.until; }, function (v) { HW.until = v; })]));
+    /* One card, as in the app: when it starts, when it ends and the days. */
+    var rows = [hwPointRow(_T("hw_start_at"), "startType", false)];
+    if (HW.startType === "time") rows.push(hwTimeRow(_T("time"), function () { return HW.time; }, function (v) { HW.time = v; }));
+    rows.push(hwPointRow(_T("hw_end_at"), "untilType", true));
+    if (HW.untilType === "time") rows.push(hwTimeRow(_T("time"), function () { return HW.until; }, function (v) { HW.until = v; }));
+    var card = hmGroup(rows);
+    card.appendChild(hweDays());
+    b.appendChild(card);
   } else b.appendChild(hmGroup([hwTimeRow(_T("time"), function () { return HW.time; }, function (v) { HW.time = v; })]));
   if (kind === "wake_up") {
     b.appendChild(hmLabel(_T("hw_fade_duration")));
     b.appendChild(hmChips([5, 10, 15, 20, 30, 45, 60], function () { return HW.minutes; }, function (v) { HW.minutes = v; }, hwMinutesText));
   }
-  b.appendChild(hmLabel(_T("hw_repeat")));
-  b.appendChild(hwDays(HW.days));
+  if (!schedule) {
+    b.appendChild(hmLabel(_T("hw_repeat")));
+    b.appendChild(hwDays(HW.days));
+  }
   if (schedule) {
     b.appendChild(hmLabel(_T("hw_extra_options")));
     b.appendChild(
@@ -4358,6 +4378,7 @@ function hwWhenRows(b) {
           },
           tap: function () {
             hwChoose({
+              title: _T("hw_randomize_times"),
               hint: _T("hw_randomize_times_hint"),
               options: [0, 5, 10, 15, 30, 60].map(function (m) {
                 return { value: m, title: m ? hwMinutesText(m) : _T("hw_no") };
@@ -4400,7 +4421,7 @@ function hwWhenPage(b) {
   var kind = HW.kind;
   b.appendChild(hmTitle("clock", _T(kind === "wake_up" ? "hw_when_do_you_want_to_wake_up" : kind === "go_to_sleep" ? "hw_when_do_you_want_to_go_to_sleep" : "hw_when_do_you_want_to_schedule")));
   if (kind === "wake_up" || kind === "go_to_sleep") {
-    hweTime(b, kind);
+    hweTime(b, kind, true);
     hweRepeat(b, kind);
   } else hwWhenRows(b);
   b.appendChild(
@@ -4586,6 +4607,7 @@ function hwSummaryPage(b) {
         },
         tap: function () {
           hwChoose({
+            title: _T("hw_end_with"),
             options: ["do_nothing", "turn_off"].map(function (v) {
               return { value: v, title: _T(v === "turn_off" ? "hw_lights_off" : "hw_do_nothing") };
             }),
@@ -4620,9 +4642,10 @@ function hwSettingsRows(b) {
       },
       tap: function () {
         hwChoose({
+          title: _T("hw_style"),
           hint: _T(wake ? "hw_sunrise_hint" : "hw_sunset_hint"),
           options: styles.map(function (v) {
-            return { value: v, title: hwStyleText(v) };
+            return { value: v, title: hwStyleText(v), disc: hwStyleDisc(v) };
           }),
           get: function () { return HW.style; },
           set: function (v) { HW.style = v; },
@@ -4687,6 +4710,7 @@ function hwSettingsRows(b) {
         },
         tap: function () {
           hwChoose({
+            title: _T("hw_turn_lights_off"),
             hint: _T("hw_turn_lights_off_hint"),
             options: [0, 5, 10, 15, 30, 60].map(function (m) {
               return { value: m, title: m ? hwMinutesText(m) : _T("hw_no") };
@@ -5282,8 +5306,9 @@ function hweDays() {
 }
 
 /* The pieces of the screen: the time (wheels and the fade), Repeat and its days, the lights. */
-function hweTime(box, kind) {
-  box.appendChild(hmLabel(_T("hw_when_label")));
+function hweTime(box, kind, bare) {
+  /* the wizard's page has no label over the wheels (the title says what they are), the edit screen has */
+  if (!bare) box.appendChild(hmLabel(_T("hw_when_label")));
   var group = mk("div", "hm-group");
   group.appendChild(hweWheel(function () { return HW.time; }, function (v) { HW.time = v; refresh(); }));
   if (kind === "wake_up") {
@@ -5811,6 +5836,7 @@ function hmwCalibratingPage(b) {
     box = hmGroup([status]),
     stopped = false,
     timer = null;
+  box.classList.add("calbar");
   b.appendChild(box);
   function leave() {
     stopped = true;
@@ -5998,6 +6024,17 @@ function hmwSorted() {
 }
 
 /* One row for each time: from when to when, the scene (or no lights), the minutes without motion before the lights go off. `plain` rows are not pressable. */
+/* The picture of a scene at the end of a row: its colours as a round swatch. */
+function hmwSceneDisc(sceneId) {
+  var scene = hmList("scenes").filter(function (x) {
+      return x.id === sceneId;
+    })[0],
+    cols = ((scene && scene.colours) || []).map(function (c) {
+      return typeof window.hpColourCss === "function" ? window.hpColourCss(c) : "#f9d27a";
+    });
+  return !cols.length ? "#f9d27a" : cols.length === 1 ? cols[0] : "conic-gradient(" + cols.concat(cols[0]).join(",") + ")";
+}
+
 function hmwSlotRows(plain) {
   var sorted = hmwSorted();
   return hmGroup(
@@ -6279,14 +6316,18 @@ function hmMotionArea(b, id) {
         return hmdValue(key, "sensitivity", svc && svc.sensitivity ? svc.sensitivity.sensitivity : 0);
       },
       a = hmwAutomationOf(id);
-    box.appendChild(hmTitle("motion", name));
+    var title = hmTitle("motion", name),
+      pen = mk("button", "hm-pen", svg("edit"));
+    box.appendChild(title);
+    /* The name is changed with the pencil by it, as in the Hue app. */
+    pen.type = "button";
+    pen.setAttribute("aria-label", _T("hmw_name"));
+    pen.addEventListener("click", function () {
+      showPopup("hue-mname:" + id, true);
+    });
+    title.appendChild(pen);
     box.appendChild(
       hmGroup([
-        hmRow({
-          title: _T("hmw_name"),
-          val: name,
-          tap: "hue-mname:" + id,
-        }),
         hmRow({
           title: _T("hm_enabled"),
           toggle: {
@@ -6302,16 +6343,30 @@ function hmMotionArea(b, id) {
         }),
       ])
     );
-    box.appendChild(hmLabel(_T("hmw_what_it_does")));
+    /* What the area does: each time with the scene it recalls, a tap opens them to be changed. */
+    var slots = a ? hmwSlotsFrom(a) : [];
     box.appendChild(
-      hmGroup([
-        hmRow({
-          icon: "lamp",
-          title: _T("hmw_control_lights"),
-          sub: a ? cntS(hmwSlotsFrom(a).length, _T("hmw_time_n"), _T("hmw_times_n")) : _T("hmw_nothing_set"),
-          tap: "hue-mslots:" + id,
-        }),
-      ])
+      hmGroup(
+        slots.length
+          ? slots.map(function (sl, i) {
+              var to = slots[(i + 1) % slots.length];
+              return hmRow({
+                title: hmwStartText(sl),
+                sub: _T("hmw_until") + " " + hmwStartText(to),
+                val: (sl.scene ? hmwSceneName(sl.scene) : _T("hmw_no_lights")) + (sl.scene && sl.off ? " · " + hwMinutesText(sl.off) : ""),
+                disc: sl.scene ? hmwSceneDisc(sl.scene) : null,
+                tap: "hue-mslots:" + id,
+              });
+            })
+          : [
+              hmRow({
+                icon: "lamp",
+                title: _T("hmw_control_lights"),
+                sub: _T("hmw_nothing_set"),
+                tap: "hue-mslots:" + id,
+              }),
+            ]
+      )
     );
     box.appendChild(hmLabel(_T("hmw_general_settings")));
     box.appendChild(
@@ -8077,6 +8132,10 @@ function hueAddScenePage(b) {
       ["clock", "hn_all_day", "hn_all_day_sub", "allday"],
       ["cam", "hn_from_photo", "hn_from_photo_sub", "photo"],
     ];
+  /* the title and the line under it, as the app has them, then the ways to make a scene as tiles */
+  var heading = mk("div", "addtitle");
+  heading.textContent = _T("hn_add_a_scene");
+  b.appendChild(heading);
   b.appendChild(mkHint(_T("hn_add_a_scene_hint")));
   items.forEach(function (it) {
     grid.appendChild(
@@ -8107,6 +8166,11 @@ function hueChooseLights(mode) {
   HUENEW.sel = {};
   HUENEW.g = null;
   if (g) hueSelectGroup(g);
+  /* The scene is for the room or zone the page is of ("save to this Room"), so there is no room to choose: the app goes straight on. */
+  if (g && mode !== "edit") {
+    hueAfterLights();
+    return;
+  }
   showPopup("hue-pick-lights", true);
 }
 

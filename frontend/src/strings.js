@@ -1,7 +1,7 @@
 /* The text of this plugin's pages (the dashboard adds it to its own table when the plugin starts). */
 
 var PLUGIN_STRINGS = {
-  "hn_add_a_scene_hint": "Create scenes to save to the Hue bridge. You choose the lights next.",
+  "hn_add_a_scene_hint": "Browse, customize, or create scenes to save to this Room",
   "hn_choose_your_lights": "Choose your lights",
   "hn_zones": "Zones",
   "hn_rooms": "Rooms",
@@ -689,6 +689,10 @@ var PLUGIN_STRINGS = {
   "app_btn_hue": "Hue button",
   "app_set_what_happens": "Set what should happen when you ",
   "app_the_button": "the",
+  "app_bright": "Bright",
+  "app_off": "Off",
+  "app_show_preview": "Show preview",
+  "app_show_preview_sub": "When a scene is selected",
   "app_suggestions": "Suggestions",
   "app_disabled": "Disabled",
   "app_enabled": "Enabled",
@@ -704,6 +708,7 @@ var PLUGIN_STRINGS = {
   "app_slow": "Slow",
   "app_medium": "Medium",
   "app_fast": "Fast",
+  "hmw_until": "Until",
   "app_edit_area": "Edit area",
   "app_ip_address": "IP address",
   "app_speed": "Speed",

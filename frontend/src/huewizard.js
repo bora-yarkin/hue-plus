@@ -187,11 +187,16 @@ function hwPickPage(b) {
     b.appendChild(hmCallout(_T("nothing_found")));
     return;
   }
+  /* the sheet is called what is chosen (Style, Fade duration...), and each choice can have its picture in front */
+  var ttl = b.parentNode && b.parentNode.querySelector(".pbar .ttl");
+  if (ttl && p.title) ttl.textContent = p.title;
+  if (b.parentNode) b.parentNode.classList.add("shortpg");
   hwHint(b, p.hint);
   b.appendChild(
     hmGroup(
       p.options.map(function (o) {
         return hmRow({
+          ldisc: o.disc,
           title: o.title,
           sub: o.sub,
           check: function () {
@@ -405,6 +410,7 @@ function hwPointRow(title, key, withNone) {
     },
     tap: function () {
       hwChoose({
+        title: title,
         hint: hwHasLocation() ? "" : _T("hw_sun_needs_home_location"),
         options: (withNone ? ["none"] : []).concat(HW_POINTS).map(function (t) {
           return { value: t, title: hwPointText(t) };
@@ -429,17 +435,23 @@ function hwWhenRows(b) {
   var kind = HW.kind,
     schedule = kind === "schedule";
   if (schedule) {
-    b.appendChild(hmGroup([hwPointRow(_T("hw_start_at"), "startType", false)]));
-    if (HW.startType === "time") b.appendChild(hmGroup([hwTimeRow(_T("time"), function () { return HW.time; }, function (v) { HW.time = v; })]));
-    b.appendChild(hmGroup([hwPointRow(_T("hw_end_at"), "untilType", true)]));
-    if (HW.untilType === "time") b.appendChild(hmGroup([hwTimeRow(_T("time"), function () { return HW.until; }, function (v) { HW.until = v; })]));
+    /* One card, as in the app: when it starts, when it ends and the days. */
+    var rows = [hwPointRow(_T("hw_start_at"), "startType", false)];
+    if (HW.startType === "time") rows.push(hwTimeRow(_T("time"), function () { return HW.time; }, function (v) { HW.time = v; }));
+    rows.push(hwPointRow(_T("hw_end_at"), "untilType", true));
+    if (HW.untilType === "time") rows.push(hwTimeRow(_T("time"), function () { return HW.until; }, function (v) { HW.until = v; }));
+    var card = hmGroup(rows);
+    card.appendChild(hweDays());
+    b.appendChild(card);
   } else b.appendChild(hmGroup([hwTimeRow(_T("time"), function () { return HW.time; }, function (v) { HW.time = v; })]));
   if (kind === "wake_up") {
     b.appendChild(hmLabel(_T("hw_fade_duration")));
     b.appendChild(hmChips([5, 10, 15, 20, 30, 45, 60], function () { return HW.minutes; }, function (v) { HW.minutes = v; }, hwMinutesText));
   }
-  b.appendChild(hmLabel(_T("hw_repeat")));
-  b.appendChild(hwDays(HW.days));
+  if (!schedule) {
+    b.appendChild(hmLabel(_T("hw_repeat")));
+    b.appendChild(hwDays(HW.days));
+  }
   if (schedule) {
     b.appendChild(hmLabel(_T("hw_extra_options")));
     b.appendChild(
@@ -451,6 +463,7 @@ function hwWhenRows(b) {
           },
           tap: function () {
             hwChoose({
+              title: _T("hw_randomize_times"),
               hint: _T("hw_randomize_times_hint"),
               options: [0, 5, 10, 15, 30, 60].map(function (m) {
                 return { value: m, title: m ? hwMinutesText(m) : _T("hw_no") };
@@ -493,7 +506,7 @@ function hwWhenPage(b) {
   var kind = HW.kind;
   b.appendChild(hmTitle("clock", _T(kind === "wake_up" ? "hw_when_do_you_want_to_wake_up" : kind === "go_to_sleep" ? "hw_when_do_you_want_to_go_to_sleep" : "hw_when_do_you_want_to_schedule")));
   if (kind === "wake_up" || kind === "go_to_sleep") {
-    hweTime(b, kind);
+    hweTime(b, kind, true);
     hweRepeat(b, kind);
   } else hwWhenRows(b);
   b.appendChild(
@@ -679,6 +692,7 @@ function hwSummaryPage(b) {
         },
         tap: function () {
           hwChoose({
+            title: _T("hw_end_with"),
             options: ["do_nothing", "turn_off"].map(function (v) {
               return { value: v, title: _T(v === "turn_off" ? "hw_lights_off" : "hw_do_nothing") };
             }),
@@ -713,9 +727,10 @@ function hwSettingsRows(b) {
       },
       tap: function () {
         hwChoose({
+          title: _T("hw_style"),
           hint: _T(wake ? "hw_sunrise_hint" : "hw_sunset_hint"),
           options: styles.map(function (v) {
-            return { value: v, title: hwStyleText(v) };
+            return { value: v, title: hwStyleText(v), disc: hwStyleDisc(v) };
           }),
           get: function () { return HW.style; },
           set: function (v) { HW.style = v; },
@@ -780,6 +795,7 @@ function hwSettingsRows(b) {
         },
         tap: function () {
           hwChoose({
+            title: _T("hw_turn_lights_off"),
             hint: _T("hw_turn_lights_off_hint"),
             options: [0, 5, 10, 15, 30, 60].map(function (m) {
               return { value: m, title: m ? hwMinutesText(m) : _T("hw_no") };
