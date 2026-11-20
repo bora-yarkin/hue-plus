@@ -274,8 +274,10 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .sitem.moving .stop{display:flex}
 .sitem.on:not(.moving){background:linear-gradient(180deg,var(--gold1),var(--gold2));color:var(--gold-ink)}
 .sitem b{font-size:11.5px;font-weight:500;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.sside{position:absolute;display:flex;flex-direction:column;justify-content:center;gap:10px;width:34px;opacity:0;pointer-events:none;transition:left .32s cubic-bezier(.2,.8,.2,1),top .32s cubic-bezier(.2,.8,.2,1),opacity .2s}
+.sside{position:absolute;z-index:0;display:flex;flex-direction:column;justify-content:center;gap:10px;width:34px;opacity:0;pointer-events:none;transition:left .32s cubic-bezier(.2,.8,.2,1),top .32s cubic-bezier(.2,.8,.2,1),opacity .24s}
 .sside.on{opacity:1;pointer-events:auto}
+/* the pair comes out from behind its tile and goes back behind it */
+.fg .sitem{position:relative;z-index:1}
 .sside .rbt{background:var(--tile)}
 
 /* ---- the colour screen of a room's lights: the frame's own bar, SAVE and DONE ---- */

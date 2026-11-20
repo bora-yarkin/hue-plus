@@ -412,41 +412,78 @@ function hpFolderCard(folder, room, from) {
       },
     }
   );
-  /* The scene that plays has its pencil and its three dots beside it, as the app draws them. */
-  var side = mk("div", "sside");
-  side.appendChild(
-    hpRound("edit", _T("hn_rename"), function () {
-      var on = folder.scenes.filter(function (s) {
-        return HUESCENES.active(H(), s);
-      })[0];
-      if (on) {
-        close();
-        showPopup("app-scene:" + on + "~" + room, true);
-      }
-    })
-  );
-  side.appendChild(
-    hpRound("dots", _T("app_more"), function () {
-      var on = folder.scenes.filter(function (s) {
-        return HUESCENES.active(H(), s);
-      })[0];
-      if (on) hpSceneActions(on, room, close);
-    })
-  );
-  /* The pencil and the three dots stand right of the scene that plays, in the height of its tile. The tiles of its row that come after it make room by sliding right, by the width of the pair and one gap, and slide back when
-     another scene plays: from 2 playing to 4, the tiles 3 and 4 slide left and the others stay where they are. Only the row of the playing tile moves. */
+  /* The pencil and the three dots of the scene that plays. They come out of that scene's tile to its right; when another scene plays, the pair of the old one goes back into its tile and fades while a new pair comes out of the new
+     tile. The tiles of the row after the playing one make room by sliding right, by the width of the pair and one gap, and slide back when another scene plays: from 2 playing to 4, the tiles 3 and 4 slide left and the
+     others stay where they are. Only the row of the playing tile moves. */
   var SIDE_W = 34,
-    GAP = 11;
-  card.refresh = function () {
-    var on = folder.scenes.filter(function (s) {
+    GAP = 11,
+    side = null; /* { el, item }: the pair that is out now */
+  function makeSide() {
+    var el = mk("div", "sside");
+    el.appendChild(
+      hpRound("edit", _T("hn_rename"), function () {
+        var on = activeScene();
+        if (on) {
+          close();
+          showPopup("app-scene:" + on + "~" + room, true);
+        }
+      })
+    );
+    el.appendChild(
+      hpRound("dots", _T("app_more"), function () {
+        var on = activeScene();
+        if (on) hpSceneActions(on, room, close);
+      })
+    );
+    return el;
+  }
+  function activeScene() {
+    return folder.scenes.filter(function (s) {
       return HUESCENES.active(H(), s);
     })[0];
-    var items = [].slice.call(grid.querySelectorAll(".sitem")),
-      item = on && items.filter(function (x) {
-        return x.dataset.sid === on;
-      })[0];
+  }
+  /* Where the pair is when it is inside its tile (behind it, at its right edge), and where it stands when it is out. */
+  function inside(item) {
+    return item.offsetLeft + item.offsetWidth - SIDE_W + "px";
+  }
+  function out(item) {
+    return item.offsetLeft + item.offsetWidth + GAP + "px";
+  }
+  function place(el, item, left) {
+    el.style.left = left;
+    el.style.top = item.offsetTop + "px";
+    el.style.height = item.offsetHeight + "px";
+  }
+  function retract(old) {
+    old.el.classList.remove("on");
+    old.el.classList.add("away");
+    place(old.el, old.item, inside(old.item));
+    setTimeout(function () {
+      old.el.remove();
+    }, 360);
+  }
+  function enter(item) {
+    var el = makeSide();
+    el.style.transition = "none";
+    place(el, item, inside(item));
+    grid.appendChild(el);
+    void el.offsetWidth;
+    el.style.transition = "";
+    el.classList.add("on");
+    el.style.left = out(item);
+    return { el: el, item: item };
+  }
+  card.refresh = function () {
+    var on = activeScene(),
+      items = [].slice.call(grid.querySelectorAll(".sitem")),
+      item =
+        on &&
+        items.filter(function (x) {
+          return x.dataset.sid === on;
+        })[0];
     if (!item) {
-      side.classList.remove("on");
+      if (side) retract(side);
+      side = null;
       items.forEach(function (it) {
         it.style.translate = "";
       });
@@ -457,19 +494,13 @@ function hpFolderCard(folder, room, from) {
     items.forEach(function (it) {
       it.style.translate = it.style.gridRow === row && +it.style.gridColumn > col ? SIDE_W + GAP + "px 0" : "";
     });
-    /* Coming into view it appears where it belongs; it glides only from one tile to another. */
-    var shown = side.classList.contains("on");
-    if (!shown) side.style.transition = "none";
-    side.style.left = item.offsetLeft + item.offsetWidth + GAP + "px";
-    side.style.top = item.offsetTop + "px";
-    side.style.height = item.offsetHeight + "px";
-    if (!shown) {
-      void side.offsetWidth;
-      side.style.transition = "";
+    if (side && side.item === item) {
+      place(side.el, item, out(item));
+      return;
     }
-    side.classList.add("on");
+    if (side) retract(side);
+    side = enter(item);
   };
-  grid.appendChild(side);
   reg(card.refresh);
   scrim.addEventListener("click", close);
   wrap.appendChild(card);
