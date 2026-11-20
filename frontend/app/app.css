@@ -671,3 +671,15 @@ body{width:100%;height:100%}
 .mwart.house svg{width:300px;height:260px}
 .mwart.house{top:60px}
 .mwart svg{stroke:none;fill:none}
+.pg.wizpg .notec{font-size:11px;line-height:1.5}
+.mwart.arrow .cone,.mwart.arrow .heat{display:none}
+.mwart .arrow{display:none}.mwart.arrow .arrow{display:block}
+.mwcard{margin:8px 16px;border-radius:14px;background:#26272b;overflow:hidden}
+.mwc-h{padding:14px 16px 4px}.mwc-h b{display:block;font-size:12px;font-weight:600}.mwc-h i{display:block;font-style:normal;font-size:10px;color:var(--ink2)}
+.mwtiles{padding:12px 12px 14px!important}
+.mwtiles .hpk-tile{width:100px;height:130px}
+.mwart.plain .cone,.mwart.plain .heat,.mwart.plain .arrow{display:none}
+.hwe-wheel.dur{position:relative}
+.hwe-wheel.dur:before,.hwe-wheel.dur:after{position:absolute;top:50%;margin-top:-7px;font-size:10px;font-weight:600;z-index:2;pointer-events:none}
+.hwe-wheel.dur:before{content:attr(data-h);left:calc(25% + 22px)}
+.hwe-wheel.dur:after{content:attr(data-m);left:calc(75% + 18px)}

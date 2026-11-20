@@ -5,6 +5,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 ## [Unreleased]
 
 ### Changed
+- **More of the app's screens followed**: the MotionAware device choice is tiles with round checks in a card, "Leave the area", "Calibrating area" and "Area created" have the room above them (with the arrow, plain and with the shape), the area's page is called Edit area; a timer's length is two wheels (hours and minutes) and a timer starts with its length, then its lights, as in the app.
+
+### Changed
 - **The wizards' pages follow the app's screens**: the card starts lower under the blue top, "How should Go to sleep start?" has its two paragraphs and its choices are cards with round icons (as are "When should your lights turn on"), Mimic presence has its first page (a house at night, what it does) and its summary has the round pictures at the end of its rows. The MotionAware room is drawn without outlines and taller.
 
 ### Changed

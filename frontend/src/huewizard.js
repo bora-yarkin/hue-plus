@@ -220,7 +220,7 @@ var HW_AUTOMATIONS = [
   { kind: "coming_home", icon: "home", title: "hw_coming_home", sub: "hw_coming_home_sub", steps: ["hue-wz-lights", "hue-wz-whenhome", "hue-wz-scene", "hue-wz-name"] },
   { kind: "leaving_home", icon: "home", title: "hw_leaving_home", sub: "hw_leaving_home_sub", steps: ["hue-wz-lights", "hue-wz-name"] },
   { kind: "mimic_presence", icon: "home", title: "hw_mimic_presence", sub: "hw_mimic_presence_sub", steps: ["hue-wz-mimicintro", "hue-wz-lights", "hue-wz-mimic", "hue-wz-summary"], one: "PM" },
-  { kind: "timer", icon: "clock", title: "hw_timer", sub: "hw_timer_sub", steps: ["hue-wz-lights", "hue-wz-length", "hue-wz-scene", "hue-wz-name"] },
+  { kind: "timer", icon: "clock", title: "hw_timer", sub: "hw_timer_sub", steps: ["hue-wz-length", "hue-wz-lights", "hue-wz-scene", "hue-wz-name"] },
   { kind: "schedule", icon: "clock", title: "hw_lighting_schedule", sub: "hw_lighting_schedule_sub", steps: ["hue-wz-lights", "hue-wz-when", "hue-wz-scene", "hue-wz-name"] },
 ];
 
@@ -503,7 +503,6 @@ function hwWhenPage(b) {
   );
 }
 
-/* "How should Go to sleep start?": at a time, or only by the play button. */
 /* A choice that is a card of its own with a round icon, as the app lays out "how should it start" and "when should it turn on". */
 function hwCards(rows) {
   var g = hmGroup(rows);
@@ -541,6 +540,7 @@ function hwMimicIntroPage(b) {
   b.appendChild(hwNext());
 }
 
+/* "How should Go to sleep start?": at a time, or only by the play button. */
 function hwStartPage(b) {
   if (!hwOpen(b, "hue-wz-start")) return;
   b.appendChild(hmTitle("moon", _T("hw_how_should_go_to_sleep_start")));
@@ -874,34 +874,28 @@ function hwScenePage(b) {
   });
 }
 
-function hwNumberRow(title, unit, get, set, max) {
-  var row = mk("div", "hm-row"),
-    label = mk("span", "hm-t"),
-    inp = mk("input", "hm-time");
-  label.appendChild(mk("span", "hm-n")).textContent = title;
-  inp.type = "number";
-  inp.min = 0;
-  inp.max = max;
-  inp.step = 1;
-  inp.inputMode = "numeric";
-  inp.value = get();
-  inp.setAttribute("aria-label", title);
-  inp.addEventListener("input", function () {
-    set(Math.max(0, Math.min(max, Math.floor(Number(inp.value) || 0))));
-  });
-  row.appendChild(label);
-  row.appendChild(inp);
-  return row;
-}
-
 /* The rows of a timer's length. */
 function hwLengthRows(b) {
-  b.appendChild(
-    hmGroup([
-      hwNumberRow(_T("hw_hours"), "h", function () { return HW.hours; }, function (v) { HW.hours = v; }, 23),
-      hwNumberRow(_T("hm_min"), "min", function () { return HW.mins; }, function (v) { HW.mins = v; }, 59),
-    ])
-  );
+  /* The length is two wheels, hours and minutes, as the app has it: the time wheel with the length written as 00:01. */
+  var card = mk("div", "hm-group"),
+    pad = function (n) {
+      return (n < 10 ? "0" : "") + n;
+    },
+    wheel = hweWheel(
+      function () {
+        return pad(HW.hours || 0) + ":" + pad(HW.mins || 0);
+      },
+      function (v) {
+        var p = String(v).split(":");
+        HW.hours = Number(p[0]);
+        HW.mins = Number(p[1]);
+      }
+    );
+  wheel.classList.add("dur");
+  wheel.setAttribute("data-h", _T("hw_hours"));
+  wheel.setAttribute("data-m", _T("hm_min"));
+  card.appendChild(wheel);
+  b.appendChild(card);
 }
 
 function hwLengthValid() {
