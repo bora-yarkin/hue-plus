@@ -561,6 +561,7 @@ var PLUGIN_STRINGS = {
   "hw_mimic_presence_sub": "Set your lights to turn on and off to make it look like you’re home.",
   "hw_name_mimic_presence": "Mimic presence",
   "hw_one_only": "An automation of this type already exists on this bridge. You can edit it to change the behavior.",
+  "hw_select_a_time": "Select a time",
   "hw_start_hint_1": "You can always start the automation by tapping the play button next to it in the Automations tab.",
   "hw_start_hint_2": "You can also start it automatically at a certain time, or manually by programming a switch in ",
   "hw_mimic_intro_text": "Set your lights to turn on and off to make it look like you're home when you're away. Lights are switched at a default schedule, which is based on the room types you choose for this automation.",
@@ -845,7 +846,7 @@ HUE_PLUS_CSS += "\n/* The lights picker (huepicker.js), drawn as the Hue app dra
 HUE_PLUS_CSS += "\n/* Edit automation (hueedit.js), drawn from the app's screen */\n.hwe-head{position:relative;padding-bottom:8px}\n.hwe-head .hm-title{padding-right:64px}\n.hwe-head .hm-title b,.hwe-head .hm-tt b{font-size:34px;line-height:1.1;font-weight:700}\n.hwe-pen{position:absolute;right:16px;top:50%;margin-top:-17px;width:34px;height:34px;border:0;border-radius:50%;background:var(--f-line2,rgba(255,255,255,.14));color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}\n.hwe-pen svg{width:17px;height:17px;fill:currentColor;stroke:none}\n.hwe-lh{position:relative;display:flex;align-items:center;justify-content:space-between;padding:22px 16px 10px;font-size:17px;font-weight:600}\n.hwe-lh .hwe-pen{position:static;margin:0}\n.hwe-wheel{position:relative;display:flex;justify-content:center;gap:34px;height:150px;overflow:hidden}\n.hwe-band{position:absolute;left:8px;right:8px;top:60px;height:30px;border-radius:10px;background:var(--f-line2,rgba(255,255,255,.12));pointer-events:none}\n.hwe-col{position:relative;z-index:1;width:70px;height:150px;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;padding:60px 0}\n.hwe-col::-webkit-scrollbar{display:none}\n.hwe-opt{height:30px;line-height:30px;text-align:center;font-size:18px;font-variant-numeric:tabular-nums;scroll-snap-align:center;opacity:.45}\n.hwe-days{display:flex;justify-content:space-between;padding:6px 16px 16px}\n.hwe-day{width:27px;height:27px;border:0;border-radius:50%;background:var(--f-line2,rgba(255,255,255,.14));color:#fff;font-size:14px;font-weight:600;cursor:pointer}\n.hwe-day.on{background:var(--acc,#2f6bff)}\n.hwe-day:disabled{opacity:.4;cursor:default}\n.hwe-fade{display:flex;justify-content:space-between;padding:18px 16px 4px}\n.hwe-fl span,.hwe-fr span{display:block;font-size:12px;letter-spacing:.12em;color:var(--ink2,#9a9ca3)}\n.hwe-fl b,.hwe-fr b{display:block;font-size:20px;font-weight:600}\n.hwe-fr{text-align:center}\n.hwe-slider{padding:14px 16px 18px}\n.hwe-track{position:relative;height:6px;border-radius:3px;background:rgba(255,255,255,.22);touch-action:none;margin:14px 0 8px;cursor:pointer}\n.hwe-fill{position:absolute;top:0;bottom:0;right:0;border-radius:3px;background:linear-gradient(90deg,#2a4a9a,var(--acc,#2f6bff))}\n.hwe-thumb{position:absolute;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.4)}\n.hwe-ticks{display:flex;justify-content:space-between;font-size:14px;color:var(--ink2,#9a9ca3);padding-top:8px}\n";
 HUE_PLUS_CSS += "\n.hwe-lcard{background:var(--f-raise,var(--tile,#232428));padding-bottom:18px}\n.hwe-lcard .selroom{margin:0 16px}\n.hwe-lh{padding:20px 16px 12px}\n.hwe-wheel+.hm-row{border-top:1px solid var(--f-line,rgba(255,255,255,.08))}\n.hwe-col{box-sizing:border-box}\n.hwe-opt{transform-origin:center;transition:opacity .1s}\n";
 HUE_PLUS_CSS += "\n.hwe-fade{display:grid;grid-template-columns:1fr 1fr;text-align:center;padding:18px 16px 4px}\n.hwe-fl,.hwe-fr{text-align:center}\n.hwe-track{height:8px;border-radius:4px}\n.hwe-fill{border-radius:4px}\n.hwe-thumb{width:18px;height:18px;margin:-9px 0 0 -9px}\n";
-HUE_PLUS_CSS += "\n/* Wizard pages, as the app draws them: cards with rounded corners, a small Next */\n.pg.wizpg .hm .hm-group,.pg.wizpg .hpk-list{margin-left:16px;margin-right:16px;border-radius:14px;overflow:hidden}\n.pg.wizpg .hm .hm-actions .hm-btn{min-width:72px;padding:8px 20px;font-size:10px}\n.pg.wizpg .hm .hm-actions{padding:14px 0}\n.pg.wizpg .hm .hm-title+.hm-group{margin-top:75px}\n.hm-disc{flex:none;width:46px;height:46px;box-shadow:0 2px 6px rgba(0,0,0,.35);border-radius:50%;margin-left:8px}\n.hwe-fill2{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:linear-gradient(90deg,#2a4a9a,var(--acc,#2f6bff))}\n.hw-field{position:relative;margin:0 16px;border:1.5px solid rgba(255,255,255,.45);border-radius:6px;background:var(--f-raise,#2a2b30);padding:20px 44px 8px 12px}\n.hw-flabel{position:absolute;left:12px;top:6px;font-size:8px;font-weight:600;letter-spacing:.06em;color:var(--ink2,#9a9ca3)}\n.hw-input{width:100%;border:0;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:500;outline:none;padding:0}\n.hw-clear{position:absolute;right:10px;top:50%;margin-top:-12px;width:24px;height:24px;border:0;background:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}\n.hw-clear svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}\n";
+HUE_PLUS_CSS += "\n/* Wizard pages, as the app draws them: cards with rounded corners, a small Next */\n.pg.wizpg .hm .hm-group,.pg.wizpg .hpk-list{margin-left:16px;margin-right:16px;border-radius:14px;overflow:hidden}\n.pg.wizpg .hm .hm-actions .hm-btn{min-width:72px;padding:8px 20px;font-size:10px}\n.pg.wizpg .hm .hm-actions{padding:14px 0}\n.pg.wizpg .hm .hm-title+.hm-group{margin-top:40px}\n.hm-disc{flex:none;width:46px;height:46px;box-shadow:0 2px 6px rgba(0,0,0,.35);border-radius:50%;margin-left:8px}\n.hwe-fill2{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:linear-gradient(90deg,#2a4a9a,var(--acc,#2f6bff))}\n.hw-field{position:relative;margin:0 16px;border:1.5px solid rgba(255,255,255,.45);border-radius:6px;background:var(--f-raise,#2a2b30);padding:20px 44px 8px 12px}\n.hw-flabel{position:absolute;left:12px;top:6px;font-size:8px;font-weight:600;letter-spacing:.06em;color:var(--ink2,#9a9ca3)}\n.hw-input{width:100%;border:0;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:500;outline:none;padding:0}\n.hw-clear{position:absolute;right:10px;top:50%;margin-top:-12px;width:24px;height:24px;border:0;background:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}\n.hw-clear svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}\n";
 
 /* What Hue Plus offers, read from Home Assistant's registry and states (so a page shows only what exists): the bridge's entities, the lights, what belongs to one light, the
  updates, and the bridge's own data (a service that answers). It was the dashboard's `Integrations.hueplus`; now it is this plugin's. */
@@ -4316,33 +4317,73 @@ function hwPointText(t) {
   return _T(t === "none" ? "hw_no_end_time" : t === "time" ? "hw_at_a_specific_time" : "hw_" + t);
 }
 
-/* A start or an end that is a time, sunrise, sunset (or, for an end, nothing): its picker row. */
-function hwPointRow(title, key, withNone) {
+/* What a start or an end says on its row: the time, sunrise or sunset, no end, or that no time is chosen yet. */
+function hwPointValue(which) {
+  var type = HW[which === "start" ? "startType" : "untilType"],
+    time = HW[which === "start" ? "time" : "until"];
+  if (type === "time") return /^\d\d:\d\d$/.test(time || "") ? time : _T("hw_select_a_time");
+  return hwPointText(type);
+}
+
+/* A start or an end that is a time, sunrise, sunset (or, for an end, nothing): its row, which opens its sheet. */
+function hwPointRow(title, which) {
   return hmRow({
     title: title,
     val: function () {
-      return hwPointText(HW[key]);
+      return hwPointValue(which);
     },
-    tap: function () {
-      hwChoose({
-        title: title,
-        hint: hwHasLocation() ? "" : _T("hw_sun_needs_home_location"),
-        options: (withNone ? ["none"] : []).concat(HW_POINTS).map(function (t) {
-          return { value: t, title: hwPointText(t) };
-        }),
-        get: function () {
-          return HW[key];
-        },
-        set: function (v) {
-          if ((v === "sunrise" || v === "sunset") && !hwHasLocation()) {
-            toast(_T("hw_sun_needs_home_location"));
-            return;
-          }
-          HW[key] = v;
-        },
-      });
-    },
+    tap: "hue-wz-point:" + which,
   });
+}
+
+/* The sheet of a start or an end: the choices and, for a time, the wheels. */
+function hwPointPage(b, which) {
+  if (!hwOpen(b)) return;
+  var key = which === "start" ? "startType" : "untilType",
+    timeKey = which === "start" ? "time" : "until",
+    ttl = b.parentNode && b.parentNode.querySelector(".pbar .ttl");
+  if (ttl) ttl.textContent = _T(which === "start" ? "hw_start_at" : "hw_end_at");
+  if (b.parentNode) b.parentNode.classList.add("shortpg");
+  hwHint(b, hwHasLocation() ? "" : _T("hw_sun_needs_home_location"));
+  b.appendChild(
+    hmGroup(
+      (which === "end" ? ["none"] : []).concat(HW_POINTS).map(function (t) {
+        return hmRow({
+          title: hwPointText(t),
+          check: function () {
+            return HW[key] === t;
+          },
+          tap: function () {
+            if ((t === "sunrise" || t === "sunset") && !hwHasLocation()) {
+              toast(_T("hw_sun_needs_home_location"));
+              return;
+            }
+            HW[key] = t;
+            if (t === "time" && !/^\d\d:\d\d$/.test(HW[timeKey] || "")) HW[timeKey] = "07:00";
+            refresh();
+            showPopup("hue-wz-point:" + which, false);
+          },
+        });
+      })
+    )
+  );
+  if (HW[key] === "time") {
+    var card = mk("div", "hm-group");
+    card.appendChild(
+      hweWheel(
+        function () {
+          return HW[timeKey];
+        },
+        function (v) {
+          HW[timeKey] = v;
+        }
+      )
+    );
+    b.appendChild(card);
+  }
+  HC.onDone = function () {
+    popBack();
+  };
 }
 
 /* The rows of "When": wake up, go to sleep and the schedule differ in what goes with the time. Shared by the wizard's page and the screen that edits an automation. */
@@ -4351,11 +4392,7 @@ function hwWhenRows(b) {
     schedule = kind === "schedule";
   if (schedule) {
     /* One card, as in the app: when it starts, when it ends and the days. */
-    var rows = [hwPointRow(_T("hw_start_at"), "startType", false)];
-    if (HW.startType === "time") rows.push(hwTimeRow(_T("time"), function () { return HW.time; }, function (v) { HW.time = v; }));
-    rows.push(hwPointRow(_T("hw_end_at"), "untilType", true));
-    if (HW.untilType === "time") rows.push(hwTimeRow(_T("time"), function () { return HW.until; }, function (v) { HW.until = v; }));
-    var card = hmGroup(rows);
+    var card = hmGroup([hwPointRow(_T("hw_start_at"), "start"), hwPointRow(_T("hw_end_at"), "end")]);
     card.appendChild(hweDays());
     b.appendChild(card);
   } else b.appendChild(hmGroup([hwTimeRow(_T("time"), function () { return HW.time; }, function (v) { HW.time = v; })]));
@@ -4952,6 +4989,7 @@ HP_PAGES["hue-wz-summary"] = ["hw_mimic_presence", "home", hwSummaryPage];
 HP_PAGES["hue-wz-scene"] = ["hm_scene", "scene", hwScenePage];
 HP_PAGES["hue-wz-length"] = ["hw_timer", "clock", hwLengthPage];
 HP_PAGES["hue-wz-name"] = ["hw_name_your_automation", "edit", hwNamePage];
+HP_PAGES["hue-wz-point"] = ["hw_start_at", "clock", hwPointPage];
 HP_PAGES["hue-wz-pick"] = ["hw_choose", "tune", hwPickPage];
 
 /* Edit automation, as the Hue app has it: one screen with everything an automation has (its name, when, how long it fades, the days, the lights, the settings), and SAVE at the top; every row that

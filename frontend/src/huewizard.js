@@ -401,33 +401,73 @@ function hwPointText(t) {
   return _T(t === "none" ? "hw_no_end_time" : t === "time" ? "hw_at_a_specific_time" : "hw_" + t);
 }
 
-/* A start or an end that is a time, sunrise, sunset (or, for an end, nothing): its picker row. */
-function hwPointRow(title, key, withNone) {
+/* What a start or an end says on its row: the time, sunrise or sunset, no end, or that no time is chosen yet. */
+function hwPointValue(which) {
+  var type = HW[which === "start" ? "startType" : "untilType"],
+    time = HW[which === "start" ? "time" : "until"];
+  if (type === "time") return /^\d\d:\d\d$/.test(time || "") ? time : _T("hw_select_a_time");
+  return hwPointText(type);
+}
+
+/* A start or an end that is a time, sunrise, sunset (or, for an end, nothing): its row, which opens its sheet. */
+function hwPointRow(title, which) {
   return hmRow({
     title: title,
     val: function () {
-      return hwPointText(HW[key]);
+      return hwPointValue(which);
     },
-    tap: function () {
-      hwChoose({
-        title: title,
-        hint: hwHasLocation() ? "" : _T("hw_sun_needs_home_location"),
-        options: (withNone ? ["none"] : []).concat(HW_POINTS).map(function (t) {
-          return { value: t, title: hwPointText(t) };
-        }),
-        get: function () {
-          return HW[key];
-        },
-        set: function (v) {
-          if ((v === "sunrise" || v === "sunset") && !hwHasLocation()) {
-            toast(_T("hw_sun_needs_home_location"));
-            return;
-          }
-          HW[key] = v;
-        },
-      });
-    },
+    tap: "hue-wz-point:" + which,
   });
+}
+
+/* The sheet of a start or an end: the choices and, for a time, the wheels. */
+function hwPointPage(b, which) {
+  if (!hwOpen(b)) return;
+  var key = which === "start" ? "startType" : "untilType",
+    timeKey = which === "start" ? "time" : "until",
+    ttl = b.parentNode && b.parentNode.querySelector(".pbar .ttl");
+  if (ttl) ttl.textContent = _T(which === "start" ? "hw_start_at" : "hw_end_at");
+  if (b.parentNode) b.parentNode.classList.add("shortpg");
+  hwHint(b, hwHasLocation() ? "" : _T("hw_sun_needs_home_location"));
+  b.appendChild(
+    hmGroup(
+      (which === "end" ? ["none"] : []).concat(HW_POINTS).map(function (t) {
+        return hmRow({
+          title: hwPointText(t),
+          check: function () {
+            return HW[key] === t;
+          },
+          tap: function () {
+            if ((t === "sunrise" || t === "sunset") && !hwHasLocation()) {
+              toast(_T("hw_sun_needs_home_location"));
+              return;
+            }
+            HW[key] = t;
+            if (t === "time" && !/^\d\d:\d\d$/.test(HW[timeKey] || "")) HW[timeKey] = "07:00";
+            refresh();
+            showPopup("hue-wz-point:" + which, false);
+          },
+        });
+      })
+    )
+  );
+  if (HW[key] === "time") {
+    var card = mk("div", "hm-group");
+    card.appendChild(
+      hweWheel(
+        function () {
+          return HW[timeKey];
+        },
+        function (v) {
+          HW[timeKey] = v;
+        }
+      )
+    );
+    b.appendChild(card);
+  }
+  HC.onDone = function () {
+    popBack();
+  };
 }
 
 /* The rows of "When": wake up, go to sleep and the schedule differ in what goes with the time. Shared by the wizard's page and the screen that edits an automation. */
@@ -436,11 +476,7 @@ function hwWhenRows(b) {
     schedule = kind === "schedule";
   if (schedule) {
     /* One card, as in the app: when it starts, when it ends and the days. */
-    var rows = [hwPointRow(_T("hw_start_at"), "startType", false)];
-    if (HW.startType === "time") rows.push(hwTimeRow(_T("time"), function () { return HW.time; }, function (v) { HW.time = v; }));
-    rows.push(hwPointRow(_T("hw_end_at"), "untilType", true));
-    if (HW.untilType === "time") rows.push(hwTimeRow(_T("time"), function () { return HW.until; }, function (v) { HW.until = v; }));
-    var card = hmGroup(rows);
+    var card = hmGroup([hwPointRow(_T("hw_start_at"), "start"), hwPointRow(_T("hw_end_at"), "end")]);
     card.appendChild(hweDays());
     b.appendChild(card);
   } else b.appendChild(hmGroup([hwTimeRow(_T("time"), function () { return HW.time; }, function (v) { HW.time = v; })]));
@@ -1037,4 +1073,5 @@ HP_PAGES["hue-wz-summary"] = ["hw_mimic_presence", "home", hwSummaryPage];
 HP_PAGES["hue-wz-scene"] = ["hm_scene", "scene", hwScenePage];
 HP_PAGES["hue-wz-length"] = ["hw_timer", "clock", hwLengthPage];
 HP_PAGES["hue-wz-name"] = ["hw_name_your_automation", "edit", hwNamePage];
+HP_PAGES["hue-wz-point"] = ["hw_start_at", "clock", hwPointPage];
 HP_PAGES["hue-wz-pick"] = ["hw_choose", "tune", hwPickPage];
