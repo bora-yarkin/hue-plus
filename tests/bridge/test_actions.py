@@ -391,8 +391,52 @@ class ActionTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(calls[0][:3], ("put", "scene", "s1"))
         recorded = calls[0][3]["actions"]
         self.assertTrue(recorded and all(a["target"]["rtype"] == "light" and "on" in a["action"] for a in recorded))
-        with self.assertRaisesRegex(ValueError, "either actions or record_current"):
+        with self.assertRaisesRegex(ValueError, "one of actions, record_current or recolor"):
             await self.go("update_scene", {"scene": "Soho", "record_current": True, "actions": "[]"})
+
+    def moving_scene(self):
+        snap = world()
+        palette = {
+            "color": [
+                {"color": {"xy": {"x": 0.2, "y": 0.4}}, "dimming": {"brightness": 26.0}},
+                {"color": {"xy": {"x": 0.1, "y": 0.1}}, "dimming": {"brightness": 26.0}},
+            ]
+        }
+        # The scene lists one of the room's two lights, so the other kept a colour of its own: the case the Hue app's Colors and Reset scene mend.
+        snap.scene = [
+            {
+                "id": "m1",
+                "metadata": {"name": "Aurora"},
+                "group": {"rid": "r1", "rtype": "room"},
+                "palette": palette,
+                "actions": [{"target": {"rid": "l1", "rtype": "light"}, "action": {"on": {"on": True}, "dimming": {"brightness": 70.0}}}],
+            }
+        ]
+        return snap
+
+    async def test_a_moving_scene_gives_its_palette_out_again_to_every_light_of_its_room(self):
+        calls, _ = await self.go("update_scene", {"scene": "Aurora", "recolor": "reset"}, snap=self.moving_scene())
+        (call,) = calls
+        self.assertEqual(call[:3], ("put", "scene", "m1"))
+        given = call[3]["actions"]
+        self.assertEqual([a["target"]["rid"] for a in given], ["l1", "l2"], "the light the scene did not list is in it now")
+        self.assertEqual([a["action"]["color"]["xy"] for a in given], [{"x": 0.2, "y": 0.4}, {"x": 0.1, "y": 0.1}])
+        self.assertEqual({a["action"]["dimming"]["brightness"] for a in given}, {26.0}, "reset uses the palette's own brightness")
+        calls, _ = await self.go("update_scene", {"scene": "Aurora", "recolor": "shuffle"}, snap=self.moving_scene())
+        shuffled = calls[0][3]["actions"]
+        self.assertEqual(sorted(a["action"]["color"]["xy"]["x"] for a in shuffled), [0.1, 0.2], "every colour is used once for two lights")
+        self.assertEqual(next(a for a in shuffled if a["target"]["rid"] == "l1")["action"]["dimming"]["brightness"], 70.0)
+
+    async def test_recolouring_needs_a_palette_and_is_not_combined_with_other_changes(self):
+        with self.assertRaisesRegex(ValueError, "no palette"):
+            await self.go("update_scene", {"scene": "Soho", "recolor": "reset"}, snap=self.with_room_scene())
+        with self.assertRaisesRegex(ValueError, "one of actions"):
+            await self.go("update_scene", {"scene": "Aurora", "recolor": "reset", "record_current": True}, snap=self.moving_scene())
+
+    def with_room_scene(self):
+        snap = world()
+        snap.scene = [{"id": "s1", "metadata": {"name": "Soho"}, "group": {"rid": "r1", "rtype": "room"}, "actions": []}]
+        return snap
 
     async def test_smart_scenes(self):
         calls, _ = await self.go("set_smart_scene", {"smart_scene": "Daily", "action": "deactivate"})

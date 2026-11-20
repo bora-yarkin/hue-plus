@@ -609,3 +609,99 @@ body{width:100%;height:100%}
 /* the page's bar while a sheet of the light frame uses it: an X, as a sheet has */
 .pg.framebar .pbar .back{display:none!important}
 .pg.framebar .pbar .x{display:flex!important}
+
+/* Switch settings as the app draws it: the label of "Selected lights" is a title with its pencil, the button tiles keep their name on one line */
+.lbtitle{flex:1;padding:16px 18px 10px;font-size:11.5px;font-weight:600}
+.btile b{font-size:10px;white-space:nowrap;padding:0 4px}
+.pintro.bigask{padding:44px 18px 22px;font-size:13.5px}
+.hm-row.discic .hm-i{width:44px;height:44px;border-radius:50%;background:#0d0e10;box-shadow:0 2px 5px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;margin-right:2px}
+.hm-row.discic .hm-i svg{width:20px;height:20px}
+.pintro.smart{font-size:11.5px;line-height:1.45;padding:20px 18px 6px}
+.lightsbar{display:flex;align-items:center;justify-content:space-between;padding-right:16px}
+.colorsbtn{display:flex;align-items:center;gap:8px;border:0;border-radius:18px;background:#3a3b40;color:#fff;padding:9px 14px;font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
+.colorsbtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.resetbtn{display:block;margin:34px auto 30px;border:0;border-radius:24px;background:#3a3b40;color:#fff;padding:14px 34px;font-size:12px;font-weight:500;cursor:pointer}
+.lightsbar{padding:14px 16px 14px 0}
+.lightsbar .lbtitle{padding:0 18px}
+.resetbtn{position:sticky;bottom:24px;margin-top:40px;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+/* The scene page as the app draws it: the colours of the scene run behind the page and fade into the dark by the middle of the screen, the header and the first sections are see-through over them */
+.pg.scenepg{background:radial-gradient(75% 36% at 14% 24%,var(--sc1),transparent 72%),radial-gradient(65% 34% at 92% 6%,var(--sc2),transparent 72%),radial-gradient(60% 30% at 56% 36%,var(--sc3),transparent 74%),var(--bg)}
+.pg.scenepg .pbar{background:rgba(255,255,255,.13);backdrop-filter:blur(14px)}
+.pg.scenepg .schead{background:none}
+.pg.scenepg .hm-group{background:rgba(37,38,42,.3)}
+.pg.scenepg .hm-label{background:none}
+.deletebtn{display:block;margin:0 auto 40px;border:2px solid #c0302e;border-radius:26px;background:#3b1b1d;color:#fff;padding:13px 34px;font-size:12px;font-weight:500;cursor:pointer}
+.spsheet{background:#25262a;padding:26px 18px 16px;text-align:center}
+.spcap{display:block;font-size:9.5px;letter-spacing:.12em;color:var(--ink2)}
+.spval{display:block;font-size:13px;font-weight:500;margin:2px 0 24px}
+.sptrack{position:relative;height:10px;border-radius:5px;background:#3d3e43;margin:0 12px;touch-action:none;cursor:pointer}
+.spfill{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:#3d3e43}
+.spthumb{position:absolute;top:50%;width:24px;height:24px;border-radius:50%;background:#fff;margin:-12px 0 0 -12px;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.spticks{display:flex;justify-content:space-between;margin:14px 2px 0;font-size:10px;color:var(--ink2)}
+.spticks i{font-style:normal;width:12px;text-align:center}
+.pg.scenepg .pintro{padding:18px 18px}
+.pg.scenepg .pill.slide{background:none}
+.hm .hm-row.keepchev .hm-c{display:flex!important}
+.hm .hm-row.good .hm-ck{width:22px;height:22px;border-radius:50%;background:#7fcc5c;color:#1c1d21;align-items:center;justify-content:center}
+.hm .hm-row.good .hm-ck svg{width:13px;height:13px;stroke-width:2.6}
+/* the pages of the MotionAware wizard that have the room above their card */
+.pg.wizpg.artpg .pbar{position:relative;padding-bottom:330px}
+.mwart{position:absolute;left:0;right:0;top:64px;display:flex;justify-content:center;pointer-events:none}
+.mwart svg{width:340px;height:283px}
+.mwart.cone .heat,.mwart.heat .cone{display:none}
+.pg.wizpg.artpg .notec{font-size:11px;line-height:1.5;padding:4px 18px}
+.pg.wizpg.artpg .hm .hm-tt b{font-size:17px}
+/* a choice as the app shows it: a round mark in front of the row, filled and ticked when chosen */
+.hm .hm-row.radio .hm-ck{order:-1;opacity:1;width:24px;height:24px;margin-right:14px;border-radius:50%;border:2px solid #6c6d74;align-items:center;justify-content:center;display:flex}
+.hm .hm-row.radio .hm-ck svg{width:13px;height:13px;opacity:0;stroke:#fff;stroke-width:3}
+.hm .hm-row.radio.checked .hm-ck{background:#2f6bff;border-color:#2f6bff;color:#fff}
+.hm .hm-row.radio.checked .hm-ck svg{opacity:1}
+/* the wizard pages as the app draws them: the card starts lower and the title has room before what follows */
+.pg.wizpg .pbar{padding-bottom:90px}
+.pg.wizpg.artpg .pbar{padding-bottom:330px}
+.pg.wizpg .hm-title{margin-bottom:6px}
+.pg.wizpg .hm-title+.notec{margin-top:0}
+.hm-group.cards{background:none!important;box-shadow:none;margin-left:16px;margin-right:16px;overflow:visible;border-radius:0}
+.hm-group.cards .hm-row{background:#26272b;border-radius:14px;margin-bottom:12px;min-height:78px}
+.hm-group.cards .hm-row:before{display:none}
+.hm-group.cards .hm-ck{display:none}
+.hm-edisc{flex:none;width:36px;height:36px;border-radius:50%;background:#0d0e10;display:flex;align-items:center;justify-content:center;margin-left:8px}
+.hm-edisc svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round}
+.mwart.house svg{width:300px;height:260px}
+.mwart.house{top:60px}
+.mwart svg{stroke:none;fill:none}
+.pg.wizpg .notec{font-size:11px;line-height:1.5}
+.mwart.arrow .cone,.mwart.arrow .heat{display:none}
+.mwart .arrow{display:none}.mwart.arrow .arrow{display:block}
+.mwcard{margin:8px 16px;border-radius:14px;background:#26272b;overflow:hidden}
+.mwc-h{padding:14px 16px 4px}.mwc-h b{display:block;font-size:12px;font-weight:600}.mwc-h i{display:block;font-style:normal;font-size:10px;color:var(--ink2)}
+.mwtiles{padding:12px 12px 14px!important}
+.mwtiles .hpk-tile{width:100px;height:130px}
+.mwart.plain .cone,.mwart.plain .heat,.mwart.plain .arrow{display:none}
+.hwe-wheel.dur{position:relative}
+.hwe-wheel.dur:before,.hwe-wheel.dur:after{position:absolute;top:50%;margin-top:-7px;font-size:10px;font-weight:600;z-index:2;pointer-events:none}
+.hwe-wheel.dur:before{content:attr(data-h);left:calc(50% - 52px + 20px)}
+.hwe-wheel.dur:after{content:attr(data-m);left:calc(50% + 52px + 20px)}
+/* the seconds that are left of the calibration, in the bottom bar with a turning ring */
+.pg.wizpg .hm-group.calbar{position:fixed;left:0;right:0;bottom:0;margin:0;border-radius:0;background:var(--bg);border-top:1px solid var(--line);z-index:5;padding-bottom:var(--sab,0px)}
+.calbar .hm-row{justify-content:center;background:none;min-height:70px;gap:12px}
+.calbar .hm-row:before{content:"";position:static;width:22px;height:22px;box-sizing:border-box;border-radius:50%;border:3px solid #4a4b50;border-top-color:#a8aab2;background:none;animation:calspin 1s linear infinite;flex:none}
+.calbar .hm-n{font-size:10px;color:var(--ink2);font-weight:400}
+@keyframes calspin{to{transform:rotate(360deg)}}
+/* Add a scene as the app draws it: a title, a line, and tiles with their picture above their name */
+.addtitle{padding:6px 18px 4px;font-size:20px;font-weight:600}
+.pg.wizpg .gridl.g2{gap:12px;padding:6px 16px 0}
+.pg.wizpg .gridl.g2 .pill{flex-direction:column;align-items:flex-start;justify-content:space-between;gap:0;height:98px;padding:16px 14px 14px;background:#2d2e32;border-radius:14px}
+.pg.wizpg .gridl.g2 .pill .ic{background:none;width:auto;height:auto}
+.pg.wizpg .gridl.g2 .pill .ic svg{width:26px;height:26px}
+.pg.wizpg .gridl.g2 .pill .tx{display:block}
+.pg.wizpg .gridl.g2 .pill .nm{font-size:10.5px;font-weight:600}
+.pg.wizpg .gridl.g2 .pill .sb,.pg.wizpg .gridl.g2 .pill .vl{display:none}
+/* the scene choice of a press: the scenes in two rows that scroll sideways, the pencil standing by the chosen one */
+.pgrid.scrows{display:block;overflow-x:auto;padding:4px 16px 12px;scrollbar-width:none}
+.pgrid.scrows .scr{display:flex;align-items:center;gap:12px;width:max-content;margin-bottom:12px}
+.pgrid.scrows::-webkit-scrollbar{display:none}
+.pgrid.scrows .sitem{width:94px;height:104px}
+.pgrid.scrows .scpen{flex:none}
+.pg .pgrid:not(.scrows){display:flex;flex-wrap:wrap;gap:12px;padding:4px 16px 12px}
+.hm-ldisc{flex:none;width:46px;height:46px;border-radius:50%;margin-right:12px}

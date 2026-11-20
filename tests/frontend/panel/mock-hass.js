@@ -112,7 +112,7 @@ export function makeHass(query) {
       { id: "auto-1", name: "Wake up", enabled: true, script: "Basic wake up routine", status: "running", configuration: { when: { time_point: { type: "time", time: { hour: 6, minute: 0 } }, recurrence_days: ["wednesday"] } } },
       { id: "auto-2", name: "Evening timer", enabled: false, script: "Timers", status: "disabled" },
     ],
-    rooms: [{ id: "room-1", name: "Living room", children: [{ id: "dev-lamp", name: "Desk lamp" }], lights: ["light-1", "light-2", "light-3"], light_items: [{ id: "light-1", name: "Desk lamp", archetype: "table_shade" }, { id: "light-2", name: "Floor lamp", archetype: "floor_shade" }, { id: "light-3", name: "Shelf strip", archetype: "hue_lightstrip" }] }],
+    rooms: [{ id: "room-1", name: "Living room", children: [{ id: "dev-lamp", name: "Desk lamp" }, { id: "dev-bed", name: "Bed Light" }, { id: "dev-cl", name: "Ceiling Light L" }, { id: "dev-cr", name: "Ceiling Light R" }], lights: ["light-1", "light-2", "light-3"], light_items: [{ id: "light-1", name: "Desk lamp", archetype: "table_shade" }, { id: "light-2", name: "Floor lamp", archetype: "floor_shade" }, { id: "light-3", name: "Shelf strip", archetype: "hue_lightstrip" }] }],
     zones: [{ id: "zone-1", name: "Desk area", children: [], lights: ["light-1"], light_items: [{ id: "light-1", name: "Desk lamp", archetype: "table_shade" }] }], smart_scenes: [], scenes: [
       { id: "scene-1", name: "Arctic aurora", group_id: "room-1", group_type: "room", lights: ["hl-desk_lamp", "hl-shelf_strip"], speed: 0.6, auto_dynamic: true, colours: [{ xy: [0.17, 0.35] }, { xy: [0.2, 0.2] }, { xy: [0.25, 0.5] }] },
       { id: "scene-2", name: "Reading", group_id: "room-1", group_type: "room", lights: ["hl-desk_lamp", "hl-shelf_strip"], speed: 0.5, auto_dynamic: false, colours: [{ mirek: 300 }] },
@@ -131,19 +131,20 @@ export function makeHass(query) {
         ],
       },
     ],
-    motion_areas: { candidates: [], areas: [{ id: "ma-1", metadata: { name: "Hallway" }, enabled: true }] },
+    motion_areas: { candidates: ["dev-lamp", "dev-bed", "dev-cl", "dev-cr"].map((d) => ({ id: "cand-" + d, owner: { rid: d } })), areas: [{ id: "ma-1", metadata: { name: "Hallway" }, enabled: true }] },
     apps: [{ id: "a1", name: "Hue app", last_used: "2026-11-04T21:00:00" }, { id: "a2", name: "Home Assistant", last_used: "2026-11-05T01:12:00" }],
     accessories: [
       {
         id: "acc-1", name: "Desk dimmer", dials: 0, automation_id: "auto-1",
         buttons: [{ id: "b1", number: 1, last_event: "short_release" }, { id: "b2", number: 2, last_event: null }, { id: "b3", number: 3, last_event: null }, { id: "b4", number: 4, last_event: "long_release" }],
         actions: {
-          b1: { on_short_release: { action: "dim_up" }, on_long_press: { action: "dim_up" } },
-          b2: {
+          // the shapes the bridge holds: an on/off button with a single scene, brighten and dim with the repeat of a held press, a button with a cycle
+          b1: {
             on_short_release: { recall_single_extended: { actions: [{ action: { recall: { rid: "scene-1", rtype: "scene" } } }], with_off: { enabled: true } } },
             on_long_press: { action: "do_nothing" },
           },
-          b3: { on_short_release: { action: "dim_down" }, on_long_press: { action: "home_off" } },
+          b2: { on_short_release: { action: "dim_up" }, on_repeat: { action: "dim_up" } },
+          b3: { on_short_release: { action: "dim_down" }, on_repeat: { action: "dim_down" } },
           b4: {
             on_short_release: {
               scene_cycle_extended: {
@@ -152,13 +153,7 @@ export function makeHass(query) {
                 with_off: { enabled: true },
               },
             },
-            on_long_press: {
-              time_based_extended: {
-                repeat_timeout: { seconds: 3 },
-                slots: [["scene-1", 7, 0], ["scene-2", 20, 0], ["scene-3", 23, 0]].map(([rid, hour, minute]) => ({ actions: [{ action: { recall: { rid, rtype: "scene" } } }], start_time: { hour, minute } })),
-                with_off: { enabled: false },
-              },
-            },
+            on_long_press: { action: "do_nothing" },
           },
         },
         targets: { b1: ["room-1"], b2: ["room-1"], b3: ["room-1"], b4: ["room-1"] },

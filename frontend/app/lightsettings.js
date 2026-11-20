@@ -30,13 +30,15 @@ function hpBridgesPage(b) {
   hmEnsure();
   b.appendChild(
     hmGroup([
-      hmRow({
-        icon: "plug",
-        title: function () {
-          return (HM.bridge && HM.bridge.name) || _T("hue_bridge");
-        },
-        tap: "hue-bridge",
-      }),
+      hpNoChev(
+        hmRow({
+          icon: "plug",
+          title: function () {
+            return (HM.bridge && HM.bridge.name) || _T("hue_bridge");
+          },
+          tap: "hue-bridge",
+        })
+      ),
     ])
   );
 }

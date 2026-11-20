@@ -118,6 +118,10 @@ function hueAddScenePage(b) {
       ["clock", "hn_all_day", "hn_all_day_sub", "allday"],
       ["cam", "hn_from_photo", "hn_from_photo_sub", "photo"],
     ];
+  /* the title and the line under it, as the app has them, then the ways to make a scene as tiles */
+  var heading = mk("div", "addtitle");
+  heading.textContent = _T("hn_add_a_scene");
+  b.appendChild(heading);
   b.appendChild(mkHint(_T("hn_add_a_scene_hint")));
   items.forEach(function (it) {
     grid.appendChild(
@@ -148,6 +152,11 @@ function hueChooseLights(mode) {
   HUENEW.sel = {};
   HUENEW.g = null;
   if (g) hueSelectGroup(g);
+  /* The scene is for the room or zone the page is of ("save to this Room"), so there is no room to choose: the app goes straight on. */
+  if (g && mode !== "edit") {
+    hueAfterLights();
+    return;
+  }
   showPopup("hue-pick-lights", true);
 }
 

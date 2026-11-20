@@ -7,6 +7,7 @@ such as which room types exist, is left to the bridge, whose answer is shown to 
 
 from __future__ import annotations
 
+import random
 from datetime import time
 from typing import Any
 
@@ -46,6 +47,50 @@ def scene_actions_from_lights(lights: list[dict[str, Any]]) -> list[dict[str, An
         elif (light.get("color") or {}).get("xy"):
             action["color"] = {"xy": light["color"]["xy"]}
         actions.append({"target": _ref(light["id"], "light"), "action": action})
+    return actions
+
+
+RECOLOR_MODES = ("shuffle", "reset")
+
+
+def scene_recolor(scene: dict[str, Any], light_ids: list[str], mode: str, rng: random.Random | None = None) -> list[dict[str, Any]]:
+    """The actions of a moving scene with its palette given out again, as the Hue app's "Colors" (shuffle) and "Reset scene" do.
+
+    Every light of the scene's room or zone gets a colour of the palette, so a light the scene did not list (and which therefore kept one static
+    colour) plays it too. ``reset`` hands the palette out in its order at the palette's own brightness; ``shuffle`` mixes the order, each colour
+    used as evenly as the lights allow, and keeps the brightness a light already had in the scene."""
+    if mode not in RECOLOR_MODES:
+        raise ValueError(f"The colours are given out by {' or '.join(RECOLOR_MODES)}")
+    palette = scene.get("palette") or {}
+    colours: list[tuple[dict[str, Any], float | None]] = [
+        ({"color": {"xy": entry["color"]["xy"]}}, (entry.get("dimming") or {}).get("brightness"))
+        for entry in palette.get("color") or []
+        if (entry.get("color") or {}).get("xy")
+    ] + [
+        ({"color_temperature": {"mirek": entry["color_temperature"]["mirek"]}}, (entry.get("dimming") or {}).get("brightness"))
+        for entry in palette.get("color_temperature") or []
+        if (entry.get("color_temperature") or {}).get("mirek")
+    ]
+    if not colours:
+        raise ValueError("This scene has no palette to give out: only a moving scene from the Hue gallery has one")
+    if not light_ids:
+        raise ValueError("The scene's room or zone has no lights")
+    order = [i % len(colours) for i in range(len(light_ids))]
+    if mode == "shuffle":
+        (rng or random.Random()).shuffle(order)
+    before = {
+        (a.get("target") or {}).get("rid"): ((a.get("action") or {}).get("dimming") or {}).get("brightness")
+        for a in scene.get("actions") or []
+    }
+    actions = []
+    for light_id, index in zip(light_ids, order, strict=True):
+        colour, brightness = colours[index]
+        kept = before.get(light_id) if mode == "shuffle" else None
+        action: dict[str, Any] = {"on": {"on": True}}
+        level = kept if kept is not None else brightness
+        if level is not None:
+            action["dimming"] = {"brightness": level}
+        actions.append({"target": _ref(light_id, "light"), "action": {**action, **colour}})
     return actions
 
 

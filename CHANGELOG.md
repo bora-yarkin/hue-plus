@@ -4,6 +4,29 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.21.10] - 2026-11-20
+
+### Changed
+- **Screens compared again and redrawn**: the area page lists its times with their scenes and has the name's pencil, calibrating shows the seconds left in the bottom bar, Add a scene is a title with tiles and goes straight on for the room of the page, a press's scene choice is the room's name with the plus, the scenes in two rows with the pencil by the chosen one, the Bright, Off and Do nothing suggestions and Show preview, the Style and other choices of a wizard are sheets with round pictures, the lighting schedule has its start, end and days in one card (a start or an end opens its own sheet with the choices and the wheels), the wheels are smaller, and Edit name and type is a sheet.
+
+### Changed
+- **More of the app's screens followed**: the MotionAware device choice is tiles with round checks in a card, "Leave the area", "Calibrating area" and "Area created" have the room above them (with the arrow, plain and with the shape), the area's page is called Edit area; a timer's length is two wheels (hours and minutes) and a timer starts with its length, then its lights, as in the app.
+
+### Changed
+- **The wizards' pages follow the app's screens**: the card starts lower under the blue top, "How should Go to sleep start?" has its two paragraphs and its choices are cards with round icons (as are "When should your lights turn on"), Mimic presence has its first page (a house at night, what it does) and its summary has the round pictures at the end of its rows. The MotionAware room is drawn without outlines and taller.
+
+### Changed
+- **Settings and MotionAware compared with the app's screens again**: Devices rows end with a count and an arrow, the rooms of Add devices, the bridge and the entertainment areas have no arrow, the bridge's name has its pencil and its page shows the IP address (the bridge's `ip_address` is in `get_resources`), "Everything is up to date" has the green tick, an entertainment area's Lights is a title with its plus, the MotionAware intro and tips have the cut-away room above their card with the app's smaller text, the room choice has round marks, and the Power on choice has the app's tip and round icons.
+
+### Changed
+- **The scene settings page follows the app's screens again**: the colours of the scene are blurred round patches behind the page that fade into the dark, the header and first sections are see-through over them; Dynamic speed is a row ("8 - Fast") that opens a short sheet with the twelve steps, as the app does, instead of a slider on the page; Reset scene stays at the bottom of the screen and Delete scene follows the lights. What is changed on the page is kept while the speed sheet is open. The brightness row no longer has a solid background of its own, so the colours run through it.
+
+### Added
+- **The scene settings page has the app's Colors and Reset scene** for a moving scene. A scene from the Hue gallery has a palette of five colours that the bridge gives out to the lights it lists, so a light the scene does not list (the room has more lights than the scene has actions) keeps one static colour. *Colors* gives the palette out again to every light of the room in another order, *Reset scene* in the palette's own order and brightness; both are kept until SAVE. `update_scene` takes `recolor` (shuffle or reset) for it.
+
+### Changed
+- **Switch pages compared with the app's screens again**: Smart on/off is only on the Press page (it was also on Switch settings, and the scene cycle page had a switch for it where the app has a row that opens the Smart on/off page); a press that is a scene cycle shows its list of presses on the Press page itself; the name of a switch has its pencil; Selected lights is a title with a pencil; Button controls has the question, the label and the description of Lights; the Press options have the app's round icons; a single scene shows "All Lights". Not yet: the app's Automations choice under Button controls, and the Bright and Last on state suggestions of the scene choice.
+
 ## [0.21.0] - 2026-11-20
 
 ### Changed

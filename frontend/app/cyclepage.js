@@ -11,6 +11,13 @@ function hpCyclePage(b, id) {
       box.appendChild(hmCallout(_T("nothing_found")));
       return;
     }
+    hpCycleDraw(box, r, id, k, f, 2);
+  });
+}
+
+/* The cycle's presses, drawn on the page of a press that already is a cycle (the Press page) and on the page the kind of press leads to; DONE goes back `pops` pages. */
+function hpCycleDraw(box, r, id, k, f, pops) {
+  {
     var scenes = hmBtnScenes(r, hmBtnTargets(r, f.acc, f.btn));
     if (!HM_CYCLE || HM_CYCLE.id !== id) {
       var cfg = (f.spec && f.spec.scene_cycle_extended) || {};
@@ -25,6 +32,7 @@ function hpCyclePage(b, id) {
     }
     HM_CYCLE.names = r;
     HM_CYCLE.pool = scenes;
+    HM_CYCLE.with_off = hmPressWithOff(f.spec);
     var d = HM_CYCLE,
       ords = ["hm_first", "hm_second", "hm_third", "hm_fourth", "hm_fifth", "hm_sixth", "hm_seventh", "hm_eighth", "hm_ninth", "hm_tenth"];
     HC.onDone = function () {
@@ -34,8 +42,7 @@ function hpCyclePage(b, id) {
       }
       hmStagePress(k, f, { action: "scene_cycle", scenes: d.scenes.slice(), with_off: d.with_off, repeat_timeout: d.timeout });
       HM_CYCLE = null;
-      popBack();
-      popBack();
+      for (var n = 0; n < pops; n++) popBack();
     };
     box.appendChild(
       hmGroup([
@@ -92,23 +99,28 @@ function hpCyclePage(b, id) {
     hint.textContent = _T("app_drag_to_order");
     box.appendChild(hint);
     box.appendChild(hmLabel(_T("hm_advanced")));
+    /* Smart on/off is its own page, as in the app. The cycle as it stands is staged first, so that page changes this cycle. */
     box.appendChild(
       hmGroup([
-        hmRow({
-          title: _T("hm_smart_on_off"),
-          toggle: {
-            get: function () {
-              return d.with_off;
+        hpNoChev(
+          hmRow({
+            title: _T("hm_smart_on_off"),
+            val: function () {
+              return d.with_off ? _T("app_enabled") : _T("app_disabled");
             },
-            set: function () {
-              d.with_off = !d.with_off;
-              refresh();
+            tap: function () {
+              if (d.scenes.length < 2) {
+                toast(_T("hm_a_cycle_needs_two_scenes"));
+                return;
+              }
+              hmStagePress(k, f, { action: "scene_cycle", scenes: d.scenes.slice(), with_off: d.with_off, repeat_timeout: d.timeout });
+              showPopup("app-smart:" + id, true);
             },
-          },
-        }),
+          })
+        ),
       ])
     );
-  });
+  }
 }
 
 HP_PAGES["hue-cycle"] = ["hm_scene_cycle", "swap", hpCyclePage];

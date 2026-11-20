@@ -66,9 +66,38 @@ function hmwStart() {
 }
 
 /* A page of advice: a heading, the paragraphs, Next. */
-function hmwInfo(key, title, texts, label, next) {
+/* The room of the MotionAware pages, drawn the way the Hue app draws it (a cut-away room with the devices as dots): the intro shows the shape one area covers, the tips show where motion is felt. */
+function hmwArt(shape) {
+  var art = mk(
+    "div",
+    "mwart " + shape,
+    "<svg viewBox='0 0 300 250' aria-hidden='true'><defs><linearGradient id='mwfl' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#4a4970'/><stop offset='1' stop-color='#6d6b95'/></linearGradient><radialGradient id='mwht'><stop offset='0' stop-color='#ff8f4a'/><stop offset='.45' stop-color='#d9c55c'/><stop offset='1' stop-color='#5f8fe6' stop-opacity='0'/></radialGradient></defs>" +
+      "<polygon points='28,160 150,222 272,160 150,98' fill='url(#mwfl)'/><polygon points='28,160 150,98 150,8 28,70' fill='#8c89a8'/><polygon points='150,98 272,160 272,70 150,8' fill='#6f6c90'/>" +
+      "<polygon points='60,143 86,130 86,62 60,75' fill='#7c799a'/><polygon points='180,36 238,65 238,90 180,61' fill='#23233a'/><polygon points='176,92 242,125 242,132 176,99' fill='#23233a'/>" +
+      "<path d='M62 172 L108 196 L126 187 L80 163 Z M62 156 L80 163 L80 172 L62 165 Z' fill='#26263a'/>" +
+      "<ellipse class='heat' cx='118' cy='186' rx='84' ry='30' fill='url(#mwht)' opacity='.9'/>" +
+      "<path class='cone' d='M48 135 C80 80 150 30 120 42 C170 90 210 150 206 190 C150 214 90 190 48 135 Z' fill='none' stroke='#7fc4ff' stroke-width='1.4'/>" +
+      "<polygon class='arrow' points='110,108 168,100 164,86 204,110 164,134 168,120 110,126' fill='#ff9a4d'/><g fill='#0d0d14'><circle cx='120' cy='42' r='4.5'/><circle cx='252' cy='92' r='4.5'/><circle cx='206' cy='190' r='4.5'/><circle cx='48' cy='135' r='4.5'/></g></svg>"
+  );
+  return art;
+}
+
+/* Puts the room into the blue top of the page. */
+function hmwShowArt(b, shape) {
+  var root = b.parentNode,
+    bar = root && root.querySelector(".pbar");
+  if (!bar) return;
+  [].slice.call(bar.querySelectorAll(".mwart")).forEach(function (old) {
+    old.remove();
+  });
+  bar.appendChild(hmwArt(shape));
+  root.classList.add("artpg");
+}
+
+function hmwInfo(key, title, texts, label, next, shape) {
   return function (b) {
     if (!hwOpen(b, key)) return;
+    if (shape) hmwShowArt(b, shape);
     b.appendChild(hmTitle("motion", _T(title)));
     texts.forEach(function (t) {
       hwHint(b, _T(t));
@@ -82,6 +111,7 @@ function hmwWherePage(b) {
   hmLoad(b, ["rooms", "zones", "motion_areas"], function (box, r) {
     box.appendChild(hmTitle("motion", _T("hmw_where_are_the_lights")));
     hwHint(box, _T("hmw_where_hint"));
+    hwHint(box, _T("hmw_where_hint_2"));
     var rooms = hwGroups(r).filter(function (g) {
       return g.type === "room";
     });
@@ -91,7 +121,7 @@ function hmwWherePage(b) {
         rooms.map(function (g) {
           var n = hmwFreeDevicesOf(g).length;
           return hmRow({
-            icon: "home",
+            radio: true,
             title: g.name,
             sub: cntS(n, _T("hmw_available_device"), _T("hmw_available_devices")),
             check: function () {
@@ -142,33 +172,35 @@ function hmwDevicesPage(b) {
       used = hmwUsed();
     box.appendChild(hmTitle("motion", _T("hmw_choose_devices")));
     hwHint(box, _T("hmw_choose_devices_hint"));
-    box.appendChild(hmLabel(HW.group.name));
-    box.appendChild(
-      hmGroup(
-        list.map(function (c) {
-          return hmRow({
-            icon: "lamp",
-            title: c.name,
-            sub: used[c.id] ? _T("hmw_in_use") : "",
-            check: function () {
-              return !!HW.devices[c.id];
-            },
-            tap: function () {
-              if (used[c.id]) {
-                toast(_T("hmw_in_use_hint"));
-                return;
-              }
-              if (!HW.devices[c.id] && hmwChosen().length >= 4) {
-                toast(_T("hmw_three_or_four"));
-                return;
-              }
-              HW.devices[c.id] = !HW.devices[c.id];
-              refresh();
-            },
-          });
-        })
-      )
-    );
+    /* The room's devices as tiles in a card of their own, each with its round check, as in the app. */
+    var card = mk("div", "mwcard", "<div class='mwc-h'><b></b><i></i></div>"),
+      tiles = mk("div", "hpk-tiles mwtiles");
+    card.querySelector("b").textContent = HW.group.name;
+    card.querySelector("i").textContent = cntS(hmwChosen().length, _T("hmw_device_selected"), _T("hmw_devices_selected"));
+    list.forEach(function (c) {
+      var tile = mk("div", "hpk-tile", "<div class='hpk-top'><span class='hpk-ic'></span><b></b></div><div class='hpk-strip'></div>"),
+        on = !!HW.devices[c.id],
+        mark = mk("span", "hpk-ck" + (on ? " on" : ""));
+      if (on) mark.innerHTML = svg("check");
+      tile.querySelector(".hpk-ic").innerHTML = svg("lamp");
+      tile.querySelector("b").textContent = c.name;
+      tile.querySelector(".hpk-strip").appendChild(mark);
+      tile.addEventListener("click", function () {
+        if (used[c.id]) {
+          toast(_T("hmw_in_use_hint"));
+          return;
+        }
+        if (!HW.devices[c.id] && hmwChosen().length >= 4) {
+          toast(_T("hmw_three_or_four"));
+          return;
+        }
+        HW.devices[c.id] = !HW.devices[c.id];
+        refresh();
+      });
+      tiles.appendChild(tile);
+    });
+    card.appendChild(tiles);
+    box.appendChild(card);
     box.appendChild(
       hwNext(null, function () {
         var n = hmwChosen().length;
@@ -229,6 +261,7 @@ var HMW_CALIBRATION_GIVE_UP_SECONDS = 120;
 /* "Calibrating area…": a count down while the bridge is asked every two seconds; when the area is healthy the wizard goes on to the name. */
 function hmwCalibratingPage(b) {
   if (!hwOpen(b, "hue-mw-calibrating")) return;
+  hmwShowArt(b, "plain");
   b.appendChild(hmTitle("motion", _T("hmw_calibrating_area")));
   hwHint(b, _T("hmw_calibrating_hint"));
   var status = hmRow({
@@ -240,6 +273,7 @@ function hmwCalibratingPage(b) {
     box = hmGroup([status]),
     stopped = false,
     timer = null;
+  box.classList.add("calbar");
   b.appendChild(box);
   function leave() {
     stopped = true;
@@ -427,6 +461,17 @@ function hmwSorted() {
 }
 
 /* One row for each time: from when to when, the scene (or no lights), the minutes without motion before the lights go off. `plain` rows are not pressable. */
+/* The picture of a scene at the end of a row: its colours as a round swatch. */
+function hmwSceneDisc(sceneId) {
+  var scene = hmList("scenes").filter(function (x) {
+      return x.id === sceneId;
+    })[0],
+    cols = ((scene && scene.colours) || []).map(function (c) {
+      return typeof window.hpColourCss === "function" ? window.hpColourCss(c) : "#f9d27a";
+    });
+  return !cols.length ? "#f9d27a" : cols.length === 1 ? cols[0] : "conic-gradient(" + cols.concat(cols[0]).join(",") + ")";
+}
+
 function hmwSlotRows(plain) {
   var sorted = hmwSorted();
   return hmGroup(
@@ -708,14 +753,18 @@ function hmMotionArea(b, id) {
         return hmdValue(key, "sensitivity", svc && svc.sensitivity ? svc.sensitivity.sensitivity : 0);
       },
       a = hmwAutomationOf(id);
-    box.appendChild(hmTitle("motion", name));
+    var title = hmTitle("motion", name),
+      pen = mk("button", "hm-pen", svg("edit"));
+    box.appendChild(title);
+    /* The name is changed with the pencil by it, as in the Hue app. */
+    pen.type = "button";
+    pen.setAttribute("aria-label", _T("hmw_name"));
+    pen.addEventListener("click", function () {
+      showPopup("hue-mname:" + id, true);
+    });
+    title.appendChild(pen);
     box.appendChild(
       hmGroup([
-        hmRow({
-          title: _T("hmw_name"),
-          val: name,
-          tap: "hue-mname:" + id,
-        }),
         hmRow({
           title: _T("hm_enabled"),
           toggle: {
@@ -731,16 +780,30 @@ function hmMotionArea(b, id) {
         }),
       ])
     );
-    box.appendChild(hmLabel(_T("hmw_what_it_does")));
+    /* What the area does: each time with the scene it recalls, a tap opens them to be changed. */
+    var slots = a ? hmwSlotsFrom(a) : [];
     box.appendChild(
-      hmGroup([
-        hmRow({
-          icon: "lamp",
-          title: _T("hmw_control_lights"),
-          sub: a ? cntS(hmwSlotsFrom(a).length, _T("hmw_time_n"), _T("hmw_times_n")) : _T("hmw_nothing_set"),
-          tap: "hue-mslots:" + id,
-        }),
-      ])
+      hmGroup(
+        slots.length
+          ? slots.map(function (sl, i) {
+              var to = slots[(i + 1) % slots.length];
+              return hmRow({
+                title: hmwStartText(sl),
+                sub: _T("hmw_until") + " " + hmwStartText(to),
+                val: (sl.scene ? hmwSceneName(sl.scene) : _T("hmw_no_lights")) + (sl.scene && sl.off ? " · " + hwMinutesText(sl.off) : ""),
+                disc: sl.scene ? hmwSceneDisc(sl.scene) : null,
+                tap: "hue-mslots:" + id,
+              });
+            })
+          : [
+              hmRow({
+                icon: "lamp",
+                title: _T("hmw_control_lights"),
+                sub: _T("hmw_nothing_set"),
+                tap: "hue-mslots:" + id,
+              }),
+            ]
+      )
     );
     box.appendChild(hmLabel(_T("hmw_general_settings")));
     box.appendChild(
@@ -1080,15 +1143,15 @@ function hmwPickOffset(st, key, sun) {
   });
 }
 
-HP_PAGES["hue-mw-intro"] = ["hmw_create_a_motionaware_area", "motion", hmwInfo("hue-mw-intro", "hmw_create_a_motionaware_area", ["hmw_intro_1", "hmw_intro_2"], "hmw_create_area")];
-HP_PAGES["hue-mw-tip1"] = ["hmw_before_you_choose_devices", "motion", hmwInfo("hue-mw-tip1", "hmw_before_you_choose_devices", ["hmw_tip1_1"])];
-HP_PAGES["hue-mw-tip2"] = ["hmw_before_you_choose_devices", "motion", hmwInfo("hue-mw-tip2", "hmw_before_you_choose_devices", ["hmw_tip2_1", "hmw_tip2_2"])];
-HP_PAGES["hue-mw-tip3"] = ["hmw_before_you_choose_devices", "motion", hmwInfo("hue-mw-tip3", "hmw_before_you_choose_devices", ["hmw_tip3_1", "hmw_tip3_2"])];
+HP_PAGES["hue-mw-intro"] = ["hmw_create_a_motionaware_area", "motion", hmwInfo("hue-mw-intro", "hmw_create_a_motionaware_area", ["hmw_intro_1", "hmw_intro_2"], "hmw_create_area", null, "cone")];
+HP_PAGES["hue-mw-tip1"] = ["hmw_before_you_choose_devices", "motion", hmwInfo("hue-mw-tip1", "hmw_before_you_choose_devices", ["hmw_tip1_1"], null, null, "heat")];
+HP_PAGES["hue-mw-tip2"] = ["hmw_before_you_choose_devices", "motion", hmwInfo("hue-mw-tip2", "hmw_before_you_choose_devices", ["hmw_tip2_1", "hmw_tip2_2"], null, null, "heat")];
+HP_PAGES["hue-mw-tip3"] = ["hmw_before_you_choose_devices", "motion", hmwInfo("hue-mw-tip3", "hmw_before_you_choose_devices", ["hmw_tip3_1", "hmw_tip3_2"], null, null, "heat")];
 HP_PAGES["hue-mw-where"] = ["hmw_create_a_motionaware_area", "motion", hmwWherePage];
 HP_PAGES["hue-mw-devices"] = ["hmw_choose_devices", "motion", hmwDevicesPage];
-HP_PAGES["hue-mw-leave"] = ["hmw_leave_the_area", "motion", hmwInfo("hue-mw-leave", "hmw_leave_the_area", ["hmw_leave_hint"], null, hmwStartCalibration)];
+HP_PAGES["hue-mw-leave"] = ["hmw_leave_the_area", "motion", hmwInfo("hue-mw-leave", "hmw_leave_the_area", ["hmw_leave_hint"], null, hmwStartCalibration, "arrow")];
 HP_PAGES["hue-mw-calibrating"] = ["hmw_calibrating_area", "motion", hmwCalibratingPage];
-HP_PAGES["hue-mw-created"] = ["hmw_area_created", "motion", hmwInfo("hue-mw-created", "hmw_area_created", ["hmw_area_created_sub"])];
+HP_PAGES["hue-mw-created"] = ["hmw_area_created", "motion", hmwInfo("hue-mw-created", "hmw_area_created", ["hmw_area_created_sub"], null, null, "cone")];
 HP_PAGES["hue-mw-choice"] = ["hmw_what_should_your_area_do", "motion", hmwChoicePage];
 HP_PAGES["hue-mw-groups"] = ["hmw_which_lights", "lamp", hmwGroupsPage];
 HP_PAGES["hue-mw-done"] = ["hmw_success", "check", hmwDonePage];
@@ -1098,4 +1161,4 @@ HP_PAGES["hue-mname"] = ["hmw_name", "edit", hmwRename];
 HP_PAGES["hue-mdev"] = ["hmw_motion_sensitive_devices", "motion", hmwDevices];
 HP_PAGES["hue-msens"] = ["hmw_motion_sensitivity", "walk", hmwSensitivity];
 HP_PAGES["hue-mday"] = ["hmw_daylight_settings", "bright", hmwDaylight];
-HP_PAGES["hue-marea"] = ["motion_area", "motion", hmMotionArea];
+HP_PAGES["hue-marea"] = ["app_edit_area", "motion", hmMotionArea];

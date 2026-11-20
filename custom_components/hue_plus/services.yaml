@@ -268,6 +268,10 @@ update_scene:
     "actions":
       selector:
         object: {}
+    "recolor":
+      selector:
+        select:
+          options: ["shuffle", "reset"]
     "record_current":
       selector:
         boolean: {}

@@ -180,6 +180,7 @@ async def get_resources(api: BridgeApi, snap: models.Snapshot, data: dict[str, A
             "zigbee_channel": models.bridge_zigbee_channel(snap),
             "time_zone": snap.config.get("timezone"),
             "name": snap.config.get("name"),
+            "ip_address": snap.config.get("ipaddress"),
             "internet": snap.config.get("internetservices"),
             "backup": snap.config.get("backup"),
         },
@@ -425,9 +426,15 @@ async def create_scene(api, snap, data):
 @action("update_scene")
 async def update_scene(api, snap, data):
     scene = resolve(snap.scene, data["scene"], "scene")
-    if data.get("record_current") and data.get("actions") is not None:
-        raise ValueError("Give either actions or record_current, not both")
-    if data.get("record_current"):
+    if sum(1 for key in ("record_current", "recolor") if data.get(key)) + (data.get("actions") is not None) > 1:
+        raise ValueError("Give one of actions, record_current or recolor")
+    if data.get("recolor"):
+        kind = scene.get("group", {}).get("rtype")
+        group = next((g for g in models.groups(snap, kind) if g["id"] == scene["group"]["rid"]), None) if kind in ("room", "zone") else None
+        if group is None:
+            raise ValueError("This scene's room or zone was not found")
+        actions = payloads.scene_recolor(scene, group["lights"], data["recolor"])
+    elif data.get("record_current"):
         # The look of the scene's own lights as they are now (after being adjusted): the same recording create_scene makes.
         wanted = {(a.get("target") or {}).get("rid") for a in scene.get("actions") or []}
         actions = payloads.scene_actions_from_lights([light for light in snap.light if light["id"] in wanted])

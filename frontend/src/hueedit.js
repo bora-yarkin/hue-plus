@@ -350,8 +350,9 @@ function hweDays() {
 }
 
 /* The pieces of the screen: the time (wheels and the fade), Repeat and its days, the lights. */
-function hweTime(box, kind) {
-  box.appendChild(hmLabel(_T("hw_when_label")));
+function hweTime(box, kind, bare) {
+  /* the wizard's page has no label over the wheels (the title says what they are), the edit screen has */
+  if (!bare) box.appendChild(hmLabel(_T("hw_when_label")));
   var group = mk("div", "hm-group");
   group.appendChild(hweWheel(function () { return HW.time; }, function (v) { HW.time = v; refresh(); }));
   if (kind === "wake_up") {

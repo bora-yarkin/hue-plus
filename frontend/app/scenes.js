@@ -553,6 +553,8 @@ function hpSpeedWord(step) {
   return step <= 3 ? _T("app_slow") : step <= 7 ? _T("app_medium") : _T("app_fast");
 }
 
+var HPSCN = {};
+
 function hpScenePage(body, key) {
   var sid = String(key).split("~")[0],
     room = String(key).split("~")[1] || "",
@@ -567,8 +569,10 @@ function hpScenePage(body, key) {
   var cols = (hpSceneInfo(sid).colours || []).map(hpColourCss);
   root.style.setProperty("--sc1", cols[0] || "#8a7a4a");
   root.style.setProperty("--sc2", cols[1] || cols[0] || "#2a2a2c");
+  root.style.setProperty("--sc3", cols[2] || cols[1] || cols[0] || "#2a2a2c");
+  /* What is changed on this page is kept until SAVE, also while a page opened from it (the speed) is shown and this one is drawn again. */
   var dyn = hpIsDynamic(sid),
-    draft = {};
+    draft = HPSCN[sid] || (HPSCN[sid] = {});
   var head = mk("div", "schead", "<span class='big'></span><div class='nm'></div>");
   head.querySelector(".big").appendChild(hpDisc(sid));
   head.querySelector(".nm").textContent = A(sid).name || sid;
@@ -616,25 +620,22 @@ function hpScenePage(body, key) {
         return x.id === hueSceneUid(sid);
       })[0];
       if (!s) return;
-      draft = { speed: s.speed, auto: !!s.auto_dynamic };
+      if (!draft.read) {
+        draft.read = true;
+        draft.saved = s.speed;
+        draft.speed = s.speed;
+        draft.auto = !!s.auto_dynamic;
+      }
       box.appendChild(hmLabel(_T("app_dynamic_scene")));
       box.appendChild(
         hmGroup([
-          sliderRow({
-            name: _T("app_dynamic_speed"),
-            min: 1,
-            max: P.speedSteps,
-            step: 1,
-            get: function () {
-              return P.speedToStep(Math.round(draft.speed * 100));
+          hmRow({
+            title: _T("app_dynamic_speed"),
+            val: function () {
+              var step = P.speedToStep(Math.round(draft.speed * 100));
+              return step + " - " + hpSpeedWord(step);
             },
-            fmt: function (v) {
-              return v + " - " + hpSpeedWord(v);
-            },
-            commit: function (v) {
-              draft.speed = P.stepToSpeed(v) / 100;
-              draft.changed = true;
-            },
+            tap: "app-speed:" + sid,
           }),
           hmRow({
             title: _T("app_auto_play"),
@@ -654,15 +655,17 @@ function hpScenePage(body, key) {
       );
       guardUnsaved({
         dirty: function () {
-          return !!draft.changed;
+          return !!draft.changed || !!draft.recolor;
         },
         discard: function () {
-          draft.changed = false;
+          delete HPSCN[sid];
         },
         save: function (leave) {
-          return hpCall("hue_plus", "update_scene", { scene: hueSceneUid(sid), speed: draft.speed, auto_dynamic: draft.auto }).then(
+          var change = { scene: hueSceneUid(sid), speed: draft.speed, auto_dynamic: draft.auto };
+          if (draft.recolor) change.recolor = draft.recolor;
+          return hpCall("hue_plus", "update_scene", change).then(
             function () {
-              draft.changed = false;
+              delete HPSCN[sid];
               HPSC.loaded = false;
               HPSC.byId = {};
               hpSceneData(function () {});
@@ -679,13 +682,111 @@ function hpScenePage(body, key) {
     });
   var lights = hpSceneLights(sid);
   if (lights.length) {
-    body.appendChild(hmLabel(_T("lights")));
+    /* The Lights title has the Colors button of a moving scene: it gives the scene's colours out to the lights again, in another order (kept until SAVE). */
+    var bar = mk("div", "lbrow lightsbar");
+    var title = mk("div", "lbtitle");
+    title.textContent = _T("lights");
+    bar.appendChild(title);
+    if (dyn && hueplus.has(H(), "update_scene")) {
+      var shuffle = mk("button", "colorsbtn", svg("shuffle") + "<span></span>");
+      shuffle.type = "button";
+      shuffle.querySelector("span").textContent = _T("app_colors");
+      shuffle.addEventListener("click", function () {
+        draft.recolor = "shuffle";
+        toast(_T("app_colors_when_saved"));
+      });
+      bar.appendChild(shuffle);
+    }
+    body.appendChild(bar);
     var tiles = mk("div", "ltiles");
     lights.forEach(function (lid) {
       tiles.appendChild(hpLightTile(lid, room));
     });
     body.appendChild(tiles);
   }
+  /* Reset scene: the palette is given out to the lights in its own order and at its own brightness again (kept until SAVE). */
+  if (dyn && hueplus.has(H(), "update_scene")) {
+    var reset = mk("button", "resetbtn");
+    reset.type = "button";
+    reset.textContent = _T("app_reset_scene");
+    reset.addEventListener("click", function () {
+      draft.recolor = "reset";
+      toast(_T("app_reset_when_saved"));
+    });
+    body.appendChild(reset);
+  }
+  if (isAdmin() && hueplus.has(H(), "delete_scene")) {
+    var del = mk("button", "deletebtn");
+    del.type = "button";
+    del.textContent = _T("hn_delete_scene");
+    del.addEventListener("click", function () {
+      confirmDlg(_T("hn_delete_scene") + ": " + (A(sid).name || sid) + "?", function () {
+        hueSceneRemove(sid).then(function () {
+          delete HPSCN[sid];
+          popBack();
+        });
+      });
+    });
+    body.appendChild(del);
+  }
+}
+
+/* The speed of a moving scene: a short sheet with the twelve steps of the app (kept on the scene's page until SAVE). */
+function hpSpeedPage(body, sid) {
+  hmBox(body);
+  var st = HPSCN[sid],
+    P = HUESCENES;
+  if (!st || !st.read) {
+    body.appendChild(hmCallout(_T("nothing_found")));
+    return;
+  }
+  body.parentNode.classList.add("shortpg");
+  var box = mk("div", "spsheet"),
+    cap = mk("span", "spcap"),
+    val = mk("b", "spval"),
+    track = mk("div", "sptrack", "<div class='spfill'></div><div class='spthumb'></div>"),
+    ticks = mk("div", "spticks");
+  cap.textContent = _T("app_speed").toUpperCase();
+  for (var n = 1; n <= P.speedSteps; n++) ticks.appendChild(mk("i")).textContent = String(n);
+  var note = mk("div", "pintro");
+  note.textContent = _T("app_speed_text");
+  box.appendChild(cap);
+  box.appendChild(val);
+  box.appendChild(track);
+  box.appendChild(ticks);
+  body.appendChild(box);
+  body.appendChild(note);
+  var thumb = track.querySelector(".spthumb"),
+    fill = track.querySelector(".spfill");
+  function step() {
+    return P.speedToStep(Math.round(st.speed * 100));
+  }
+  function paint() {
+    var at = (step() - 1) / (P.speedSteps - 1);
+    thumb.style.left = at * 100 + "%";
+    fill.style.width = at * 100 + "%";
+    val.textContent = step() + " - " + hpSpeedWord(step()) + (step() === P.speedToStep(Math.round(st.saved * 100)) ? " " + _T("app_default_in_brackets") : "");
+  }
+  function from(e) {
+    var r = track.getBoundingClientRect(),
+      at = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)),
+      next = 1 + Math.round(at * (P.speedSteps - 1));
+    st.speed = P.stepToSpeed(next) / 100;
+    st.changed = true;
+    paint();
+  }
+  track.addEventListener("pointerdown", function (e) {
+    track.setPointerCapture(e.pointerId);
+    from(e);
+    track.onpointermove = from;
+    track.onpointerup = track.onpointercancel = function () {
+      track.onpointermove = null;
+    };
+  });
+  paint();
+  HC.onDone = function () {
+    popBack();
+  };
 }
 
 /* The lights a scene sets: the lights of its room that the bridge lists among its actions. */
@@ -704,6 +805,8 @@ function hpRoomOfScene(sid) {
     return A(g).friendly_name === a.group_name && A(g).hue_type === a.group_type;
   })[0];
 }
+
+HP_PAGES["app-speed"] = ["app_dynamic_speed", "tune", hpSpeedPage];
 
 HC.registerPage(
   "app-scene",
