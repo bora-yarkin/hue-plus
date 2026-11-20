@@ -568,7 +568,8 @@ function hpScenePage(body, key) {
   root.style.setProperty("--sc1", cols[0] || "#8a7a4a");
   root.style.setProperty("--sc2", cols[1] || cols[0] || "#2a2a2c");
   var dyn = hpIsDynamic(sid),
-    draft = {};
+    draft = {},
+    recolor = null;
   var head = mk("div", "schead", "<span class='big'></span><div class='nm'></div>");
   head.querySelector(".big").appendChild(hpDisc(sid));
   head.querySelector(".nm").textContent = A(sid).name || sid;
@@ -654,15 +655,19 @@ function hpScenePage(body, key) {
       );
       guardUnsaved({
         dirty: function () {
-          return !!draft.changed;
+          return !!draft.changed || !!recolor;
         },
         discard: function () {
           draft.changed = false;
+          recolor = null;
         },
         save: function (leave) {
-          return hpCall("hue_plus", "update_scene", { scene: hueSceneUid(sid), speed: draft.speed, auto_dynamic: draft.auto }).then(
+          var change = { scene: hueSceneUid(sid), speed: draft.speed, auto_dynamic: draft.auto };
+          if (recolor) change.recolor = recolor;
+          return hpCall("hue_plus", "update_scene", change).then(
             function () {
               draft.changed = false;
+              recolor = null;
               HPSC.loaded = false;
               HPSC.byId = {};
               hpSceneData(function () {});
@@ -679,12 +684,38 @@ function hpScenePage(body, key) {
     });
   var lights = hpSceneLights(sid);
   if (lights.length) {
-    body.appendChild(hmLabel(_T("lights")));
+    /* The Lights title has the Colors button of a moving scene: it gives the scene's colours out to the lights again, in another order (kept until SAVE). */
+    var bar = mk("div", "lbrow lightsbar");
+    var title = mk("div", "lbtitle");
+    title.textContent = _T("lights");
+    bar.appendChild(title);
+    if (dyn && hueplus.has(H(), "update_scene")) {
+      var shuffle = mk("button", "colorsbtn", svg("shuffle") + "<span></span>");
+      shuffle.type = "button";
+      shuffle.querySelector("span").textContent = _T("app_colors");
+      shuffle.addEventListener("click", function () {
+        recolor = "shuffle";
+        toast(_T("app_colors_when_saved"));
+      });
+      bar.appendChild(shuffle);
+    }
+    body.appendChild(bar);
     var tiles = mk("div", "ltiles");
     lights.forEach(function (lid) {
       tiles.appendChild(hpLightTile(lid, room));
     });
     body.appendChild(tiles);
+  }
+  /* Reset scene: the palette is given out to the lights in its own order and at its own brightness again (kept until SAVE). */
+  if (dyn && hueplus.has(H(), "update_scene")) {
+    var reset = mk("button", "resetbtn");
+    reset.type = "button";
+    reset.textContent = _T("app_reset_scene");
+    reset.addEventListener("click", function () {
+      recolor = "reset";
+      toast(_T("app_reset_when_saved"));
+    });
+    body.appendChild(reset);
   }
 }
 

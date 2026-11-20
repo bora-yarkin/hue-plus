@@ -611,6 +611,10 @@
           "name": "Actions",
           "description": "New actions as the bridge writes them."
         },
+        "recolor": {
+          "name": "Recolor",
+          "description": "Gives the palette of a moving scene out again to every light of its room or zone: shuffle mixes the colours (the Hue app's Colors button), reset hands them out in the palette's order at its own brightness (Reset scene)."
+        },
         "record_current": {
           "name": "Record current",
           "description": "Records how the scene's lights look right now as its actions (after adjusting them), instead of giving actions."

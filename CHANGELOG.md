@@ -4,6 +4,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+### Added
+- **The scene settings page has the app's Colors and Reset scene** for a moving scene. A scene from the Hue gallery has a palette of five colours that the bridge gives out to the lights it lists, so a light the scene does not list (the room has more lights than the scene has actions) keeps one static colour. *Colors* gives the palette out again to every light of the room in another order, *Reset scene* in the palette's own order and brightness; both are kept until SAVE. `update_scene` takes `recolor` (shuffle or reset) for it.
+
 ### Changed
 - **Switch pages compared with the app's screens again**: Smart on/off is only on the Press page (it was also on Switch settings, and the scene cycle page had a switch for it where the app has a row that opens the Smart on/off page); a press that is a scene cycle shows its list of presses on the Press page itself; the name of a switch has its pencil; Selected lights is a title with a pencil; Button controls has the question, the label and the description of Lights; the Press options have the app's round icons; a single scene shows "All Lights". Not yet: the app's Automations choice under Button controls, and the Bright and Last on state suggestions of the scene choice.
 
