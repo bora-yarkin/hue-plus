@@ -708,7 +708,7 @@
 
   var PAGES = {};
   /* The pages the app opens as a popup over the page behind (it slides up from the bottom, with an X and DONE or SAVE): a switch and what its buttons do, a light's settings, a scene's. The rest are pushed from the right, with an arrow. */
-  var MODAL = { "app-rename": 1, "app-devinfo": 1, "app-btnctl": 1, "app-btnlights": 1, "hue-ed-lights": 1, "hue-ed-fade": 1, "hue-switch": 1, "hue-button": 1, "hue-press": 1, "hue-cycle": 1, "hue-time": 1, "hue-tslot": 1, "hue-cslot": 1, "hue-pick-scene": 1, "hue-light": 1, "hue-pw": 1, "hue-fn": 1, "hue-or": 1, "hue-od": 1, "hue-perf": 1, "hue-end": 1, "hue-escene": 1, "app-scene": 1, "app-press": 1, "app-smart": 1, "hue-bridge": 1, "hue-area": 1, "hue-marea": 1, "hue-group": 1, "hue-routine": 1, "hue-bname": 1, "hue-gname": 1, "hue-mname": 1, "hue-zch": 1, "app-devinfo": 1, "app-areaadd": 1, "app-place": 1, "app-balance": 1, "app-syncarea": 1 };
+  var MODAL = { "app-rename": 1, "app-devinfo": 1, "app-btnctl": 1, "app-btnlights": 1, "hue-ed-lights": 1, "hue-ed-fade": 1, "hue-ed-bri": 1, "hue-switch": 1, "hue-button": 1, "hue-press": 1, "hue-cycle": 1, "hue-time": 1, "hue-tslot": 1, "hue-cslot": 1, "hue-pick-scene": 1, "hue-light": 1, "hue-pw": 1, "hue-fn": 1, "hue-or": 1, "hue-od": 1, "hue-perf": 1, "hue-end": 1, "hue-escene": 1, "app-scene": 1, "app-press": 1, "app-smart": 1, "hue-bridge": 1, "hue-area": 1, "hue-marea": 1, "hue-group": 1, "hue-routine": 1, "hue-bname": 1, "hue-gname": 1, "hue-mname": 1, "hue-zch": 1, "app-devinfo": 1, "app-areaadd": 1, "app-place": 1, "app-balance": 1, "app-syncarea": 1 };
   var LAYERS = []; /* {root, body, key, list, popguard, check, done}, the first opened first */
   var SHEET = null; /* the layer on top, while there is one */
   var SESSION = {}; /* what the pages ask HC.sheet for: it changes whenever the pages close or the tab changes, which is when what they read is read again */
@@ -808,9 +808,12 @@
     CHECK = null;
     layer.list.length = 0;
     SHEET_LIST = layer.list;
-    okb.style.display = modal ? "" : "none";
+    /* Bridge settings has no DONE or SAVE in the app: only the X. */
+    okb.style.display = modal && !/^hue-bridge$/.test(String(key).split(":")[0]) ? "" : "none";
     root.querySelector(".tt").textContent = title(p.def, p.id);
-    var stacked = (LAYERS.length > 1 && !root.classList.contains("subpg")) || !modal;
+    /* The first page of a flow that the app opens as a popup (add devices, a new automation, a MotionAware area) has an X, as in the app; the pages after it an arrow. */
+    var opens = /^(app-adddev|hue-newauto|hue-mw-intro|hue-add-scene)$/.test(String(key).split(":")[0]) && LAYERS.length === 1;
+    var stacked = !opens && ((LAYERS.length > 1 && !root.classList.contains("subpg")) || !modal);
     root.querySelector(".back").style.display = stacked ? "" : "none";
     root.querySelector(".x").style.display = stacked ? "none" : "";
     layer.body.innerHTML = "";
@@ -995,6 +998,10 @@
     onHass: null,
     editLights: function () {
       toast(T("unavailable"));
+    },
+    /* Opens a page by its key, as a tap on a row does: the test pages use it to draw every screen. */
+    open: function (key, push) {
+      showPopup(key, push !== false);
     },
   };
 

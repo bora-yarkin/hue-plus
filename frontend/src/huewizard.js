@@ -138,16 +138,29 @@ function hwMinutesText(n) {
 function hwNamePage(b) {
   if (!hwOpen(b, "hue-wz-name")) return;
   b.appendChild(hmTitle(HW.icon || "edit", HW.nameHeading));
-  var w = mk("div", "sqw pane"),
-    inp = mk("input", "sq");
+  var w = mk("div", "hw-field"),
+    lab = mk("span", "hw-flabel"),
+    inp = mk("input", "hw-input"),
+    clr = mk("button", "hw-clear");
+  lab.textContent = _T("hw_name").toUpperCase();
   inp.type = "text";
   inp.maxLength = 32;
-  inp.placeholder = _T("hw_name");
   inp.value = HW.name || "";
+  inp.setAttribute("aria-label", _T("hw_name"));
   inp.addEventListener("input", function () {
     HW.name = inp.value;
   });
+  clr.type = "button";
+  clr.innerHTML = svg("close");
+  clr.setAttribute("aria-label", _T("hw_clear"));
+  clr.addEventListener("click", function () {
+    inp.value = "";
+    HW.name = "";
+    inp.focus();
+  });
+  w.appendChild(lab);
   w.appendChild(inp);
+  w.appendChild(clr);
   b.appendChild(w);
   b.appendChild(
     hwNext(HW.last === "hw_save" ? _T("hw_save") : _T("hn_next"), function () {
@@ -285,7 +298,7 @@ function hwAutomationState(kind, x) {
       startType: ext.start_at ? hwPointType(ext.start_at) : "time",
       until: hwClock(ext.end_at),
       untilType: ext.end_at ? hwPointType(ext.end_at) : "none",
-      days: (when.recurrence_days || ext.recurrence_days || HW_WEEK).slice(),
+      days: (when.recurrence_days || ext.recurrence_days || (!x && kind === "wake_up" ? HW_WEEK.slice(0, 5) : HW_WEEK)).slice(),
       repeat: !x || kind !== "wake_up" || !!when.recurrence_days,
       minutes: c.fade_in_duration ? c.fade_in_duration.seconds / 60 : c.fade_out_duration ? c.fade_out_duration.seconds / 60 : kind === "go_to_sleep" ? 15 : 30,
       brightness: c.end_brightness ? Math.round(c.end_brightness) : 100,
@@ -479,7 +492,10 @@ function hwWhenPage(b) {
   if (!hwOpen(b, "hue-wz-when")) return;
   var kind = HW.kind;
   b.appendChild(hmTitle("clock", _T(kind === "wake_up" ? "hw_when_do_you_want_to_wake_up" : kind === "go_to_sleep" ? "hw_when_do_you_want_to_go_to_sleep" : "hw_when_do_you_want_to_schedule")));
-  hwWhenRows(b);
+  if (kind === "wake_up" || kind === "go_to_sleep") {
+    hweTime(b, kind);
+    hweRepeat(b, kind);
+  } else hwWhenRows(b);
   b.appendChild(
     hwNext(null, function () {
       if (hwWhenValid()) hwAdvance();
@@ -642,6 +658,7 @@ function hwSettingsRows(b) {
     styles = wake ? ["sunrise", "basic"] : ["sunset", "basic"];
   var rows = [
     hmRow({
+      disc: hwStyleDisc(HW.style),
       title: _T("hw_style"),
       val: function () {
         return hwStyleText(HW.style);
@@ -696,42 +713,46 @@ function hwSettingsRows(b) {
       })
     );
   }
-  b.appendChild(hmGroup(rows));
   if (wake) {
-    b.appendChild(
-      sliderRow({
-        icon: "bright",
-        name: _T("hw_maximum_brightness"),
-        min: 1,
-        max: 100,
-        step: 1,
-        get: function () { return HW.brightness; },
-        fmt: function (v) { return v + "%"; },
-        on: function () { return true; },
-        commit: function (v) { HW.brightness = v; },
+    /* the app has the three in one card: style, maximum brightness (a row that opens its slider) and when the lights go off */
+    rows.push(
+      hmRow({
+        title: _T("hw_maximum_brightness"),
+        val: function () {
+          return HW.brightness + "%";
+        },
+        tap: function () {
+          showPopup("hue-ed-bri", true);
+        },
+      }),
+      hmRow({
+        title: _T("hw_turn_lights_off"),
+        val: function () {
+          return HW.offAfter ? hwMinutesText(HW.offAfter) : _T("hw_no");
+        },
+        tap: function () {
+          hwChoose({
+            hint: _T("hw_turn_lights_off_hint"),
+            options: [0, 5, 10, 15, 30, 60].map(function (m) {
+              return { value: m, title: m ? hwMinutesText(m) : _T("hw_no") };
+            }),
+            get: function () { return HW.offAfter; },
+            set: function (v) { HW.offAfter = v; },
+          });
+        },
       })
     );
-    b.appendChild(
-      hmGroup([
-        hmRow({
-          title: _T("hw_turn_lights_off"),
-          val: function () {
-            return HW.offAfter ? hwMinutesText(HW.offAfter) : _T("hw_no");
-          },
-          tap: function () {
-            hwChoose({
-              hint: _T("hw_turn_lights_off_hint"),
-              options: [0, 5, 10, 15, 30, 60].map(function (m) {
-                return { value: m, title: m ? hwMinutesText(m) : _T("hw_no") };
-              }),
-              get: function () { return HW.offAfter; },
-              set: function (v) { HW.offAfter = v; },
-            });
-          },
-        }),
-      ])
-    );
   }
+  b.appendChild(hmGroup(rows));
+}
+
+/* The picture of a style the app puts at the end of its row: the sky of a sunrise or a sunset, or a plain light. */
+function hwStyleDisc(style) {
+  return style === "sunrise"
+    ? "linear-gradient(180deg,#3d5fd3 0%,#e98a70 58%,#f6d6a8 100%)"
+    : style === "sunset"
+      ? "linear-gradient(180deg,#f2b05c 0%,#d4572a 60%,#3b2440 100%)"
+      : "radial-gradient(circle,#fff6d6 0%,#e9c77a 100%)";
 }
 
 /* Settings of wake up and go to sleep. */

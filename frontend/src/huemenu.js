@@ -102,16 +102,18 @@ function hmGroup(rows) {
    An arrow shows when a tap opens another page (a popup key); a toggle or a tick shows at the end of the row. */
 function hmRow(o) {
   var key = typeof o.tap === "string" ? o.tap : null,
-    r = mk("div", "hm-row" + (o.tap || o.toggle ? " tap" : "") + (o.danger ? " danger" : "") + (o.stack ? " stack" : ""));
+    r = mk("div", "hm-row" + (o.tap || o.toggle ? " tap" : "") + (o.danger ? " danger" : "") + (o.stack ? " stack" : "") + (o.blue ? " blueic" : ""));
   r.innerHTML =
     (o.icon ? "<span class='hm-i'>" + svg(o.icon) + "</span>" : "") +
     "<span class='hm-t'><span class='hm-n'></span><span class='hm-s'></span></span><span class='hm-v'></span>" +
+    (o.disc ? "<span class='hm-disc'></span>" : "") +
     (o.toggle ? "<span class='hm-sw'><i></i></span>" : "") +
     (o.check ? "<span class='hm-ck'>" + svg("check") + "</span>" : "") +
     (key ? "<span class='hm-c'>" + svg("chev") + "</span>" : "");
   var nm = r.querySelector(".hm-n"),
     sb = r.querySelector(".hm-s"),
     vl = r.querySelector(".hm-v");
+  if (o.disc) r.querySelector(".hm-disc").style.background = o.disc;
   if (o.tap || o.toggle) {
     r.setAttribute("role", o.toggle ? "switch" : o.check ? "radio" : "button");
     r.tabIndex = 0;
@@ -2246,7 +2248,13 @@ function hpButtonLightsPage(b, id) {
     var groups = hpkGroups(r),
       state = hpkStateOf(((f.acc.where || {})[f.btn.id]) || [], groups),
       pick = mk("div");
-    box.appendChild(mkHint(_T("hpk_select_lights_for")));
+    var bname = typeof window.hpButtonLook === "function" ? window.hpButtonLook(f.acc, f.btn).name.toLowerCase() : _T("hpk_this_button");
+    var hint = mkHint(_T("hpk_select_lights_for") + " ");
+    var bold = mk("b");
+    bold.textContent = bname;
+    hint.appendChild(bold);
+    hint.appendChild(document.createTextNode("."));
+    box.appendChild(hint);
     box.appendChild(pick);
     hpkPicker(pick, { groups: groups, state: state });
     /* DONE is in the bar of the page, as in the app. */

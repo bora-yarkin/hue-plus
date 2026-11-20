@@ -556,5 +556,50 @@ function hweSave(leave) {
 }
 
 HP_PAGES["hue-routine"] = ["hw_edit_automation", "clock", hwEditPage];
+/* Maximum brightness: a short sheet with its slider, as the app opens it. */
+function hweBriPage(b) {
+  hmBox(b);
+  if (!HW) {
+    b.appendChild(hmCallout(_T("nothing_found")));
+    return;
+  }
+  if (b.parentNode) b.parentNode.classList.add("shortpg");
+  var head = mk("div", "hwe-fade", "<div class='hwe-fl'><span></span><b></b></div><div></div>"),
+    track = mk("div", "hwe-track", "<div class='hwe-fill2'></div><div class='hwe-thumb'></div>"),
+    wrap = mk("div", "hwe-slider"),
+    group = mk("div", "hm-group");
+  head.querySelector("span").textContent = _T("hw_maximum_brightness").toUpperCase();
+  wrap.appendChild(track);
+  group.appendChild(head);
+  group.appendChild(wrap);
+  b.appendChild(group);
+  var fill = track.querySelector(".hwe-fill2"),
+    thumb = track.querySelector(".hwe-thumb");
+  function paint() {
+    var at = (HW.brightness - 1) / 99;
+    thumb.style.left = at * 100 + "%";
+    fill.style.width = at * 100 + "%";
+    head.querySelector("b").textContent = HW.brightness + "%";
+  }
+  function from(e) {
+    var r = track.getBoundingClientRect();
+    HW.brightness = Math.max(1, Math.min(100, Math.round(1 + Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * 99)));
+    paint();
+  }
+  track.addEventListener("pointerdown", function (e) {
+    track.setPointerCapture(e.pointerId);
+    from(e);
+    track.onpointermove = from;
+    track.onpointerup = track.onpointercancel = function () {
+      track.onpointermove = null;
+    };
+  });
+  paint();
+  HC.onDone = function () {
+    popBack();
+  };
+}
+
+HP_PAGES["hue-ed-bri"] = ["hw_maximum_brightness", "bright", hweBriPage];
 HP_PAGES["hue-ed-lights"] = ["hw_edit_lights", "lamp", hweLightsPage];
 HP_PAGES["hue-ed-fade"] = ["hw_fade_duration", "clock", hweFadePage];

@@ -74,7 +74,7 @@ test("a new routine starts with the Hue app's own values and a name that is not 
   assert.equal(wake.minutes, 30);
   assert.equal(wake.brightness, 100);
   assert.equal(wake.style, "sunrise");
-  assert.equal(wake.days.length, 7);
+  assert.equal(wake.days.length, 5);
   const sleep = w.hwAutomationState("go_to_sleep", null);
   assert.equal(sleep.style, "sunset");
   assert.equal(sleep.minutes, 15);
