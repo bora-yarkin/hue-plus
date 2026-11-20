@@ -805,6 +805,13 @@ var PLUGIN_STRINGS = {
   "app_speed": "Speed",
   "app_default_in_brackets": "(Default)",
   "app_speed_text": "Drag to change the default speed at which your lights cycle through the colors of the scene.",
+  "hn_scene_settings": "Scene settings",
+  "hn_default_speed": "Speed it starts with",
+  "hn_colors_sub": "In another order",
+  "hn_colors_done": "The colors are given out again",
+  "hn_reset_sub": "In its own order",
+  "hn_reset_question": "Reset this scene?",
+  "hn_reset_done": "The scene is reset",
   "app_colors": "Colors",
   "app_colors_when_saved": "The colors are given out again when you save",
   "app_reset_scene": "Reset scene",
@@ -847,6 +854,7 @@ HUE_PLUS_CSS += "\n/* Edit automation (hueedit.js), drawn from the app's screen 
 HUE_PLUS_CSS += "\n.hwe-lcard{background:var(--f-raise,var(--tile,#232428));padding-bottom:18px}\n.hwe-lcard .selroom{margin:0 16px}\n.hwe-lh{padding:20px 16px 12px}\n.hwe-wheel+.hm-row{border-top:1px solid var(--f-line,rgba(255,255,255,.08))}\n.hwe-col{box-sizing:border-box}\n.hwe-opt{transform-origin:center;transition:opacity .1s}\n";
 HUE_PLUS_CSS += "\n.hwe-fade{display:grid;grid-template-columns:1fr 1fr;text-align:center;padding:18px 16px 4px}\n.hwe-fl,.hwe-fr{text-align:center}\n.hwe-track{height:8px;border-radius:4px}\n.hwe-fill{border-radius:4px}\n.hwe-thumb{width:18px;height:18px;margin:-9px 0 0 -9px}\n";
 HUE_PLUS_CSS += "\n/* Wizard pages, as the app draws them: cards with rounded corners, a small Next */\n.pg.wizpg .hm .hm-group,.pg.wizpg .hpk-list{margin-left:16px;margin-right:16px;border-radius:14px;overflow:hidden}\n.pg.wizpg .hm .hm-actions .hm-btn{min-width:72px;padding:8px 20px;font-size:10px}\n.pg.wizpg .hm .hm-actions{padding:14px 0}\n.pg.wizpg .hm .hm-title+.hm-group{margin-top:40px}\n.hm-disc{flex:none;width:46px;height:46px;box-shadow:0 2px 6px rgba(0,0,0,.35);border-radius:50%;margin-left:8px}\n.hwe-fill2{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:linear-gradient(90deg,#2a4a9a,var(--acc,#2f6bff))}\n.hw-field{position:relative;margin:0 16px;border:1.5px solid rgba(255,255,255,.45);border-radius:6px;background:var(--f-raise,#2a2b30);padding:20px 44px 8px 12px}\n.hw-flabel{position:absolute;left:12px;top:6px;font-size:8px;font-weight:600;letter-spacing:.06em;color:var(--ink2,#9a9ca3)}\n.hw-input{width:100%;border:0;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:500;outline:none;padding:0}\n.hw-clear{position:absolute;right:10px;top:50%;margin-top:-12px;width:24px;height:24px;border:0;background:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}\n.hw-clear svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}\n";
+HUE_PLUS_CSS += "\n/* Pieces the pages of this plugin draw in the Hue app's way (round pictures at the ends of rows, round marks for a choice, cards, tiles, wheel labels) */\n.hm-row.discic .hm-i{width:44px;height:44px;border-radius:50%;background:#0d0e10;box-shadow:0 2px 5px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;margin-right:2px}\n.hm-row.discic .hm-i svg{width:20px;height:20px}\n.hm .hm-row.keepchev .hm-c{display:flex!important}\n.hm .hm-row.good .hm-ck{width:22px;height:22px;border-radius:50%;background:#7fcc5c;color:#1c1d21;align-items:center;justify-content:center}\n.hm .hm-row.good .hm-ck svg{width:13px;height:13px;stroke-width:2.6}\n.hm .hm-row.radio .hm-ck{order:-1;opacity:1;width:24px;height:24px;margin-right:14px;border-radius:50%;border:2px solid #6c6d74;align-items:center;justify-content:center;display:flex}\n.hm .hm-row.radio .hm-ck svg{width:13px;height:13px;opacity:0;stroke:#fff;stroke-width:3}\n.hm .hm-row.radio.checked .hm-ck{background:#2f6bff;border-color:#2f6bff;color:#fff}\n.hm .hm-row.radio.checked .hm-ck svg{opacity:1}\n.hm-group.cards{background:none!important;box-shadow:none;margin-left:16px;margin-right:16px;overflow:visible;border-radius:0}\n.hm-group.cards .hm-row{background:var(--f-raise,#26272b);border-radius:14px;margin-bottom:12px;min-height:78px}\n.hm-group.cards .hm-row:before{display:none}\n.hm-group.cards .hm-ck{display:none}\n.hm-edisc{flex:none;width:36px;height:36px;border-radius:50%;background:#0d0e10;display:flex;align-items:center;justify-content:center;margin-left:8px}\n.hm-edisc svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round}\n.mwcard{margin:8px 16px;border-radius:14px;background:var(--f-raise,#26272b);overflow:hidden}\n.mwc-h{padding:14px 16px 4px}.mwc-h b{display:block;font-size:12px;font-weight:600}.mwc-h i{display:block;font-style:normal;font-size:10px;color:var(--ink2)}\n.mwtiles{padding:12px 12px 14px!important}\n.mwtiles .hpk-tile{width:100px;height:130px}\n.hwe-wheel.dur{position:relative}\n.hwe-wheel.dur:before,.hwe-wheel.dur:after{position:absolute;top:50%;margin-top:-7px;font-size:10px;font-weight:600;z-index:2;pointer-events:none}\n.hwe-wheel.dur:before{content:attr(data-h);left:calc(50% - 52px + 20px)}\n.hwe-wheel.dur:after{content:attr(data-m);left:calc(50% + 52px + 20px)}\n.hm-ldisc{flex:none;width:46px;height:46px;border-radius:50%;margin-right:12px}\n";
 
 /* What Hue Plus offers, read from Home Assistant's registry and states (so a page shows only what exists): the bridge's entities, the lights, what belongs to one light, the
  updates, and the bridge's own data (a service that answers). It was the dashboard's `Integrations.hueplus`; now it is this plugin's. */
@@ -3031,6 +3039,19 @@ function hmScenePick(b, id) {
     var scenes = hmBtnScenes(r, hmBtnTargets(r, f.acc, f.btn)),
       current = hmPressScenes(f.spec)[0];
     if (!scenes.length) box.appendChild(hmCallout(_T("nothing_found")));
+    /* the entity of a bridge scene, to play it as a preview */
+    function entityOf(sceneId) {
+      return Object.keys(H().entities).filter(function (e) {
+        return H().entities[e].unique_id === sceneId;
+      })[0];
+    }
+    function choose(what, sceneId) {
+      hmStagePress(k, f, what);
+      var ent = sceneId && HM_PREVIEW ? entityOf(sceneId) : null;
+      if (ent) call("scene", "turn_on", { entity_id: ent });
+      popBack();
+      popBack();
+    }
     box.appendChild(
       hmGroup(
         scenes.map(function (s) {
@@ -3041,16 +3062,78 @@ function hmScenePick(b, id) {
               return current === s.id;
             },
             tap: function () {
-              hmStagePress(k, f, { action: "scene", scene: s.id, with_off: hmPressWithOff(f.spec) });
-              popBack();
-              popBack();
+              choose({ action: "scene", scene: s.id, with_off: hmPressWithOff(f.spec) }, s.id);
             },
           });
         })
       )
     );
+    /* a new scene for the room, the other things a press can do with a scene's place, and the preview */
+    var more = [
+      hmRow({
+        icon: "plus",
+        title: _T("hn_add_a_scene"),
+        tap: function () {
+          hueStartMaker("home");
+        },
+      }),
+    ];
+    var bright = scenes.filter(function (s) {
+      return /^bright$/i.test(s.name);
+    })[0];
+    if (bright)
+      more.push(
+        hmRow({
+          icon: "bright",
+          title: _T("app_bright"),
+          check: function () {
+            return current === bright.id;
+          },
+          tap: function () {
+            choose({ action: "scene", scene: bright.id, with_off: hmPressWithOff(f.spec) }, bright.id);
+          },
+        })
+      );
+    more.push(
+      hmRow({
+        icon: "power",
+        title: _T("app_off"),
+        tap: function () {
+          choose({ action: "all_off" });
+        },
+      }),
+      hmRow({
+        icon: "minus",
+        title: _T("hm_do_nothing"),
+        tap: function () {
+          choose({ action: "do_nothing" });
+        },
+      })
+    );
+    box.appendChild(hmLabel(_T("app_suggestions")));
+    box.appendChild(hmGroup(more));
+    box.appendChild(
+      hmGroup([
+        hmRow({
+          title: _T("app_show_preview"),
+          sub: _T("app_show_preview_sub"),
+          toggle: {
+            get: function () {
+              return HM_PREVIEW;
+            },
+            set: function () {
+              HM_PREVIEW = !HM_PREVIEW;
+              refresh();
+            },
+          },
+        }),
+      ])
+    );
   });
 }
+
+/* Show preview of the scene choice: a scene that is chosen plays in its room at once. */
+var HM_PREVIEW = false;
 
 /* A cycle of scenes: the order is the order of the presses. The draft is kept here and written when it is saved, since a cycle needs at least two scenes. */
 var HM_CYCLE = null;
@@ -7904,6 +7987,92 @@ function hueSceneToggle(id) {
   else hueSceneStart(id);
 }
 
+
+/* The scene settings of the bridge for a moving scene (the speed it starts with, Auto-play, Colors and Reset scene), written with update_scene. */
+function hueSceneBridge(b, id) {
+  var P = HUESCENES,
+    uid = hueSceneUid(id),
+    st = { speed: 0.5, auto: false };
+  function save(change, done) {
+    return Promise.resolve(callRaw("hue_plus", "update_scene", Object.assign({ scene: uid }, change))).then(
+      function () {
+        if (done) toast(done);
+      },
+      function () {
+        toast(_T("hn_couldn_t_save_the_scene"));
+      }
+    );
+  }
+  b.appendChild(sep(_T("hn_scene_settings"), "tune"));
+  hueplus.resources(["scenes"]).then(function (r) {
+    var s = ((r || {}).scenes || []).filter(function (x) {
+      return x.id === uid;
+    })[0];
+    if (!s) return;
+    st.speed = s.speed;
+    st.auto = !!s.auto_dynamic;
+    refresh();
+  }, function () {});
+  b.appendChild(
+    sliderRow({
+      icon: "tune",
+      name: _T("hn_default_speed"),
+      min: 1,
+      max: P.speedSteps,
+      step: 1,
+      get: function () {
+        return P.speedToStep(Math.round(st.speed * 100));
+      },
+      fmt: function (v) {
+        return v + " / " + P.speedSteps;
+      },
+      commit: function (v) {
+        st.speed = P.stepToSpeed(v) / 100;
+        save({ speed: st.speed });
+      },
+    })
+  );
+  b.appendChild(
+    pill("play", _T("app_auto_play"), {
+      sub: function () {
+        return _T("app_auto_play_sub");
+      },
+      on: function () {
+        return st.auto;
+      },
+      tap: function () {
+        st.auto = !st.auto;
+        save({ auto_dynamic: st.auto });
+        refresh();
+      },
+    })
+  );
+  var g = mk("div", "gridl g2");
+  g.appendChild(
+    pill("swap", _T("app_colors"), {
+      sub: function () {
+        return _T("hn_colors_sub");
+      },
+      tap: function () {
+        save({ recolor: "shuffle" }, _T("hn_colors_done"));
+      },
+    })
+  );
+  g.appendChild(
+    pill("restart", _T("app_reset_scene"), {
+      sub: function () {
+        return _T("hn_reset_sub");
+      },
+      tap: function () {
+        confirmDlg(_T("hn_reset_question"), function () {
+          save({ recolor: "reset" }, _T("hn_reset_done"));
+        });
+      },
+    })
+  );
+  b.appendChild(g);
+}
+
 /* The popup of a Hue scene. A static scene has only what a classic scene has (importing it as one, hiding it); a live one has: brightness (follows the room live), speed (starts the scene again at the new speed), play (live) and freeze (a still picture). */
 function hueScenePopup(b, id, room) {
   var P = HUESCENES,
@@ -8024,6 +8193,8 @@ function hueScenePopup(b, id, room) {
       })
     );
   }
+  /* What the bridge keeps of a moving scene, as the Hue app's scene settings have it: the speed it starts with, whether it plays by itself, and the two buttons that give its colours to the lights again. */
+  if (isEditing() && isAdmin() && hueplus.has(H(), "update_scene") && !stat) hueSceneBridge(b, id);
   if (isEditing() && isAdmin() && hueplus.has(H(), "delete_scene"))
     b.appendChild(
       pill("trash", _T("hn_delete_scene"), {
@@ -8171,9 +8342,11 @@ function hueAddScenePage(b) {
       ["cam", "hn_from_photo", "hn_from_photo_sub", "photo"],
     ];
   /* the title and the line under it, as the app has them, then the ways to make a scene as tiles */
-  var heading = mk("div", "addtitle");
-  heading.textContent = _T("hn_add_a_scene");
-  b.appendChild(heading);
+  if (b.parentNode && b.parentNode.querySelector && b.parentNode.querySelector(".pbar")) {
+    var heading = mk("div", "addtitle");
+    heading.textContent = _T("hn_add_a_scene");
+    b.appendChild(heading);
+  }
   b.appendChild(mkHint(_T("hn_add_a_scene_hint")));
   items.forEach(function (it) {
     grid.appendChild(

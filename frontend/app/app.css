@@ -614,8 +614,6 @@ body{width:100%;height:100%}
 .lbtitle{flex:1;padding:16px 18px 10px;font-size:11.5px;font-weight:600}
 .btile b{font-size:10px;white-space:nowrap;padding:0 4px}
 .pintro.bigask{padding:44px 18px 22px;font-size:13.5px}
-.hm-row.discic .hm-i{width:44px;height:44px;border-radius:50%;background:#0d0e10;box-shadow:0 2px 5px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;margin-right:2px}
-.hm-row.discic .hm-i svg{width:20px;height:20px}
 .pintro.smart{font-size:11.5px;line-height:1.45;padding:20px 18px 6px}
 .lightsbar{display:flex;align-items:center;justify-content:space-between;padding-right:16px}
 .colorsbtn{display:flex;align-items:center;gap:8px;border:0;border-radius:18px;background:#3a3b40;color:#fff;padding:9px 14px;font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
@@ -641,9 +639,6 @@ body{width:100%;height:100%}
 .spticks i{font-style:normal;width:12px;text-align:center}
 .pg.scenepg .pintro{padding:18px 18px}
 .pg.scenepg .pill.slide{background:none}
-.hm .hm-row.keepchev .hm-c{display:flex!important}
-.hm .hm-row.good .hm-ck{width:22px;height:22px;border-radius:50%;background:#7fcc5c;color:#1c1d21;align-items:center;justify-content:center}
-.hm .hm-row.good .hm-ck svg{width:13px;height:13px;stroke-width:2.6}
 /* the pages of the MotionAware wizard that have the room above their card */
 .pg.wizpg.artpg .pbar{position:relative;padding-bottom:330px}
 .mwart{position:absolute;left:0;right:0;top:64px;display:flex;justify-content:center;pointer-events:none}
@@ -652,36 +647,18 @@ body{width:100%;height:100%}
 .pg.wizpg.artpg .notec{font-size:11px;line-height:1.5;padding:4px 18px}
 .pg.wizpg.artpg .hm .hm-tt b{font-size:17px}
 /* a choice as the app shows it: a round mark in front of the row, filled and ticked when chosen */
-.hm .hm-row.radio .hm-ck{order:-1;opacity:1;width:24px;height:24px;margin-right:14px;border-radius:50%;border:2px solid #6c6d74;align-items:center;justify-content:center;display:flex}
-.hm .hm-row.radio .hm-ck svg{width:13px;height:13px;opacity:0;stroke:#fff;stroke-width:3}
-.hm .hm-row.radio.checked .hm-ck{background:#2f6bff;border-color:#2f6bff;color:#fff}
-.hm .hm-row.radio.checked .hm-ck svg{opacity:1}
 /* the wizard pages as the app draws them: the card starts lower and the title has room before what follows */
 .pg.wizpg .pbar{padding-bottom:90px}
 .pg.wizpg.artpg .pbar{padding-bottom:330px}
 .pg.wizpg .hm-title{margin-bottom:6px}
 .pg.wizpg .hm-title+.notec{margin-top:0}
-.hm-group.cards{background:none!important;box-shadow:none;margin-left:16px;margin-right:16px;overflow:visible;border-radius:0}
-.hm-group.cards .hm-row{background:#26272b;border-radius:14px;margin-bottom:12px;min-height:78px}
-.hm-group.cards .hm-row:before{display:none}
-.hm-group.cards .hm-ck{display:none}
-.hm-edisc{flex:none;width:36px;height:36px;border-radius:50%;background:#0d0e10;display:flex;align-items:center;justify-content:center;margin-left:8px}
-.hm-edisc svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round}
 .mwart.house svg{width:300px;height:260px}
 .mwart.house{top:60px}
 .mwart svg{stroke:none;fill:none}
 .pg.wizpg .notec{font-size:11px;line-height:1.5}
 .mwart.arrow .cone,.mwart.arrow .heat{display:none}
 .mwart .arrow{display:none}.mwart.arrow .arrow{display:block}
-.mwcard{margin:8px 16px;border-radius:14px;background:#26272b;overflow:hidden}
-.mwc-h{padding:14px 16px 4px}.mwc-h b{display:block;font-size:12px;font-weight:600}.mwc-h i{display:block;font-style:normal;font-size:10px;color:var(--ink2)}
-.mwtiles{padding:12px 12px 14px!important}
-.mwtiles .hpk-tile{width:100px;height:130px}
 .mwart.plain .cone,.mwart.plain .heat,.mwart.plain .arrow{display:none}
-.hwe-wheel.dur{position:relative}
-.hwe-wheel.dur:before,.hwe-wheel.dur:after{position:absolute;top:50%;margin-top:-7px;font-size:10px;font-weight:600;z-index:2;pointer-events:none}
-.hwe-wheel.dur:before{content:attr(data-h);left:calc(50% - 52px + 20px)}
-.hwe-wheel.dur:after{content:attr(data-m);left:calc(50% + 52px + 20px)}
 /* the seconds that are left of the calibration, in the bottom bar with a turning ring */
 .pg.wizpg .hm-group.calbar{position:fixed;left:0;right:0;bottom:0;margin:0;border-radius:0;background:var(--bg);border-top:1px solid var(--line);z-index:5;padding-bottom:var(--sab,0px)}
 .calbar .hm-row{justify-content:center;background:none;min-height:70px;gap:12px}
@@ -704,4 +681,3 @@ body{width:100%;height:100%}
 .pgrid.scrows .sitem{width:94px;height:104px}
 .pgrid.scrows .scpen{flex:none}
 .pg .pgrid:not(.scrows){display:flex;flex-wrap:wrap;gap:12px;padding:4px 16px 12px}
-.hm-ldisc{flex:none;width:46px;height:46px;border-radius:50%;margin-right:12px}
