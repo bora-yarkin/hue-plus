@@ -788,7 +788,7 @@
     if (HOST.onRender) HOST.onRender();
     var root = layer.root;
     DONEFN = null;
-    root.classList.remove("roompg", "lightpg", "scenepg", "modalpg", "wizpg", "plusbar", "shortpg");
+    root.classList.remove("roompg", "lightpg", "scenepg", "modalpg", "wizpg", "plusbar", "shortpg", "artpg");
     /* The wizards (a new automation, a MotionAware area, a scene) have the app's blue top and a Next at the bottom. */
     if (/^(hue-(wz|mw)-|app-(adddev2?|link2?|newarea)$|hue-newauto$|hue-add-scene$)/.test(String(key).split(":")[0])) root.classList.add("wizpg");
     var okb = root.querySelector(".ok"),

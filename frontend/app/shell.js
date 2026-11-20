@@ -2,6 +2,7 @@
  pages themselves, drawn in the tab. Everything sits inside the plugin's scope, so it uses the same pages and helpers as the menu. The Explore tab of the app (a gallery from Signify's cloud) has nothing behind
  it here. Nothing is kept in Home Assistant: the panel shows the bridge and writes to it. */
 
+HOST_ICONS.undo = "<path d='M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3'/>";
 HOST_ICONS.bolt = "<path d='M13 2L5 14h6l-1 8 8-12h-6z'/>";
 HOST_ICONS.tabhome = "<path d='M12 2.6 2.4 11.4h2.8v8.8h5.3v-5.6h3v5.6h5.3v-8.8h2.8z'/>";
 HOST_ICONS.tabbolt = "<path d='M14 1.8 5.2 13.6h5.4L9.2 22.2 18.8 9.6h-5.6z'/>";

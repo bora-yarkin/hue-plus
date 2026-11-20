@@ -102,7 +102,7 @@ function hmGroup(rows) {
    An arrow shows when a tap opens another page (a popup key); a toggle or a tick shows at the end of the row. */
 function hmRow(o) {
   var key = typeof o.tap === "string" ? o.tap : null,
-    r = mk("div", "hm-row" + (o.tap || o.toggle ? " tap" : "") + (o.danger ? " danger" : "") + (o.stack ? " stack" : "") + (o.blue ? " blueic" : ""));
+    r = mk("div", "hm-row" + (o.tap || o.toggle ? " tap" : "") + (o.danger ? " danger" : "") + (o.stack ? " stack" : "") + (o.blue ? " blueic" : "") + (o.chev ? " keepchev" : "") + (o.radio ? " radio" : ""));
   r.innerHTML =
     (o.icon ? "<span class='hm-i'>" + svg(o.icon) + "</span>" : "") +
     "<span class='hm-t'><span class='hm-n'></span><span class='hm-s'></span></span><span class='hm-v'></span>" +
@@ -784,6 +784,10 @@ var HM_PICKS = {
     sub: function (v) {
       return _T("hm_pw_" + v + "_sub");
     },
+    tip: "hm_pw_tip",
+    icon: function (v) {
+      return { safety: "bright", last_on_state: "undo", powerfail: "bolt", custom: "palette" }[v] || "bolt";
+    },
   },
   "hue-or": {
     field: "gradient_orientation",
@@ -813,10 +817,12 @@ function hmPick(kind) {
     var cfg = HM_PICKS[kind],
       key = hmdKey("light", id);
     hmGuard(key, true);
+    if (cfg.tip) b.appendChild(mk("div", "pintro")).textContent = _T(cfg.tip);
     b.appendChild(
       hmGroup(
         cfg.options(id).map(function (v) {
-          return hmRow({
+          var row = hmRow({
+            icon: cfg.icon ? cfg.icon(v) : null,
             title: cfg.name(v),
             sub: cfg.sub ? cfg.sub(v) : "",
             check: function () {
@@ -827,6 +833,8 @@ function hmPick(kind) {
               popBack();
             },
           });
+          if (cfg.icon) row.classList.add("discic");
+          return row;
         })
       )
     );
@@ -839,11 +847,18 @@ function hmBridge(b) {
   hmBox(b);
   hmEnsure();
   var E = hpBridgeEnts();
-  b.appendChild(
-    hmTitle("plug", function () {
-      return (HM.bridge && HM.bridge.name) || _T("hue_bridge");
-    })
-  );
+  var btitle = hmTitle("plug", function () {
+    return (HM.bridge && HM.bridge.name) || _T("hue_bridge");
+  });
+  b.appendChild(btitle);
+  /* The name is changed with the pencil by it, as in the Hue app. */
+  var bpen = mk("button", "hm-pen", svg("edit"));
+  bpen.type = "button";
+  bpen.setAttribute("aria-label", _T("hw_name"));
+  bpen.addEventListener("click", function () {
+    showPopup("hue-bname", true);
+  });
+  btitle.appendChild(bpen);
   b.appendChild(hmLabel(_T("hm_info")));
   b.appendChild(
     hmGroup([
@@ -862,18 +877,16 @@ function hmBridge(b) {
             return A(E.bridge_update).installed_version || "";
           })
         : null,
+      HM.bridge && HM.bridge.ip_address
+        ? hmInfo(_T("app_ip_address"), function () {
+            return HM.bridge.ip_address;
+          })
+        : null,
     ])
   );
   b.appendChild(hmLabel(_T("hm_settings")));
   b.appendChild(
     hmGroup([
-      hmRow({
-        title: _T("hw_name"),
-        val: function () {
-          return (HM.bridge && HM.bridge.name) || "";
-        },
-        tap: "hue-bname",
-      }),
       E.zigbee_channel
         ? hmRow({
             title: _T("zigbee_channel"),

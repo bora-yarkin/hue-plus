@@ -62,6 +62,7 @@ function hpDevicesPage(b) {
           return hpCount(hueplus.lights(H()).length);
         },
         tap: "hue-lights",
+        chev: true,
       }),
       hmRow({
         icon: "switch",
@@ -70,6 +71,7 @@ function hpDevicesPage(b) {
           return HM.accessories ? hpCount(hmList("accessories").length) : "";
         },
         tap: "hue-switches",
+        chev: true,
       }),
     ])
   );
@@ -83,9 +85,9 @@ function hpAddDevicesWhere(b) {
     box.appendChild(hmTitle("", _T("app_where_add_devices")));
     box.appendChild(hmLabel((HM.bridge && HM.bridge.name) || _T("hue_bridge")));
     var rows = (r.rooms || []).map(function (room) {
-      return hmRow({ icon: "bed", title: room.name, tap: "app-adddev2:" + encodeURIComponent(room.name) });
+      return hpNoChev(hmRow({ icon: "bed", title: room.name, tap: "app-adddev2:" + encodeURIComponent(room.name) }));
     });
-    rows.push(hmRow({ icon: "plus", title: _T("app_create_new_room"), tap: "hue-group", blue: true }));
+    rows.push(hpNoChev(hmRow({ icon: "plus", title: _T("app_create_new_room"), tap: "hue-group", blue: true })));
     var card = hmGroup(rows);
     card.classList.add("card");
     box.appendChild(card);
@@ -324,7 +326,7 @@ function hpAreasPage(b) {
       box.appendChild(
         hmGroup(
           list.map(function (x) {
-            return hmRow({ icon: "headphones", title: x.name, tap: "hue-area:" + x.id });
+            return hpNoChev(hmRow({ icon: "headphones", title: x.name, tap: "hue-area:" + x.id }));
           })
         )
       );
@@ -489,11 +491,12 @@ function hpAreaPage(b, id) {
     head.appendChild(pen);
     box.appendChild(head);
     var label = mk("div", "lbrow"),
-      text = hmLabel(_T("hm_lights_label")),
+      text = mk("div", "lbtitle"),
       add = hpRound("plus", _T("app_add_a_light"), function () {
         showPopup("app-areaadd:" + id, true);
       });
     add.classList.add("blue");
+    text.textContent = _T("hm_lights_label");
     label.appendChild(text);
     label.appendChild(add);
     box.appendChild(label);
@@ -528,7 +531,7 @@ function hpAreaPage(b, id) {
     reg(draw);
     box.appendChild(
       hmGroup([
-        hmRow({ title: _T("hm_light_placement"), tap: "app-place:" + id, val: "" }),
+        hpNoChev(hmRow({ title: _T("hm_light_placement"), tap: "app-place:" + id, val: "" })),
         hmRow({
           title: _T("app_balancer"),
           val: function () {

@@ -180,6 +180,7 @@ async def get_resources(api: BridgeApi, snap: models.Snapshot, data: dict[str, A
             "zigbee_channel": models.bridge_zigbee_channel(snap),
             "time_zone": snap.config.get("timezone"),
             "name": snap.config.get("name"),
+            "ip_address": snap.config.get("ipaddress"),
             "internet": snap.config.get("internetservices"),
             "backup": snap.config.get("backup"),
         },

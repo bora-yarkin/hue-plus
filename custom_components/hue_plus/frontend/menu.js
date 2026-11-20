@@ -259,6 +259,7 @@ var PLUGIN_STRINGS = {
   "hm_press_set": "press set",
   "hm_press_word": "press",
   "hm_presses_set": "presses set",
+  "hm_pw_tip": "Tip: Select what the light should do when powered on by a classic light switch or after a power outage.",
   "hm_pw_custom": "Custom",
   "hm_pw_custom_sub": "Choose color and brightness",
   "hm_pw_last_on_state": "Last on",
@@ -477,7 +478,8 @@ var PLUGIN_STRINGS = {
   "hmw_tip3_1": "MotionAware areas should create a shape that covers as much of the space as possible, from the floor to the ceiling.",
   "hmw_tip3_2": "This shape is where motion will be detected.",
   "hmw_where_are_the_lights": "Where are the lights that you want to detect motion?",
-  "hmw_where_hint": "MotionAware areas require at least 3 devices. Outdoor spaces are not recommended. Some of your devices may not be compatible with MotionAware yet, for example if they have outdated software.",
+  "hmw_where_hint": "MotionAware areas require at least 3 devices. Outdoor spaces are not recommended.",
+  "hmw_where_hint_2": "Some of your devices may not be currently compatible with Hue MotionAware™, e.g. they have outdated software.",
   "hmw_available_device": "available device",
   "hmw_available_devices": "available devices",
   "hmw_needs_three": "This room has fewer than three compatible devices",
@@ -787,6 +789,7 @@ var PLUGIN_STRINGS = {
   "app_slow": "Slow",
   "app_medium": "Medium",
   "app_fast": "Fast",
+  "app_ip_address": "IP address",
   "app_speed": "Speed",
   "app_default_in_brackets": "(Default)",
   "app_speed_text": "Drag to change the default speed at which your lights cycle through the colors of the scene.",
@@ -1450,7 +1453,7 @@ function hmGroup(rows) {
    An arrow shows when a tap opens another page (a popup key); a toggle or a tick shows at the end of the row. */
 function hmRow(o) {
   var key = typeof o.tap === "string" ? o.tap : null,
-    r = mk("div", "hm-row" + (o.tap || o.toggle ? " tap" : "") + (o.danger ? " danger" : "") + (o.stack ? " stack" : "") + (o.blue ? " blueic" : ""));
+    r = mk("div", "hm-row" + (o.tap || o.toggle ? " tap" : "") + (o.danger ? " danger" : "") + (o.stack ? " stack" : "") + (o.blue ? " blueic" : "") + (o.chev ? " keepchev" : "") + (o.radio ? " radio" : ""));
   r.innerHTML =
     (o.icon ? "<span class='hm-i'>" + svg(o.icon) + "</span>" : "") +
     "<span class='hm-t'><span class='hm-n'></span><span class='hm-s'></span></span><span class='hm-v'></span>" +
@@ -2132,6 +2135,10 @@ var HM_PICKS = {
     sub: function (v) {
       return _T("hm_pw_" + v + "_sub");
     },
+    tip: "hm_pw_tip",
+    icon: function (v) {
+      return { safety: "bright", last_on_state: "undo", powerfail: "bolt", custom: "palette" }[v] || "bolt";
+    },
   },
   "hue-or": {
     field: "gradient_orientation",
@@ -2161,10 +2168,12 @@ function hmPick(kind) {
     var cfg = HM_PICKS[kind],
       key = hmdKey("light", id);
     hmGuard(key, true);
+    if (cfg.tip) b.appendChild(mk("div", "pintro")).textContent = _T(cfg.tip);
     b.appendChild(
       hmGroup(
         cfg.options(id).map(function (v) {
-          return hmRow({
+          var row = hmRow({
+            icon: cfg.icon ? cfg.icon(v) : null,
             title: cfg.name(v),
             sub: cfg.sub ? cfg.sub(v) : "",
             check: function () {
@@ -2175,6 +2184,8 @@ function hmPick(kind) {
               popBack();
             },
           });
+          if (cfg.icon) row.classList.add("discic");
+          return row;
         })
       )
     );
@@ -2187,11 +2198,18 @@ function hmBridge(b) {
   hmBox(b);
   hmEnsure();
   var E = hpBridgeEnts();
-  b.appendChild(
-    hmTitle("plug", function () {
-      return (HM.bridge && HM.bridge.name) || _T("hue_bridge");
-    })
-  );
+  var btitle = hmTitle("plug", function () {
+    return (HM.bridge && HM.bridge.name) || _T("hue_bridge");
+  });
+  b.appendChild(btitle);
+  /* The name is changed with the pencil by it, as in the Hue app. */
+  var bpen = mk("button", "hm-pen", svg("edit"));
+  bpen.type = "button";
+  bpen.setAttribute("aria-label", _T("hw_name"));
+  bpen.addEventListener("click", function () {
+    showPopup("hue-bname", true);
+  });
+  btitle.appendChild(bpen);
   b.appendChild(hmLabel(_T("hm_info")));
   b.appendChild(
     hmGroup([
@@ -2210,18 +2228,16 @@ function hmBridge(b) {
             return A(E.bridge_update).installed_version || "";
           })
         : null,
+      HM.bridge && HM.bridge.ip_address
+        ? hmInfo(_T("app_ip_address"), function () {
+            return HM.bridge.ip_address;
+          })
+        : null,
     ])
   );
   b.appendChild(hmLabel(_T("hm_settings")));
   b.appendChild(
     hmGroup([
-      hmRow({
-        title: _T("hw_name"),
-        val: function () {
-          return (HM.bridge && HM.bridge.name) || "";
-        },
-        tap: "hue-bname",
-      }),
       E.zigbee_channel
         ? hmRow({
             title: _T("zigbee_channel"),
@@ -5533,9 +5549,37 @@ function hmwStart() {
 }
 
 /* A page of advice: a heading, the paragraphs, Next. */
-function hmwInfo(key, title, texts, label, next) {
+/* The room of the MotionAware pages, drawn the way the Hue app draws it (a cut-away room with the devices as dots): the intro shows the shape one area covers, the tips show where motion is felt. */
+function hmwArt(shape) {
+  var art = mk(
+    "div",
+    "mwart " + shape,
+    "<svg viewBox='0 0 300 230' aria-hidden='true'><defs><linearGradient id='mwfl' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#4a4970'/><stop offset='1' stop-color='#6d6b95'/></linearGradient><radialGradient id='mwht'><stop offset='0' stop-color='#ff8f4a'/><stop offset='.45' stop-color='#d9c55c'/><stop offset='1' stop-color='#5f8fe6' stop-opacity='0'/></radialGradient></defs>" +
+      "<polygon points='28,140 150,202 272,140 150,78' fill='url(#mwfl)'/><polygon points='28,140 150,78 150,16 28,78' fill='#8c89a8'/><polygon points='150,78 272,140 272,78 150,16' fill='#6f6c90'/>" +
+      "<polygon points='64,102 86,91 86,50 64,61' fill='#7c799a' stroke='#6a6788' stroke-width='1'/><polygon points='180,42 238,71 238,92 180,63' fill='#23233a'/><polygon points='176,70 242,103 242,110 176,77' fill='#23233a'/><path d='M60 150 L108 174 L124 166 L76 142 Z M60 136 L76 142 L76 150 L60 144 Z' fill='#26263a'/>" +
+      "<ellipse class='heat' cx='120' cy='160' rx='84' ry='30' fill='url(#mwht)' opacity='.9'/>" +
+      "<path class='cone' d='M48 112 C80 70 150 20 118 45 C160 80 205 120 206 168 C150 190 90 170 48 112 Z' fill='none' stroke='#7fc4ff' stroke-width='1.4'/>" +
+      "<g fill='#0d0d14'><circle cx='118' cy='45' r='4.5'/><circle cx='252' cy='84' r='4.5'/><circle cx='206' cy='168' r='4.5'/><circle cx='48' cy='112' r='4.5'/></g></svg>"
+  );
+  return art;
+}
+
+/* Puts the room into the blue top of the page. */
+function hmwShowArt(b, shape) {
+  var root = b.parentNode,
+    bar = root && root.querySelector(".pbar");
+  if (!bar) return;
+  [].slice.call(bar.querySelectorAll(".mwart")).forEach(function (old) {
+    old.remove();
+  });
+  bar.appendChild(hmwArt(shape));
+  root.classList.add("artpg");
+}
+
+function hmwInfo(key, title, texts, label, next, shape) {
   return function (b) {
     if (!hwOpen(b, key)) return;
+    if (shape) hmwShowArt(b, shape);
     b.appendChild(hmTitle("motion", _T(title)));
     texts.forEach(function (t) {
       hwHint(b, _T(t));
@@ -5549,6 +5593,7 @@ function hmwWherePage(b) {
   hmLoad(b, ["rooms", "zones", "motion_areas"], function (box, r) {
     box.appendChild(hmTitle("motion", _T("hmw_where_are_the_lights")));
     hwHint(box, _T("hmw_where_hint"));
+    hwHint(box, _T("hmw_where_hint_2"));
     var rooms = hwGroups(r).filter(function (g) {
       return g.type === "room";
     });
@@ -5558,7 +5603,7 @@ function hmwWherePage(b) {
         rooms.map(function (g) {
           var n = hmwFreeDevicesOf(g).length;
           return hmRow({
-            icon: "home",
+            radio: true,
             title: g.name,
             sub: cntS(n, _T("hmw_available_device"), _T("hmw_available_devices")),
             check: function () {
@@ -6547,10 +6592,10 @@ function hmwPickOffset(st, key, sun) {
   });
 }
 
-HP_PAGES["hue-mw-intro"] = ["hmw_create_a_motionaware_area", "motion", hmwInfo("hue-mw-intro", "hmw_create_a_motionaware_area", ["hmw_intro_1", "hmw_intro_2"], "hmw_create_area")];
-HP_PAGES["hue-mw-tip1"] = ["hmw_before_you_choose_devices", "motion", hmwInfo("hue-mw-tip1", "hmw_before_you_choose_devices", ["hmw_tip1_1"])];
-HP_PAGES["hue-mw-tip2"] = ["hmw_before_you_choose_devices", "motion", hmwInfo("hue-mw-tip2", "hmw_before_you_choose_devices", ["hmw_tip2_1", "hmw_tip2_2"])];
-HP_PAGES["hue-mw-tip3"] = ["hmw_before_you_choose_devices", "motion", hmwInfo("hue-mw-tip3", "hmw_before_you_choose_devices", ["hmw_tip3_1", "hmw_tip3_2"])];
+HP_PAGES["hue-mw-intro"] = ["hmw_create_a_motionaware_area", "motion", hmwInfo("hue-mw-intro", "hmw_create_a_motionaware_area", ["hmw_intro_1", "hmw_intro_2"], "hmw_create_area", null, "cone")];
+HP_PAGES["hue-mw-tip1"] = ["hmw_before_you_choose_devices", "motion", hmwInfo("hue-mw-tip1", "hmw_before_you_choose_devices", ["hmw_tip1_1"], null, null, "heat")];
+HP_PAGES["hue-mw-tip2"] = ["hmw_before_you_choose_devices", "motion", hmwInfo("hue-mw-tip2", "hmw_before_you_choose_devices", ["hmw_tip2_1", "hmw_tip2_2"], null, null, "heat")];
+HP_PAGES["hue-mw-tip3"] = ["hmw_before_you_choose_devices", "motion", hmwInfo("hue-mw-tip3", "hmw_before_you_choose_devices", ["hmw_tip3_1", "hmw_tip3_2"], null, null, "heat")];
 HP_PAGES["hue-mw-where"] = ["hmw_create_a_motionaware_area", "motion", hmwWherePage];
 HP_PAGES["hue-mw-devices"] = ["hmw_choose_devices", "motion", hmwDevicesPage];
 HP_PAGES["hue-mw-leave"] = ["hmw_leave_the_area", "motion", hmwInfo("hue-mw-leave", "hmw_leave_the_area", ["hmw_leave_hint"], null, hmwStartCalibration)];

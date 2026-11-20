@@ -5,6 +5,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 ## [Unreleased]
 
 ### Changed
+- **Settings and MotionAware compared with the app's screens again**: Devices rows end with a count and an arrow, the rooms of Add devices, the bridge and the entertainment areas have no arrow, the bridge's name has its pencil and its page shows the IP address (the bridge's `ip_address` is in `get_resources`), "Everything is up to date" has the green tick, an entertainment area's Lights is a title with its plus, the MotionAware intro and tips have the cut-away room above their card with the app's smaller text, the room choice has round marks, and the Power on choice has the app's tip and round icons.
+
+### Changed
 - **The scene settings page follows the app's screens again**: the colours of the scene are blurred round patches behind the page that fade into the dark, the header and first sections are see-through over them; Dynamic speed is a row ("8 - Fast") that opens a short sheet with the twelve steps, as the app does, instead of a slider on the page; Reset scene stays at the bottom of the screen and Delete scene follows the lights. What is changed on the page is kept while the speed sheet is open. The brightness row no longer has a solid background of its own, so the colours run through it.
 
 ### Added
