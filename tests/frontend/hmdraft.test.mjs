@@ -115,6 +115,19 @@ test("the menu reads a staged press the same way as a press from the bridge", ()
   assert.deepEqual(plain(m.hmTimeSlots(m.hmSpecFrom(cases[7][0]))), [{ time: "07:00", scene: "s1" }, { time: "10:30", scene: "s2" }]);
 });
 
+test("a held brighten or dim button does what its short press does, and a button that does something else has a long press of its own", () => {
+  const m = load("hmdraft.js", "huemenu.js");
+  const dimmer = { id: "acc", actions: { up: { on_short_release: { action: "dim_up" }, on_repeat: { action: "dim_up" } }, scene: { on_short_release: { action: "all_off" }, on_long_press: { action: "home_off" } } } };
+  const up = { id: "up" }, other = { id: "scene" };
+  assert.equal(m.hmPressKind(m.hmPressSpec(dimmer, up, "long")), "brighten");
+  assert.ok(m.hmHoldRepeats(dimmer, up));
+  assert.equal(m.hmPressKind(m.hmPressSpec(dimmer, other, "long")), "homeoff");
+  assert.ok(!m.hmHoldRepeats(dimmer, other));
+  m.hmdStage(m.hmdKey("acc", "acc"), "up|short", { k: {}, what: { action: "all_off" } });
+  assert.ok(!m.hmHoldRepeats(dimmer, up), "once the short press is staged as something else the button has no repeat");
+  assert.equal(m.hmPressKind(m.hmPressSpec(dimmer, up, "long")), "nothing");
+});
+
 test("what an entertainment area does when a sync stops, and who streams, are staged as whole values", () => {
   const d = load("hmdraft.js");
   const key = d.hmdKey("area", "area-1");

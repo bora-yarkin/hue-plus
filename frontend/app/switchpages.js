@@ -151,7 +151,7 @@ function hpSwitchPage(b, id) {
             },
             disc: scenes[0] ? hpDiscOf(scenes[0].colours) : null,
             icon: scenes[0] ? null : hpKindIcon(hmPressKind(spec())),
-            tap: "app-press:" + x.id + "|" + btn.number + "|" + p[0],
+            tap: p[0] === "long" && hmHoldRepeats(x, btn) ? null : "app-press:" + x.id + "|" + btn.number + "|" + p[0],
           });
         })
       )

@@ -404,8 +404,12 @@ def _days(days: list[str] | None) -> list[str]:
     return chosen
 
 
-def _when(at: time, days: list[str] | None) -> dict[str, Any]:
-    return {"time_point": {"type": "time", "time": {"hour": at.hour, "minute": at.minute}}, "recurrence_days": _days(days)}
+def _when(at: time, days: list[str] | None, repeat: bool = True) -> dict[str, Any]:
+    """A time of day, on the chosen days, or, when it does not repeat, once: the bridge accepts a `when` with no `recurrence_days` (tried 2026-11-20), but not an empty list."""
+    when: dict[str, Any] = {"time_point": {"type": "time", "time": {"hour": at.hour, "minute": at.minute}}}
+    if repeat:
+        when["recurrence_days"] = _days(days)
+    return when
 
 
 def _recall(where: list[dict[str, Any]], scene_id: str | None) -> list[dict[str, Any]]:
@@ -517,12 +521,13 @@ def _wake_up_routine(
     end_brightness: float | None,
     style: str | None,
     turn_off_after_minutes: int | None,
+    repeat: bool = True,
 ) -> dict[str, Any]:
     brightness = 100.0 if end_brightness is None else _percent(end_brightness, "end_brightness")
     configuration: dict[str, Any] = {
         "fade_in_duration": {"seconds": _seconds(minutes, 15)},
         "end_brightness": brightness,
-        "when": _when(at, days),
+        "when": _when(at, days, repeat),
         "where": where,
         **_style(style, WAKE_UP_STYLES),
     }
@@ -552,16 +557,32 @@ def _go_to_sleep_routine(
     }
 
 
+def where_of(targets: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The ``where`` of an automation or a button from its targets. A target is ``{"id", "type", "lights"}``: a room, a zone or the whole home
+    (type ``bridge_home``), and, when only some of a room's or zone's lights are meant, the ids of those lights (they become the item's ``items``).
+    Several targets are several items. The bridge accepts all of these (tried 2026-11-20, docs/bridge-findings.md); a light alone as a group it refuses."""
+    if not targets:
+        raise ValueError("Choose the lights: a room, a zone or the whole home")
+    where = []
+    for target in targets:
+        item: dict[str, Any] = {"group": {"rid": target["id"], "rtype": target["type"]}}
+        if target.get("lights"):
+            item["items"] = [{"rid": rid, "rtype": "light"} for rid in target["lights"]]
+        where.append(item)
+    return where
+
+
 def routine_configuration(
     kind: str,
     *,
-    group_id: str,
-    group_type: str,
-    at: time | None,
-    days: list[str] | None,
-    minutes: float | None,
-    end_brightness: float | None,
-    scene_id: str | None,
+    group_id: str | None = None,
+    group_type: str = "room",
+    where: list[dict[str, Any]] | None = None,
+    at: time | None = None,
+    days: list[str] | None = None,
+    minutes: float | None = None,
+    end_brightness: float | None = None,
+    scene_id: str | None = None,
     until: time | None = None,
     style: str | None = None,
     turn_off_after_minutes: int | None = None,
@@ -574,6 +595,7 @@ def routine_configuration(
     until_type: str = "time",
     action: str = "scene",
     light_ids: list[str] | None = None,
+    repeat: bool = True,
 ) -> dict[str, Any]:
     """The configuration of a routine for a room or zone. Every shape here was accepted by a real bridge (as a disabled routine).
 
@@ -581,7 +603,10 @@ def routine_configuration(
     say which lights they are for (what they do is the template's)."""
     if kind not in ROUTINE_TEMPLATES:
         raise ValueError(f"The routine is one of {', '.join(ROUTINE_TEMPLATES)}")
-    where = [{"group": {"rid": group_id, "rtype": group_type}}]
+    if where is None:
+        if group_id is None:
+            raise ValueError("Choose the lights: a room, a zone or the whole home")
+        where = [{"group": {"rid": group_id, "rtype": group_type}}]
     if kind in ("leaving_home", "smoke_alarm"):
         return {"where": where}
     if kind == "mimic_presence":
@@ -595,7 +620,7 @@ def routine_configuration(
     if at is None:
         raise ValueError("Give the time of day")
     if kind == "wake_up":
-        return _wake_up_routine(where, at, days, minutes, end_brightness, style, turn_off_after_minutes)
+        return _wake_up_routine(where, at, days, minutes, end_brightness, style, turn_off_after_minutes, repeat)
     return _go_to_sleep_routine(where, at, days, minutes, style, end_state)
 
 
@@ -716,24 +741,58 @@ def button_action(
     return {"action": action}
 
 
+DIM_ACTIONS = ("dim_up", "dim_down")
+
+
+def _dims(press_spec: dict[str, Any] | None) -> bool:
+    return isinstance((press_spec or {}).get("action"), str) and press_spec["action"] in DIM_ACTIONS
+
+
 def button_configuration(configuration: dict[str, Any], button_id: str, press: str, what: dict[str, Any]) -> dict[str, Any]:
-    """The automation's configuration with one press of one button changed and everything else as it was."""
+    """The automation's configuration with one press of one button changed and everything else as it was.
+
+    The bridge accepts a button only in the shapes the Hue app writes: a brighten or dim button holds the same action on a short press and on
+    the repeat of a held press and has no long press; every other button has a short press and a long press and no repeat. So brightening or
+    dimming sets both of its presses, anything else takes the repeat away and gives the button the long press the app writes (do nothing)."""
     if press not in BUTTON_PRESSES:
         raise ValueError(f"The press is one of {', '.join(BUTTON_PRESSES)}")
     buttons = configuration.get("buttons") or {}
     if button_id not in buttons:
         raise ValueError("This button has no action set up yet: set it up in the Hue app first")
-    updated = {**configuration, "buttons": {**buttons, button_id: {**buttons[button_id], BUTTON_PRESSES[press]: what}}}
-    return updated
+    button = dict(buttons[button_id])
+    if press == "short":
+        if _dims(what):
+            button.pop("on_long_press", None)
+            button["on_short_release"] = what
+            button["on_repeat"] = what
+        else:
+            button.pop("on_repeat", None)
+            button["on_short_release"] = what
+            button.setdefault("on_long_press", {"action": "do_nothing"})
+    elif _dims(button.get("on_short_release")):
+        raise ValueError("A button that brightens or dims has its action on the short press only: its held press repeats it")
+    elif press == "repeat":
+        raise ValueError("Only a button that brightens or dims repeats a held press")
+    else:
+        button[BUTTON_PRESSES[press]] = what
+    return {**configuration, "buttons": {**buttons, button_id: button}}
 
 
-def button_where(configuration: dict[str, Any], button_id: str, group_id: str, group_type: str) -> dict[str, Any]:
-    """The automation's configuration with the room or zone one button acts on changed (the Hue app's "Selected lights") and
-    everything else as it was. What the presses do is kept; a scene of another room stays that scene."""
+def button_where(
+    configuration: dict[str, Any],
+    button_id: str,
+    group_id: str | None = None,
+    group_type: str = "room",
+    where: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """The automation's configuration with the lights one button acts on changed (the Hue app's "Selected lights": one room or zone, or `where`,
+    which several rooms, zones, the whole home and chosen lights make) and everything else as it was. What the presses do is kept; a scene of
+    another room stays that scene."""
     buttons = configuration.get("buttons") or {}
     if button_id not in buttons:
         raise ValueError("This button has no action set up yet: set it up in the Hue app first")
-    where = [{"group": {"rid": group_id, "rtype": group_type}}]
+    if where is None:
+        where = [{"group": {"rid": group_id, "rtype": group_type}}]
     return {**configuration, "buttons": {**buttons, button_id: {**buttons[button_id], "where": where}}}
 
 

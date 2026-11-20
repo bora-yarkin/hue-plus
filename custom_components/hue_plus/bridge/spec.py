@@ -12,10 +12,15 @@ from . import actions as _actions
 LIGHT = f("text", "The light: its Hue id, the name of its device, or its Home Assistant entity.", True, example="Floor Light L")
 
 ROUTINE_FIELDS: dict[str, Any] = {
-    "group": f("text", "The room or zone (id or name).", True),
+    "group": f("text", "The room or zone (id or name). Give this or targets."),
     "group_type": f("select", "Room or zone.", default="room", options=["room", "zone"]),
+    "targets": f(
+        "object",
+        "The lights, as a list with one entry for each room, zone or the whole home: group (the room or zone), group_type (room, zone or home) and, to choose only some of its lights, lights (a list). The whole home is an entry with group_type home alone. Use this instead of group.",
+    ),
     "time": f("time", "The time of day (wake-up, go-to-sleep and schedule), or the time coming home starts."),
     "until": f("time", "Schedule: the time it ends. Coming home: the time it stops (give both or neither)."),
+    "repeat": f("bool", "Wake-up: repeat on the days (the default). Off runs it once, the next time it is that time.", default=True),
     "days": f(
         "select_list",
         "The days. Every day when empty.",
@@ -379,8 +384,12 @@ SPEC: dict[str, dict[str, Any]] = {
         "fields": {
             "accessory": f("text", "The accessory (id or name).", True, example="Hue dimmer switch 1"),
             "button": f("int", "The button's number on the accessory.", True, min=1, max=8),
-            "group": f("text", "The room or zone (id or name).", True),
+            "group": f("text", "The room or zone (id or name). Give this or targets."),
             "group_type": f("select", "Whether it is a room or a zone.", options=["room", "zone"], default="room"),
+            "targets": f(
+                "object",
+                "The lights, as a list with one entry for each room, zone or the whole home: group (the room or zone), group_type (room, zone or home) and, to choose only some of its lights, lights (a list). The whole home is an entry with group_type home alone. Use this instead of group.",
+            ),
         },
     },
     "configure_button": {

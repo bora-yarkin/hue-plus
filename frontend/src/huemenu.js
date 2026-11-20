@@ -102,16 +102,18 @@ function hmGroup(rows) {
    An arrow shows when a tap opens another page (a popup key); a toggle or a tick shows at the end of the row. */
 function hmRow(o) {
   var key = typeof o.tap === "string" ? o.tap : null,
-    r = mk("div", "hm-row" + (o.tap || o.toggle ? " tap" : "") + (o.danger ? " danger" : "") + (o.stack ? " stack" : ""));
+    r = mk("div", "hm-row" + (o.tap || o.toggle ? " tap" : "") + (o.danger ? " danger" : "") + (o.stack ? " stack" : "") + (o.blue ? " blueic" : ""));
   r.innerHTML =
     (o.icon ? "<span class='hm-i'>" + svg(o.icon) + "</span>" : "") +
     "<span class='hm-t'><span class='hm-n'></span><span class='hm-s'></span></span><span class='hm-v'></span>" +
+    (o.disc ? "<span class='hm-disc'></span>" : "") +
     (o.toggle ? "<span class='hm-sw'><i></i></span>" : "") +
     (o.check ? "<span class='hm-ck'>" + svg("check") + "</span>" : "") +
     (key ? "<span class='hm-c'>" + svg("chev") + "</span>" : "");
   var nm = r.querySelector(".hm-n"),
     sb = r.querySelector(".hm-s"),
     vl = r.querySelector(".hm-v");
+  if (o.disc) r.querySelector(".hm-disc").style.background = o.disc;
   if (o.tap || o.toggle) {
     r.setAttribute("role", o.toggle ? "switch" : o.check ? "radio" : "button");
     r.tabIndex = 0;
@@ -336,7 +338,10 @@ function hmSaveSwitch(id, ch) {
   var x = hmAccessory(id),
     job = Promise.resolve();
   Object.keys(ch).forEach(function (field) {
-    var st = ch[field];
+    var st = ch[field],
+      shortChange = ch[field.split("|")[0] + "|short"];
+    /* a long press staged before the button was made to brighten or dim has no place any more: the bridge gives such a button none */
+    if (field.split("|")[1] === "long" && shortChange && (shortChange.what.action === "dim_up" || shortChange.what.action === "dim_down")) return;
     job = job
       .then(function () {
         return hpCall("hue_plus", "configure_button", Object.assign({ accessory: st.k.acc, button: st.k.n, press: st.k.press }, st.what));
@@ -1095,74 +1100,6 @@ function hmRoutines(b) {
   });
 }
 
-function hmRoutine(b, id) {
-  hmBox(b);
-  hmLoad(b, ["automations"], function (box, r, again) {
-    var x = (r.automations || []).filter(function (y) {
-      return y.id === id;
-    })[0];
-    if (!x) {
-      box.appendChild(hmCallout(_T("nothing_found")));
-      return;
-    }
-    box.appendChild(hmTitle("clock", x.name, x.script || ""));
-    box.appendChild(
-      hmGroup([
-        hmRow({
-          title: _T("hm_enabled"),
-          toggle: {
-            get: function () {
-              return !!x.enabled;
-            },
-            set: function () {
-              x.enabled = !x.enabled;
-              hpDo(again, "update_automation", { automation: x.id, enabled: x.enabled });
-            },
-          },
-        }),
-      ])
-    );
-    if (hwEditable(x))
-      box.appendChild(
-        hmGroup([
-          hmRow({
-            icon: "edit",
-            title: _T("hw_edit_settings"),
-            tap: function () {
-              hwStartAutomation(hwKindOf(x), x);
-            },
-          }),
-        ])
-      );
-    if (hwRunnable(x))
-      box.appendChild(
-        hmGroup(
-          [["start", "play", "hw_start"], ["stop", "stop", "hw_stop"]].map(function (t) {
-            return hmRow({
-              icon: t[1],
-              title: _T(t[2]),
-              sub: t[0] === "start" ? hwRunText(x) : "",
-              tap: function () {
-                hpDo(again, "trigger_automation", { automation: x.id, action: t[0] });
-              },
-            });
-          })
-        )
-      );
-    if (x.last_error) box.appendChild(hmCallout(x.last_error));
-    box.appendChild(
-      hmActions([
-        hmButton(_T("hm_delete"), "danger", function () {
-          confirmDlg(_T("delete_this_routine_from_the_bridge"), function () {
-            call("hue_plus", "delete_automation", { automation: x.id, confirm: true });
-            closeLayer();
-          });
-        }),
-      ])
-    );
-  });
-}
-
 /* ---- entertainment areas ---- */
 
 var HM_END = ["last_state", "off", "pause", "scene"];
@@ -1460,8 +1397,21 @@ function hmBtnKey(id) {
   return { acc: p[0], n: Number(p[1]), press: p[2] || "short", slot: p[3] === undefined ? -1 : Number(p[3]) };
 }
 
-/* What a press does: the staged choice if the switch has one (the bridge's way of writing it, see hmSpecFrom), else what the bridge holds. */
+/* What the short press of a button does: the staged choice if the switch has one (the bridge's way of writing it, see hmSpecFrom), else what the bridge holds. */
+function hmShortSpec(acc, btn) {
+  var staged = hmdStaged(hmdKey("acc", acc.id), btn.id + "|short");
+  return staged ? hmSpecFrom(staged.what) : ((acc.actions || {})[btn.id] || {}).on_short_release;
+}
+
+/* A button that brightens or dims repeats it while it is held, and the bridge gives it no long press of its own. */
+function hmHoldRepeats(acc, btn) {
+  var kind = hmPressKind(hmShortSpec(acc, btn));
+  return kind === "brighten" || kind === "dim";
+}
+
+/* What a press does: the staged choice if the switch has one, else what the bridge holds. A held brighten or dim button does what its short press does. */
 function hmPressSpec(acc, btn, press) {
+  if (press === "long" && hmHoldRepeats(acc, btn)) return hmShortSpec(acc, btn);
   var staged = hmdStaged(hmdKey("acc", acc.id), btn.id + "|" + press);
   if (staged) return hmSpecFrom(staged.what);
   return ((acc.actions || {})[btn.id] || {})[HM_PRESSES.filter(function (x) { return x[0] === press; })[0][2]];
@@ -1575,7 +1525,7 @@ function hmButtonPage(b, id) {
             val: function () {
               return hmPressSummary(r, hmPressSpec(f.acc, f.btn, p[0]));
             },
-            tap: "hue-press:" + f.acc.id + "|" + k.n + "|" + p[0],
+            tap: p[0] === "long" && hmHoldRepeats(f.acc, f.btn) ? null : "hue-press:" + f.acc.id + "|" + k.n + "|" + p[0],
           });
         })
       )
@@ -2103,7 +2053,6 @@ HP_PAGES["hue-updates"] = ["hm_software_update", "restart", hmUpdates];
 HP_PAGES["hue-matter"] = ["hm_smart_home", "scene", hmMatter];
 HP_PAGES["hue-apps"] = ["hm_applications", "lock", hmApps];
 HP_PAGES["hue-routines"] = ["routines_and_automations", "clock", hmRoutines];
-HP_PAGES["hue-routine"] = ["routine", "clock", hmRoutine];
 HP_PAGES["hue-ent"] = ["entertainment_areas", "target", hmAreas];
 HP_PAGES["hue-area"] = ["entertainment_area", "target", hmArea];
 HP_PAGES["hue-end"] = ["hm_when_sync_stops", "target", hmEnd];
@@ -2302,7 +2251,7 @@ function hpRenamePage(b, id) {
   };
 }
 
-/* The lights a button acts on (the app's Selected lights): a room or a zone. Choosing one writes it to the bridge at once, and what the button's presses do stays. */
+/* The lights a button acts on (the app's Edit lights): My entire home, or rooms and zones, each whole or by single lights, chosen in the picker the app has (huepicker.js). DONE writes it to the bridge; what the button's presses do stays. */
 function hpButtonLightsPage(b, id) {
   hmBox(b);
   hmLoad(b, ["accessories", "rooms", "zones"], function (box, r) {
@@ -2312,37 +2261,33 @@ function hpButtonLightsPage(b, id) {
       box.appendChild(hmCallout(_T("nothing_found")));
       return;
     }
-    var now = hmBtnTargets(r, f.acc, f.btn).ids;
-    [
-      ["room", r.rooms || [], "home"],
-      ["zone", r.zones || [], "target"],
-    ].forEach(function (kind) {
-      if (!kind[1].length) return;
-      box.appendChild(hmLabel(_T(kind[0] === "room" ? "app_rooms" : "zones")));
-      box.appendChild(
-        hmGroup(
-          kind[1].map(function (g) {
-            return hmRow({
-              icon: kind[2],
-              title: g.name,
-              check: function () {
-                return now.indexOf(g.id) >= 0;
-              },
-              tap: function () {
-                hpCall("hue_plus", "set_button_lights", { accessory: f.acc.id, button: f.btn.number, group: g.id, group_type: kind[0] }).then(function () {
-                  return hmReread("accessories", f.acc.id).then(function () {
-                    popBack();
-                  });
-                }, function () {});
-              },
-            });
-          })
-        )
-      );
-    });
+    var groups = hpkGroups(r),
+      state = hpkStateOf(((f.acc.where || {})[f.btn.id]) || [], groups),
+      pick = mk("div");
+    var bname = typeof window.hpButtonLook === "function" ? window.hpButtonLook(f.acc, f.btn).name.toLowerCase() : _T("hpk_this_button");
+    var hint = mkHint(_T("hpk_select_lights_for") + " ");
+    var bold = mk("b");
+    bold.textContent = bname;
+    hint.appendChild(bold);
+    hint.appendChild(document.createTextNode("."));
+    box.appendChild(hint);
+    box.appendChild(pick);
+    hpkPicker(pick, { groups: groups, state: state });
+    /* DONE is in the bar of the page, as in the app. */
+    HC.onDone = function () {
+      var targets = hpkTargets(state, groups);
+      if (!targets.length) {
+        toast(_T("hpk_choose_lights"));
+        return;
+      }
+      hpCall("hue_plus", "set_button_lights", { accessory: f.acc.id, button: f.btn.number, targets: targets }).then(function () {
+        return hmReread("accessories", f.acc.id).then(function () {
+          popBack();
+        });
+      }, function () {});
+    };
   });
 }
-
 
 HP_PAGES["app-devinfo"] = ["hm_device_info", "info", hpDeviceInfoPage];
 HP_PAGES["app-rename"] = ["app_edit_name_and_type", "edit", hpRenamePage];

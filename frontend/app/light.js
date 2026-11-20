@@ -8,12 +8,13 @@ var HP_VERSION = document.currentScript ? new URL(document.currentScript.src).se
 var HPLF = { el: null, win: null, ready: false, waiting: [] };
 var HPLIGHTS = null;
 
-/* What the bridge says each light was last set to; read again whenever a room is opened. */
+/* What the bridge says each light was last set to; read again whenever a room is opened. The icon of each light on the page comes from it (its icon type), so when it arrives the icons on the page are drawn again: a room page opened before the first reading had icons guessed from the names (a bulb for "Bed Light"). */
 function hpLoadLightStates() {
-  if (!hueplus.has(H(), "get_resources")) return;
-  hueplus.resources(["lights"]).then(
+  if (!hueplus.has(H(), "get_resources")) return Promise.resolve();
+  return hueplus.resources(["lights"]).then(
     function (r) {
       HPLIGHTS = r.lights || null;
+      hpPaintLightIcons();
     },
     function () {}
   );

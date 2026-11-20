@@ -5,7 +5,7 @@
 <!-- Serve the repository root (python3 -m http.server 8777) and open /tests/frontend/panel/light.html: the frame the panel opens a light in, with the pretend Home Assistant. -->
 <iframe id="f" allowtransparency="true"></iframe>
 <script type="module">
-  import { makeHass } from "./mock-hass.js";
+  const { makeHass } = await import("./mock-hass.js?v=" + Date.now());
   const hass = makeHass(new URLSearchParams(location.search));
   window.__hass = hass;
   const f = document.getElementById("f");

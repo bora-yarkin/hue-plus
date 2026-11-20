@@ -735,14 +735,54 @@ def _group_light_ids(snap: models.Snapshot, kind: str, group_id: str) -> list[st
     return next((g["lights"] for g in models.groups(snap, kind) if g["id"] == group_id), [])
 
 
+def _targets(snap: models.Snapshot, data: dict[str, Any]) -> tuple[list[dict[str, Any]], list[str]]:
+    """The ``where`` of an automation or button from the call, and the ids of the lights it covers. The call gives ``targets``, a list of
+    ``{"group": <room or zone, id or name>, "group_type": "room" | "zone" | "home", "lights": [<only these lights>]}`` (the whole home has no group
+    or lights), or, as before, one ``group`` and ``group_type``."""
+    given = _json(data["targets"], "targets") if data.get("targets") is not None else None
+    if given is None:
+        group_type = data.get("group_type", "room")
+        if not data.get("group"):
+            raise ValueError("Choose the lights: give targets, or a room or zone")
+        group = _group(snap, group_type, data["group"])
+        return payloads.where_of([{"id": group["id"], "type": group_type}]), _group_light_ids(snap, group_type, group["id"])
+    if not isinstance(given, list) or not given:
+        raise ValueError("targets is a list of rooms, zones or the whole home")
+    targets: list[dict[str, Any]] = []
+    covered: list[str] = []
+    for entry in given:
+        if not isinstance(entry, dict):
+            raise ValueError('Each target is {"group": "<room or zone>", "group_type": "room"} or {"group_type": "home"}')
+        kind = entry.get("group_type", "room")
+        if kind == "home":
+            if entry.get("lights"):
+                raise ValueError("The whole home is not given lights: choose the rooms and zones instead")
+            if not snap.bridge_home:
+                raise ValueError("This bridge has no home to choose")
+            targets.append({"id": snap.bridge_home[0]["id"], "type": "bridge_home"})
+            covered += [light["id"] for light in snap.light]
+            continue
+        if kind not in ("room", "zone"):
+            raise ValueError("A target is a room, a zone or the whole home (group_type room, zone or home)")
+        group = _group(snap, kind, str(entry.get("group", "")))
+        members = _group_light_ids(snap, kind, group["id"])
+        chosen = [_light(snap, str(ref))["id"] for ref in _json(entry.get("lights") or [], "lights")]
+        outside = [light for light in chosen if light not in members]
+        if outside:
+            raise ValueError(f"A light chosen for {models._name(group)} is not in it")
+        # Every light chosen is the whole group: no items, so a light added to the room later is included, as in the app.
+        subset = chosen if chosen and set(chosen) != set(members) else []
+        targets.append({"id": group["id"], "type": kind, "lights": subset})
+        covered += chosen or members
+    return payloads.where_of(targets), list(dict.fromkeys(covered))
+
+
 def _routine_configuration(snap: models.Snapshot, kind: str, data: dict[str, Any]) -> dict[str, Any]:
-    group_type = data.get("group_type", "room")
-    group = _group(snap, group_type, data["group"])
+    where, light_ids = _targets(snap, data)
     scene = resolve(snap.scene, data["scene"], "scene")["id"] if data.get("scene") else None
     return payloads.routine_configuration(
         kind,
-        group_id=group["id"],
-        group_type=group_type,
+        where=where,
         at=data.get("time"),
         days=data.get("days"),
         minutes=data.get("minutes"),
@@ -759,7 +799,8 @@ def _routine_configuration(snap: models.Snapshot, kind: str, data: dict[str, Any
         start_type=data.get("start_type") or "time",
         until_type=data.get("until_type") or "time",
         action=data.get("action") or "scene",
-        light_ids=_group_light_ids(snap, group_type, group["id"]),
+        light_ids=light_ids,
+        repeat=data.get("repeat", True),
     )
 
 
@@ -826,7 +867,7 @@ async def configure_button(api, snap, data):
 
 @action("set_button_lights")
 async def set_button_lights(api, snap, data):
-    """Sets the room or zone one button of an accessory acts on (the Hue app's "Selected lights"). Not tried on a real switch."""
+    """Sets the lights one button of an accessory acts on (the Hue app's "Selected lights"): rooms, zones, the whole home, each whole or with chosen lights."""
     accessory = resolve(models.accessories(snap), data["accessory"], "accessory")
     number = int(data["button"])
     button = next((b for b in accessory["buttons"] if b["number"] == number), None)
@@ -834,10 +875,9 @@ async def set_button_lights(api, snap, data):
         raise ValueError(f"{accessory['name']} has buttons {', '.join(str(b['number']) for b in accessory['buttons'])}")
     if accessory["automation_id"] is None:
         raise ValueError(f"{accessory['name']} has no automation yet: set it up in the Hue app first")
-    group_type = data.get("group_type", "room")
-    group = _group(snap, group_type, data["group"])
+    where, _lights = _targets(snap, data)
     instance = next(a for a in snap.behavior_instance if a["id"] == accessory["automation_id"])
-    configuration = payloads.button_where(instance["configuration"], button["id"], group["id"], group_type)
+    configuration = payloads.button_where(instance["configuration"], button["id"], where=where)
     await api.put("behavior_instance", instance["id"], {"configuration": configuration})
 
 

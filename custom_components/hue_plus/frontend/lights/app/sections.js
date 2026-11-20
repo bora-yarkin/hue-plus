@@ -544,13 +544,18 @@ function customSection(s) {
       edReorder(s.devs, src, f, t);
       uiChanged();
     });
-    add = edAdd(widgetAddLabel(k), function () {
-      widgetAdd(lk, k);
-    });
+    add = edAdd(
+      widgetAddLabel(k),
+      function () {
+        widgetAdd(lk, k);
+      },
+      null,
+      rows.length > 0
+    );
   }
   if (!rows.length && !ed) return null;
-  /* Lights master: one light at the top that controls every light of the section; off unless the section turns it on. */
-  if (k === "lights" && s.master && !ed) {
+  /* Lights master: one light at the top that controls every light of the section; off unless the section turns it on. While the page is edited it opens its settings. */
+  if (k === "lights" && s.master) {
     var mids = src
       .filter(function (d) {
         return d.id && d.kind === "light";
@@ -558,7 +563,14 @@ function customSection(s) {
       .map(function (d) {
         return d.id;
       });
-    if (mids.length > 1) rows.unshift(lightsMasterRow(s.id, mids, !s.nowheel, s.mn, s.mall));
+    if (mids.length > 1) {
+      var mr = lightsMasterRow(s.id, mids, !s.nowheel, s.mn, s.mall, s.mo);
+      rows.unshift(
+        edMark(mr, function () {
+          showPopup("lmaster-edit:" + secKey() + ":" + s.id, true);
+        })
+      );
+    }
   }
   var body = rows;
   if (k === "read") {
@@ -644,9 +656,14 @@ function cameraSection(s) {
       uiChanged();
     });
     items.push(
-      edAdd(widgetAddLabel("camera"), function () {
-        widgetAdd(lk, "camera");
-      })
+      edAdd(
+        widgetAddLabel("camera"),
+        function () {
+          widgetAdd(lk, "camera");
+        },
+        null,
+        cams.length > 0
+      )
     );
   }
   return section(secName(s), secIcon(s), items);
@@ -778,9 +795,7 @@ function chartDraw(box, ds, data, rng, sid) {
   });
   box.innerHTML = "";
   if (!any) {
-    var m = mk("div", "hint");
-    m.textContent = _T("no_numeric_history_for_these_sensors");
-    box.appendChild(m);
+    box.appendChild(hintRow(_T("no_numeric_history_for_these_sensors")));
     return;
   }
   var shared = Object.keys(units).length === 1,
@@ -894,10 +909,14 @@ function chartSection(s) {
           return _T("add_one_or_more_sensors_to_draw_a_ch");
         },
       }),
-      edAdd(_T("add_device"), function () {
-        ADDPRE = "sensors";
-        showPopup("manage-add:" + lk, true);
-      }),
+      edAdd(
+        _T("add_device"),
+        function () {
+          ADDPRE = "sensors";
+          showPopup("manage-add:" + lk, true);
+        },
+        null
+      ),
     ]);
   }
   var card = mk("div", "chartc pane"),
@@ -937,9 +956,7 @@ function chartSection(s) {
   reg(live);
   function load() {
     plot.innerHTML = "";
-    var m = mk("div", "hint");
-    m.textContent = _T("loading");
-    plot.appendChild(m);
+    plot.appendChild(hintRow(_T("loading")));
     var r = rng();
     chartLoad(
       ds.map(function (d) {
@@ -950,9 +967,7 @@ function chartSection(s) {
         if (r !== rng()) return;
         if (!data) {
           plot.innerHTML = "";
-          var e2 = mk("div", "hint");
-          e2.textContent = _T("couldn_t_load_the_history_2");
-          plot.appendChild(e2);
+          plot.appendChild(hintRow(_T("couldn_t_load_the_history_2")));
           return;
         }
         chartDraw(plot, ds, data, r, s.id);
@@ -1165,10 +1180,9 @@ function secGlance() {
       _T("batteries"),
       function () {
         return editing()
-          ? cntS(UI.bats.length, _T("sensor"), _T("sensors_2"))
+          ? cntS(UI.bats.length, _T("device_2"), _T("devices"))
           : BATLIST.filter(function (x) {
-              var r = batReading(x[1]);
-              return r && r.low;
+              return batInfo(x).low === true;
             }).length +
               " " +
               _T("below") +

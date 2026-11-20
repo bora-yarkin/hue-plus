@@ -35,6 +35,7 @@ RESOURCES = (
     "motion",
     "geofence_client",
     "geolocation",
+    "bridge_home",
 )
 
 # Matter vendor ids the bridge reports for the ecosystems it is shared with.
@@ -70,6 +71,7 @@ class Snapshot:
     motion: list[dict[str, Any]] = field(default_factory=list)
     geofence_client: list[dict[str, Any]] = field(default_factory=list)
     geolocation: list[dict[str, Any]] = field(default_factory=list)
+    bridge_home: list[dict[str, Any]] = field(default_factory=list)
 
 
 def _name(resource: dict[str, Any]) -> str:
@@ -347,6 +349,7 @@ def groups(snap: Snapshot, kind: str) -> list[dict[str, Any]]:
         children = [c.get("rid") for c in group.get("children") or []]
         # The lights of the group: a zone's children are lights, a room's are devices, and a device's light is the one it owns.
         lights = children if kind == "zone" else [item["id"] for item in snap.light if (item.get("owner") or {}).get("rid") in children]
+        by_id = {item["id"]: item for item in snap.light}
         out.append(
             {
                 "id": group["id"],
@@ -354,6 +357,11 @@ def groups(snap: Snapshot, kind: str) -> list[dict[str, Any]]:
                 "archetype": (group.get("metadata") or {}).get("archetype"),
                 "children": [{"id": c, "name": (light_names if kind == "zone" else names).get(c, c)} for c in children],
                 "lights": lights,
+                # Each light with the name of its device and its icon type, for a screen that lets the person choose among them.
+                "light_items": [
+                    {"id": i, "name": light_names.get(i, i), "archetype": (by_id.get(i, {}).get("metadata") or {}).get("archetype")}
+                    for i in lights
+                ],
             }
         )
     return out
@@ -487,6 +495,11 @@ def accessories(snap: Snapshot) -> list[dict[str, Any]]:
                 "automation_id": automation["id"] if automation else None,
                 "actions": {
                     bid: {press: spec for press, spec in config.items() if press.startswith("on_")}
+                    for bid, config in ((automation or {}).get("configuration") or {}).get("buttons", {}).items()
+                },
+                # What each button acts on as the bridge keeps it: groups (rooms, zones, the home) with, where only some lights are meant, those lights.
+                "where": {
+                    bid: config.get("where") or []
                     for bid, config in ((automation or {}).get("configuration") or {}).get("buttons", {}).items()
                 },
                 # The room, zone or home each button acts on (what the Hue app calls its selected lights).

@@ -180,6 +180,7 @@ def home() -> dict[str, list[dict[str, Any]]]:
             }
         ],
         "geofence_client": [{"id": "g1", "name": "phone"}],
+        "bridge_home": [{"id": "home1", "type": "bridge_home"}],
         "geolocation": [{"id": "g2", "is_configured": False}],
         "clip": [{"id": "clip1", "resources": ["light", "scene", "motion"]}],
         "motion_area_candidate": [{"id": "ma1", "capabilities": ["sensor"]}],

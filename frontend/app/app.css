@@ -102,9 +102,9 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .pg .pbar{display:flex;align-items:center;gap:14px;background:var(--head);padding:calc(var(--sat) + 10px) 16px 12px;flex:none}
 .pg .pbar .rbt{background:var(--tile);width:32px;height:32px}
 .pg .pbar .rbt svg{width:17px;height:17px;stroke-width:2.2}
-.pg .pbar .ttl{flex:1;min-width:0;font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg .pbar .ttl{flex:1;min-width:0;font-size:11.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pg .pbar .ttl .ic{display:none}
-.pg .pbar .act{border:0;background:var(--tile);color:#fff;border-radius:16px;padding:8px 16px;font-size:12px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;cursor:pointer}
+.pg .pbar .act{border:0;background:var(--tile);color:#fff;border-radius:16px;padding:8px 14px;font-size:10px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;cursor:pointer}
 .pg .pbar .act:disabled{opacity:.5;cursor:default}
 .pg .pbody{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 0 calc(var(--sab) + 32px)}
 .pg .pbody>*{max-width:760px;margin-left:auto;margin-right:auto}
@@ -147,7 +147,11 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 /* ---- dialogs and the message ---- */
 .scrim{position:fixed;inset:0;opacity:0;transition:opacity .25s;z-index:80;background:rgba(0,0,0,.6)}
 .scrim.in{opacity:1}
-.dlg{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:90;width:min(360px,88%);border-radius:var(--r-xl);padding:22px;text-align:center;background:var(--head);box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.dlg{position:fixed;left:8px;right:8px;bottom:calc(var(--sab) + 8px);z-index:90;max-width:520px;margin:0 auto;border-radius:var(--r-xl);padding:22px;text-align:center;background:var(--head);box-shadow:0 20px 50px rgba(0,0,0,.5)}
+/* every sheet of the panel comes up from the bottom and goes back down */
+.dlg,.asheet{transform:translateY(calc(100% + 24px));transition:transform .32s cubic-bezier(.2,.8,.2,1)}
+.dlg.in,.asheet.in{transform:none}
+@media(prefers-reduced-motion:reduce){.dlg,.asheet{transition:none}}
 .dlg p{margin:0 0 20px;font-size:var(--fs-l);line-height:1.4}
 .dlg .rrow{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp)}
 .rbtn{min-height:46px;display:flex;align-items:center;justify-content:center;border-radius:999px;background:var(--tile);cursor:pointer;font-weight:600;user-select:none}
@@ -163,22 +167,25 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .hm .hm-tt{min-width:0;display:block;margin-top:6px}
 .hm .hm-tt b{display:block;font-size:26px;font-weight:700;line-height:1.1;overflow-wrap:anywhere}
 .hm .hm-tt i{display:block;font-style:normal;font-size:var(--fs-m);color:var(--ink2);margin-top:6px}
-.hm .hm-label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--label);padding:26px 18px 10px}
+.hm .hm-label{font-size:7.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--label);padding:24px 16px 10px}
 .hm .hm-group{background:var(--row);margin:0;border:0;border-radius:0}
-.hm .hm-row{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 18px;transition:background .2s}
-.hm .hm-row+.hm-row{border-top:1px solid var(--line)}
+.hm .hm-row{position:relative;display:flex;align-items:center;gap:16px;min-height:66px;padding:10px 16px;transition:background .2s}
+.hm .hm-row+.hm-row:before{content:"";position:absolute;left:16px;right:0;top:0;height:1px;background:var(--line)}
+.hm .hm-row+.hm-row:has(>.hm-i):before{left:66px}
 .hm .hm-row.tap{cursor:pointer;user-select:none}
 .hm .hm-row.tap:active{background:var(--row-hi)}
 .hm .hm-row:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
-.hm .hm-i{width:40px;height:40px;border-radius:50%;background:#101114;display:flex;align-items:center;justify-content:center;flex:none;color:#fff}
+.hm .hm-i{width:34px;height:34px;display:flex;align-items:center;justify-content:center;flex:none;color:#fff}
 .hm .hm-i svg,.hm .hm-c svg,.hm .hm-ck svg,.hm .hm-ni svg,.hm .hm-ti svg,.hm .hm-gear svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.hm .hm-i svg{width:21px;height:21px}
+.hm .hm-i svg{width:24px;height:24px}
 .hm .hm-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.hm .hm-n{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hm .hm-s{font-size:11px;color:var(--ink2);overflow-wrap:anywhere}
-.hm .hm-v{font-size:12px;color:var(--ink2);white-space:nowrap;font-variant-numeric:tabular-nums}
-.hm .hm-c{width:20px;height:20px;flex:none;color:var(--ink2);display:flex;align-items:center}
-.hm .hm-c svg{width:18px;height:18px;transform:rotate(-90deg)}
+.hm .hm-n{font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hm .hm-s{font-size:9.2px;color:var(--ink2);overflow-wrap:anywhere}
+.hm .hm-v{font-size:9.6px;color:var(--ink2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.hm .hm-c{width:16px;height:16px;flex:none;color:var(--ink2);display:flex;align-items:center}
+/* the app has no arrow on a row that shows its value */
+.hm .hm-row:has(.hm-v:not(:empty)) .hm-c{display:none}
+.hm .hm-c svg{width:15px;height:15px;transform:rotate(-90deg)}
 .hm .hm-row.stack{min-height:58px}
 .hm .hm-row.good .hm-s{color:#6dd58c}
 .hm .hm-row.danger .hm-n{color:#ff6b62}
@@ -190,6 +197,11 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .hm .hm-sw i{position:absolute;left:2px;top:2px;width:25px;height:25px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .2s}
 .hm .hm-row.on .hm-sw{background:var(--acc)}
 .hm .hm-row.on .hm-sw i{transform:translateX(18px)}
+/* Rows as the app draws them: full-width rows, plain icons, a bold name, the value on the right without an arrow */
+.hm .hm-group.card{margin:0 16px;border-radius:14px;overflow:hidden}
+.pg.wizpg .hm .hm-tt b{font-size:20px;line-height:1.2}
+.hm .hm-row.blueic .hm-i{width:30px;height:30px;margin:0 2px;border-radius:50%;background:var(--acc)}
+.hm .hm-row.blueic .hm-i svg{width:18px;height:18px}
 .hm .hm-note{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;margin:16px 16px;border-radius:var(--r-row);font-size:var(--fs-m);line-height:1.4;color:var(--ink2);background:rgba(46,104,247,.1);border:1px solid rgba(46,104,247,.4)}
 .hm .hm-ni{width:20px;height:20px;flex:none;color:var(--acc);margin-top:1px}
 .hm .hm-ni svg{width:20px;height:20px}
@@ -260,7 +272,7 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .fcard{position:relative;pointer-events:auto;width:min(520px,calc(100% - 34px));max-height:80vh;overflow:auto;background:#26272b;border-radius:18px;padding:20px 17px 20px;box-shadow:0 24px 60px rgba(0,0,0,.55);opacity:0}
 .fcard .ft{font-size:13.5px;font-weight:500;margin:2px 3px 18px}
 .fg{display:flex;flex-wrap:wrap;gap:10px 13px}
-.sitem{width:102px;flex:none;border-radius:11px;background:var(--tile);height:113px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:6px;cursor:pointer;color:#fff;transition:background .25s,transform .12s}
+.sitem{width:102px;flex:none;border-radius:11px;background:var(--tile);height:113px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:6px;cursor:pointer;color:#fff;transition:background .25s,transform .12s,translate .32s cubic-bezier(.2,.8,.2,1)}
 .sitem:active{transform:scale(.96)}
 .sitem .dc{position:relative;width:50px;height:50px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.35))}
 .sitem .stop{position:absolute;inset:0;display:none;align-items:center;justify-content:center}
@@ -270,7 +282,10 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .sitem.moving .stop{display:flex}
 .sitem.on:not(.moving){background:linear-gradient(180deg,var(--gold1),var(--gold2));color:var(--gold-ink)}
 .sitem b{font-size:11.5px;font-weight:500;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.sside{display:flex;flex-direction:column;justify-content:center;gap:10px;width:34px;flex:none;animation:hpin .2s}
+.sside{position:absolute;z-index:0;display:flex;flex-direction:column;justify-content:center;gap:10px;width:34px;opacity:0;pointer-events:none;transition:left .32s cubic-bezier(.2,.8,.2,1),top .32s cubic-bezier(.2,.8,.2,1),opacity .24s}
+.sside.on{opacity:1;pointer-events:auto}
+/* the pair comes out from behind its tile and goes back behind it */
+.fg .sitem{position:relative;z-index:1}
 .sside .rbt{background:var(--tile)}
 
 /* ---- the colour screen of a room's lights: the frame's own bar, SAVE and DONE ---- */
@@ -352,6 +367,7 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .pg.modalpg{top:66px;border-radius:18px 18px 0 0;box-shadow:0 0 0 100vmax rgba(0,0,0,0);transform:translateY(calc(100% + 66px));opacity:1;transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s}
 .pg.modalpg.in{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.55)}
 .pg.modalpg .pbar{border-radius:18px 18px 0 0;padding-top:14px}
+.pg.modalpg.shortpg{top:auto;bottom:0}
 .pg.modalpg .pbody{overflow-x:hidden}
 .pg.lightpg{transform:none;opacity:1;transition:none}
 
@@ -552,13 +568,11 @@ body{width:100%;height:100%}
 .fcard{position:absolute;left:14px;width:calc(100% - 44px);max-height:none;overflow:visible;padding:12px 14px 14px;border-radius:14px}
 .fcard .ft{font-size:12px;margin:4px 2px 12px}
 .fcard .fedit{right:10px;top:8px;width:26px;height:26px}
-.fg{display:grid;grid-template-rows:repeat(2,102px);grid-auto-flow:column;grid-auto-columns:93px;gap:11px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;margin:0 -14px;padding:0 14px 2px;scrollbar-width:none;overscroll-behavior-x:contain}
+.fg{position:relative;display:grid;grid-template-rows:repeat(2,102px);grid-auto-flow:column;grid-auto-columns:93px;gap:11px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;margin:0 -14px;padding:0 14px 2px;scrollbar-width:none;overscroll-behavior-x:contain}
 .fg::-webkit-scrollbar{display:none}
 .fg .sitem{width:93px;height:102px}
 .fg .sitem .dc{width:44px;height:44px}
 /* A page opened inside a popup goes back to the popup's page: it has the arrow, not the X. */
-.pg.modalpg.subpg .back{display:flex!important}
-.pg.modalpg.subpg .x{display:none!important}
 
 /* A scene outside the folders: one large disc and its name. */
 .ftile.loose .dots{top:14px;padding:0}

@@ -30,7 +30,7 @@ function remoteFind(rid) {
 function remoteNew() {
   return {
     id: "",
-    rid: "rm" + Date.now().toString(36).slice(-7),
+    rid: newKey("rm"),
     name: _T("remote"),
     icon: "media",
     kind: "remote",
@@ -52,8 +52,12 @@ function remotePress(b) {
     toast(_T("rm_not_available_right_now"));
     return;
   }
-  /* A command that fails says so (callRaw shows the error); a command that goes through says nothing. */
-  call(a[0], a[1], { entity_id: b.e });
+  /* A command that fails says so (callRaw shows the error); a command that goes through says nothing. A button set to ask first (a garage door) asks before it runs. */
+  function run() {
+    call(a[0], a[1], { entity_id: b.e });
+  }
+  if (b.q) confirmDlg((b.l || A(b.e).friendly_name || b.e) + "?", run);
+  else run();
 }
 
 function remoteRow(d) {
@@ -223,9 +227,7 @@ function remotePicture(box, d, edit, redraw) {
   box.appendChild(wrap);
   if (!edit) return;
   if (!img.hs.length) {
-    var hint = mk("div", "hint");
-    hint.textContent = _T("rm_tap_the_picture_to_add_a_touch_area");
-    box.appendChild(hint);
+    box.appendChild(hintRow(_T("rm_tap_the_picture_to_add_a_touch_area")));
   }
   var h = img.hs[sel];
   if (h) {
@@ -331,9 +333,7 @@ function remotePage(b, rid) {
       return;
     }
     if (edit) {
-      var cl = mk("div", "hint");
-      cl.textContent = _T("rm_columns");
-      box.appendChild(cl);
+      box.appendChild(hintRow(_T("rm_columns")));
       box.appendChild(
         seg(
           [2, 3, 4, 5, 6].map(function (n) {
@@ -391,9 +391,7 @@ function remotePage(b, rid) {
       grid.appendChild(plus);
     }
     if (!rm.btns.length && !edit) {
-      var hint = mk("div", "hint");
-      hint.textContent = ISADMIN ? _T("rm_no_buttons_yet_admin") : _T("rm_no_buttons_yet");
-      box.appendChild(hint);
+      box.appendChild(hintRow(ISADMIN ? _T("rm_no_buttons_yet_admin") : _T("rm_no_buttons_yet")));
     }
     box.appendChild(grid);
   }
@@ -454,6 +452,22 @@ function remoteBtnPage(b, key) {
       },
       24
     )
+  );
+  box.appendChild(
+    pill("alert", _T("rm_ask_first"), {
+      on: function () {
+        return !!x.q;
+      },
+      sub: function () {
+        return _T("rm_ask_first_sub");
+      },
+      tap: function () {
+        if (x.q) delete x.q;
+        else x.q = 1;
+        save();
+        redrawBox(box, draw);
+      },
+    })
   );
   var widths = [[1, _T("rm_one_column")]];
   if (d.rm.cols >= 2) widths.push([2, _T("rm_two_columns")]);

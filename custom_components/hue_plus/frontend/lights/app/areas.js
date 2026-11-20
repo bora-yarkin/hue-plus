@@ -608,9 +608,7 @@ function eaMorePage(b) {
         );
       });
       if (items.length > shown.length) {
-        var m = mk("div", "hint");
-        m.textContent = items.length - shown.length + _T("more_type_to_narrow_the_list");
-        box.appendChild(m);
+        box.appendChild(hintRow(items.length - shown.length + _T("more_type_to_narrow_the_list")));
       }
     });
   }
@@ -839,7 +837,7 @@ function eaActions() {
       box.appendChild(
         pill("trash", _T("delete_area"), {
           tap: function () {
-            confirmDlg(_T("delete") + EAD.draft.name + "”?", eaDelete);
+            confirmDlg(_T("delete") + EAD.draft.name + "”?", eaDelete, _T("delete"));
           },
         })
       );

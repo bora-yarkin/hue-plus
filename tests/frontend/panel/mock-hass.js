@@ -112,8 +112,8 @@ export function makeHass(query) {
       { id: "auto-1", name: "Wake up", enabled: true, script: "Basic wake up routine", status: "running", configuration: { when: { time_point: { type: "time", time: { hour: 6, minute: 0 } }, recurrence_days: ["wednesday"] } } },
       { id: "auto-2", name: "Evening timer", enabled: false, script: "Timers", status: "disabled" },
     ],
-    rooms: [{ id: "room-1", name: "Living room", children: [{ id: "dev-lamp", name: "Desk lamp" }], lights: ["light-1", "light-2", "light-3"] }],
-    zones: [{ id: "zone-1", name: "Desk area", children: [], lights: ["light-1"] }], smart_scenes: [], scenes: [
+    rooms: [{ id: "room-1", name: "Living room", children: [{ id: "dev-lamp", name: "Desk lamp" }], lights: ["light-1", "light-2", "light-3"], light_items: [{ id: "light-1", name: "Desk lamp", archetype: "table_shade" }, { id: "light-2", name: "Floor lamp", archetype: "floor_shade" }, { id: "light-3", name: "Shelf strip", archetype: "hue_lightstrip" }] }],
+    zones: [{ id: "zone-1", name: "Desk area", children: [], lights: ["light-1"], light_items: [{ id: "light-1", name: "Desk lamp", archetype: "table_shade" }] }], smart_scenes: [], scenes: [
       { id: "scene-1", name: "Arctic aurora", group_id: "room-1", group_type: "room", lights: ["hl-desk_lamp", "hl-shelf_strip"], speed: 0.6, auto_dynamic: true, colours: [{ xy: [0.17, 0.35] }, { xy: [0.2, 0.2] }, { xy: [0.25, 0.5] }] },
       { id: "scene-2", name: "Reading", group_id: "room-1", group_type: "room", lights: ["hl-desk_lamp", "hl-shelf_strip"], speed: 0.5, auto_dynamic: false, colours: [{ mirek: 300 }] },
       { id: "scene-3", name: "Relax", group_id: "room-1", group_type: "room", lights: ["hl-desk_lamp", "hl-shelf_strip", "hl-floor_lamp"], speed: 0.5, auto_dynamic: false, colours: [{ mirek: 400 }, { xy: [0.5, 0.42] }] },
@@ -168,7 +168,7 @@ export function makeHass(query) {
     bridge: { name: "Hue Bridge Pro", time_zone: "Europe/Istanbul", internet: "connected" },
   };
 
-  const HUE_SERVICES = ["get_resources", "set_effect", "set_style", "configure_light", "timed_effect", "signal", "create_routine", "update_routine", "trigger_automation", "configure_button", "set_streaming_end_state", "stream_colors", "stop_streaming", "set_motion_area", "create_motion_area", "set_motion_area_lights", "delete_motion_area", "update_automation", "delete_automation", "set_auto_update", "check_for_update", "install_bridge_update", "set_zigbee_channel", "set_home_location", "configure_bridge", "search_for_devices", "remove_matter_fabric", "remove_device", "revoke_app", "update_entertainment_area", "delete_entertainment_area", "import_hue_scene", "create_scene", "update_scene", "delete_scene", "create_daily_smart_scene", "create_room", "update_room", "delete_room", "create_zone", "update_zone", "delete_zone", "set_name", "activate_scene"];
+  const HUE_SERVICES = ["get_resources", "set_button_lights", "set_effect", "set_style", "configure_light", "timed_effect", "signal", "create_routine", "update_routine", "trigger_automation", "configure_button", "set_streaming_end_state", "stream_colors", "stop_streaming", "set_motion_area", "create_motion_area", "set_motion_area_lights", "delete_motion_area", "update_automation", "delete_automation", "set_auto_update", "check_for_update", "install_bridge_update", "set_zigbee_channel", "set_home_location", "configure_bridge", "search_for_devices", "remove_matter_fabric", "remove_device", "revoke_app", "update_entertainment_area", "delete_entertainment_area", "import_hue_scene", "create_scene", "update_scene", "delete_scene", "create_daily_smart_scene", "create_room", "update_room", "delete_room", "create_zone", "update_zone", "delete_zone", "set_name", "activate_scene"];
 
   function set(id, patch, value) {
     const s = states[id];

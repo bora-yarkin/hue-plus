@@ -88,6 +88,10 @@ function roomOffWatch(p) {
 /* Brings Home Assistant's scripts to what the dashboard's rooms hold now: reads each first and writes only what differs, makes one that is missing, and removes the dashboard's script of a room that is gone or has nothing left to switch off (only one that carries the dashboard's mark). */
 function roomOffReconcile() {
   if (!ISADMIN || !STORE_READY || !H() || OFFLINE) return;
+  if (!dataIsReal()) {
+    roomOffReconcileSoon();
+    return;
+  }
   var want = {};
   roomOffRooms().forEach(function (r) {
     var p = roomOffScript(r);
@@ -176,9 +180,7 @@ function roomOffPage(b, room) {
   var box = mk("div");
   b.appendChild(box);
   function draw() {
-    var hint = mk("div", "hint");
-    hint.textContent = _T("the_button_at_the_top_of_this_room_s_") + " script." + roomOffScriptId(room);
-    box.appendChild(hint);
+    box.appendChild(hintRow(_T("the_button_at_the_top_of_this_room_s_") + " script." + roomOffScriptId(room)));
     var devs = roomOffDevices(room);
     if (!devs.length) box.appendChild(pill("info", _T("nothing_here_can_be_switched_off"), {}));
     devs.forEach(function (d) {

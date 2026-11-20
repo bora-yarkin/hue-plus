@@ -28,7 +28,7 @@ var KINDS = [
 /* The starting layout when nothing is saved yet: one room per Home Assistant area with its controllable devices,
  temperature and humidity tiles, and every battery sensor tracked. Built from Home Assistant, so it fits any home. */
 /* The lights that are the zones of another light (a gradient tube is one light with a light for each of its colour zones). They are not put on a page by themselves: the main light controls its zones, and one can still be added by hand. */
-function zoneLightIds(states) {
+function zoneLightIds(states, entities) {
   var out = {};
   Object.keys(states).forEach(function (id) {
     var a = states[id].attributes || {};
@@ -37,6 +37,18 @@ function zoneLightIds(states) {
         if (m !== id) out[m] = 1;
       });
   });
+  /* A light's zones are also found by their unique ids: a light whose unique id is another light's unique id followed by _zone_ and a number is a zone of it. The parent lists
+     only some of its zones when a strip has more than it reports (a strip of five zones that lists three). */
+  if (entities) {
+    var byUid = {};
+    Object.keys(entities).forEach(function (id) {
+      if (id.indexOf("light.") === 0 && entities[id].unique_id) byUid[entities[id].unique_id] = id;
+    });
+    Object.keys(entities).forEach(function (id) {
+      var m = id.indexOf("light.") === 0 && entities[id].unique_id && /^(.+)_zone_\d+$/.exec(entities[id].unique_id);
+      if (m && byUid[m[1]] && byUid[m[1]] !== id) out[id] = 1;
+    });
+  }
   return out;
 }
 
@@ -48,7 +60,7 @@ function seedUI() {
     chips = [],
     bats = [],
     all = Object.keys(h.states),
-    zones = zoneLightIds(h.states),
+    zones = zoneLightIds(h.states, h.entities),
     ids = all.filter(function (id) {
       var e = h.entities[id];
       return !zones[id] && !(e && (e.entity_category || e.hidden || e.disabled_by));
@@ -70,7 +82,8 @@ function seedUI() {
       var kind = DOMKIND[dom(id)];
       if (
         !inArea(a.area_id, id) ||
-        ["light", "switch", "fan", "climate", "media", "vacuum", "camera"].indexOf(kind) < 0
+        ["light", "switch", "fan", "climate", "media", "vacuum", "camera"].indexOf(kind) < 0 ||
+        (kind === "camera" && isVacuumMap(id))
       )
         return;
       var nm = A(id).friendly_name || id;
@@ -171,12 +184,14 @@ function cleanRemote(r) {
     if (!x || typeof x.e !== "string" || !ENTRE.test(x.e)) return;
     if (["script", "button", "input_button", "scene", "switch"].indexOf(x.e.split(".")[0]) < 0) return;
     var s = typeof x.s === "number" ? Math.round(x.s) : 1;
-    out.btns.push({
+    var btn = {
       e: x.e,
       i: iconOk(x.i) ? x.i : "info",
       l: typeof x.l === "string" ? x.l.slice(0, 24) : "",
       s: Math.max(1, Math.min(cols, 2, s)),
-    });
+    };
+    if (x.q) btn.q = 1;
+    out.btns.push(btn);
   });
   return out;
 }
@@ -191,6 +206,7 @@ function cleanAppliance(a) {
       start: ["button", "input_button", "script", "switch", "input_boolean"],
       stop: ["button", "input_button", "script", "switch", "input_boolean"],
       progress: ["sensor", "number", "input_number"],
+      current: ["sensor", "number", "input_number"],
       remaining: ["sensor", "input_datetime"],
       door: ["binary_sensor", "sensor"],
       permission: ["binary_sensor", "switch", "input_boolean"],
@@ -207,6 +223,30 @@ function cleanAppliance(a) {
       out.extra.push({ e: x.e, l: typeof x.l === "string" ? x.l.slice(0, 30) : "" });
   });
   return out;
+}
+
+/* The map of a vacuum belongs in that vacuum's popup, not on a page: a camera that is bound as a vacuum's map (app/profiles.js), or that sits on the same Home Assistant device as a vacuum
+   (how Roborock, Dreame and Xiaomi add a vacuum's map), is a map and not a camera of the house. */
+function vacuumMapOf(vacuumId) {
+  var h = H(),
+    d = UIDEV[vacuumId];
+  if (d && d.vx && d.vx.map) return d.vx.map;
+  var e = h.entities && h.entities[vacuumId];
+  if (!e || !e.device_id) return null;
+  return (
+    Object.keys(h.states).filter(function (id) {
+      var c = h.entities[id];
+      return id.indexOf("camera.") === 0 && c && c.device_id === e.device_id;
+    })[0] || null
+  );
+}
+
+function isVacuumMap(id) {
+  if (id.indexOf("camera.") !== 0) return false;
+  var h = H();
+  return Object.keys(h.states).some(function (v) {
+    return v.indexOf("vacuum.") === 0 && vacuumMapOf(v) === id;
+  });
 }
 
 function cleanDev(d) {
@@ -333,7 +373,7 @@ function cleanUI(u) {
     batsOff: Array.isArray(u.batsOff)
       ? u.batsOff
           .filter(function (x) {
-            return typeof x === "string" && ENTRE.test(x);
+            return typeof x === "string" && DEVRE.test(x);
           })
           .slice(0, 200)
       : [],
@@ -366,6 +406,19 @@ function cleanUI(u) {
         var x = {};
         if (typeof c.b === "number" && c.b >= 1 && c.b <= 100) x.b = Math.round(c.b);
         if (typeof c.k === "number" && c.k >= 2000 && c.k <= 6500) x.k = Math.round(c.k);
+        /* A saved state made in the light popup: brightness, a colour temperature or a hue and saturation, an effect. */
+        if (c.c && typeof c.c === "object") {
+          var sv = {},
+            col = c.c.col;
+          if (typeof c.c.bri === "number" && c.c.bri >= 1 && c.c.bri <= 100) sv.bri = Math.round(c.c.bri);
+          if (col && typeof col === "object") {
+            if (typeof col.k === "number" && col.k >= 1000 && col.k <= 10000) sv.col = { k: Math.round(col.k) };
+            else if (typeof col.h === "number" && typeof col.s === "number" && col.h >= 0 && col.h <= 360 && col.s >= 0 && col.s <= 100)
+              sv.col = { h: Math.round(col.h), s: Math.round(col.s) };
+          }
+          if (typeof c.c.fx === "string" && c.c.fx.length <= 60) sv.fx = c.c.fx;
+          if (Object.keys(sv).length) x.c = sv;
+        }
         if (Object.keys(x).length) o.on[id] = x;
       });
   if (u.caps && typeof u.caps === "object")
@@ -435,9 +488,9 @@ function cleanUI(u) {
     });
     o.stat[rid] = out;
   });
+  /* Tracked batteries are devices (app/batteries.js). A list from before that, of [name, entity] pairs, is not carried over. */
   (Array.isArray(u.bats) ? u.bats : []).slice(0, 30).forEach(function (b) {
-    if (Array.isArray(b) && ok(b[0], 40) && typeof b[1] === "string" && ENTRE.test(b[1]))
-      o.bats.push([b[0], b[1]]);
+    if (typeof b === "string" && DEVRE.test(b) && o.bats.indexOf(b) < 0) o.bats.push(b);
   });
   var lv = u.layout && u.layout.v,
     cur = lv >= 3 ? { home: u.layout.home, rooms: u.layout.rooms || {} } : migrateLayout(u, ids);
@@ -535,6 +588,12 @@ function cleanLayout(a) {
     if (k === "lights" && s.master) o.master = 1;
     if (k === "lights" && s.master && typeof s.mn === "string" && s.mn.trim()) o.mn = s.mn.trim().slice(0, 40);
     if (k === "lights" && s.master && s.mall) o.mall = 1;
+    if (k === "lights" && s.master && Array.isArray(s.mo))
+      o.mo = s.mo
+        .filter(function (x, i, a) {
+          return typeof x === "string" && ENTRE.test(x) && a.indexOf(x) === i;
+        })
+        .slice(0, 100);
     if (k === "lights" && s.nowheel) o.nowheel = 1;
     if (k === "lights" && s.accent) o.accent = 1;
     if (k === "pinned" && Array.isArray(s.pins)) o.pins = cleanPins(s.pins);
@@ -657,10 +716,8 @@ function applyUI() {
       if (d.id && !OWNALL[d.id]) OWNALL[d.id] = r.id;
     });
   });
-  /* Battery sensors of a hidden room are left out like the room's devices. */
-  BATLIST = (UI.bats || []).filter(function (x) {
-    return ISADMIN || modeOf(x[1]).mode !== "hide";
-  });
+  /* The batteries tracked; those of a hidden room are left out where others see them (batVisible). */
+  BATLIST = (UI.bats || []).slice();
   UI.rooms.forEach(function (r) {
     if (r.hide || roomHidden(r.id)) return;
     UIROOM[r.id] = r;

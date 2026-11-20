@@ -6,6 +6,7 @@ HOST_ICONS.bolt = "<path d='M13 2L5 14h6l-1 8 8-12h-6z'/>";
 HOST_ICONS.tabhome = "<path d='M12 2.6 2.4 11.4h2.8v8.8h5.3v-5.6h3v5.6h5.3v-8.8h2.8z'/>";
 HOST_ICONS.tabbolt = "<path d='M14 1.8 5.2 13.6h5.4L9.2 22.2 18.8 9.6h-5.6z'/>";
 HOST_ICONS.switch = "<rect x='7' y='2.5' width='10' height='19' rx='2.4'/><path d='M10 6.5h4M10 10h4M10 13.5h4M10 17h4'/>";
+HOST_ICONS.sunrise = "<path d='M12 4V2M4.9 7.9 3.5 6.5M19.1 7.9l1.4-1.4M2 17h3M19 17h3M7 17a5 5 0 0 1 10 0M3 21h18'/>";
 HOST_ICONS.dots = "<circle cx='5' cy='12' r='1.7' fill='currentColor'/><circle cx='12' cy='12' r='1.7' fill='currentColor'/><circle cx='19' cy='12' r='1.7' fill='currentColor'/>";
 
 var HPAPP = { tab: "", el: null, bridge: "", modules: null, sigOf: null, lastSig: "" };
@@ -133,17 +134,24 @@ window.HuePlusApp = {
     HPAPP.main = el.querySelector(".view>.in");
     HPAPP.nav = el.querySelector("nav");
     HPAPP.main.appendChild(mk("div", "empty")).textContent = _T("loading");
-    /* The colour panel takes a few seconds to start (it is Home Control's whole dashboard code), so it starts now, while Home is being read, and is ready when a light is tapped. */
+    /* The colour panel takes a few seconds to start (it is Home Control's whole dashboard code), so it starts now, while the rest is read, and is ready when a light is tapped. */
     hpLightFrame(function () {});
-    /* Everything the pages need from the bridge (rooms, scenes and their colours, controls, what each light was last set to) is read now, before anything is tapped. */
-    hmReady().then(refresh, function () {});
-    hpLoadLightStates();
-    /* The panel starts when the registries are in, or after a short wait; the lists fill in by themselves. */
+    /* One loading screen, then the panel: everything the pages draw from the bridge is read first (the registries of Home Assistant, rooms, scenes and their colours, controls, the icon type of every room and
+       light, and what each light was last set to), so no page is drawn from a guess and corrected a moment later (a wrong icon, a missing light). A reading that fails does not stop the panel, and
+       neither does a slow one past twelve seconds: the pages fill in by themselves as before. */
+    function quiet(p) {
+      return Promise.resolve(p).then(null, function () {});
+    }
     Promise.race([
-      HPAPI.ready(),
-      new Promise(function (resolve) {
-        setTimeout(resolve, 6000);
+      quiet(HPAPI.ready()).then(function () {
+        return Promise.all([quiet(hmReady()), quiet(hpLoadLightStates()), quiet(hpLoadArchetypes())]);
       }),
-    ]).then(hpStart);
+      new Promise(function (resolve) {
+        setTimeout(resolve, 12000);
+      }),
+    ]).then(function () {
+      refresh();
+      hpStart();
+    });
   },
 };

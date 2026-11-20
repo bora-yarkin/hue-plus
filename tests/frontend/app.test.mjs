@@ -2,7 +2,7 @@
 // The Hue dashboard panel (frontend/app, the dashboard module): its texts exist, its bundle is complete and plain script, and its pages only reach the services Hue Plus and Home Assistant have.
 // Run: node --test tests/frontend
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 
@@ -11,7 +11,7 @@ const read = (path) => readFileSync(new URL(path, root), "utf8");
 const APP_FILES = ["shell.js", "home.js", "sortable.js", "scenes.js", "switchpages.js", "cyclepage.js", "lightsettings.js", "autotab.js", "light.js", "syncpage.js", "menupages.js", "roomedit.js"].map((f) => read(`frontend/app/${f}`));
 const host = read("frontend/app/host.js");
 const bundle = read("custom_components/hue_plus/frontend/app.js");
-const plugin = [...APP_FILES, ...["huemenu.js", "huewizard.js", "humotion.js", "huerooms.js", "huesync.js", "huescenes.js", "huestyle.js"].map((f) => read(`frontend/src/${f}`))].join("\n");
+const plugin = [...APP_FILES, ...["huemenu.js", "huepicker.js", "huewizard.js", "hueedit.js", "humotion.js", "huerooms.js", "huesync.js", "huescenes.js", "huestyle.js"].map((f) => read(`frontend/src/${f}`))].join("\n");
 const strings = read("frontend/src/strings.js");
 
 // The words the host itself holds, the table (EN) in host.js.
@@ -71,11 +71,27 @@ test("a room's scenes are the app's folders and a scene's page has only what the
 });
 
 test("no two pages of the Hue Plus menu share a key (one used to hide another: the scene wizard's lights page hid Lights & smart plugs)", () => {
-  const sources = ["huemenu.js", "huewizard.js", "humotion.js", "huerooms.js", "huesync.js", "huescenes.js", "huestyle.js", "huenewscene.js", "hueplus.js", "epilogue.js"].map((f) => read(`frontend/src/${f}`)).join("\n");
+  const sources = ["huemenu.js", "huepicker.js", "huewizard.js", "hueedit.js", "humotion.js", "huerooms.js", "huesync.js", "huescenes.js", "huestyle.js", "huenewscene.js", "hueplus.js", "epilogue.js"].map((f) => read(`frontend/src/${f}`)).join("\n");
   const keys = [...sources.matchAll(/HP_PAGES\["([a-z0-9-]+)"\]\s*=/g), ...sources.matchAll(/HC\.registerPage\(\s*"([a-z0-9-]+)"/g), ...sources.matchAll(/^\s*"([a-z0-9-]+)": \[$/gm)].map((m) => m[1]);
   const seen = new Set();
   for (const key of keys) {
     assert.ok(!seen.has(key), `${key} is registered twice`);
     seen.add(key);
   }
+});
+
+test("no function declares two helpers of the same name (the second silently replaces the first: a folder opened to an invisible card because of it)", () => {
+  const files = [...readdirSync(new URL("../../frontend/app/", import.meta.url)).filter((n) => n.endsWith(".js")).map((n) => `frontend/app/${n}`), ...readdirSync(new URL("../../frontend/src/", import.meta.url)).filter((n) => n.endsWith(".js")).map((n) => `frontend/src/${n}`)];
+  const dupes = [];
+  for (const file of files) {
+    const text = read(file);
+    for (const body of text.split(/\n(?=function )/)) {
+      const seen = new Set();
+      for (const m of body.matchAll(/^ {2}function ([A-Za-z_$][\w$]*)\(/gm)) {
+        if (seen.has(m[1])) dupes.push(`${file}: ${m[1]}`);
+        seen.add(m[1]);
+      }
+    }
+  }
+  assert.deepEqual(dupes, []);
 });

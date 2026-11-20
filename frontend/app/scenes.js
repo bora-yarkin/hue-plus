@@ -175,13 +175,10 @@ function hpMakeFolder(room, a, b, close) {
 function hpPrompt(title, value, done) {
   var scrim = mk("div", "scrim"),
     box = mk("div", "dlg", "<p></p><input class='sq pin' type='text' maxlength='40'><div class='rrow'></div>"),
-    input = box.querySelector("input");
+    input = box.querySelector("input"),
+    close = null;
   box.querySelector("p").textContent = title;
   input.value = value;
-  function close() {
-    scrim.remove();
-    box.remove();
-  }
   var go = mk("div", "rbtn go");
   go.textContent = _T("done");
   go.addEventListener("click", function () {
@@ -191,17 +188,15 @@ function hpPrompt(title, value, done) {
   });
   var no = mk("div", "rbtn");
   no.textContent = _T("cancel");
-  no.addEventListener("click", close);
+  no.addEventListener("click", function () {
+    close();
+  });
   box.querySelector(".rrow").appendChild(no);
   box.querySelector(".rrow").appendChild(go);
   input.addEventListener("keydown", function (e) {
     if (e.key === "Enter") go.click();
   });
-  scrim.addEventListener("click", close);
-  document.body.appendChild(scrim);
-  document.body.appendChild(box);
-  requestAnimationFrame(function () {
-    scrim.classList.add("in");
+  close = hpSheetOpen(scrim, box, function () {
     input.focus();
     input.select();
   });
@@ -417,37 +412,94 @@ function hpFolderCard(folder, room, from) {
       },
     }
   );
-  /* The scene that plays has its pencil and its three dots beside it, as the app draws them. */
-  var side = mk("div", "sside");
-  side.appendChild(
-    hpRound("edit", _T("hn_rename"), function () {
-      var on = folder.scenes.filter(function (s) {
-        return HUESCENES.active(H(), s);
-      })[0];
-      if (on) {
-        close();
-        showPopup("app-scene:" + on + "~" + room, true);
-      }
-    })
-  );
-  side.appendChild(
-    hpRound("dots", _T("app_more"), function () {
-      var on = folder.scenes.filter(function (s) {
-        return HUESCENES.active(H(), s);
-      })[0];
-      if (on) hpSceneActions(on, room, close);
-    })
-  );
-  card.refresh = function () {
-    var on = folder.scenes.filter(function (s) {
+  /* The pencil and the three dots of the scene that plays. They come out of that scene's tile to its right; when another scene plays, the pair of the old one goes back into its tile and fades while a new pair comes out of the new
+     tile. The tiles of the row after the playing one make room by sliding right, by the width of the pair and one gap, and slide back when another scene plays: from 2 playing to 4, the tiles 3 and 4 slide left and the
+     others stay where they are. Only the row of the playing tile moves. */
+  var SIDE_W = 34,
+    GAP = 11,
+    side = null; /* { el, item }: the pair that is out now */
+  function sideMake() {
+    var el = mk("div", "sside");
+    el.appendChild(
+      hpRound("edit", _T("hn_rename"), function () {
+        var on = sideActiveScene();
+        if (on) {
+          close();
+          showPopup("app-scene:" + on + "~" + room, true);
+        }
+      })
+    );
+    el.appendChild(
+      hpRound("dots", _T("app_more"), function () {
+        var on = sideActiveScene();
+        if (on) hpSceneActions(on, room, close);
+      })
+    );
+    return el;
+  }
+  function sideActiveScene() {
+    return folder.scenes.filter(function (s) {
       return HUESCENES.active(H(), s);
     })[0];
-    var item = on && [].filter.call(grid.querySelectorAll(".sitem"), function (x) {
-      return x.dataset.sid === on;
-    })[0];
-    if (item) {
-      if (side.previousSibling !== item) grid.insertBefore(side, item.nextSibling);
-    } else if (side.parentNode) side.remove();
+  }
+  /* Where the pair is when it is inside its tile (behind it, at its right edge), and where it stands when it is out. */
+  function sideInside(item) {
+    return item.offsetLeft + item.offsetWidth - SIDE_W + "px";
+  }
+  function sideOut(item) {
+    return item.offsetLeft + item.offsetWidth + GAP + "px";
+  }
+  function sidePlace(el, item, left) {
+    el.style.left = left;
+    el.style.top = item.offsetTop + "px";
+    el.style.height = item.offsetHeight + "px";
+  }
+  function sideRetract(old) {
+    old.el.classList.remove("on");
+    old.el.classList.add("away");
+    sidePlace(old.el, old.item, sideInside(old.item));
+    setTimeout(function () {
+      old.el.remove();
+    }, 360);
+  }
+  function sideEnter(item) {
+    var el = sideMake();
+    el.style.transition = "none";
+    sidePlace(el, item, sideInside(item));
+    grid.appendChild(el);
+    void el.offsetWidth;
+    el.style.transition = "";
+    el.classList.add("on");
+    el.style.left = sideOut(item);
+    return { el: el, item: item };
+  }
+  card.refresh = function () {
+    var on = sideActiveScene(),
+      items = [].slice.call(grid.querySelectorAll(".sitem")),
+      item =
+        on &&
+        items.filter(function (x) {
+          return x.dataset.sid === on;
+        })[0];
+    if (!item) {
+      if (side) sideRetract(side);
+      side = null;
+      items.forEach(function (it) {
+        it.style.translate = "";
+      });
+      return;
+    }
+    var row = item.style.gridRow,
+      col = +item.style.gridColumn;
+    items.forEach(function (it) {
+      it.style.translate = it.style.gridRow === row && +it.style.gridColumn > col ? SIDE_W + GAP + "px 0" : "";
+    });
+    if (side && side.item === item) {
+      sidePlace(side.el, item, sideOut(item));
+      return;
+    }
+    if (side) sideRetract(side);
+    side = sideEnter(item);
   };
   reg(card.refresh);
   scrim.addEventListener("click", close);

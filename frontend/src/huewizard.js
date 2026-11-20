@@ -138,16 +138,29 @@ function hwMinutesText(n) {
 function hwNamePage(b) {
   if (!hwOpen(b, "hue-wz-name")) return;
   b.appendChild(hmTitle(HW.icon || "edit", HW.nameHeading));
-  var w = mk("div", "sqw pane"),
-    inp = mk("input", "sq");
+  var w = mk("div", "hw-field"),
+    lab = mk("span", "hw-flabel"),
+    inp = mk("input", "hw-input"),
+    clr = mk("button", "hw-clear");
+  lab.textContent = _T("hw_name").toUpperCase();
   inp.type = "text";
   inp.maxLength = 32;
-  inp.placeholder = _T("hw_name");
   inp.value = HW.name || "";
+  inp.setAttribute("aria-label", _T("hw_name"));
   inp.addEventListener("input", function () {
     HW.name = inp.value;
   });
+  clr.type = "button";
+  clr.innerHTML = svg("close");
+  clr.setAttribute("aria-label", _T("hw_clear"));
+  clr.addEventListener("click", function () {
+    inp.value = "";
+    HW.name = "";
+    inp.focus();
+  });
+  w.appendChild(lab);
   w.appendChild(inp);
+  w.appendChild(clr);
   b.appendChild(w);
   b.appendChild(
     hwNext(HW.last === "hw_save" ? _T("hw_save") : _T("hn_next"), function () {
@@ -279,12 +292,14 @@ function hwAutomationState(kind, x) {
       steps: a.steps.slice(),
       edit: x ? x.id : null,
       group: group.rid ? { id: group.rid, type: group.rtype } : null,
+      where: c.where || null,
       name: x ? x.name : "",
       time: when.time_point ? String(point.hour).padStart(2, "0") + ":" + String(point.minute).padStart(2, "0") : hwClock(ext.start_at) || (kind === "wake_up" ? "07:00" : kind === "go_to_sleep" ? "22:00" : ""),
       startType: ext.start_at ? hwPointType(ext.start_at) : "time",
       until: hwClock(ext.end_at),
       untilType: ext.end_at ? hwPointType(ext.end_at) : "none",
-      days: (when.recurrence_days || ext.recurrence_days || HW_WEEK).slice(),
+      days: (when.recurrence_days || ext.recurrence_days || (!x && kind === "wake_up" ? HW_WEEK.slice(0, 5) : HW_WEEK)).slice(),
+      repeat: !x || kind !== "wake_up" || !!when.recurrence_days,
       minutes: c.fade_in_duration ? c.fade_in_duration.seconds / 60 : c.fade_out_duration ? c.fade_out_duration.seconds / 60 : kind === "go_to_sleep" ? 15 : 30,
       brightness: c.end_brightness ? Math.round(c.end_brightness) : 100,
       style: c.style || (kind === "go_to_sleep" ? "sunset" : "sunrise"),
@@ -335,29 +350,35 @@ function hwStartAutomation(kind, x) {
   hwPush(HW.steps[0]);
 }
 
-/* Which room or zone: one of them (the bridge's templates are made for one). */
+/* Automations that recall a scene are for one room or zone, since a scene belongs to one room; the others can be for My entire home or several rooms and zones, or single lights, as in the app. */
+var HW_ONE_ROOM = ["timer", "schedule", "coming_home"];
+
+/* Choose your lights: the app's picker (huepicker.js). */
 function hwLightsPage(b) {
   if (!hwOpen(b, "hue-wz-lights")) return;
   hmLoad(b, ["rooms", "zones"], function (box, r) {
-    var groups = hwGroups(r);
+    var groups = hpkGroups(r),
+      one = HW_ONE_ROOM.indexOf(HW.kind) >= 0;
+    if (!HW.lights) HW.lights = HW.where ? hpkStateOf(HW.where, groups) : { home: false, picked: {} };
+    if (one && (HW.lights.home || Object.keys(HW.lights.picked).length > 1)) HW.lights = { home: false, picked: {} };
     box.appendChild(hmTitle("lamp", _T("hn_choose_your_lights")));
     if (!groups.length) box.appendChild(hmCallout(_T("hn_no_hue_room")));
-    hwGroupRows(
-      box,
-      groups,
-      function (g) {
-        return !!HW.group && HW.group.id === g.id;
-      },
-      function (g) {
-        HW.group = { id: g.id, type: g.type };
-      }
-    );
+    var pick = mk("div");
+    box.appendChild(pick);
+    hpkPicker(pick, { groups: groups, state: HW.lights, one: one, whole: one });
     box.appendChild(
       hwNext(null, function () {
-        if (!HW.group) {
+        var targets = hpkTargets(HW.lights, groups);
+        if (!targets.length) {
           toast(_T("hn_choose_a_room"));
           return;
         }
+        HW.targets = targets;
+        HW.groups = groups;
+        var first = groups.filter(function (g) {
+          return (HW.lights.picked[g.id] || []).length;
+        })[0];
+        HW.group = first ? { id: first.id, type: first.type } : null;
         hwAdvance();
       })
     );
@@ -403,12 +424,10 @@ function hwPointRow(title, key, withNone) {
   });
 }
 
-/* When: wake up, go to sleep and the schedule differ in what goes with the time. */
-function hwWhenPage(b) {
-  if (!hwOpen(b, "hue-wz-when")) return;
+/* The rows of "When": wake up, go to sleep and the schedule differ in what goes with the time. Shared by the wizard's page and the screen that edits an automation. */
+function hwWhenRows(b) {
   var kind = HW.kind,
     schedule = kind === "schedule";
-  b.appendChild(hmTitle("clock", _T(kind === "wake_up" ? "hw_when_do_you_want_to_wake_up" : kind === "go_to_sleep" ? "hw_when_do_you_want_to_go_to_sleep" : "hw_when_do_you_want_to_schedule")));
   if (schedule) {
     b.appendChild(hmGroup([hwPointRow(_T("hw_start_at"), "startType", false)]));
     if (HW.startType === "time") b.appendChild(hmGroup([hwTimeRow(_T("time"), function () { return HW.time; }, function (v) { HW.time = v; })]));
@@ -444,25 +463,42 @@ function hwWhenPage(b) {
       ])
     );
   }
+}
+
+/* Whether the times and days are fit to save; says what is wrong. */
+function hwWhenValid() {
+  var schedule = HW.kind === "schedule";
+  if ((!schedule || HW.startType === "time") && !/^\d\d:\d\d$/.test(HW.time)) {
+    toast(_T("hm_pick_a_time"));
+    return false;
+  }
+  if (schedule && HW.untilType === "time" && !/^\d\d:\d\d$/.test(HW.until)) {
+    toast(_T("hm_pick_a_time"));
+    return false;
+  }
+  if (schedule && HW.startType === "time" && HW.untilType === "time" && HW.until === HW.time) {
+    toast(_T("hm_two_times_cannot_be_the_same"));
+    return false;
+  }
+  if (!HW.days.length) {
+    toast(_T("hw_choose_a_day"));
+    return false;
+  }
+  return true;
+}
+
+/* When: wake up, go to sleep and the schedule differ in what goes with the time. */
+function hwWhenPage(b) {
+  if (!hwOpen(b, "hue-wz-when")) return;
+  var kind = HW.kind;
+  b.appendChild(hmTitle("clock", _T(kind === "wake_up" ? "hw_when_do_you_want_to_wake_up" : kind === "go_to_sleep" ? "hw_when_do_you_want_to_go_to_sleep" : "hw_when_do_you_want_to_schedule")));
+  if (kind === "wake_up" || kind === "go_to_sleep") {
+    hweTime(b, kind);
+    hweRepeat(b, kind);
+  } else hwWhenRows(b);
   b.appendChild(
     hwNext(null, function () {
-      if ((!schedule || HW.startType === "time") && !/^\d\d:\d\d$/.test(HW.time)) {
-        toast(_T("hm_pick_a_time"));
-        return;
-      }
-      if (schedule && HW.untilType === "time" && !/^\d\d:\d\d$/.test(HW.until)) {
-        toast(_T("hm_pick_a_time"));
-        return;
-      }
-      if (schedule && HW.startType === "time" && HW.untilType === "time" && HW.until === HW.time) {
-        toast(_T("hm_two_times_cannot_be_the_same"));
-        return;
-      }
-      if (!HW.days.length) {
-        toast(_T("hw_choose_a_day"));
-        return;
-      }
-      hwAdvance();
+      if (hwWhenValid()) hwAdvance();
     })
   );
 }
@@ -555,6 +591,13 @@ function hwMimicPage(b) {
 }
 
 function hwGroupName() {
+  if (HW.lights && HW.lights.home) return _T("hpk_my_entire_home");
+  var names = (HW.groups || []).filter(function (g) {
+    return (HW.lights.picked[g.id] || []).length;
+  }).map(function (g) {
+    return g.name;
+  });
+  if (names.length) return names.join(", ");
   var found = null;
   hwGroups({ rooms: hmList("rooms"), zones: hmList("zones") }).forEach(function (g) {
     if (HW.group && g.id === HW.group.id) found = g.name;
@@ -609,14 +652,13 @@ function hwStyleText(style) {
   return _T(style === "basic" ? (HW.kind === "wake_up" ? "hw_style_basic_up" : "hw_style_basic_down") : "hw_style_" + style);
 }
 
-/* Settings of wake up and go to sleep: style, brightness or fade duration, and what happens at the end. */
-function hwSettingsPage(b) {
-  if (!hwOpen(b, "hue-wz-settings")) return;
+/* The rows of the settings of wake up and go to sleep: style, brightness or fade duration, and what happens at the end. */
+function hwSettingsRows(b) {
   var wake = HW.kind === "wake_up",
     styles = wake ? ["sunrise", "basic"] : ["sunset", "basic"];
-  b.appendChild(hmTitle("tune", _T("hw_choose_your_settings")));
   var rows = [
     hmRow({
+      disc: hwStyleDisc(HW.style),
       title: _T("hw_style"),
       val: function () {
         return hwStyleText(HW.style);
@@ -671,42 +713,53 @@ function hwSettingsPage(b) {
       })
     );
   }
-  b.appendChild(hmGroup(rows));
   if (wake) {
-    b.appendChild(
-      sliderRow({
-        icon: "bright",
-        name: _T("hw_maximum_brightness"),
-        min: 1,
-        max: 100,
-        step: 1,
-        get: function () { return HW.brightness; },
-        fmt: function (v) { return v + "%"; },
-        on: function () { return true; },
-        commit: function (v) { HW.brightness = v; },
+    /* the app has the three in one card: style, maximum brightness (a row that opens its slider) and when the lights go off */
+    rows.push(
+      hmRow({
+        title: _T("hw_maximum_brightness"),
+        val: function () {
+          return HW.brightness + "%";
+        },
+        tap: function () {
+          showPopup("hue-ed-bri", true);
+        },
+      }),
+      hmRow({
+        title: _T("hw_turn_lights_off"),
+        val: function () {
+          return HW.offAfter ? hwMinutesText(HW.offAfter) : _T("hw_no");
+        },
+        tap: function () {
+          hwChoose({
+            hint: _T("hw_turn_lights_off_hint"),
+            options: [0, 5, 10, 15, 30, 60].map(function (m) {
+              return { value: m, title: m ? hwMinutesText(m) : _T("hw_no") };
+            }),
+            get: function () { return HW.offAfter; },
+            set: function (v) { HW.offAfter = v; },
+          });
+        },
       })
     );
-    b.appendChild(
-      hmGroup([
-        hmRow({
-          title: _T("hw_turn_lights_off"),
-          val: function () {
-            return HW.offAfter ? hwMinutesText(HW.offAfter) : _T("hw_no");
-          },
-          tap: function () {
-            hwChoose({
-              hint: _T("hw_turn_lights_off_hint"),
-              options: [0, 5, 10, 15, 30, 60].map(function (m) {
-                return { value: m, title: m ? hwMinutesText(m) : _T("hw_no") };
-              }),
-              get: function () { return HW.offAfter; },
-              set: function (v) { HW.offAfter = v; },
-            });
-          },
-        }),
-      ])
-    );
   }
+  b.appendChild(hmGroup(rows));
+}
+
+/* The picture of a style the app puts at the end of its row: the sky of a sunrise or a sunset, or a plain light. */
+function hwStyleDisc(style) {
+  return style === "sunrise"
+    ? "linear-gradient(180deg,#3d5fd3 0%,#e98a70 58%,#f6d6a8 100%)"
+    : style === "sunset"
+      ? "linear-gradient(180deg,#f2b05c 0%,#d4572a 60%,#3b2440 100%)"
+      : "radial-gradient(circle,#fff6d6 0%,#e9c77a 100%)";
+}
+
+/* Settings of wake up and go to sleep. */
+function hwSettingsPage(b) {
+  if (!hwOpen(b, "hue-wz-settings")) return;
+  b.appendChild(hmTitle("tune", _T("hw_choose_your_settings")));
+  hwSettingsRows(b);
   b.appendChild(hwNext());
 }
 
@@ -793,39 +846,54 @@ function hwNumberRow(title, unit, get, set, max) {
   return row;
 }
 
-function hwLengthPage(b) {
-  if (!hwOpen(b, "hue-wz-length")) return;
-  b.appendChild(hmTitle("clock", _T("hw_how_long_should_your_timer_last")));
+/* The rows of a timer's length. */
+function hwLengthRows(b) {
   b.appendChild(
     hmGroup([
       hwNumberRow(_T("hw_hours"), "h", function () { return HW.hours; }, function (v) { HW.hours = v; }, 23),
       hwNumberRow(_T("hm_min"), "min", function () { return HW.mins; }, function (v) { HW.mins = v; }, 59),
     ])
   );
+}
+
+function hwLengthValid() {
+  if (HW.hours * 60 + HW.mins < 1) {
+    toast(_T("hw_a_timer_needs_a_minute"));
+    return false;
+  }
+  return true;
+}
+
+function hwLengthPage(b) {
+  if (!hwOpen(b, "hue-wz-length")) return;
+  b.appendChild(hmTitle("clock", _T("hw_how_long_should_your_timer_last")));
+  hwLengthRows(b);
   b.appendChild(
     hwNext(null, function () {
-      if (HW.hours * 60 + HW.mins < 1) {
-        toast(_T("hw_a_timer_needs_a_minute"));
-        return;
-      }
-      hwAdvance();
+      if (hwLengthValid()) hwAdvance();
     })
   );
 }
 
 /* The call that makes (or changes) the routine, then back to the list of automations. */
-function hwSaveAutomation() {
+function hwSaveAutomation(after) {
   var d = HW,
     pad = function (t) {
       return t + ":00";
     },
-    body = { name: d.name, group: d.group.id, group_type: d.group.type };
+    body = { name: d.name };
+  if (d.targets) body.targets = d.targets;
+  else {
+    body.group = d.group.id;
+    body.group_type = d.group.type;
+  }
   if (d.kind === "wake_up" || d.kind === "go_to_sleep" || d.kind === "schedule") {
     var timed = d.kind !== "schedule" || d.startType === "time";
     if (timed) body.time = pad(d.time);
     body.days = d.days.length === 7 ? [] : d.days;
   }
   if (d.kind === "wake_up") {
+    if (d.repeat === false) body.repeat = false;
     body.minutes = d.minutes;
     body.end_brightness = d.brightness;
     body.style = d.style;
@@ -861,14 +929,17 @@ function hwSaveAutomation() {
   if (d.kind === "timer" || d.kind === "coming_home" || (d.kind === "schedule" && d.action === "scene")) body.scene = d.scene;
   if (d.edit) body.automation = d.edit;
   else body.routine = d.kind;
-  hpCall("hue_plus", d.edit ? "update_routine" : "create_routine", body).then(
+  return hpCall("hue_plus", d.edit ? "update_routine" : "create_routine", body).then(
     function () {
       HM_READY = false;
-      hwLeave();
+      if (after) after();
+      else hwLeave();
       hmEnsure();
+      return true;
     },
     function () {
       toast(_T("hw_couldn_t_save_the_automation"));
+      return false;
     }
   );
 }

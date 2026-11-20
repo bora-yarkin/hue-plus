@@ -7,7 +7,7 @@ import test from "node:test";
 
 const SRC = new URL("../../frontend/src/", import.meta.url);
 const read = (name) => readFileSync(new URL(name, SRC), "utf8");
-const MENU_FILES = ["huemenu.js", "huewizard.js", "humotion.js", "huerooms.js"];
+const MENU_FILES = ["huemenu.js", "huepicker.js", "huewizard.js", "hueedit.js", "humotion.js", "huerooms.js"];
 const menu = MENU_FILES.map(read).join("\n");
 // The plugin's own texts, and the few the dashboard has for everything (a word like "off" or "lights" is not repeated in every plugin).
 const strings = read("strings.js");
@@ -48,8 +48,8 @@ test("every text of the menu is defined", () => {
 });
 
 test("the menu puts no name of a device or of the bridge into the page as markup", () => {
-  // Markup is only a fixed string and an icon; the only names allowed besides are the switches of a row (is there a toggle, a tick, an arrow, an icon).
-  const allowed = new Set(["o", "icon", "toggle", "check", "key", "svg"]);
+  // Markup is only a fixed string and an icon; the only names allowed besides are the switches of a row (is there a toggle, a tick, an arrow, an icon, the picture of a style).
+  const allowed = new Set(["o", "icon", "toggle", "check", "key", "svg", "disc"]);
   const risky = [...menu.matchAll(/innerHTML\s*=\s*([^;]+);/g)]
     .map((m) => m[1].replace(/"(?:[^"\\]|\\.)*"/g, "S"))
     .flatMap((v) => v.match(/[A-Za-z_]+/g) || [])
@@ -127,7 +127,7 @@ test("every function and variable of the menu and its drafts that is used is def
 });
 
 test("the bundle is built in the order the pages need, and uses the dashboard only through the plugin API", () => {
-  const order = ["prologue.js", "strings.js", "huecss.js", "adapter.js", "hmdraft.js", "hueplus.js", "huemenu.js", "huewizard.js", "humotion.js", "huerooms.js", "huesync.js", "huescenes.js", "huestyle.js", "epilogue.js"];
+  const order = ["prologue.js", "strings.js", "huecss.js", "adapter.js", "hmdraft.js", "hueplus.js", "huemenu.js", "huepicker.js", "huewizard.js", "hueedit.js", "humotion.js", "huerooms.js", "huesync.js", "huescenes.js", "huestyle.js", "epilogue.js"];
   const built = readFileSync(new URL("../../custom_components/hue_plus/frontend/menu.js", import.meta.url), "utf8");
   let at = -1;
   for (const name of order) {

@@ -1070,11 +1070,15 @@
         },
         "group": {
           "name": "Group",
-          "description": "The room or zone (id or name)."
+          "description": "The room or zone (id or name). Give this or targets."
         },
         "group_type": {
           "name": "Group type",
           "description": "Room or zone."
+        },
+        "targets": {
+          "name": "Targets",
+          "description": "The lights, as a list with one entry for each room, zone or the whole home: group (the room or zone), group_type (room, zone or home) and, to choose only some of its lights, lights (a list). The whole home is an entry with group_type home alone. Use this instead of group."
         },
         "time": {
           "name": "Time",
@@ -1083,6 +1087,10 @@
         "until": {
           "name": "Until",
           "description": "Schedule: the time it ends. Coming home: the time it stops (give both or neither)."
+        },
+        "repeat": {
+          "name": "Repeat",
+          "description": "Wake-up: repeat on the days (the default). Off runs it once, the next time it is that time."
         },
         "days": {
           "name": "Days",
@@ -1160,11 +1168,15 @@
         },
         "group": {
           "name": "Group",
-          "description": "The room or zone (id or name)."
+          "description": "The room or zone (id or name). Give this or targets."
         },
         "group_type": {
           "name": "Group type",
           "description": "Room or zone."
+        },
+        "targets": {
+          "name": "Targets",
+          "description": "The lights, as a list with one entry for each room, zone or the whole home: group (the room or zone), group_type (room, zone or home) and, to choose only some of its lights, lights (a list). The whole home is an entry with group_type home alone. Use this instead of group."
         },
         "time": {
           "name": "Time",
@@ -1173,6 +1185,10 @@
         "until": {
           "name": "Until",
           "description": "Schedule: the time it ends. Coming home: the time it stops (give both or neither)."
+        },
+        "repeat": {
+          "name": "Repeat",
+          "description": "Wake-up: repeat on the days (the default). Off runs it once, the next time it is that time."
         },
         "days": {
           "name": "Days",
@@ -1250,11 +1266,15 @@
         },
         "group": {
           "name": "Group",
-          "description": "The room or zone (id or name)."
+          "description": "The room or zone (id or name). Give this or targets."
         },
         "group_type": {
           "name": "Group type",
           "description": "Whether it is a room or a zone."
+        },
+        "targets": {
+          "name": "Targets",
+          "description": "The lights, as a list with one entry for each room, zone or the whole home: group (the room or zone), group_type (room, zone or home) and, to choose only some of its lights, lights (a list). The whole home is an entry with group_type home alone. Use this instead of group."
         }
       }
     },

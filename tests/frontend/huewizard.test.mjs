@@ -32,7 +32,7 @@ function load(held = {}, texts = {}) {
     popBack: () => popped.push("back"),
     hpCall: (domain, service, data) => (sent.push([domain, service, plain(data)]), Promise.resolve()),
   });
-  for (const name of ["huewizard.js", "humotion.js", "huerooms.js"]) vm.runInContext(readFileSync(new URL(name, APP), "utf8"), context);
+  for (const name of ["huepicker.js", "huewizard.js", "hueedit.js", "humotion.js", "huerooms.js"]) vm.runInContext(readFileSync(new URL(name, APP), "utf8"), context);
   context.sent = sent;
   context.popped = popped;
   return context;
@@ -74,7 +74,7 @@ test("a new routine starts with the Hue app's own values and a name that is not 
   assert.equal(wake.minutes, 30);
   assert.equal(wake.brightness, 100);
   assert.equal(wake.style, "sunrise");
-  assert.equal(wake.days.length, 7);
+  assert.equal(wake.days.length, 5);
   const sleep = w.hwAutomationState("go_to_sleep", null);
   assert.equal(sleep.style, "sunset");
   assert.equal(sleep.minutes, 15);

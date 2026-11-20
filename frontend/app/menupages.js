@@ -85,8 +85,10 @@ function hpAddDevicesWhere(b) {
     var rows = (r.rooms || []).map(function (room) {
       return hmRow({ icon: "bed", title: room.name, tap: "app-adddev2:" + encodeURIComponent(room.name) });
     });
-    rows.push(hmRow({ icon: "plus", title: _T("app_create_new_room"), tap: "hue-group" }));
-    box.appendChild(hmGroup(rows));
+    rows.push(hmRow({ icon: "plus", title: _T("app_create_new_room"), tap: "hue-group", blue: true }));
+    var card = hmGroup(rows);
+    card.classList.add("card");
+    box.appendChild(card);
   });
 }
 

@@ -9,7 +9,7 @@
 <hue-plus-panel id="panel"></hue-plus-panel>
 <script type="module">
   /* Serve the repository root (python3 -m http.server 8777) and open /tests/frontend/panel/index.html. ?user=guest makes the user not an administrator. */
-  import { makeHass } from "./mock-hass.js";
+  const { makeHass } = await import("./mock-hass.js?v=" + Date.now());
   await import("/custom_components/hue_plus/frontend/panel.js?v=" + Date.now());
   document.getElementById("panel").hass = makeHass(new URLSearchParams(location.search));
 </script>

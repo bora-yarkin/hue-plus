@@ -373,8 +373,35 @@ class ButtonTests(unittest.IsolatedAsyncioTestCase):
         (call,) = await self.go({"accessory": "Dimmer", "button": 1, "press": "short", "action": "dim_up"})
         self.assertEqual(call[:3], ("put", "behavior_instance", "acc"))
         buttons = call[3]["configuration"]["buttons"]
-        self.assertEqual(buttons["b1"], {"on_short_release": {"action": "dim_up"}, "where": [ROOM_GROUP]})
+        self.assertEqual(
+            buttons["b1"], {"on_short_release": {"action": "dim_up"}, "on_repeat": {"action": "dim_up"}, "where": [ROOM_GROUP]}
+        )
         self.assertEqual(buttons["b2"], {"on_repeat": {"action": "dim_up"}})
+
+    def test_a_button_is_written_in_the_shapes_the_bridge_accepts(self):
+        dims = {"on_short_release": {"action": "dim_up"}, "on_repeat": {"action": "dim_up"}}
+        plain = {"on_short_release": {"action": "all_off"}, "on_long_press": {"action": "do_nothing"}}
+        config = {"buttons": {"dim": dims, "plain": plain}}
+        scene = {"recall_single_extended": {"actions": [], "with_off": {"enabled": False}}}
+        # a dimming button turned into a scene button loses its repeat and gets the long press the app writes
+        self.assertEqual(
+            payloads.button_configuration(config, "dim", "short", scene)["buttons"]["dim"],
+            {"on_short_release": scene, "on_long_press": {"action": "do_nothing"}},
+        )
+        # a plain button turned into a dimming one has both dim presses and no long press
+        self.assertEqual(
+            payloads.button_configuration(config, "plain", "short", {"action": "dim_down"})["buttons"]["plain"],
+            {"on_short_release": {"action": "dim_down"}, "on_repeat": {"action": "dim_down"}},
+        )
+        # a dimming button has no long press of its own, and a plain one has no repeat
+        with self.assertRaises(ValueError):
+            payloads.button_configuration(config, "dim", "long", {"action": "do_nothing"})
+        with self.assertRaises(ValueError):
+            payloads.button_configuration(config, "plain", "repeat", {"action": "dim_up"})
+        self.assertEqual(
+            payloads.button_configuration(config, "plain", "long", {"action": "home_off"})["buttons"]["plain"]["on_long_press"],
+            {"action": "home_off"},
+        )
 
     async def test_the_lights_a_button_acts_on_change_and_its_presses_stay(self):
         rec = Recorder()
@@ -567,3 +594,68 @@ class OtherTests(unittest.IsolatedAsyncioTestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TargetTests(unittest.IsolatedAsyncioTestCase):
+    """Where an automation or a button acts: rooms, zones, the whole home and chosen lights, as the bridge accepted them (docs/bridge-findings.md, 2026-11-20)."""
+
+    async def where_of(self, targets, snap=None):
+        rec = Recorder()
+        snap = snap or snapshot()
+        snap.bridge_home = [{"id": "home1", "type": "bridge_home"}]
+        await actions.run("create_routine", rec, snap, {"routine": "leaving_home", "name": "Out", "targets": targets})
+        return rec.calls[0][3]["configuration"]["where"]
+
+    async def test_a_room_and_a_zone_are_two_items(self):
+        where = await self.where_of([{"group": "Bedroom"}, {"group": "Reading", "group_type": "zone"}])
+        self.assertEqual(where, [{"group": {"rid": "r1", "rtype": "room"}}, {"group": {"rid": "z1", "rtype": "zone"}}])
+
+    async def test_the_whole_home_is_a_bridge_home_item(self):
+        self.assertEqual(await self.where_of([{"group_type": "home"}]), [{"group": {"rid": "home1", "rtype": "bridge_home"}}])
+
+    async def test_chosen_lights_of_a_room_are_its_items_and_all_of_them_are_the_whole_room(self):
+        some = await self.where_of([{"group": "Bedroom", "lights": ["Floor Light"]}])
+        self.assertEqual(some, [{"group": {"rid": "r1", "rtype": "room"}, "items": [{"rid": "l1", "rtype": "light"}]}])
+        every = await self.where_of([{"group": "Bedroom", "lights": ["Floor Light", "Bed Light"]}])
+        self.assertEqual(every, [{"group": {"rid": "r1", "rtype": "room"}}])
+
+    async def test_a_light_that_is_not_in_the_group_the_whole_home_with_lights_and_nothing_chosen_are_refused(self):
+        with self.assertRaisesRegex(ValueError, "is not in it"):
+            await self.where_of([{"group": "Reading", "group_type": "zone", "lights": ["Bed Light"]}])
+        with self.assertRaisesRegex(ValueError, "whole home"):
+            await self.where_of([{"group_type": "home", "lights": ["Bed Light"]}])
+        with self.assertRaisesRegex(ValueError, "list of rooms"):
+            await self.where_of([])
+        snap = snapshot()
+        with self.assertRaisesRegex(ValueError, "no home"):
+            await actions.run(
+                "create_routine", Recorder(), snap, {"routine": "leaving_home", "name": "Out", "targets": [{"group_type": "home"}]}
+            )
+
+    async def test_a_button_takes_the_same_targets_and_keeps_what_its_presses_do(self):
+        rec = Recorder()
+        snap = snapshot()
+        snap.behavior_instance[0]["id"] = "acc"
+        accessory = models.accessories(snap)[0]
+        snap.device[-1]["id"] = accessory["id"]
+        await actions.run(
+            "set_button_lights",
+            rec,
+            snap,
+            {"accessory": accessory["name"], "button": 1, "targets": [{"group": "Bedroom", "lights": ["Bed Light"]}]},
+        )
+        configuration = rec.calls[0][3]["configuration"]
+        self.assertEqual(
+            configuration["buttons"]["b1"]["where"], [{"group": {"rid": "r1", "rtype": "room"}, "items": [{"rid": "l2", "rtype": "light"}]}]
+        )
+        self.assertEqual(configuration["buttons"]["b1"]["on_short_release"], {"action": "all_off"})
+
+
+class RepeatTests(unittest.TestCase):
+    """A wake-up that does not repeat has no recurrence_days: the bridge accepts that and refuses an empty list (tried 2026-11-20)."""
+
+    def test_a_wake_up_repeats_on_the_chosen_days_or_runs_once(self):
+        every = payloads.routine_configuration("wake_up", where=[ROOM_GROUP], at=time(6, 0), days=["wednesday"])
+        self.assertEqual(every["when"]["recurrence_days"], ["wednesday"])
+        once = payloads.routine_configuration("wake_up", where=[ROOM_GROUP], at=time(6, 0), repeat=False)
+        self.assertEqual(once["when"], {"time_point": {"type": "time", "time": {"hour": 6, "minute": 0}}})
