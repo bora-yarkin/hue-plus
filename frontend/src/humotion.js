@@ -426,10 +426,6 @@ function hmwDonePage(b) {
 
 /* ---- what an area does: the times, as rows ---- */
 
-function hmwNext(i) {
-  return HW.slots[(i + 1) % HW.slots.length];
-}
-
 function hmwSceneName(id) {
   var s = hmList("scenes").filter(function (x) {
     return x.id === id;

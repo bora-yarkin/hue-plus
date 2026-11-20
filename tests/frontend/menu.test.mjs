@@ -8,11 +8,12 @@ import test from "node:test";
 const SRC = new URL("../../frontend/src/", import.meta.url);
 const read = (name) => readFileSync(new URL(name, SRC), "utf8");
 const MENU_FILES = ["huemenu.js", "huepicker.js", "huewizard.js", "hueedit.js", "humotion.js", "huerooms.js"];
-const menu = MENU_FILES.map(read).join("\n");
+const SHARED_FILES = ["hueapp.js", "huesortable.js", "huesettings.js", "hueswitch.js", "huecycle.js", "huelightpage.js", "hueauto.js", "hueroot.js"];
+const menu = [...MENU_FILES, ...SHARED_FILES].map(read).join("\n");
 // The plugin's own texts, and the few the dashboard has for everything (a word like "off" or "lights" is not repeated in every plugin).
 const strings = read("strings.js");
 const SHARED = new Set(["brightness", "colour", "freeze", "hidden", "mode", "palette", "paused", "play", "playing", "speed", "style", "visible", "now_playing", "nothing_playing", "speaker", "tv", "note", "add_at_least_one_light", "all_off", "area", "auto", "automations", "button", "clock", "firmware", "give_the_area_a_name", "home", "home_and_away", "hue_plus", "in_this_room", "light", "lights", "loading", "lock", "manual", "no_effect", "none", "nothing_found", "number", "off", "on_2", "other", "pause", "power", "press", "rooms", "safety", "scene", "scenes", "switch", "time", "unavailable", "zigbee_channel"]);
-const pages = new Set([...(menu + read("hueplus.js")).matchAll(/HP_PAGES\["([a-z0-9-]+)"\]\s*=|^\s*"([a-z0-9-]+)": \[/gm)].map((m) => m[1] || m[2]));
+const pages = new Set([...(menu + read("hueplus.js") + read("huescenes.js")).matchAll(/HP_PAGES\["([a-z0-9-]+)"\]\s*=|^\s*"([a-z0-9-]+)": \[/gm)].map((m) => m[1] || m[2]));
 const hasText = (key) => SHARED.has(key) || strings.includes(`"${key}":`);
 
 test("every page the menu opens is defined", () => {
@@ -49,7 +50,8 @@ test("every text of the menu is defined", () => {
 
 test("the menu puts no name of a device or of the bridge into the page as markup", () => {
   // Markup is only a fixed string and an icon; the only names allowed besides are the switches of a row (is there a toggle, a tick, an arrow, an icon, the picture of a style).
-  const allowed = new Set(["o", "icon", "toggle", "check", "key", "svg", "disc", "endicon", "ldisc"]);
+  const allowed = new Set(["o", "icon", "toggle", "check", "key", "svg", "disc", "endicon", "ldisc", "look", "room", "type", "c", "k"]);
+  // look, c and k are rows of fixed icon tables, and room.type only chooses between two fixed icons.
   const risky = [...menu.matchAll(/innerHTML\s*=\s*([^;]+);/g)]
     .map((m) => m[1].replace(/"(?:[^"\\]|\\.)*"/g, "S"))
     .flatMap((v) => v.match(/[A-Za-z_]+/g) || [])
@@ -84,7 +86,7 @@ test("the menu puts no name of a device or of the bridge into the page as markup
   }
   assert.ok(calls.length > 0);
   for (const html of calls)
-    assert.ok(/^("[^"]*"|svg\("[a-z]+"\))(\s*\+\s*(svg\("[a-z]+"\)|svg\(icon\)|"[^"]*"))*$/.test(html), `markup from ${html}`);
+    assert.ok(/^("[^"]*"|svg\("[a-z]+"\)|svg\(icon\))(\s*\+\s*(svg\("[a-z]+"\)|svg\(icon\)|"[^"]*"))*$/.test(html), `markup from ${html}`);
 });
 
 test("a page never writes a setting of a device: only saving a device's draft does", () => {
@@ -94,7 +96,8 @@ test("a page never writes a setting of a device: only saving a device's draft do
   ];
   assert.ok(writes.length >= 6, "the device writes are all there");
   for (const match of writes) {
-    const owner = [...menu.slice(0, match.index).matchAll(/^function (\w+)/gm)].pop()[1];
+    const last = [...menu.slice(0, match.index).matchAll(/^(?:function (\w+)|(\w+) = function)/gm)].pop();
+    const owner = last[1] || last[2];
     // The one exception: the MotionAware wizard switches on and names the area it has just made, which has no draft because it did not exist.
     assert.match(owner, /^(hmSave(Light|Switch|Motion|Area)|hmw(StartCalibration|Rename1))$/, `${match[2]} is sent from ${owner}`);
   }
@@ -108,9 +111,11 @@ test("the menu is read once when it opens, and every page draws from that", () =
 });
 
 test("a device of the menu asks when it is left with changes that are not saved, on its page and on the pages that choose its settings", () => {
-  for (const [page, inner] of [["hmLight", false], ["hmSwitch", false], ["hmMotionArea", false], ["hmArea", false]])
+  for (const [page, inner] of [["hmLight", false], ["hmMotionArea", false]])
     assert.match(menu, new RegExp(`function ${page}\\(b, id\\) \\{\\s*hmBox\\(b\\);\\s*hmGuard\\(hmdKey\\("[a-z]+", id\\)\\);`), `${page} is not a guarded device`);
-  for (const page of ["hmButtonPage", "hmPress", "hmScenePick", "hmCycle", "hmTimePage", "hmCycleSlot", "hmTimeSlot", "hmEnd", "hmEndScene", "hmPerf"])
+  assert.match(menu, /function hpSwitchPage\(b, id\) \{\s*hmBox\(b\);\s*hmGuard\(hmdKey\("acc", id\)\);/);
+  assert.match(menu, /function hpAreaPage\(b, id\) \{\s*hmBox\(b\);\s*hmGuard\(hpAreaKey\(id\)\);/);
+  for (const page of ["hpPressPage", "hpPressScenePage", "hpCyclePage", "hmTimePage", "hmCycleSlot", "hmTimeSlot", "hmEnd", "hmEndScene", "hmPerf"])
     assert.match(menu, new RegExp(`function ${page}\\(b, id\\) \\{\\s*hmBox\\(b\\);\\s*hmGuard\\([^;]*, true\\);`), `${page} is not an inner page of a device`);
   assert.match(menu, /var cfg = HM_PICKS\[kind\],\s*key = hmdKey\("light", id\);\s*hmGuard\(key, true\);/);
 });

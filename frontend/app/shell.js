@@ -2,13 +2,13 @@
  pages themselves, drawn in the tab. Everything sits inside the plugin's scope, so it uses the same pages and helpers as the menu. The Explore tab of the app (a gallery from Signify's cloud) has nothing behind
  it here. Nothing is kept in Home Assistant: the panel shows the bridge and writes to it. */
 
+Object.keys(HP_EXTRA_ICONS).forEach(function (k) {
+  HOST_ICONS[k] = HP_EXTRA_ICONS[k];
+});
 HOST_ICONS.undo = "<path d='M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3'/>";
 HOST_ICONS.bolt = "<path d='M13 2L5 14h6l-1 8 8-12h-6z'/>";
 HOST_ICONS.tabhome = "<path d='M12 2.6 2.4 11.4h2.8v8.8h5.3v-5.6h3v5.6h5.3v-8.8h2.8z'/>";
 HOST_ICONS.tabbolt = "<path d='M14 1.8 5.2 13.6h5.4L9.2 22.2 18.8 9.6h-5.6z'/>";
-HOST_ICONS.switch = "<rect x='7' y='2.5' width='10' height='19' rx='2.4'/><path d='M10 6.5h4M10 10h4M10 13.5h4M10 17h4'/>";
-HOST_ICONS.shuffle = "<path d='M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5'/>";
-HOST_ICONS.sunrise = "<path d='M12 4V2M4.9 7.9 3.5 6.5M19.1 7.9l1.4-1.4M2 17h3M19 17h3M7 17a5 5 0 0 1 10 0M3 21h18'/>";
 HOST_ICONS.dots = "<circle cx='5' cy='12' r='1.7' fill='currentColor'/><circle cx='12' cy='12' r='1.7' fill='currentColor'/><circle cx='19' cy='12' r='1.7' fill='currentColor'/>";
 
 var HPAPP = { tab: "", el: null, bridge: "", modules: null, sigOf: null, lastSig: "" };
@@ -55,13 +55,6 @@ function hpShowTab(id) {
 /* What the home screen is made of changes when a room or zone is added or removed: the tab draws itself again then. */
 function hpWatch() {
   if (HPAPP.sigOf && HPAPP.sigOf() !== HPAPP.lastSig && !HPAPI.hasSheet()) hpShowTab(HPAPP.tab);
-}
-
-/* How much the browser has zoomed the page, when it reports what it measures (a rectangle, a pointer's place) in zoomed units while a style's px is not zoomed (Safari's page zoom): a measured length
- becomes a style's px by dividing by this. It is 1 where the two agree. */
-function hpZoom() {
-  var styled = parseFloat(getComputedStyle(document.body).width);
-  return styled ? document.body.getBoundingClientRect().width / styled || 1 : 1;
 }
 
 /* The panel is a phone. Its size and the root font size (16px when the phone is 393 wide, the width the Hue app's screens

@@ -76,8 +76,6 @@ test("the rooms and zones of the bridge come with their lights, and a light show
   assert.deepEqual(data.groups.map((g) => [g.name, g.type, g.lights.length]), [["Bora", "room", 3], ["Reading", "zone", 2]]);
   assert.equal(sandbox.hueLightEntity("bl2"), "light.l2");
   assert.equal(sandbox.hueLightEntity("nope"), null);
-  const lonely = sandbox.hueGroupLightIds({ lights: ["bl1", "nope"] });
-  assert.deepEqual(plain(lonely), ["bl1"]);
 });
 
 test("a page's room is chosen with all its lights to begin with, by its area or its name", async () => {

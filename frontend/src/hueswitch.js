@@ -11,8 +11,6 @@ function hpButtonLook(acc, btn) {
   return look ? { icon: look[0], name: _T(look[1]) } : { icon: "power", name: _T("hm_button_label") + " " + btn.number };
 }
 
-HOST_ICONS.hue = "<text x='1' y='16' font-size='9' font-weight='700' fill='currentColor' stroke='none' font-family='sans-serif'>hue</text>";
-
 /* The name of the room or zone a device is in. */
 function hpRoomOfDevice(r, id) {
   var found = null;

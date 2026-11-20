@@ -45,54 +45,95 @@ test("a Hue Plus scene is on when its room's scene select shows its name, and on
   assert.equal(scenes.active(h, "scene.read"), false);
 });
 
-test("the scene settings of a scene write the bridge's own settings: auto-play, Colors and Reset scene, and open the lights the scene has", async () => {
+test("the scene settings page keeps its changes until SAVE and writes the bridge's own settings with them: the speed, auto-play, Colors or Reset scene", async () => {
   const calls = [];
-  const opened = [];
-  const made = [];
-  const node = (kind) => ({ kind, children: [], appendChild(c) { this.children.push(c); return c; } });
+  let guard = null;
+  const clicks = {};
+  function node(kind, cls = "") {
+    const n = {
+      kind,
+      cls,
+      children: [],
+      style: { setProperty() {} },
+      classList: { add() {}, remove() {}, toggle() {} },
+      appendChild(c) {
+        this.children.push(c);
+        return c;
+      },
+      addEventListener(type, fn) {
+        if (type === "click") clicks[cls || kind] = fn;
+      },
+      querySelector() {
+        return node("x");
+      },
+      setAttribute() {},
+      set innerHTML(v) {},
+      set textContent(v) {},
+    };
+    return n;
+  }
   const context = {
-    H: () => ({}),
-    A: () => ({ name: "Aurora" }),
+    window: {},
+    HP_PAGES: {},
+    document: { createTextNode: () => node("text") },
+    HM: {},
+    A: () => ({ name: "Aurora", is_dynamic: true }),
+    H: () => ({ states: { "scene.aurora": {} } }),
+    V_: () => "off",
+    isAdmin: () => true,
+    cssRgb: () => "#fff",
+    liveXyRgb: () => [1, 1, 1],
+    kelvinRgb: () => [1, 1, 1],
     hueSceneUid: () => "bridge-scene",
+    hueSceneSet: () => ({ bri: 50, speed: 50 }),
+    hueSceneSave: () => {},
     hueSceneRename: () => {},
-    hueplus: { resources: () => Promise.resolve({ scenes: [{ id: "bridge-scene", speed: 0.25, auto_dynamic: true }] }) },
-    sep: (text) => ({ kind: "sep", text }),
-    pill: (icon, text, o) => {
-      const p = { kind: "pill", text, o };
-      made.push(p);
-      return p;
-    },
+    hueplus: { has: () => true, resources: () => Promise.resolve({ scenes: [] }) },
+    hmReady: () => Promise.resolve(),
+    hmBox: () => {},
+    hmGroup: (rows) => node("group"),
+    hmLabel: () => node("label"),
+    hmRow: () => node("row"),
+    hpRound: () => node("round"),
+    hpRoot: (b) => b,
+    hpEntityOf: () => null,
+    hpEntityLabel: () => "",
+    hpRoomOfLight: () => null,
+    sliderRow: () => node("slider"),
+    svg: () => "",
     mk: node,
+    pill: () => node("pill"),
     _T: (key) => key,
-    callRaw: (domain, service, data) => {
+    callLive: () => {},
+    call: () => {},
+    callRaw: () => Promise.resolve(),
+    confirmDlg: (text, then) => then(),
+    hueSceneRemove: () => Promise.resolve(),
+    showPopup: () => {},
+    popBack: () => {},
+    toast: () => {},
+    refresh: () => {},
+    mkHint: () => node("hint"),
+    hmLoad: (b, kinds, draw) => draw(node("box"), { scenes: [{ id: "bridge-scene", speed: 0.25, auto_dynamic: true }] }, () => {}),
+    guardUnsaved: (cfg) => {
+      guard = cfg;
+    },
+    hpCall: (domain, service, data) => {
       calls.push([domain, service, plain(data)]);
       return Promise.resolve();
     },
-    showPopup: (key) => opened.push(key),
-    confirmDlg: (text, then) => then(),
-    toast: () => {},
-    refresh: () => {},
+    HUESCENES: { group: () => null, active: () => false, speedSteps: 12, speedToStep: (s) => Math.round(s / 100 * 11) + 1, stepToSpeed: (s) => Math.round(((s - 1) / 11) * 100) },
   };
   vm.createContext(context);
-  vm.runInContext(readFileSync(new URL("../../frontend/src/huescenes.js", import.meta.url), "utf8"), context);
-  const body = node("body");
-  vm.runInContext("hueSceneBridge", context)(body, "scene.aurora", false);
-  await new Promise((resolve) => setTimeout(resolve, 0));
-  const by = (text) => made.find((p) => p.text === text).o;
-  assert.equal(by("app_auto_play").on(), true, "auto-play shows what the bridge has, read when the page opens");
-  by("app_auto_play").tap();
-  by("app_colors").tap();
-  by("app_reset_scene").tap();
-  by("lights").tap();
-  assert.deepEqual(calls, [
-    ["hue_plus", "update_scene", { scene: "bridge-scene", auto_dynamic: false }],
-    ["hue_plus", "update_scene", { scene: "bridge-scene", recolor: "shuffle" }],
-    ["hue_plus", "update_scene", { scene: "bridge-scene", recolor: "reset" }],
-  ]);
-  assert.deepEqual(opened, ["hue-scene-lights:scene.aurora"]);
-  made.length = 0;
-  vm.runInContext("hueSceneBridge", context)(node("body"), "scene.still", true);
-  assert.ok(!made.some((p) => p.text === "app_colors" || p.text === "app_auto_play"), "a still scene has no Colors, Reset or Auto-play");
+  vm.runInContext(readFileSync(new URL("../../frontend/src/hueapp.js", import.meta.url), "utf8").replace(/^if \(!window\.HueHost\)[\s\S]*$/m, ""), context);
+  vm.runInContext("hpScenePage", context)(node("body"), "scene.aurora~");
+  assert.ok(guard, "the page asks to be kept until SAVE");
+  assert.equal(guard.dirty(), false, "nothing is changed when the page opens");
+  clicks.colorsbtn();
+  assert.equal(guard.dirty(), true, "Colors is a change until SAVE");
+  clicks.resetbtn();
+  await guard.save(() => {});
+  assert.deepEqual(calls, [["hue_plus", "update_scene", { scene: "bridge-scene", speed: 0.25, auto_dynamic: true, recolor: "reset" }]]);
 });
 
 test("the lights page of a scene lists the lights of its room or zone with their rooms and saves the ticked ones by id", async () => {

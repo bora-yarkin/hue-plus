@@ -18,7 +18,7 @@
     toast = HC.toast,
     refresh = HC.refresh,
     mk = HC.el,
-    svg = HC.icon,
+    svg = hpIcon,
     pill = HC.row,
     cntS = HC.count,
     confirmDlg = HC.confirm,
@@ -58,6 +58,11 @@
     sceneEntSetHidden = HC.scenes.setHidden,
     importLiveScene = HC.scenes.importFrom,
     editLights = HC.scenes.editLights;
+
+  /* An icon: this plugin's own when Home Control has none of that name, else the dashboard's. */
+  function hpIcon(name) {
+    return HP_EXTRA_ICONS[name] ? "<svg viewBox='0 0 24 24'>" + HP_EXTRA_ICONS[name] + "</svg>" : HC.icon(name);
+  }
 
   /* What the dashboard keeps in variables is read when it is needed. */
   function isAdmin() {

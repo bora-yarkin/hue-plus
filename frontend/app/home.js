@@ -162,24 +162,6 @@ function hpGold(el, ids) {
 
 /* ---- the parts ---- */
 
-function hpToggle(label, get, set) {
-  var t = mk("button", "tg", "<i></i>");
-  t.type = "button";
-  t.setAttribute("role", "switch");
-  t.setAttribute("aria-label", label);
-  t.addEventListener("click", function (e) {
-    e.stopPropagation();
-    set();
-  });
-  t.refresh = function () {
-    var on = get();
-    t.classList.toggle("on", on);
-    t.setAttribute("aria-checked", on ? "true" : "false");
-  };
-  reg(t.refresh);
-  return t;
-}
-
 function hpLightToggle(id, label) {
   return hpToggle(
     label,
@@ -235,27 +217,6 @@ function hpSlider(id) {
   };
   reg(s.refresh);
   return s;
-}
-
-/* A round button of the page's top: an icon, a label for the screen reader, and what it does. */
-function hpRound(icon, label, fn) {
-  var b = mk("button", "rbt", svg(icon));
-  b.type = "button";
-  b.setAttribute("aria-label", label);
-  b.addEventListener("click", fn);
-  return b;
-}
-
-function hpActive(el, open) {
-  el.tabIndex = 0;
-  el.setAttribute("role", "button");
-  el.addEventListener("click", open);
-  el.addEventListener("keydown", function (e) {
-    if ((e.key === "Enter" || e.key === " ") && e.target === el) {
-      e.preventDefault();
-      open();
-    }
-  });
 }
 
 /* ---- Home ---- */

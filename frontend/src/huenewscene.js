@@ -38,13 +38,6 @@ function hueLightName(lightId) {
   return e ? A(e).friendly_name || e : lightId;
 }
 
-/* The lights that have an entity (a light of the bridge Home Assistant does not show cannot be set from here). */
-function hueGroupLightIds(g) {
-  return g.lights.filter(function (id) {
-    return !!hueLightEntity(id);
-  });
-}
-
 function hueSelectedIds() {
   return Object.keys(HUENEW.sel).filter(function (id) {
     return HUENEW.sel[id];

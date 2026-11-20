@@ -4,6 +4,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+### Changed
+- **Home Control's Hue Plus menu is the panel's own pages.** Settings > Hue Plus shows Automations, Sync and Settings with every page behind them (devices, switches and their buttons, areas, bridges, light settings, scene settings), the same code the Hue dashboard runs, in Home Control's theme and without the colour wheel (Home Control's Lights section has it). Pages that were written twice, once for the menu and once for the panel, are now one.
+
 ### Fixed
 - **Two lights with the same name in different rooms were taken for each other.** The panel found a room's lights by the names the room lists, so a light named *Ceiling* was in every room that has one. A room's lights are now found by the bridge's ids. A zone, an entertainment area, the Devices list and the lights page of a scene say which room each light is in, and an area's light list in Home Control does too.
 - **Removing a light sent its name to the bridge**, which could not tell two lights of one name apart (or removed the wrong one). It sends the light's id (`remove_device` takes `light`).

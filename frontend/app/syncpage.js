@@ -2,16 +2,6 @@
  and Brightness as four round-ended buttons (each opens a card over the screen, Brightness a slider that rises out of its button), and the bar with what is synced (WHAT), the button that starts and stops the
  sync and where it plays (WHERE, the entertainment area). The entities and what they accept are Hue Plus's own (the sync module: huesync.js). Without a Spotify sync the tab lists what there is as rows. */
 
-function hpSyncEntities(test) {
-  var h = H();
-  return Object.keys(h.states)
-    .filter(function (id) {
-      var e = h.entities[id];
-      return test(h, id) && !(e && e.hidden);
-    })
-    .sort();
-}
-
 var HP_SPOTIFY_MARK =
   "<svg viewBox='0 0 24 24' aria-hidden='true'><circle cx='12' cy='12' r='11' fill='#fff'/><path d='M5.6 9.3c4.2-1.2 9.2-.8 12.8 1.3M6.4 12.6c3.4-.9 7.1-.6 10 1M7.2 15.6c2.6-.7 5.2-.4 7.6.9' fill='none' stroke='#1b1c20' stroke-width='1.9' stroke-linecap='round'/></svg>";
 var HP_AUTO_MARK =

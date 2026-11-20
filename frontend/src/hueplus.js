@@ -20,6 +20,11 @@ function hpNote(text) {
   return pill("info", text, {});
 }
 
+/* The element a page may put its look on: in the panel the page's own frame (which the panel clears for the next page), in Home Control the page's body (the dashboard's popup is shared by the pages that follow). */
+function hpRoot(b) {
+  return window.HueHost && b.parentNode ? b.parentNode : b;
+}
+
 function hpName(id) {
   return A(id).friendly_name || id;
 }
