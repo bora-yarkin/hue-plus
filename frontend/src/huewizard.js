@@ -279,6 +279,7 @@ function hwAutomationState(kind, x) {
       steps: a.steps.slice(),
       edit: x ? x.id : null,
       group: group.rid ? { id: group.rid, type: group.rtype } : null,
+      where: c.where || null,
       name: x ? x.name : "",
       time: when.time_point ? String(point.hour).padStart(2, "0") + ":" + String(point.minute).padStart(2, "0") : hwClock(ext.start_at) || (kind === "wake_up" ? "07:00" : kind === "go_to_sleep" ? "22:00" : ""),
       startType: ext.start_at ? hwPointType(ext.start_at) : "time",
@@ -335,29 +336,35 @@ function hwStartAutomation(kind, x) {
   hwPush(HW.steps[0]);
 }
 
-/* Which room or zone: one of them (the bridge's templates are made for one). */
+/* Automations that recall a scene are for one room or zone, since a scene belongs to one room; the others can be for My entire home or several rooms and zones, or single lights, as in the app. */
+var HW_ONE_ROOM = ["timer", "schedule", "coming_home"];
+
+/* Choose your lights: the app's picker (huepicker.js). */
 function hwLightsPage(b) {
   if (!hwOpen(b, "hue-wz-lights")) return;
   hmLoad(b, ["rooms", "zones"], function (box, r) {
-    var groups = hwGroups(r);
+    var groups = hpkGroups(r),
+      one = HW_ONE_ROOM.indexOf(HW.kind) >= 0;
+    if (!HW.pick) HW.pick = HW.where ? hpkStateOf(HW.where, groups) : { home: false, picked: {} };
+    if (one && (HW.pick.home || Object.keys(HW.pick.picked).length > 1)) HW.pick = { home: false, picked: {} };
     box.appendChild(hmTitle("lamp", _T("hn_choose_your_lights")));
     if (!groups.length) box.appendChild(hmCallout(_T("hn_no_hue_room")));
-    hwGroupRows(
-      box,
-      groups,
-      function (g) {
-        return !!HW.group && HW.group.id === g.id;
-      },
-      function (g) {
-        HW.group = { id: g.id, type: g.type };
-      }
-    );
+    var pick = mk("div");
+    box.appendChild(pick);
+    hpkPicker(pick, { groups: groups, state: HW.pick, one: one, whole: one });
     box.appendChild(
       hwNext(null, function () {
-        if (!HW.group) {
+        var targets = hpkTargets(HW.pick, groups);
+        if (!targets.length) {
           toast(_T("hn_choose_a_room"));
           return;
         }
+        HW.targets = targets;
+        HW.groups = groups;
+        var first = groups.filter(function (g) {
+          return (HW.pick.picked[g.id] || []).length;
+        })[0];
+        HW.group = first ? { id: first.id, type: first.type } : null;
         hwAdvance();
       })
     );
@@ -555,6 +562,13 @@ function hwMimicPage(b) {
 }
 
 function hwGroupName() {
+  if (HW.pick && HW.pick.home) return _T("hpk_my_entire_home");
+  var names = (HW.groups || []).filter(function (g) {
+    return (HW.pick.picked[g.id] || []).length;
+  }).map(function (g) {
+    return g.name;
+  });
+  if (names.length) return names.join(", ");
   var found = null;
   hwGroups({ rooms: hmList("rooms"), zones: hmList("zones") }).forEach(function (g) {
     if (HW.group && g.id === HW.group.id) found = g.name;
@@ -819,7 +833,12 @@ function hwSaveAutomation() {
     pad = function (t) {
       return t + ":00";
     },
-    body = { name: d.name, group: d.group.id, group_type: d.group.type };
+    body = { name: d.name };
+  if (d.targets) body.targets = d.targets;
+  else {
+    body.group = d.group.id;
+    body.group_type = d.group.type;
+  }
   if (d.kind === "wake_up" || d.kind === "go_to_sleep" || d.kind === "schedule") {
     var timed = d.kind !== "schedule" || d.startType === "time";
     if (timed) body.time = pad(d.time);

@@ -32,7 +32,7 @@ function load(held = {}, texts = {}) {
     popBack: () => popped.push("back"),
     hpCall: (domain, service, data) => (sent.push([domain, service, plain(data)]), Promise.resolve()),
   });
-  for (const name of ["huewizard.js", "humotion.js", "huerooms.js"]) vm.runInContext(readFileSync(new URL(name, APP), "utf8"), context);
+  for (const name of ["huepicker.js", "huewizard.js", "humotion.js", "huerooms.js"]) vm.runInContext(readFileSync(new URL(name, APP), "utf8"), context);
   context.sent = sent;
   context.popped = popped;
   return context;

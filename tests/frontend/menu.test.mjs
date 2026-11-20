@@ -7,7 +7,7 @@ import test from "node:test";
 
 const SRC = new URL("../../frontend/src/", import.meta.url);
 const read = (name) => readFileSync(new URL(name, SRC), "utf8");
-const MENU_FILES = ["huemenu.js", "huewizard.js", "humotion.js", "huerooms.js"];
+const MENU_FILES = ["huemenu.js", "huepicker.js", "huewizard.js", "humotion.js", "huerooms.js"];
 const menu = MENU_FILES.map(read).join("\n");
 // The plugin's own texts, and the few the dashboard has for everything (a word like "off" or "lights" is not repeated in every plugin).
 const strings = read("strings.js");
@@ -127,7 +127,7 @@ test("every function and variable of the menu and its drafts that is used is def
 });
 
 test("the bundle is built in the order the pages need, and uses the dashboard only through the plugin API", () => {
-  const order = ["prologue.js", "strings.js", "huecss.js", "adapter.js", "hmdraft.js", "hueplus.js", "huemenu.js", "huewizard.js", "humotion.js", "huerooms.js", "huesync.js", "huescenes.js", "huestyle.js", "epilogue.js"];
+  const order = ["prologue.js", "strings.js", "huecss.js", "adapter.js", "hmdraft.js", "hueplus.js", "huemenu.js", "huepicker.js", "huewizard.js", "humotion.js", "huerooms.js", "huesync.js", "huescenes.js", "huestyle.js", "epilogue.js"];
   const built = readFileSync(new URL("../../custom_components/hue_plus/frontend/menu.js", import.meta.url), "utf8");
   let at = -1;
   for (const name of order) {

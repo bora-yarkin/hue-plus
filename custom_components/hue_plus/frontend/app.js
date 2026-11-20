@@ -1493,6 +1493,11 @@ var PLUGIN_STRINGS = {
   "hm_the_bridge_picks": "The bridge picks which light streams",
   "hm_the_hue_apps_own_times": "The Hue app's own times: Energize, Concentrate, Read, Relax, Nightlight",
   "hm_the_whole_home": "Entire home",
+  "hpk_my_entire_home": "My entire home",
+  "hpk_entire_room": "Entire Room selected",
+  "hpk_entire_zone": "Entire Zone selected",
+  "hpk_select_lights_for": "Select the Rooms, Zones, or lights that you want to control with this button.",
+  "hpk_choose_lights": "Choose the lights",
   "hm_third": "Third",
   "hm_this_area_is_on_the_bridge": "The bridge's own area: saving writes it to the bridge",
   "hm_this_light_streams": "This light streams for the area",
@@ -1985,6 +1990,7 @@ var PLUGIN_STRINGS = {
 /* The styles of the Spotify sync and sync box popups, added to the dashboard's page by the plugin (the dashboard's own styles are for its own parts). */
 var HUE_PLUS_CSS = ".hs-now{display:flex;flex-direction:column;align-items:center;text-align:center;gap:0.25rem;padding:0.25rem 0 var(--sp)}\n.hs-art{width:min(62%,15.5rem);aspect-ratio:1;border-radius:var(--r-m);background:var(--f-raise);border:0.0625rem solid var(--f-line);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--ink2);position:relative}\n.hs-art svg{width:2.75rem;height:2.75rem;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}\n.hs-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}\n.hs-art.has-art svg{visibility:hidden}\n.hs-st{margin-top:0.75rem;font-size:var(--fs-xs);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}\n.hs-tt{font-size:1.1875rem;font-weight:600;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}\n.hs-sub{font-size:var(--fs-m);color:var(--ink2);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.hs-set{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-s);margin:var(--sp) 0}\n.hs-set.one{grid-template-columns:minmax(0,1fr)}\n.hs-col{display:flex;flex-direction:column;align-items:center;gap:0.375rem;min-width:0}\n.hs-cap{font-size:var(--fs-xs);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}\n.hs-tile{display:flex;align-items:center;justify-content:center;width:4.75rem;height:3.125rem;border-radius:1.5625rem;box-sizing:border-box;background:var(--f-card);border:0.0625rem solid var(--f-line);color:var(--ink);cursor:pointer;min-width:0;transition:background .2s}\n.hs-tile:active{background:var(--f-line)}\n.hs-tile.hs-grad{border-color:transparent}\n.hs-i{display:flex;align-items:center;justify-content:center}\n.hs-i svg{width:1.625rem;height:1.625rem;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}\n\n.hs-now,.hs-bar,.hs>.pill,.hs-col{transition:opacity .25s}\n.hs.bri-open .hs-now,.hs.bri-open .hs-bar,.hs.bri-open>.pill,.hs.bri-open .hs-col:not(:last-child){opacity:.25;pointer-events:none}\n.hs-bar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:var(--sp);padding:0.875rem 0.75rem;margin:var(--sp) 0;border-radius:var(--r-l)}\n.hs-side{display:flex;flex-direction:column;align-items:center;gap:0.375rem;min-width:0;text-align:center}\n.hs-btn{cursor:pointer}\n.hs-nm{font-size:var(--fs-s);color:var(--ink);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.hs-go{width:4.75rem;height:4.75rem;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--f-raise);border:0.125rem solid var(--f-line2);color:var(--ink);cursor:pointer;transition:background .2s,border-color .2s}\n.hs-go svg{width:2.125rem;height:2.125rem;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}\n.hs-go.on{background:color-mix(in srgb,var(--acc) 40%,var(--f-raise));border-color:var(--acc)}\n.hs-go.on svg{animation:hs-spin 14s linear infinite}\n@keyframes hs-spin{to{transform:rotate(360deg)}}\n@media(prefers-reduced-motion:reduce){.hs-go.on svg{animation:none}}\n.hs-tile:focus-visible,.hs-go:focus-visible,.hs-btn:focus-visible{outline:0.125rem solid var(--acc);outline-offset:0.125rem}\n.hs-off{opacity:.5;pointer-events:none}\n.hs-sw{width:3.375rem;height:1rem;border-radius:62.4375rem;flex:none;margin-left:auto;border:0.0625rem solid var(--f-line2)}\n.hs-sw+.ck{margin-left:0.625rem}\n.lp-mode.hs-m svg{fill:none}";
 HUE_PLUS_CSS += "\n/* Edit name and type */\n.hm-title{position:relative}\n.hm-title .hm-pen{position:absolute;right:1rem;bottom:0.625rem;width:1.875rem;height:1.875rem;border:0;border-radius:50%;background:var(--f-raise,#3a3b3e);color:inherit;display:flex;align-items:center;justify-content:center;cursor:pointer}\n.hm-title .hm-pen svg{width:1rem;height:1rem;fill:none;stroke:currentColor;stroke-width:2}\n.rnbig{display:flex;justify-content:center;padding:1.125rem 0 0.625rem}\n.rnbig svg{width:2.75rem;height:2.75rem;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}\n.rnname{display:block;box-sizing:border-box;width:calc(100% - 1.375rem);margin:0.5rem 0.6875rem 0.25rem;padding:0.8125rem 0.75rem;border:0;border-radius:0.5rem;background:var(--f-raise,#3a3b3e);color:inherit;font:inherit;font-size:0.875rem}\n.rngrid{display:grid;grid-template-columns:repeat(3,1fr);background:var(--f-card,#25262a);margin:0 0 0.375rem;border-radius:var(--r-row,0)}\n.rntype{display:flex;flex-direction:column;align-items:center;gap:0.625rem;padding:1rem 0.25rem 0.875rem;border:0;background:none;color:inherit;cursor:pointer;font:inherit}\n.rntype .ic{width:2.375rem;height:2.375rem;border-radius:50%;background:var(--f-line2,#4a4b50);display:flex;align-items:center;justify-content:center}\n.rntype .ic svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}\n.rntype b{font-size:0.6875rem;font-weight:500;text-align:center}\n.rntype.on .ic{background:#fff;color:#1b1c20}\n";
+HUE_PLUS_CSS += "\n/* The lights picker (huepicker.js) */\n.hpk-list{display:flex;flex-direction:column;gap:0.375rem;margin:0 0 var(--sp,0.625rem)}\n.hpk-row{background:var(--f-raise,var(--tile,#26272b));border-radius:var(--r-row,0.875rem);overflow:hidden}\n.hpk-head{display:flex;align-items:center;gap:0.875rem;padding:0.875rem 1rem;cursor:pointer;min-height:3.5rem;box-sizing:border-box}\n.hpk-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:0.125rem}\n.hpk-n{font-size:0.9375rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.hpk-s{font-size:0.75rem;color:var(--ink2,#9a9ca3)}\n.hpk-s:empty{display:none}\n.hpk-ck{flex:none;width:1.5rem;height:1.5rem;box-sizing:border-box;border-radius:50%;border:0.125rem solid var(--ink2,#6f7178);display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer}\n.hpk-ck svg{width:0.9375rem;height:0.9375rem;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}\n.hpk-ck.on{background:var(--acc,#3b6cf6);border-color:var(--acc,#3b6cf6)}\n.hpk-ck.part{border-color:var(--acc,#3b6cf6);background:radial-gradient(circle,var(--acc,#3b6cf6) 0 36%,transparent 40%)}\n.hpk-chev{flex:none;width:1.375rem;height:1.375rem;display:flex;color:var(--ink2,#9a9ca3);transform:rotate(90deg);transition:transform .25s}\n.hpk-chev svg{width:1.375rem;height:1.375rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transform:none}\n.hpk-row.open .hpk-chev{transform:rotate(-90deg)}\n.hpk-tiles{display:flex;gap:0.625rem;overflow-x:auto;padding:0.125rem 1rem 1rem;scrollbar-width:none}\n.hpk-tiles::-webkit-scrollbar{display:none}\n.hpk-tile{flex:none;width:6.5rem;height:7.25rem;box-sizing:border-box;border-radius:var(--r-row,0.875rem);background:var(--f-card,var(--head,#1f2024));display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:0.75rem 0.5rem 0.625rem;cursor:pointer}\n.hpk-ic{display:flex}\n.hpk-ic svg{width:1.875rem;height:1.875rem;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}\n.hpk-tile b{font-size:0.75rem;font-weight:500;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n";
 
 /* What Hue Plus offers, read from Home Assistant's registry and states (so a page shows only what exists): the bridge's entities, the lights, what belongs to one light, the
  updates, and the bridge's own data (a service that answers). It was the dashboard's `Integrations.hueplus`; now it is this plugin's. */
@@ -4803,7 +4809,7 @@ function hpRenamePage(b, id) {
   };
 }
 
-/* The lights a button acts on (the app's Selected lights): a room or a zone. Choosing one writes it to the bridge at once, and what the button's presses do stays. */
+/* The lights a button acts on (the app's Edit lights): My entire home, or rooms and zones, each whole or by single lights, chosen in the picker the app has (huepicker.js). DONE writes it to the bridge; what the button's presses do stays. */
 function hpButtonLightsPage(b, id) {
   hmBox(b);
   hmLoad(b, ["accessories", "rooms", "zones"], function (box, r) {
@@ -4813,41 +4819,230 @@ function hpButtonLightsPage(b, id) {
       box.appendChild(hmCallout(_T("nothing_found")));
       return;
     }
-    var now = hmBtnTargets(r, f.acc, f.btn).ids;
-    [
-      ["room", r.rooms || [], "home"],
-      ["zone", r.zones || [], "target"],
-    ].forEach(function (kind) {
-      if (!kind[1].length) return;
-      box.appendChild(hmLabel(_T(kind[0] === "room" ? "app_rooms" : "zones")));
-      box.appendChild(
-        hmGroup(
-          kind[1].map(function (g) {
-            return hmRow({
-              icon: kind[2],
-              title: g.name,
-              check: function () {
-                return now.indexOf(g.id) >= 0;
-              },
-              tap: function () {
-                hpCall("hue_plus", "set_button_lights", { accessory: f.acc.id, button: f.btn.number, group: g.id, group_type: kind[0] }).then(function () {
-                  return hmReread("accessories", f.acc.id).then(function () {
-                    popBack();
-                  });
-                }, function () {});
-              },
+    var groups = hpkGroups(r),
+      state = hpkStateOf(((f.acc.where || {})[f.btn.id]) || [], groups),
+      pick = mk("div");
+    box.appendChild(mkHint(_T("hpk_select_lights_for")));
+    box.appendChild(pick);
+    hpkPicker(pick, { groups: groups, state: state });
+    box.appendChild(
+      hmActions([
+        hmButton(_T("hm_done"), "primary", function () {
+          var targets = hpkTargets(state, groups);
+          if (!targets.length) {
+            toast(_T("hpk_choose_lights"));
+            return;
+          }
+          hpCall("hue_plus", "set_button_lights", { accessory: f.acc.id, button: f.btn.number, targets: targets }).then(function () {
+            return hmReread("accessories", f.acc.id).then(function () {
+              popBack();
             });
-          })
-        )
-      );
-    });
+          }, function () {});
+        }),
+      ])
+    );
   });
 }
-
 
 HP_PAGES["app-devinfo"] = ["hm_device_info", "info", hpDeviceInfoPage];
 HP_PAGES["app-rename"] = ["app_edit_name_and_type", "edit", hpRenamePage];
 HP_PAGES["app-btnlights"] = ["app_selected_lights", "home", hpButtonLightsPage];
+
+/* The lights picker of the Hue app: "Choose your lights" and "Edit lights". My entire home is a row of its own, and the rooms and zones are rows with a round check on the left and a chevron on the right; the row opens to show
+   its lights as tiles, each with a round check, so a room is chosen whole or by single lights. Used wherever the app asks for lights (a button's lights, an automation's lights).
+   What is chosen is `state`: { home: boolean, picked: { <room or zone id>: [light ids] } }, and hpkTargets(state, groups) turns it into the `targets` the services take. */
+
+/* The rooms and zones of what the menu read, each with its lights as { id, name, archetype }. A group the bridge answered without its lights (an older Hue Plus) has none and can only be chosen whole. */
+function hpkGroups(r) {
+  var out = [];
+  [
+    ["room", r.rooms],
+    ["zone", r.zones],
+  ].forEach(function (t) {
+    (t[1] || []).forEach(function (g) {
+      out.push({
+        id: g.id,
+        name: g.name,
+        type: t[0],
+        archetype: g.archetype,
+        lights: g.light_items || (g.lights || []).map(function (id) {
+          return { id: id, name: id, archetype: null };
+        }),
+        whole: !g.light_items && (g.lights || []).length > 0,
+      });
+    });
+  });
+  return out;
+}
+
+/* What the services take: the whole home, or one entry for each room or zone with a light chosen: the group alone when every light of it is chosen, else its chosen lights. */
+function hpkTargets(state, groups) {
+  if (state.home) return [{ group_type: "home" }];
+  var out = [];
+  groups.forEach(function (g) {
+    var ids = state.picked[g.id] || [];
+    if (!ids.length) return;
+    var every = g.lights.every(function (l) {
+      return ids.indexOf(l.id) >= 0;
+    });
+    out.push(every ? { group: g.name, group_type: g.type } : { group: g.name, group_type: g.type, lights: ids.map(function (id) {
+      return (g.lights.filter(function (l) { return l.id === id; })[0] || {}).name || id;
+    }) });
+  });
+  return out;
+}
+
+/* The state that matches what an automation or a button has now: its `where` as the bridge keeps it ([{group: {rid, rtype}, items: [{rid}]}]), with the lights of the rooms and zones to fill what a group alone means. */
+function hpkStateOf(where, groups) {
+  var st = { home: false, picked: {} };
+  (where || []).forEach(function (w) {
+    var rid = ((w || {}).group || {}).rid,
+      type = ((w || {}).group || {}).rtype;
+    if (type === "bridge_home") st.home = true;
+    var g = groups.filter(function (x) {
+      return x.id === rid;
+    })[0];
+    if (!g) return;
+    st.picked[g.id] = (w.items || []).length
+      ? w.items.map(function (i) {
+          return i.rid;
+        })
+      : g.lights.map(function (l) {
+          return l.id;
+        });
+  });
+  return st;
+}
+
+/* Draws the picker into `box`. o = { groups, state, one: only one room or zone, whole (no single lights), change() }: `change` is called after every choice. */
+function hpkPicker(box, o) {
+  var open = {};
+  function circle(on, partial) {
+    var c = mk("span", "hpk-ck" + (on ? " on" : partial ? " part" : ""));
+    if (on) c.innerHTML = svg("check");
+    return c;
+  }
+  function chosen(g) {
+    return o.state.home ? g.lights.length : (o.state.picked[g.id] || []).length;
+  }
+  function setHome() {
+    o.state.home = !o.state.home;
+    if (o.state.home) o.state.picked = {};
+    done();
+  }
+  function setGroup(g) {
+    var all = chosen(g) === g.lights.length && g.lights.length > 0;
+    if (o.state.home) {
+      o.state.home = false;
+      o.state.picked = {};
+    }
+    if (o.one) o.state.picked = {};
+    o.state.picked[g.id] = all ? [] : g.lights.map(function (l) {
+      return l.id;
+    });
+    if (!o.state.picked[g.id].length) delete o.state.picked[g.id];
+    done();
+  }
+  function setLight(g, l) {
+    if (o.state.home) {
+      o.state.home = false;
+      o.state.picked = {};
+    }
+    var ids = (o.state.picked[g.id] || []).slice(),
+      at = ids.indexOf(l.id);
+    if (at >= 0) ids.splice(at, 1);
+    else ids.push(l.id);
+    if (ids.length) o.state.picked[g.id] = ids;
+    else delete o.state.picked[g.id];
+    done();
+  }
+  function done() {
+    draw();
+    if (o.change) o.change();
+  }
+  function sub(g) {
+    var n = chosen(g);
+    if (!n) return "";
+    return n === g.lights.length ? _T("hpk_entire_" + g.type) : cntS(n, _T("hm_light"), _T("hm_lights"));
+  }
+  function groupRow(g) {
+    var n = chosen(g),
+      canOpen = !o.whole && !g.whole && g.lights.length > 0,
+      row = mk("div", "hpk-row" + (open[g.id] ? " open" : "")),
+      head = mk("div", "hpk-head", "<span class='hpk-t'><span class='hpk-n'></span><span class='hpk-s'></span></span>");
+    head.querySelector(".hpk-n").textContent = g.name;
+    head.querySelector(".hpk-s").textContent = sub(g);
+    var ck = circle(n > 0 && n === g.lights.length, n > 0 && n < g.lights.length);
+    ck.setAttribute("role", "checkbox");
+    ck.setAttribute("aria-checked", n > 0 ? "true" : "false");
+    ck.setAttribute("aria-label", g.name);
+    ck.tabIndex = 0;
+    ck.addEventListener("click", function (e) {
+      e.stopPropagation();
+      setGroup(g);
+    });
+    head.insertBefore(ck, head.firstChild);
+    if (canOpen) {
+      var chev = mk("span", "hpk-chev");
+      chev.innerHTML = svg("chev");
+      head.appendChild(chev);
+    }
+    head.addEventListener("click", function () {
+      if (!canOpen) return setGroup(g);
+      open[g.id] = !open[g.id];
+      draw();
+    });
+    row.appendChild(head);
+    if (canOpen && open[g.id]) {
+      var tiles = mk("div", "hpk-tiles");
+      g.lights.forEach(function (l) {
+        var on = o.state.home || (o.state.picked[g.id] || []).indexOf(l.id) >= 0,
+          t = mk("div", "hpk-tile", "<span class='hpk-ic'></span><b></b>");
+        var icon = hpArchetypeIcon(l.archetype) || "lamp";
+        t.querySelector(".hpk-ic").innerHTML = svg(icon);
+        t.querySelector("b").textContent = l.name;
+        t.appendChild(circle(on, false));
+        t.setAttribute("role", "checkbox");
+        t.setAttribute("aria-checked", on ? "true" : "false");
+        t.tabIndex = 0;
+        t.addEventListener("click", function () {
+          setLight(g, l);
+        });
+        tiles.appendChild(t);
+      });
+      row.appendChild(tiles);
+    }
+    return row;
+  }
+  function draw() {
+    box.innerHTML = "";
+    if (!o.one) {
+      var home = mk("div", "hpk-row"),
+        head = mk("div", "hpk-head", "<span class='hpk-t'><span class='hpk-n'></span></span>");
+      head.querySelector(".hpk-n").textContent = _T("hpk_my_entire_home");
+      head.insertBefore(circle(o.state.home, false), head.firstChild);
+      head.addEventListener("click", setHome);
+      home.appendChild(head);
+      box.appendChild(home);
+    }
+    [
+      ["room", "hn_rooms"],
+      ["zone", "hn_zones"],
+    ].forEach(function (t) {
+      var list = o.groups.filter(function (g) {
+        return g.type === t[0];
+      });
+      if (!list.length) return;
+      box.appendChild(hmLabel(_T(t[1])));
+      var wrap = mk("div", "hpk-list");
+      list.forEach(function (g) {
+        wrap.appendChild(groupRow(g));
+      });
+      box.appendChild(wrap);
+    });
+  }
+  draw();
+}
 
 /* The Hue app's wizards in the Hue Plus menu: what the pages of one wizard share (the state in progress, a heading, Next, a name, a time, the days, a room or zone to choose) and the
  automation wizards ("What kind of automation do you want to create?": wake up, go to sleep, timer, lighting schedule, coming home, leaving home). The pieces are the menu's own (hmRow,
@@ -5130,6 +5325,7 @@ function hwAutomationState(kind, x) {
       steps: a.steps.slice(),
       edit: x ? x.id : null,
       group: group.rid ? { id: group.rid, type: group.rtype } : null,
+      where: c.where || null,
       name: x ? x.name : "",
       time: when.time_point ? String(point.hour).padStart(2, "0") + ":" + String(point.minute).padStart(2, "0") : hwClock(ext.start_at) || (kind === "wake_up" ? "07:00" : kind === "go_to_sleep" ? "22:00" : ""),
       startType: ext.start_at ? hwPointType(ext.start_at) : "time",
@@ -5186,29 +5382,35 @@ function hwStartAutomation(kind, x) {
   hwPush(HW.steps[0]);
 }
 
-/* Which room or zone: one of them (the bridge's templates are made for one). */
+/* Automations that recall a scene are for one room or zone, since a scene belongs to one room; the others can be for My entire home or several rooms and zones, or single lights, as in the app. */
+var HW_ONE_ROOM = ["timer", "schedule", "coming_home"];
+
+/* Choose your lights: the app's picker (huepicker.js). */
 function hwLightsPage(b) {
   if (!hwOpen(b, "hue-wz-lights")) return;
   hmLoad(b, ["rooms", "zones"], function (box, r) {
-    var groups = hwGroups(r);
+    var groups = hpkGroups(r),
+      one = HW_ONE_ROOM.indexOf(HW.kind) >= 0;
+    if (!HW.pick) HW.pick = HW.where ? hpkStateOf(HW.where, groups) : { home: false, picked: {} };
+    if (one && (HW.pick.home || Object.keys(HW.pick.picked).length > 1)) HW.pick = { home: false, picked: {} };
     box.appendChild(hmTitle("lamp", _T("hn_choose_your_lights")));
     if (!groups.length) box.appendChild(hmCallout(_T("hn_no_hue_room")));
-    hwGroupRows(
-      box,
-      groups,
-      function (g) {
-        return !!HW.group && HW.group.id === g.id;
-      },
-      function (g) {
-        HW.group = { id: g.id, type: g.type };
-      }
-    );
+    var pick = mk("div");
+    box.appendChild(pick);
+    hpkPicker(pick, { groups: groups, state: HW.pick, one: one, whole: one });
     box.appendChild(
       hwNext(null, function () {
-        if (!HW.group) {
+        var targets = hpkTargets(HW.pick, groups);
+        if (!targets.length) {
           toast(_T("hn_choose_a_room"));
           return;
         }
+        HW.targets = targets;
+        HW.groups = groups;
+        var first = groups.filter(function (g) {
+          return (HW.pick.picked[g.id] || []).length;
+        })[0];
+        HW.group = first ? { id: first.id, type: first.type } : null;
         hwAdvance();
       })
     );
@@ -5406,6 +5608,13 @@ function hwMimicPage(b) {
 }
 
 function hwGroupName() {
+  if (HW.pick && HW.pick.home) return _T("hpk_my_entire_home");
+  var names = (HW.groups || []).filter(function (g) {
+    return (HW.pick.picked[g.id] || []).length;
+  }).map(function (g) {
+    return g.name;
+  });
+  if (names.length) return names.join(", ");
   var found = null;
   hwGroups({ rooms: hmList("rooms"), zones: hmList("zones") }).forEach(function (g) {
     if (HW.group && g.id === HW.group.id) found = g.name;
@@ -5670,7 +5879,12 @@ function hwSaveAutomation() {
     pad = function (t) {
       return t + ":00";
     },
-    body = { name: d.name, group: d.group.id, group_type: d.group.type };
+    body = { name: d.name };
+  if (d.targets) body.targets = d.targets;
+  else {
+    body.group = d.group.id;
+    body.group_type = d.group.type;
+  }
   if (d.kind === "wake_up" || d.kind === "go_to_sleep" || d.kind === "schedule") {
     var timed = d.kind !== "schedule" || d.startType === "time";
     if (timed) body.time = pad(d.time);

@@ -2302,7 +2302,7 @@ function hpRenamePage(b, id) {
   };
 }
 
-/* The lights a button acts on (the app's Selected lights): a room or a zone. Choosing one writes it to the bridge at once, and what the button's presses do stays. */
+/* The lights a button acts on (the app's Edit lights): My entire home, or rooms and zones, each whole or by single lights, chosen in the picker the app has (huepicker.js). DONE writes it to the bridge; what the button's presses do stays. */
 function hpButtonLightsPage(b, id) {
   hmBox(b);
   hmLoad(b, ["accessories", "rooms", "zones"], function (box, r) {
@@ -2312,37 +2312,30 @@ function hpButtonLightsPage(b, id) {
       box.appendChild(hmCallout(_T("nothing_found")));
       return;
     }
-    var now = hmBtnTargets(r, f.acc, f.btn).ids;
-    [
-      ["room", r.rooms || [], "home"],
-      ["zone", r.zones || [], "target"],
-    ].forEach(function (kind) {
-      if (!kind[1].length) return;
-      box.appendChild(hmLabel(_T(kind[0] === "room" ? "app_rooms" : "zones")));
-      box.appendChild(
-        hmGroup(
-          kind[1].map(function (g) {
-            return hmRow({
-              icon: kind[2],
-              title: g.name,
-              check: function () {
-                return now.indexOf(g.id) >= 0;
-              },
-              tap: function () {
-                hpCall("hue_plus", "set_button_lights", { accessory: f.acc.id, button: f.btn.number, group: g.id, group_type: kind[0] }).then(function () {
-                  return hmReread("accessories", f.acc.id).then(function () {
-                    popBack();
-                  });
-                }, function () {});
-              },
+    var groups = hpkGroups(r),
+      state = hpkStateOf(((f.acc.where || {})[f.btn.id]) || [], groups),
+      pick = mk("div");
+    box.appendChild(mkHint(_T("hpk_select_lights_for")));
+    box.appendChild(pick);
+    hpkPicker(pick, { groups: groups, state: state });
+    box.appendChild(
+      hmActions([
+        hmButton(_T("hm_done"), "primary", function () {
+          var targets = hpkTargets(state, groups);
+          if (!targets.length) {
+            toast(_T("hpk_choose_lights"));
+            return;
+          }
+          hpCall("hue_plus", "set_button_lights", { accessory: f.acc.id, button: f.btn.number, targets: targets }).then(function () {
+            return hmReread("accessories", f.acc.id).then(function () {
+              popBack();
             });
-          })
-        )
-      );
-    });
+          }, function () {});
+        }),
+      ])
+    );
   });
 }
-
 
 HP_PAGES["app-devinfo"] = ["hm_device_info", "info", hpDeviceInfoPage];
 HP_PAGES["app-rename"] = ["app_edit_name_and_type", "edit", hpRenamePage];
