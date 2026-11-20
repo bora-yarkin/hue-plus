@@ -132,3 +132,21 @@ Acceptance:
 - AC6 A light is a full page with Home Control's colour wheel panel, a room is a full page with a header, scenes, lights and controls. Check: `tests/frontend/panel` in a browser.
 
 Status: built and checked in the test page; to be checked on the owner's box (needs a restart to register the panel).
+
+## HP-15 The Hue panel is the Hue app, screen for screen (owner's requirement, 2026-11-20)
+
+Goal: every screen of the panel except the colour wheel, the room page and Sync (the owner calls these right) looks and behaves as the matching screen of the Hue app (6.3.2), checked against the screenshots in the workspace's `hue/app-screens/` (INDEX.md). The panel does not guess: a choice the app has and the bridge can store is built; a choice the bridge cannot store is not shown.
+
+Requirement from the owner: where the app asks for lights, it shows *My entire home* and the rooms and zones as rows that open (a chevron) to show their lights as tiles with a check each; a room can be checked whole or by single lights. The same picker everywhere (automations, a button's lights, a scene's lights). Every popup, list and question comes up from the bottom.
+
+Bridge facts (tried 2026-11-20 with throwaway disabled automations, deleted; see `bridge-findings.md`): the `where` of an automation is a list; an item is `{group: {rid, rtype: room | zone | bridge_home}, items?: [{rid, rtype: "light"}]}`: several groups are accepted, the whole home is a `bridge_home` item, a subset of a room's lights is `items`; a light alone as a group is refused.
+
+Children, in order:
+- HP-15.1 `targets`: the services that take a room or zone (`create_routine`, `update_routine`, `set_button_lights`) take a list of targets (room, zone or the whole home, each whole or with chosen lights); the shared picker; used by the automation wizard and a button's lights. AC: `tests/bridge` for the payloads, `tests/frontend` for the picker, the test page for the screens.
+- HP-15.2 Switches and dimmers: Switch settings, Button controls, Edit lights, Press, scene cycle, Smart on/off, scene choice (`06-switches`).
+- HP-15.3 Automations tab and its create flows page by page (`07-automations`).
+- HP-15.4 Scene editor: new scene, dynamic scenes and every setting of a scene in the app, live scenes included (`05-scenes`).
+- HP-15.5 Settings tab, every page (`01-settings-and-devices`, `02-motionaware`, rooms and light settings in `03-rooms-and-lights`).
+- HP-15.6 Sheets and motion: every sheet from the bottom (done: the three dots, questions, prompts), the scene buttons coming out of the playing scene (done).
+
+Status: HP-15.6 built; HP-15.1 in progress.
