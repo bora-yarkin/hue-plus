@@ -625,7 +625,7 @@ body{width:100%;height:100%}
 .lightsbar .lbtitle{padding:0 18px}
 .resetbtn{position:sticky;bottom:24px;margin-top:40px;box-shadow:0 4px 14px rgba(0,0,0,.4)}
 /* The scene page as the app draws it: the colours of the scene run behind the page and fade into the dark by the middle of the screen, the header and the first sections are see-through over them */
-.pg.scenepg{background:linear-gradient(180deg,rgba(28,29,33,0) 0,var(--bg) 43%),linear-gradient(100deg,var(--sc1),var(--sc2) 70%,var(--sc3,var(--sc2)))}
+.pg.scenepg{background:radial-gradient(75% 36% at 14% 24%,var(--sc1),transparent 72%),radial-gradient(65% 34% at 92% 6%,var(--sc2),transparent 72%),radial-gradient(60% 30% at 56% 36%,var(--sc3),transparent 74%),var(--bg)}
 .pg.scenepg .pbar{background:rgba(255,255,255,.13);backdrop-filter:blur(14px)}
 .pg.scenepg .schead{background:none}
 .pg.scenepg .hm-group{background:rgba(37,38,42,.3)}
