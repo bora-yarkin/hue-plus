@@ -74,9 +74,16 @@ function hpSwitchPage(b, id) {
     var room = hpRoomOfDevice(r, id),
       buttons = x.buttons || [],
       selected = HPSW.sel[id] || (buttons[0] && buttons[0].number),
-      head = mk("div", "swhead", "<span class='ic'></span><div class='nm'></div>");
+      head = mk("div", "swhead named", "<span class='ic'></span><div class='nm'></div>");
     head.querySelector(".ic").innerHTML = svg("switch");
     head.querySelector(".nm").textContent = x.name;
+    if (hueplus.has(H(), "set_name"))
+      head.appendChild(
+        hpRound("edit", _T("app_edit_name_and_type"), function () {
+          delete HPRENAME[id];
+          showPopup("app-rename:" + id, true);
+        })
+      );
     box.appendChild(head);
     /* The room the switch is in: the row opens the room, where its devices are chosen (a switch moves by being added to another room). */
     box.appendChild(
@@ -118,18 +125,21 @@ function hpSwitchPage(b, id) {
       })
     );
     var t = hmBtnTargets(r, x, btn);
-    box.appendChild(hmLabel(_T("app_selected_lights")));
+    /* "Selected lights" is a row with its pencil, and the room or zone as a tile under it. */
+    var lights = mk("div", "lbrow"),
+      selectable = hueplus.has(H(), "set_button_lights"),
+      open = function () {
+        showPopup("app-btnlights:" + x.id + "|" + btn.number, true);
+      };
+    var lt = mk("div", "lbtitle");
+    lt.textContent = _T("app_selected_lights");
+    lights.appendChild(lt);
+    if (selectable) lights.appendChild(hpRound("edit", _T("app_selected_lights"), open));
+    box.appendChild(lights);
     var sel = mk("div", "selroom", "<span class='ic'></span><div><b></b><i></i></div>");
     sel.querySelector(".ic").innerHTML = svg(room && room.type === "zone" ? "target" : "home");
     sel.querySelector("b").textContent = t.name || (room ? room.name : _T("hm_the_whole_home"));
     sel.querySelector("i").textContent = _T("app_entire_room");
-    if (hueplus.has(H(), "set_button_lights")) {
-      sel.setAttribute("role", "button");
-      sel.tabIndex = 0;
-      hpActive(sel, function () {
-        showPopup("app-btnlights:" + x.id + "|" + btn.number, true);
-      });
-    }
     box.appendChild(sel);
     box.appendChild(hmLabel(_T("hm_behavior")));
     box.appendChild(
@@ -147,7 +157,7 @@ function hpSwitchPage(b, id) {
             title: _T(p[1]),
             val: function () {
               var kind = hmPressKind(spec());
-              return kind === "scene" || kind === "cycle" || kind === "time" ? hmPressSummary(r, spec()).replace(/^[^·]*· ?/, "") : hpKindTitle(kind);
+              return kind === "scene" ? _T("app_press_all_lights") : kind === "cycle" || kind === "time" ? hmPressSummary(r, spec()).replace(/^[^·]*· ?/, "") : hpKindTitle(kind);
             },
             disc: scenes[0] ? hpDiscOf(scenes[0].colours) : null,
             icon: scenes[0] ? null : hpKindIcon(hmPressKind(spec())),
@@ -155,20 +165,6 @@ function hpSwitchPage(b, id) {
           });
         })
       )
-    );
-    box.appendChild(hmLabel(_T("hm_advanced")));
-    box.appendChild(
-      hmGroup([
-        hpNoChev(
-          hmRow({
-            title: _T("hm_smart_on_off"),
-            val: function () {
-              return hmPressWithOff(hmPressSpec(x, btn, "short")) ? _T("app_enabled") : _T("app_disabled");
-            },
-            tap: "app-smart:" + x.id + "|" + btn.number + "|short",
-          })
-        ),
-      ])
     );
     box.appendChild(
       hmActions([
@@ -199,6 +195,11 @@ function hpPressPage(b, id) {
         return hmPressKind(spec());
       },
       room = hpRoomOfDevice(r, f.acc.id);
+    /* A press that is a cycle is the cycle's list itself, as in the app. */
+    if (kind() === "cycle") {
+      hpCycleDraw(box, r, id, k, f, 1);
+      return;
+    }
     box.appendChild(
       hmGroup([
         hpDiscRow({
@@ -224,7 +225,7 @@ function hpPressPage(b, id) {
         hmGroup([
           hpDiscRow({
             title: room ? room.name : _T("hm_the_whole_home"),
-            val: k0 === "scene" ? (names[0] ? names[0].name : _T("hm_unknown_scene")) : hmPressSummary(r, spec()).replace(/^[^·]*· ?/, ""),
+            val: k0 === "scene" ? _T("app_press_all_lights") : hmPressSummary(r, spec()).replace(/^[^·]*· ?/, ""),
             disc: names[0] ? hpDiscOf(names[0].colours) : null,
             icon: names[0] ? null : "palette",
             tap: target + id,
@@ -274,7 +275,7 @@ function hpPressKindPage(b, id) {
       box.appendChild(
         hmGroup(
           group[1].map(function (c) {
-            return hmRow({
+            var row = hmRow({
               title: _T(c[2]),
               sub: _T(c[2] + "_sub"),
               icon: hpKindIcon(c[0]),
@@ -291,6 +292,8 @@ function hpPressKindPage(b, id) {
                 }
               },
             });
+            row.classList.add("discic");
+            return row;
           })
         )
       );
@@ -361,9 +364,18 @@ function hpSmartPage(b, id) {
     var spec = function () {
       return hmPressSpec(f.acc, f.btn, k.press);
     };
-    var text = mk("div", "pintro");
-    text.textContent = _T("app_smart_text");
-    box.appendChild(text);
+    /* The text of the page, with the two parts the app writes in bold. */
+    function paragraph(parts) {
+      var p = mk("div", "pintro smart");
+      parts.forEach(function (part, i) {
+        var node = i % 2 ? mk("b") : document.createTextNode("");
+        node.textContent = part;
+        p.appendChild(node);
+      });
+      return p;
+    }
+    box.appendChild(paragraph([_T("app_smart_1"), _T("app_smart_on_and_off"), _T("app_smart_2"), _T("app_smart_only_on"), "."]));
+    box.appendChild(paragraph([_T("app_smart_3")]));
     function choose(on) {
       var s = spec(),
         kind = hmPressKind(s),
@@ -408,10 +420,34 @@ HP_PAGES["hue-pick-scene"] = ["app_my_scenes", "palette", hpPressScenePage];
 HP_PAGES["app-press"] = ["hm_press", "switch", hpPressPage];
 HP_PAGES["app-smart"] = ["hm_smart_on_off", "switch", hpSmartPage];
 
-/* What a button controls. The app offers lights and, where the home has them, other kinds of device; this bridge's buttons control lights. */
-function hpButtonControlsPage(b) {
+/* What a button controls: the question with the button's name, and the kinds the app offers. A button of this bridge's switches controls lights; the Hue app's "Automations" (start or stop an automation) is not offered here yet. */
+function hpButtonControlsPage(b, id) {
   hmBox(b);
-  b.appendChild(hmGroup([hmRow({ icon: "lights", title: _T("lights"), check: function () { return true; } })]));
+  hmGuard(hmdKey("acc", hmBtnKey(id).acc), true);
+  hmLoad(b, ["accessories"], function (box, r) {
+    var k = hmBtnKey(id),
+      acc = (r.accessories || []).filter(function (x) {
+        return x.id === k.acc;
+      })[0],
+      btn = acc && (acc.buttons || []).filter(function (y) {
+        return y.number === k.n;
+      })[0];
+    if (!btn) {
+      box.appendChild(hmCallout(_T("nothing_found")));
+      return;
+    }
+    var ask = mk("div", "pintro bigask"),
+      name = mk("b");
+    name.textContent = hpButtonLook(acc, btn).name.toLowerCase();
+    ask.appendChild(document.createTextNode(_T("app_control_with_pre")));
+    ask.appendChild(name);
+    ask.appendChild(document.createTextNode(_T("app_control_with_post")));
+    box.appendChild(ask);
+    box.appendChild(hmLabel(_T("app_button_controls")));
+    var row = hmRow({ icon: "lights", title: _T("lights"), sub: _T("app_lights_sub"), check: function () { return true; } });
+    row.classList.add("discic");
+    box.appendChild(hmGroup([row]));
+  });
 }
 
 HP_PAGES["app-btnctl"] = ["app_button_controls", "lights", hpButtonControlsPage];

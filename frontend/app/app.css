@@ -609,3 +609,11 @@ body{width:100%;height:100%}
 /* the page's bar while a sheet of the light frame uses it: an X, as a sheet has */
 .pg.framebar .pbar .back{display:none!important}
 .pg.framebar .pbar .x{display:flex!important}
+
+/* Switch settings as the app draws it: the label of "Selected lights" is a title with its pencil, the button tiles keep their name on one line */
+.lbtitle{flex:1;padding:16px 18px 10px;font-size:11.5px;font-weight:600}
+.btile b{font-size:10px;white-space:nowrap;padding:0 4px}
+.pintro.bigask{padding:44px 18px 22px;font-size:13.5px}
+.hm-row.discic .hm-i{width:44px;height:44px;border-radius:50%;background:#0d0e10;box-shadow:0 2px 5px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;margin-right:2px}
+.hm-row.discic .hm-i svg{width:20px;height:20px}
+.pintro.smart{font-size:11.5px;line-height:1.45;padding:20px 18px 6px}

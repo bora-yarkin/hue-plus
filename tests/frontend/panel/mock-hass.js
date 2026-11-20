@@ -138,12 +138,13 @@ export function makeHass(query) {
         id: "acc-1", name: "Desk dimmer", dials: 0, automation_id: "auto-1",
         buttons: [{ id: "b1", number: 1, last_event: "short_release" }, { id: "b2", number: 2, last_event: null }, { id: "b3", number: 3, last_event: null }, { id: "b4", number: 4, last_event: "long_release" }],
         actions: {
-          b1: { on_short_release: { action: "dim_up" }, on_long_press: { action: "dim_up" } },
-          b2: {
+          // the shapes the bridge holds: an on/off button with a single scene, brighten and dim with the repeat of a held press, a button with a cycle
+          b1: {
             on_short_release: { recall_single_extended: { actions: [{ action: { recall: { rid: "scene-1", rtype: "scene" } } }], with_off: { enabled: true } } },
             on_long_press: { action: "do_nothing" },
           },
-          b3: { on_short_release: { action: "dim_down" }, on_long_press: { action: "home_off" } },
+          b2: { on_short_release: { action: "dim_up" }, on_repeat: { action: "dim_up" } },
+          b3: { on_short_release: { action: "dim_down" }, on_repeat: { action: "dim_down" } },
           b4: {
             on_short_release: {
               scene_cycle_extended: {
@@ -152,13 +153,7 @@ export function makeHass(query) {
                 with_off: { enabled: true },
               },
             },
-            on_long_press: {
-              time_based_extended: {
-                repeat_timeout: { seconds: 3 },
-                slots: [["scene-1", 7, 0], ["scene-2", 20, 0], ["scene-3", 23, 0]].map(([rid, hour, minute]) => ({ actions: [{ action: { recall: { rid, rtype: "scene" } } }], start_time: { hour, minute } })),
-                with_off: { enabled: false },
-              },
-            },
+            on_long_press: { action: "do_nothing" },
           },
         },
         targets: { b1: ["room-1"], b2: ["room-1"], b3: ["room-1"], b4: ["room-1"] },
