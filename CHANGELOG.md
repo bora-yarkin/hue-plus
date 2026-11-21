@@ -4,6 +4,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+### Fixed
+- **Saving a scene's colours in Home Control closed every popup**, the lights master under it too. The colour editor now closes to the page it was opened from.
+
 ## [0.22.5] - 2026-11-21
 
 ### Changed

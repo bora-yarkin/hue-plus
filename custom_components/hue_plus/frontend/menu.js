@@ -10532,9 +10532,6 @@ function hueEditOpen(id, name, lights, candidates) {
           }
         );
       },
-      after: function () {
-        closeSheet();
-      },
     });
   }, 900);
 }
