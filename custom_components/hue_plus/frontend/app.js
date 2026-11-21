@@ -1219,7 +1219,7 @@ var HOST_CSS = ":root{--bg:#1b1c20;--bg-warm:#2b2926;--bar:#14151a;--head:#23242
     toast = HC.toast,
     refresh = HC.refresh,
     mk = HC.el,
-    svg = HC.icon,
+    svg = hpIcon,
     pill = HC.row,
     cntS = HC.count,
     confirmDlg = HC.confirm,
@@ -1260,6 +1260,11 @@ var HOST_CSS = ":root{--bg:#1b1c20;--bg-warm:#2b2926;--bar:#14151a;--head:#23242
     importLiveScene = HC.scenes.importFrom,
     editLights = HC.scenes.editLights;
 
+  /* An icon: this plugin's own when Home Control has none of that name, else the dashboard's. */
+  function hpIcon(name) {
+    return HP_EXTRA_ICONS[name] ? "<svg viewBox='0 0 24 24'>" + HP_EXTRA_ICONS[name] + "</svg>" : HC.icon(name);
+  }
+
   /* What the dashboard keeps in variables is read when it is needed. */
   function isAdmin() {
     return HC.isAdmin;
@@ -1297,7 +1302,6 @@ var PLUGIN_STRINGS = {
   "hn_zones": "Zones",
   "hn_rooms": "Rooms",
   "hn_choose_hint": "Choose a room or zone. A scene sets every light of it; in the light popup you can set any light you want dark to off. For only some lights, make a zone of them.",
-  "hn_choose_hint_edit": "The scene's room or zone, with all its lights. Next, the lights are set as the scene has them for you to change.",
   "hn_choose_a_room": "Choose a room or zone",
   "hn_couldn_t_read_the_hue_bridge": "Couldn’t read the Hue bridge",
   "hn_hue_scene": "Hue scene",
@@ -2006,14 +2010,23 @@ var PLUGIN_STRINGS = {
   "app_speed": "Speed",
   "app_default_in_brackets": "(Default)",
   "app_speed_text": "Drag to change the default speed at which your lights cycle through the colors of the scene.",
+  "more_than_one_area_has_this_name": "More than one area on the bridge has this name: rename one of them first",
+  "hn_scene_lights_sub": "Which lights the scene has",
+  "hn_scene_lights_hint": "The lights of this scene's room or zone. The scene has the ticked ones; one that is added plays a color of the scene.",
+  "hn_all_lights": "All lights",
+  "hn_a_scene_needs_a_light": "A scene needs at least one light",
+  "hn_the_scene_has_these_lights": "The scene has these lights now",
+  "hn_scene_lights": "Scene lights",
   "hn_scene_settings": "Scene settings",
-  "hn_default_speed": "Speed it starts with",
   "hn_colors_sub": "In another order",
   "hn_colors_done": "The colors are given out again",
   "hn_reset_sub": "In its own order",
   "hn_reset_question": "Reset this scene?",
   "hn_reset_done": "The scene is reset",
   "app_colors": "Colors",
+  "app_scene_look": "Colors and effects",
+  "app_scene_look_sub": "Colour wheel, white and effects for each light",
+  "app_colors_sub": "Give the colors out to the lights again",
   "app_colors_when_saved": "The colors are given out again when you save",
   "app_reset_scene": "Reset scene",
   "app_reset_when_saved": "The scene is reset when you save",
@@ -2023,6 +2036,7 @@ var PLUGIN_STRINGS = {
   "app_auto_play": "Auto-play",
   "app_auto_play_sub": "Set dynamic as default",
   "app_edit_scene": "Edit scene",
+  "app_edit_scene_sub": "Name, lights, colors, auto-play",
   "app_every_day": "Every day",
   "app_weekdays": "Weekdays",
   "app_every": "Every ",
@@ -2056,6 +2070,107 @@ HUE_PLUS_CSS += "\n.hwe-lcard{background:var(--f-raise,var(--tile,#232428));padd
 HUE_PLUS_CSS += "\n.hwe-fade{display:grid;grid-template-columns:1fr 1fr;text-align:center;padding:1.125rem 1rem 0.25rem}\n.hwe-fl,.hwe-fr{text-align:center}\n.hwe-track{height:0.5rem;border-radius:0.25rem}\n.hwe-fill{border-radius:0.25rem}\n.hwe-thumb{width:1.125rem;height:1.125rem;margin:-0.5625rem 0 0 -0.5625rem}\n";
 HUE_PLUS_CSS += "\n/* Wizard pages, as the app draws them: cards with rounded corners, a small Next */\n.pg.wizpg .hm .hm-group,.pg.wizpg .hpk-list{margin-left:1rem;margin-right:1rem;border-radius:0.875rem;overflow:hidden}\n.pg.wizpg .hm .hm-actions .hm-btn{min-width:4.5rem;padding:0.5rem 1.25rem;font-size:0.625rem}\n.pg.wizpg .hm .hm-actions{padding:0.875rem 0}\n.pg.wizpg .hm .hm-title+.hm-group{margin-top:2.5rem}\n.hm-disc{flex:none;width:2.875rem;height:2.875rem;box-shadow:0 0.125rem 0.375rem rgba(0,0,0,.35);border-radius:50%;margin-left:0.5rem}\n.hwe-fill2{position:absolute;left:0;top:0;bottom:0;border-radius:0.25rem;background:linear-gradient(90deg,#2a4a9a,var(--acc,#2f6bff))}\n.hw-field{position:relative;margin:0 1rem;border:0.09375rem solid rgba(255,255,255,.45);border-radius:0.375rem;background:var(--f-raise,#2a2b30);padding:1.25rem 2.75rem 0.5rem 0.75rem}\n.hw-flabel{position:absolute;left:0.75rem;top:0.375rem;font-size:0.5rem;font-weight:600;letter-spacing:.06em;color:var(--ink2,#9a9ca3)}\n.hw-input{width:100%;border:0;background:transparent;color:inherit;font:inherit;font-size:0.8125rem;font-weight:500;outline:none;padding:0}\n.hw-clear{position:absolute;right:0.625rem;top:50%;margin-top:-0.75rem;width:1.5rem;height:1.5rem;border:0;background:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}\n.hw-clear svg{width:1rem;height:1rem;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}\n";
 HUE_PLUS_CSS += "\n/* Pieces the pages of this plugin draw in the Hue app's way (round pictures at the ends of rows, round marks for a choice, cards, tiles, wheel labels) */\n.hm-row.discic .hm-i{width:2.75rem;height:2.75rem;border-radius:50%;background:#0d0e10;box-shadow:0 0.125rem 0.3125rem rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;margin-right:0.125rem}\n.hm-row.discic .hm-i svg{width:1.25rem;height:1.25rem}\n.hm .hm-row.keepchev .hm-c{display:flex!important}\n.hm .hm-row.good .hm-ck{width:1.375rem;height:1.375rem;border-radius:50%;background:#7fcc5c;color:#1c1d21;align-items:center;justify-content:center}\n.hm .hm-row.good .hm-ck svg{width:0.8125rem;height:0.8125rem;stroke-width:2.6}\n.hm .hm-row.radio .hm-ck{order:-1;opacity:1;width:1.5rem;height:1.5rem;margin-right:0.875rem;border-radius:50%;border:0.125rem solid #6c6d74;align-items:center;justify-content:center;display:flex}\n.hm .hm-row.radio .hm-ck svg{width:0.8125rem;height:0.8125rem;opacity:0;stroke:#fff;stroke-width:3}\n.hm .hm-row.radio.checked .hm-ck{background:#2f6bff;border-color:#2f6bff;color:#fff}\n.hm .hm-row.radio.checked .hm-ck svg{opacity:1}\n.hm-group.cards{background:none!important;box-shadow:none;margin-left:1rem;margin-right:1rem;overflow:visible;border-radius:0}\n.hm-group.cards .hm-row{background:var(--f-raise,#26272b);border-radius:0.875rem;margin-bottom:0.75rem;min-height:4.875rem}\n.hm-group.cards .hm-row:before{display:none}\n.hm-group.cards .hm-ck{display:none}\n.hm-edisc{flex:none;width:2.25rem;height:2.25rem;border-radius:50%;background:#0d0e10;display:flex;align-items:center;justify-content:center;margin-left:0.5rem}\n.hm-edisc svg{width:1.125rem;height:1.125rem;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round}\n.mwcard{margin:0.5rem 1rem;border-radius:0.875rem;background:var(--f-raise,#26272b);overflow:hidden}\n.mwc-h{padding:0.875rem 1rem 0.25rem}.mwc-h b{display:block;font-size:0.75rem;font-weight:600}.mwc-h i{display:block;font-style:normal;font-size:0.625rem;color:var(--ink2)}\n.mwtiles{padding:0.75rem 0.75rem 0.875rem!important}\n.mwtiles .hpk-tile{width:6.25rem;height:8.125rem}\n.hwe-wheel.dur{position:relative}\n.hwe-wheel.dur:before,.hwe-wheel.dur:after{position:absolute;top:50%;margin-top:-0.4375rem;font-size:0.625rem;font-weight:600;z-index:2;pointer-events:none}\n.hwe-wheel.dur:before{content:attr(data-h);left:calc(50% - 3.25rem + 1.25rem)}\n.hwe-wheel.dur:after{content:attr(data-m);left:calc(50% + 3.25rem + 1.25rem)}\n.hm-ldisc{flex:none;width:2.875rem;height:2.875rem;border-radius:50%;margin-right:0.75rem}\n";
+
+/* The pieces of the panel's pages, drawn in Home Control's own theme (its raised surfaces, thin lines, rounded rows and accent). They apply inside Home Control's popup only (`.sheet`): the panel draws the same pages in the Hue
+ app's way with its own style sheet. */
+HUE_PLUS_CSS += "\n/* the pages of the panel, in Home Control's theme */\n" +
+  ".sheet .rbt{width:2.125rem;height:2.125rem;border-radius:50%;border:0.0625rem solid var(--f-line2);background:var(--f-raise);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0}\n" +
+  ".sheet .rbt svg{width:1.0625rem;height:1.0625rem;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}\n" +
+  ".sheet .rbt.blue{background:var(--acc);border-color:transparent;color:#03140f}\n" +
+  ".sheet .disc{display:block;width:100%;height:100%;border-radius:50%;background:#f9d27a;box-shadow:inset 0 0 0 0.0625rem rgba(255,255,255,.14)}\n" +
+  ".sheet .disc.dark{display:flex;align-items:center;justify-content:center;background:var(--f-raise);color:var(--ink)}\n" +
+  ".sheet .disc.dark svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round}\n" +
+  ".sheet .empty{color:var(--ink2);text-align:center;padding:1.875rem 0.75rem;font-size:var(--fs-l)}\n" +
+  ".sheet .lbrow{display:flex;align-items:center;justify-content:space-between;gap:0.625rem;margin:var(--sp-head)}\n" +
+  ".sheet .lbrow .hm-label{flex:1;margin:0}\n" +
+  ".sheet .lbtitle{flex:1;font-size:var(--fs-l);font-weight:600}\n" +
+  ".sheet .pintro{padding:0.375rem 0.375rem 0.625rem;font-size:var(--fs-m);line-height:1.5;color:var(--ink2)}\n" +
+  ".sheet .pintro b{color:var(--ink);font-weight:600}\n" +
+  ".sheet .pintro.small{font-size:var(--fs-s)}\n" +
+  ".sheet .hm-row .rend{flex:none;display:flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;border-radius:50%;margin-left:0.375rem}\n" +
+  ".sheet .hm-row .rend .disc{width:2.5rem;height:2.5rem}\n" +
+  ".sheet .hm-row .rend.ico{background:var(--f-raise);border:0.0625rem solid var(--f-line2);color:var(--ink)}\n" +
+  ".sheet .hm-row .rend.ico svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:1.9}\n" +
+  ".sheet .hm .hm-row.nochev .hm-c{display:none}\n" +
+  /* a switch: its name with its picture, the buttons as tiles, the lights it acts on */
+  ".sheet .swhead{display:flex;align-items:center;gap:0.875rem;padding:0.25rem 0.375rem 0.875rem}\n" +
+  ".sheet .swhead .ic{flex:none}\n" +
+  ".sheet .swhead .ic svg{width:1.875rem;height:1.875rem;fill:none;stroke:currentColor;stroke-width:1.8}\n" +
+  ".sheet .swhead .nm{flex:1;font-size:1.375rem;font-weight:700;line-height:1.15;overflow-wrap:anywhere}\n" +
+  ".sheet .btiles{display:flex;gap:0.625rem;overflow-x:auto;padding:0.25rem 0.125rem 0.875rem;scrollbar-width:none}\n" +
+  ".sheet .btiles::-webkit-scrollbar{display:none}\n" +
+  ".sheet .btile{flex:none;width:6rem;height:6.5rem;border-radius:var(--r-s);background:var(--f-raise);border:0.0625rem solid var(--f-line2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;cursor:pointer}\n" +
+  ".sheet .btile.sel{border-color:var(--acc);box-shadow:0 0 0 0.0625rem var(--acc)}\n" +
+  ".sheet .btile .ic svg{width:1.5rem;height:1.5rem;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}\n" +
+  ".sheet .btile b{font-size:var(--fs-s);font-weight:500;text-align:center;padding:0 0.375rem}\n" +
+  ".sheet .selroom{display:flex;align-items:center;gap:0.75rem;margin:0 0 var(--sp);padding:0.75rem 0.875rem;border-radius:var(--r-row);background:var(--f-raise);border:0.0625rem solid var(--f-line2)}\n" +
+  ".sheet .selroom .ic svg{width:1.5rem;height:1.5rem;fill:none;stroke:currentColor;stroke-width:1.8}\n" +
+  ".sheet .selroom b{display:block;font-size:var(--fs-m);font-weight:600}\n" +
+  ".sheet .selroom i{display:block;font-style:normal;font-size:var(--fs-s);color:var(--ink2)}\n" +
+  /* scenes: round tiles with the colours of the scene, a scene's page */
+  ".sheet .pgrid{display:flex;flex-wrap:wrap;gap:0.625rem;padding:0.125rem 0 var(--sp)}\n" +
+  ".sheet .sitem{flex:none;width:calc(25% - 0.5rem);min-width:4.625rem;height:6rem;border-radius:var(--r-row);background:var(--f-raise);border:0.0625rem solid var(--f-line2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem;padding:0.375rem;cursor:pointer}\n" +
+  ".sheet .sitem .dc{width:2.75rem;height:2.75rem}\n" +
+  ".sheet .sitem.on{border-color:var(--acc);box-shadow:0 0 0 0.0625rem var(--acc)}\n" +
+  ".sheet .sitem b{font-size:var(--fs-s);font-weight:500;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}\n" +
+  ".sheet .pgrid.scrows{display:block;overflow-x:auto;scrollbar-width:none}\n" +
+  ".sheet .pgrid.scrows .scr{display:flex;align-items:center;gap:0.625rem;width:max-content;margin-bottom:0.625rem}\n" +
+  ".sheet .pgrid.scrows .sitem{width:5.5rem}\n" +
+  ".sheet .scenepg{--bg:transparent}\n" +
+  ".sheet .schead{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0.75rem;padding:1.125rem 1rem 1rem;margin:0 0 var(--sp);border-radius:var(--r-m);background:linear-gradient(160deg,color-mix(in srgb,var(--sc1,#8a7a4a) 55%,transparent),color-mix(in srgb,var(--sc2,#2a2a2c) 45%,transparent) 70%,transparent)}\n" +
+  ".sheet .schead .big{flex:0 0 100%;order:-1;width:2.875rem;height:2.875rem}\n" +
+  ".sheet .schead .big .disc{width:2.875rem;height:2.875rem}\n" +
+  ".sheet .schead .nm{flex:1;font-size:1.625rem;font-weight:700;line-height:1.1;overflow-wrap:anywhere}\n" +
+  ".sheet .lightsbar{margin:var(--sp-head)}\n" +
+  ".sheet .colorsbtn,.sheet .resetbtn,.sheet .deletebtn{display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;border:0.0625rem solid var(--f-line2);border-radius:62.4375rem;background:var(--f-raise);color:var(--ink);padding:0.625rem 1.125rem;font-size:var(--fs-m);font-weight:600;cursor:pointer}\n" +
+  ".sheet .colorsbtn svg{width:1.0625rem;height:1.0625rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}\n" +
+  ".sheet .resetbtn,.sheet .deletebtn{display:flex;margin:0.75rem auto}\n" +
+  ".sheet .deletebtn{border-color:#c0504e;color:#ff9b97}\n" +
+  ".sheet .spsheet{padding:1.25rem 1rem 0.5rem;text-align:center}\n" +
+  ".sheet .spcap{display:block;font-size:var(--fs-xs);letter-spacing:.14em;color:var(--ink2)}\n" +
+  ".sheet .spval{display:block;font-size:var(--fs-l);font-weight:600;margin:0.25rem 0 1.25rem}\n" +
+  ".sheet .sptrack{position:relative;height:0.5rem;border-radius:0.25rem;background:var(--f-line2);margin:0 0.75rem;touch-action:none;cursor:pointer}\n" +
+  ".sheet .spfill{position:absolute;left:0;top:0;bottom:0;border-radius:0.25rem;background:var(--acc)}\n" +
+  ".sheet .spthumb{position:absolute;top:50%;width:1.375rem;height:1.375rem;border-radius:50%;background:#fff;margin:-0.6875rem 0 0 -0.6875rem;box-shadow:0 0.0625rem 0.25rem rgba(0,0,0,.4)}\n" +
+  ".sheet .spticks{display:flex;justify-content:space-between;margin:0.75rem 0.125rem 0;font-size:var(--fs-xs);color:var(--ink2)}\n" +
+  /* entertainment areas and what is chosen among lights */
+  ".sheet .ltiles{display:flex;gap:0.625rem;overflow-x:auto;padding:0 0 0.375rem;scrollbar-width:none}\n" +
+  ".sheet .ptile.sm{position:relative;flex:none;width:5.75rem;height:6.75rem;border-radius:var(--r-s);background:var(--f-raise);border:0.0625rem solid var(--f-line2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.625rem;font-size:var(--fs-s);text-align:center}\n" +
+  ".sheet .ptile .ic svg{width:1.5rem;height:1.5rem;fill:none;stroke:currentColor;stroke-width:1.8}\n" +
+  ".sheet .ptile b{font-weight:500;padding:0 0.375rem}\n" +
+  ".sheet .ptile .minus{position:absolute;left:50%;bottom:0.5rem;transform:translateX(-50%);width:1.5rem;height:1.5rem;border-radius:50%;border:0;background:#d8353b;color:#fff;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}\n" +
+  ".sheet .ptile .minus svg{width:0.875rem;height:0.875rem;fill:none;stroke:currentColor;stroke-width:2.4}\n" +
+  /* automations: groups of cards */
+  ".sheet .agroup{margin-top:var(--sp)}\n" +
+  ".sheet .ahead{display:flex;align-items:center;gap:0.75rem;padding:0.375rem 0.25rem 0.625rem}\n" +
+  ".sheet .ahead .ic svg{width:1.625rem;height:1.625rem;fill:none;stroke:currentColor;stroke-width:1.7}\n" +
+  ".sheet .ahead b{flex:1;font-size:var(--fs-m);font-weight:600}\n" +
+  ".sheet .ahead i{font-style:normal;color:var(--ink2);font-size:var(--fs-s)}\n" +
+  ".sheet .agroup.folded .acards{display:none}\n" +
+  ".sheet .acards{display:flex;flex-direction:column;gap:var(--sp)}\n" +
+  ".sheet .acard{display:flex;align-items:center;gap:0.75rem;background:var(--f-raise);border:0.0625rem solid var(--f-line2);border-radius:var(--r-m);padding:0.875rem 1rem;cursor:pointer}\n" +
+  ".sheet .acard .tx{flex:1;min-width:0}\n" +
+  ".sheet .acard b{display:block;font-size:var(--fs-m);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n" +
+  ".sheet .acard i{display:block;font-style:normal;font-size:var(--fs-s);color:var(--ink2);margin-top:0.125rem}\n" +
+  /* time wheels (the time updates are installed) and the scene cycle's rows */
+  ".sheet .wheels{position:relative;display:flex;justify-content:center;padding:0.375rem 1rem 0.625rem;background:var(--f-raise)}\n" +
+  ".sheet .wheels .band{position:absolute;left:1rem;right:1rem;top:50%;height:2.25rem;margin-top:-0.75rem;border-radius:0.625rem;background:var(--f-line2);opacity:.6;pointer-events:none}\n" +
+  ".sheet .wheel{position:relative;flex:1;height:11.25rem;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;text-align:center}\n" +
+  ".sheet .wheel::-webkit-scrollbar{display:none}\n" +
+  ".sheet .wheel .pad{height:4.5rem}\n" +
+  ".sheet .wheel .wv{height:2.25rem;line-height:2.25rem;scroll-snap-align:center;font-size:1.0625rem;font-variant-numeric:tabular-nums}\n" +
+  ".sheet .lifting{position:relative;z-index:60;box-shadow:0 0.625rem 1.75rem rgba(0,0,0,.45);filter:brightness(1.2);transition:none!important}\n" +
+  ".sheet .hm-group.cyc .hm-row{touch-action:pan-y;user-select:none;-webkit-user-select:none}\n" +
+  ".sheet .hm .hm-group.card{overflow:hidden}\n"
+  + ".sheet .htabs{display:flex;gap:0.375rem;padding:0.25rem;margin:0 0 var(--sp);border-radius:var(--r-row);background:var(--f-raise);border:0.0625rem solid var(--f-line2)}\n"
+  + ".sheet .htabb{flex:1;border:0;border-radius:calc(var(--r-row) - 0.25rem);background:none;color:var(--ink2);padding:0.5625rem 0.375rem;font-size:var(--fs-m);font-weight:600;cursor:pointer}\n"
+  + ".sheet .htabb.on{background:var(--f-line2);color:var(--ink)}\n"
+  + ".sheet .hd h1{display:none}\n"
+  + ".sheet .hd .acts{display:flex;justify-content:flex-end;margin-bottom:var(--sp)}\n"
+  + ".sheet button.tg{width:2.875rem;height:1.75rem;border-radius:0.875rem;border:0;background:var(--f-line2);position:relative;cursor:pointer;flex:none;padding:0}\n"
+  + ".sheet button.tg i{position:absolute;top:0.1875rem;left:0.1875rem;width:1.375rem;height:1.375rem;border-radius:50%;background:#fff;transition:transform .2s}\n"
+  + ".sheet button.tg.on{background:var(--acc)}\n"
+  + ".sheet button.tg.on i{transform:translateX(1.125rem)}\n";
 
 /* What Hue Plus offers, read from Home Assistant's registry and states (so a page shows only what exists): the bridge's entities, the lights, what belongs to one light, the
  updates, and the bridge's own data (a service that answers). It was the dashboard's `Integrations.hueplus`; now it is this plugin's. */
@@ -2237,6 +2352,11 @@ function hpNote(text) {
   return pill("info", text, {});
 }
 
+/* The element a page may put its look on: in the panel the page's own frame (which the panel clears for the next page), in Home Control the page's body (the dashboard's popup is shared by the pages that follow). */
+function hpRoot(b) {
+  return window.HueHost && b.parentNode ? b.parentNode : b;
+}
+
 function hpName(id) {
   return A(id).friendly_name || id;
 }
@@ -2283,6 +2403,33 @@ function hpDo(again, service, data) {
  runs from the back corner (-1) to the left corner (1). x and the height are the same. A light is turned over with this on its way in and on its way out, so it stands where the Hue app shows it. */
 function hpFlip(y) {
   return y ? -y : 0;
+}
+
+/* The room (else a zone) a light is in, by the bridge's own id of the light: two lights can have the same name in different rooms, so a list of lights says which room each is in. */
+function hpRoomOfHueLight(hue) {
+  if (!hue) return null;
+  /* the rooms are read from the bridge once, when a page first asks which room a light is in; the page is drawn again when they are in */
+  if (typeof HM_READY !== "undefined" && !HM_READY && !HM_READING) hmEnsure();
+  function within(kind) {
+    return ((HM && HM[kind]) || []).filter(function (g) {
+      return (g.lights || []).indexOf(hue) >= 0;
+    })[0];
+  }
+  return within("rooms") || within("zones") || null;
+}
+
+function hpRoomOfLight(id) {
+  return hpRoomOfHueLight(A(id).hue_light_id);
+}
+
+/* "Ceiling light · Living room". */
+function hpLightLabel(name, hue) {
+  var room = hpRoomOfHueLight(hue);
+  return room ? name + " · " + room.name : name;
+}
+
+function hpEntityLabel(id) {
+  return hpLightLabel(hpName(id), A(id).hue_light_id);
 }
 
 function hpHueId(entity) {
@@ -2346,9 +2493,15 @@ function hpSendArea(draft) {
   }
   hueplus.resources(["entertainment_areas"]).then(
     function (r) {
-      var found = ((r && r.entertainment_areas) || []).filter(function (a) {
-        return String(a.name).toLowerCase() === name.toLowerCase();
-      })[0];
+      var named = ((r && r.entertainment_areas) || []).filter(function (a) {
+          return String(a.name).toLowerCase() === name.toLowerCase();
+        }),
+        found = named[0];
+      /* more than one area with this name: which one is meant cannot be guessed, so none is changed */
+      if (named.length > 1) {
+        toast(_T("more_than_one_area_has_this_name"));
+        return;
+      }
       if (found) call("hue_plus", "update_entertainment_area", { area: found.id, lights: lights });
       else call("hue_plus", "create_entertainment_area", { name: name, area_type: "other", lights: lights });
       toast(_T("sent_to_the_hue_bridge"));
@@ -2522,7 +2675,7 @@ function hpEditOnBridge(area, after) {
 /* The lights that can be put in a bridge area: the Hue Plus lights (the ones Hue lights, not groups). */
 function hpBridgeLights() {
   return hueplus.lights(H()).map(function (id) {
-    return { id: id, name: hpName(id), icon: "lamp" };
+    return { id: id, name: hpEntityLabel(id), icon: "lamp" };
   });
 }
 
@@ -2640,6 +2793,8 @@ function hmMotionAreas() {
 
 function hmBox(b) {
   b.classList.add("hm");
+  /* the page that is being drawn is the one a DONE row (HC.onDone, hueapp.js) belongs to */
+  HP_DONE_PAGE = { body: b, fn: null, row: null };
   hmSession();
 }
 
@@ -3040,165 +3195,7 @@ function hmUpdatesDue() {
   }).length;
 }
 
-function hmRoot(b) {
-  hmBox(b);
-  hmLoad(b, HM_KINDS, function (box) {
-    hmRootPage(box);
-  });
-}
-
-function hmRootPage(b) {
-  var E = hpBridgeEnts(),
-    lights = function () {
-      return hueplus.lights(H()).length;
-    };
-  b.appendChild(hmLabel(_T("hm_in_this_home")));
-  b.appendChild(
-    hmGroup([
-      hmRow({
-        icon: "lights",
-        title: _T("hm_devices"),
-        sub: function () {
-          return cntS(lights(), _T("hm_light"), _T("hm_lights")) + " · " + cntS(hmList("accessories").length, _T("hm_switch"), _T("hm_switches_n"));
-        },
-        tap: "hue-devices",
-      }),
-      hmRow({
-        icon: "plug",
-        title: _T("hm_bridges"),
-        sub: function () {
-          return (HM.bridge && HM.bridge.name) || _T("hue_bridge");
-        },
-        tap: "hue-bridge",
-      }),
-      hmRow({
-        icon: "motion",
-        title: _T("hm_motionaware_areas"),
-        val: function () {
-          return HM.motion_areas ? String(hmMotionAreas().length) : "";
-        },
-        tap: "hue-motion",
-      }),
-      hmRow({
-        icon: "target",
-        title: _T("entertainment_areas"),
-        val: function () {
-          return HM.entertainment_areas ? String(hmList("entertainment_areas").length) : "";
-        },
-        tap: "hue-ent",
-      }),
-      hmRow({
-        icon: "clock",
-        title: _T("routines_and_automations"),
-        val: function () {
-          return HM.automations ? String(hmList("automations").length) : "";
-        },
-        tap: "hue-routines",
-      }),
-      hmRow({
-        icon: "scene",
-        title: _T("hm_smart_home"),
-        sub: _T("hm_matter_and_linked_apps"),
-        tap: "hue-matter",
-      }),
-      hmRow({
-        icon: "restart",
-        title: _T("hm_software_update"),
-        sub: function () {
-          var n = hmUpdatesDue();
-          return n ? cntS(n, _T("update_available_2"), _T("updates_available")) : _T("hm_everything_is_up_to_date");
-        },
-        tap: "hue-updates",
-      }),
-    ])
-  );
-  b.appendChild(hmLabel(_T("hm_advanced")));
-  b.appendChild(
-    hmGroup([
-      hmRow({
-        icon: "lock",
-        title: _T("hm_applications"),
-        val: function () {
-          return HM.apps ? String(hmList("apps").length) : E.authorized_apps ? V_(E.authorized_apps) : "";
-        },
-        tap: "hue-apps",
-      }),
-    ])
-  );
-}
-
 /* ---- devices: lights and switches ---- */
-
-function hmDevices(b) {
-  hmBox(b);
-  hmEnsure();
-  var E = hpBridgeEnts();
-  b.appendChild(
-    hmGroup([
-      hmRow({
-        icon: "lamp",
-        title: _T("hm_lights_and_smart_plugs"),
-        val: function () {
-          return String(hueplus.lights(H()).length);
-        },
-        tap: "hue-lights",
-      }),
-      hmRow({
-        icon: "cog",
-        title: _T("hm_switches"),
-        val: function () {
-          return HM.accessories ? String(hmList("accessories").length) : "";
-        },
-        tap: "hue-switches",
-      }),
-      hmRow({
-        icon: "home",
-        title: _T("hrw_rooms_and_zones"),
-        val: function () {
-          return HM.rooms ? String(hmList("rooms").length + hmList("zones").length) : "";
-        },
-        tap: "hue-groups",
-      }),
-    ])
-  );
-  if (E.search)
-    b.appendChild(
-      hmActions([
-        hmButton(_T("search_for_new_devices"), "primary", function () {
-          call("button", "press", { entity_id: E.search });
-        }),
-      ])
-    );
-}
-
-function hmLights(b) {
-  hmBox(b);
-  var list = hueplus.lights(H());
-  if (!list.length) b.appendChild(hmCallout(_T("nothing_found")));
-  var grid = mk("div", "hm-tiles");
-  list.forEach(function (id) {
-    var t = mk("div", "hm-tile tap", "<span class='hm-ti'>" + svg("lamp") + "</span><b></b><i></i>"),
-      gear = mk("button", "hm-gear", svg("tune"));
-    gear.type = "button";
-    gear.setAttribute("aria-label", _T("light_setup"));
-    gear.addEventListener("click", function (e) {
-      e.stopPropagation();
-      showPopup("hue-light:" + id, true);
-    });
-    t.querySelector("b").textContent = hpName(id);
-    t.appendChild(gear);
-    t.addEventListener("click", function () {
-      showPopup("light:" + id, true);
-    });
-    t.refresh = function () {
-      t.classList.toggle("on", isOn(id));
-      t.querySelector("i").textContent = V_(id) === "unavailable" ? _T("hm_unreachable") : isOn(id) ? _T("on_2") : _T("off");
-    };
-    reg(t.refresh);
-    grid.appendChild(t);
-  });
-  b.appendChild(grid);
-}
 
 /* ---- the settings of one light ---- */
 
@@ -3312,7 +3309,7 @@ function hmLight(b, id) {
           })
         : null,
       hmButton(_T("hm_delete"), "danger", function () {
-        hmRemoveDevice(hpName(id), id);
+        hmRemoveDevice(null, id);
       }),
     ])
   );
@@ -3321,7 +3318,9 @@ function hmLight(b, id) {
 /* Takes a light or an accessory off the bridge, after asking. The device must be reset before it can be added again. */
 function hmRemoveDevice(device, entity) {
   confirmDlg(_T("hm_remove_this_device"), function () {
-    hpCall("hue_plus", "remove_device", { device: device, confirm: true }).then(
+    /* a light goes by its own id (lights of different rooms can have one name); an accessory by its device's id */
+    var what = entity && A(entity).hue_light_id ? { light: A(entity).hue_light_id } : { device: device };
+    hpCall("hue_plus", "remove_device", Object.assign({ confirm: true }, what)).then(
       function () {
         HM_READY = false;
         closeLayer();
@@ -3534,113 +3533,7 @@ function hmBridge(b) {
 
 /* ---- software update ---- */
 
-function hmUpdates(b) {
-  hmBox(b);
-  var E = hpBridgeEnts(),
-    list = hueplus.updates(H());
-  var status = hmRow({
-    title: function () {
-      var n = hmUpdatesDue();
-      return n ? cntS(n, _T("update_available_2"), _T("updates_available")) : _T("hm_everything_is_up_to_date");
-    },
-    good: function () {
-      return !hmUpdatesDue();
-    },
-    check: function () {
-      return !hmUpdatesDue();
-    },
-  });
-  b.appendChild(hmGroup([status]));
-  var auto = [];
-  if (E.auto_update)
-    auto.push(
-      hmRow({
-        title: _T("automatic_updates"),
-        toggle: {
-          get: function () {
-            return isOn(E.auto_update);
-          },
-          set: function () {
-            toggleEnt(E.auto_update);
-          },
-        },
-      })
-    );
-  if (E.auto_update_time)
-    auto.push(
-      hmRow({
-        title: _T("automatic_update_time"),
-        val: function () {
-          return (V_(E.auto_update_time) || "").slice(0, 5);
-        },
-      })
-    );
-  if (auto.length) {
-    b.appendChild(hmGroup(auto));
-    b.appendChild(hmCallout(_T("hm_updates_are_installed_at_this_time")));
-  }
-  b.appendChild(hmLabel(_T("hm_devices")));
-  if (!list.length) b.appendChild(hmCallout(_T("nothing_found")));
-  b.appendChild(
-    hmGroup(
-      list.map(function (id) {
-        return hmRow({
-          icon: "restart",
-          title: hpName(id).replace(/ firmware$/i, ""),
-          sub: function () {
-            return A(id).installed_version || "";
-          },
-          val: function () {
-            return V_(id) === "on" ? hmUpdateText(id) : "";
-          },
-          tap: function () {
-            if (V_(id) !== "on") return;
-            confirmDlg(_T("install_this_update"), function () {
-              call("update", "install", { entity_id: id });
-            });
-          },
-        });
-      })
-    )
-  );
-  if (E.check_update)
-    b.appendChild(
-      hmActions([
-        hmButton(_T("check_for_an_update"), "ghost", function () {
-          call("button", "press", { entity_id: E.check_update });
-        }),
-      ])
-    );
-}
-
 /* ---- smart home (Matter) and applications ---- */
-
-function hmMatter(b) {
-  hmBox(b);
-  var E = hpBridgeEnts(),
-    f = (E.matter_fabrics && A(E.matter_fabrics).fabrics) || [];
-  b.appendChild(hmLabel(_T("hm_linked_to_hue")));
-  if (!f.length) b.appendChild(hmCallout(_T("nothing_connected")));
-  else
-    b.appendChild(
-      hmGroup(
-        f.map(function (x) {
-          return hmRow({
-            icon: "scene",
-            title: x.label || x.vendor || x.id,
-            sub: [x.vendor, x.status].filter(Boolean).join(" · "),
-            tap: function () {
-              confirmDlg(_T("disconnect_this_matter_app_from_the_bridge"), function () {
-                call("hue_plus", "remove_matter_fabric", { fabric: x.id, confirm: true });
-                closeLayer();
-              });
-            },
-          });
-        })
-      )
-    );
-  b.appendChild(hmCallout(_T("hm_matter_pairing_code_note")));
-}
 
 function hmApps(b) {
   hmBox(b);
@@ -3696,89 +3589,6 @@ function hmRoutines(b) {
 /* ---- entertainment areas ---- */
 
 var HM_END = ["last_state", "off", "pause", "scene"];
-
-function hmAreas(b) {
-  hmBox(b);
-  hmLoad(b, ["entertainment_areas"], function (box, r) {
-    var list = r.entertainment_areas || [];
-    if (!list.length) box.appendChild(hmCallout(_T("nothing_found")));
-    else
-      box.appendChild(
-        hmGroup(
-          list.map(function (x) {
-            return hmRow({
-              icon: "eq",
-              title: x.name,
-              sub: cntS((x.lights || []).length, _T("hm_light"), _T("hm_lights")),
-              tap: "hue-area:" + x.id,
-            });
-          })
-        )
-      );
-  });
-}
-
-function hmArea(b, id) {
-  hmBox(b);
-  hmGuard(hmdKey("area", id));
-  hmLoad(b, ["entertainment_areas", "scenes"], function (box, r, again) {
-    var x = hmEntArea(id);
-    if (!x) {
-      box.appendChild(hmCallout(_T("nothing_found")));
-      return;
-    }
-    box.appendChild(hmTitle("eq", x.name));
-    box.appendChild(
-      hmGroup([
-        hmRow({
-          title: _T("hm_lights_label"),
-          val: String((x.lights || []).length),
-        }),
-        hmRow({
-          title: _T("hm_light_placement"),
-          sub: _T("hm_where_the_lights_are_in_the_room"),
-          tap: function () {
-            hpEditOnBridge(x, again);
-          },
-        }),
-        hmRow({
-          title: _T("hm_performance"),
-          val: function () {
-            return hmAreaPerf(x).mode === "manual" ? _T("hm_manual") : _T("hm_auto");
-          },
-          tap: "hue-perf:" + x.id,
-        }),
-        hmRow({
-          title: _T("hm_when_sync_stops"),
-          val: function () {
-            return _T("end_" + hmAreaEnd(x).end_state);
-          },
-          tap: "hue-end:" + x.id,
-        }),
-      ])
-    );
-    box.appendChild(hmExperimental("experimental_only_the_last_state_has_been_seen_on_a_real_bridge"));
-    box.appendChild(
-      hmActions([
-        hmButton(_T("hm_delete"), "danger", function () {
-          confirmDlg(_T("hm_delete_this_entertainment_area"), function () {
-            hmdDiscard(hmdKey("area", x.id));
-            call("hue_plus", "delete_entertainment_area", { area: x.id, confirm: true });
-            HM_READY = false;
-            closeLayer();
-            hmEnsure();
-          });
-        }),
-        hmButton(_T("show_red_for_5_seconds"), "ghost", function () {
-          call("hue_plus", "stream_colors", { area: x.id, colors: [[255, 0, 0]], duration: 5 });
-        }),
-        hmButton(_T("stop_streaming"), "ghost", function () {
-          call("hue_plus", "stop_streaming", { area: x.id });
-        }),
-      ])
-    );
-  });
-}
 
 /* What happens when a sync stops: the area's own setting is staged, and sent when the area is saved. */
 function hmEnd(b, id) {
@@ -4062,81 +3872,6 @@ function hmPressSummary(r, spec) {
   return _T("hm_kind_" + kind);
 }
 
-function hmSwitch(b, id) {
-  hmBox(b);
-  hmGuard(hmdKey("acc", id));
-  hmLoad(b, ["accessories", "scenes", "rooms", "zones"], function (box, r) {
-    var x = (r.accessories || []).filter(function (y) {
-      return y.id === id;
-    })[0];
-    if (!x) {
-      box.appendChild(hmCallout(_T("nothing_found")));
-      return;
-    }
-    box.appendChild(hmTitle("cog", x.name));
-    box.appendChild(hmLabel(_T("hm_buttons")));
-    box.appendChild(
-      hmGroup(
-        (x.buttons || []).map(function (btn) {
-          return hmRow({
-            title: _T("hm_button_label") + " " + btn.number,
-            sub: function () {
-              return hmPressSummary(r, hmPressSpec(x, btn, "short"));
-            },
-            tap: "hue-button:" + x.id + "|" + btn.number,
-          });
-        })
-      )
-    );
-    box.appendChild(
-      hmActions([
-        hmButton(_T("hm_delete"), "danger", function () {
-          hmRemoveDevice(x.id, null);
-        }),
-      ])
-    );
-  });
-}
-
-function hmButtonPage(b, id) {
-  hmBox(b);
-  hmGuard(hmdKey("acc", hmBtnKey(id).acc), true);
-  hmLoad(b, ["accessories", "scenes", "rooms", "zones"], function (box, r) {
-    var k = hmBtnKey(id),
-      f = hmBtnFind(r, Object.assign({}, k, { press: "short" }));
-    if (!f.acc || !f.btn) {
-      box.appendChild(hmCallout(_T("nothing_found")));
-      return;
-    }
-    var t = hmBtnTargets(r, f.acc, f.btn);
-    box.appendChild(hmTitle("cog", _T("hm_button_label") + " " + k.n, f.acc.name));
-    box.appendChild(
-      hmGroup(
-        HM_PRESSES.map(function (p) {
-          return hmRow({
-            title: _T(p[1]),
-            val: function () {
-              return hmPressSummary(r, hmPressSpec(f.acc, f.btn, p[0]));
-            },
-            tap: p[0] === "long" && hmHoldRepeats(f.acc, f.btn) ? null : "hue-press:" + f.acc.id + "|" + k.n + "|" + p[0],
-          });
-        })
-      )
-    );
-    box.appendChild(hmLabel(_T("hm_behavior")));
-    box.appendChild(
-      hmGroup([
-        hmRow({
-          title: _T("hm_selected_lights"),
-          val: t.name || _T("hm_the_whole_home"),
-          tap: hueplus.has(H(), "set_button_lights") ? "app-btnlights:" + f.acc.id + "|" + k.n : null,
-        }),
-      ])
-    );
-    box.appendChild(hmExperimental("hm_experimental_buttons"));
-  });
-}
-
 /* Stages what a press does, in what configure_button is given. It is sent when the switch is saved (hmSaveSwitch). */
 function hmStagePress(k, f, what) {
   hmdStage(hmdKey("acc", k.acc), f.btn.id + "|" + k.press, { k: { acc: k.acc, n: k.n, press: k.press }, what: what });
@@ -4149,282 +3884,11 @@ var HM_CHOICES = [
   ["hm_nothing_happens", [["nothing", "do_nothing", "hm_do_nothing"]]],
 ];
 
-function hmPress(b, id) {
-  hmBox(b);
-  hmGuard(hmdKey("acc", hmBtnKey(id).acc), true);
-  hmLoad(b, ["accessories", "scenes", "rooms", "zones"], function (box, r) {
-    var k = hmBtnKey(id),
-      f = hmBtnFind(r, k);
-    if (!f.acc || !f.btn) {
-      box.appendChild(hmCallout(_T("nothing_found")));
-      return;
-    }
-    var kind = hmPressKind(f.spec),
-      cur = function () {
-        return hmPressSpec(f.acc, f.btn, k.press);
-      },
-      done = function () {
-        popBack();
-      };
-    HM_CHOICES.forEach(function (group) {
-      box.appendChild(hmLabel(_T(group[0])));
-      box.appendChild(
-        hmGroup(
-          group[1].map(function (c) {
-            return hmRow({
-              title: _T(c[2]),
-              sub: _T(c[2] + "_sub"),
-              check: function () {
-                return kind === c[0];
-              },
-              tap: function () {
-                if (c[0] === "scene") showPopup("hue-pick-scene:" + id, true);
-                else if (c[0] === "cycle") showPopup("hue-cycle:" + id, true);
-                else if (c[0] === "time") showPopup("hue-time:" + id, true);
-                else {
-                  hmStagePress(k, f, { action: c[1] });
-                  done();
-                }
-              },
-            });
-          })
-        )
-      );
-    });
-    if (kind === "scene" || kind === "cycle" || kind === "time") {
-      box.appendChild(hmLabel(_T("hm_advanced")));
-      box.appendChild(
-        hmGroup([
-          hmRow({
-            title: _T("hm_smart_on_off"),
-            toggle: {
-              get: function () {
-                return hmPressWithOff(cur());
-              },
-              set: function () {
-                var spec = cur(),
-                  off = !hmPressWithOff(spec),
-                  ids = hmPressScenes(spec),
-                  seconds = ((spec.scene_cycle_extended || spec.time_based_extended || {}).repeat_timeout || {}).seconds || 3;
-                hmStagePress(
-                  k,
-                  f,
-                  kind === "scene"
-                    ? { action: "scene", scene: ids[0], with_off: off }
-                    : kind === "cycle"
-                      ? { action: "scene_cycle", scenes: ids, with_off: off, repeat_timeout: seconds }
-                      : { action: "time_based", slots: hmTimeSlots(spec), with_off: off, repeat_timeout: seconds }
-                );
-                refresh();
-              },
-            },
-          }),
-        ])
-      );
-      box.appendChild(hmCallout(_T("hm_smart_on_off_note")));
-    }
-  });
-}
-
-/* One scene for a press. */
-function hmScenePick(b, id) {
-  hmBox(b);
-  hmGuard(hmdKey("acc", hmBtnKey(id).acc), true);
-  hmLoad(b, ["accessories", "scenes", "rooms", "zones"], function (box, r) {
-    var k = hmBtnKey(id),
-      f = hmBtnFind(r, k);
-    if (!f.acc || !f.btn) {
-      box.appendChild(hmCallout(_T("nothing_found")));
-      return;
-    }
-    var scenes = hmBtnScenes(r, hmBtnTargets(r, f.acc, f.btn)),
-      current = hmPressScenes(f.spec)[0];
-    if (!scenes.length) box.appendChild(hmCallout(_T("nothing_found")));
-    /* the entity of a bridge scene, to play it as a preview */
-    function entityOf(sceneId) {
-      return Object.keys(H().entities).filter(function (e) {
-        return H().entities[e].unique_id === sceneId;
-      })[0];
-    }
-    function choose(what, sceneId) {
-      hmStagePress(k, f, what);
-      var ent = sceneId && HM_PREVIEW ? entityOf(sceneId) : null;
-      if (ent) call("scene", "turn_on", { entity_id: ent });
-      popBack();
-      popBack();
-    }
-    box.appendChild(
-      hmGroup(
-        scenes.map(function (s) {
-          return hmRow({
-            icon: "scene",
-            title: s.name,
-            check: function () {
-              return current === s.id;
-            },
-            tap: function () {
-              choose({ action: "scene", scene: s.id, with_off: hmPressWithOff(f.spec) }, s.id);
-            },
-          });
-        })
-      )
-    );
-    /* a new scene for the room, the other things a press can do with a scene's place, and the preview */
-    var more = [
-      hmRow({
-        icon: "plus",
-        title: _T("hn_add_a_scene"),
-        tap: function () {
-          hueStartMaker("home");
-        },
-      }),
-    ];
-    var bright = scenes.filter(function (s) {
-      return /^bright$/i.test(s.name);
-    })[0];
-    if (bright)
-      more.push(
-        hmRow({
-          icon: "bright",
-          title: _T("app_bright"),
-          check: function () {
-            return current === bright.id;
-          },
-          tap: function () {
-            choose({ action: "scene", scene: bright.id, with_off: hmPressWithOff(f.spec) }, bright.id);
-          },
-        })
-      );
-    more.push(
-      hmRow({
-        icon: "power",
-        title: _T("app_off"),
-        tap: function () {
-          choose({ action: "all_off" });
-        },
-      }),
-      hmRow({
-        icon: "minus",
-        title: _T("hm_do_nothing"),
-        tap: function () {
-          choose({ action: "do_nothing" });
-        },
-      })
-    );
-    box.appendChild(hmLabel(_T("app_suggestions")));
-    box.appendChild(hmGroup(more));
-    box.appendChild(
-      hmGroup([
-        hmRow({
-          title: _T("app_show_preview"),
-          sub: _T("app_show_preview_sub"),
-          toggle: {
-            get: function () {
-              return HM_PREVIEW;
-            },
-            set: function () {
-              HM_PREVIEW = !HM_PREVIEW;
-              refresh();
-            },
-          },
-        }),
-      ])
-    );
-  });
-}
-
 /* Show preview of the scene choice: a scene that is chosen plays in its room at once. */
 var HM_PREVIEW = false;
 
 /* A cycle of scenes: the order is the order of the presses. The draft is kept here and written when it is saved, since a cycle needs at least two scenes. */
 var HM_CYCLE = null;
-
-function hmCycle(b, id) {
-  hmBox(b);
-  hmGuard(hmdKey("acc", hmBtnKey(id).acc), true);
-  hmLoad(b, ["accessories", "scenes", "rooms", "zones"], function (box, r) {
-    var k = hmBtnKey(id),
-      f = hmBtnFind(r, k);
-    if (!f.acc || !f.btn) {
-      box.appendChild(hmCallout(_T("nothing_found")));
-      return;
-    }
-    var scenes = hmBtnScenes(r, hmBtnTargets(r, f.acc, f.btn));
-    if (!HM_CYCLE || HM_CYCLE.id !== id) {
-      var cfg = (f.spec && f.spec.scene_cycle_extended) || {};
-      HM_CYCLE = {
-        id: id,
-        scenes: hmPressScenes(f.spec).slice(),
-        with_off: hmPressWithOff(f.spec),
-        timeout: (cfg.repeat_timeout && cfg.repeat_timeout.seconds) || 3,
-        names: r,
-        pool: scenes,
-      };
-    }
-    HM_CYCLE.names = r;
-    HM_CYCLE.pool = scenes;
-    var d = HM_CYCLE,
-      ords = ["hm_first", "hm_second", "hm_third", "hm_fourth", "hm_fifth", "hm_sixth", "hm_seventh", "hm_eighth", "hm_ninth", "hm_tenth"];
-    box.appendChild(hmLabel(_T("hm_behavior")));
-    box.appendChild(
-      hmGroup(
-        d.scenes.map(function (sid, i) {
-          return hmRow({
-            icon: "scene",
-            title: _T(ords[i]) + " " + _T("hm_press_word"),
-            val: hmSceneName(r, sid),
-            tap: "hue-cslot:" + id + "|" + i,
-          });
-        })
-      )
-    );
-    if (d.scenes.length < 10)
-      box.appendChild(
-        hmGroup([
-          hmRow({
-            icon: "plus",
-            title: _T("hm_add_a_scene"),
-            tap: "hue-cslot:" + id + "|" + d.scenes.length,
-          }),
-        ])
-      );
-    box.appendChild(hmLabel(_T("hm_advanced")));
-    box.appendChild(
-      hmGroup([
-        hmRow({
-          title: _T("hm_smart_on_off"),
-          toggle: {
-            get: function () {
-              return d.with_off;
-            },
-            set: function () {
-              d.with_off = !d.with_off;
-              refresh();
-            },
-          },
-        }),
-      ])
-    );
-    box.appendChild(
-      hmChips([2, 3, 5, 10], function () { return d.timeout; }, function (v) { d.timeout = v; }, function (v) { return v + " " + _T("hm_sec"); })
-    );
-    box.appendChild(hmCallout(_T("hm_cycle_timeout_note")));
-    box.appendChild(
-      hmActions([
-        hmButton(_T("hm_done"), "primary", function () {
-          if (d.scenes.length < 2) {
-            toast(_T("hm_a_cycle_needs_two_scenes"));
-            return;
-          }
-          hmStagePress(k, f, { action: "scene_cycle", scenes: d.scenes.slice(), with_off: d.with_off, repeat_timeout: d.timeout });
-          HM_CYCLE = null;
-          popBack();
-          popBack();
-        }),
-      ])
-    );
-  });
-}
 
 /* One place of a cycle: which scene it is, and moving or removing it. A new place (one past the end) only asks for the scene. */
 function hmCycleSlot(b, id) {
@@ -4699,30 +4163,16 @@ function hmTimeSlot(b, id) {
 
 /* ---- the pages ---- */
 
-HP_PAGES["stg-hue"] = ["hue_plus", HP_ICON, hmRoot];
-HP_PAGES["hue-devices"] = ["hm_devices", "lights", hmDevices];
-HP_PAGES["hue-lights"] = ["hm_lights_and_smart_plugs", "lamp", hmLights];
-HP_PAGES["hue-light"] = ["light_setup", "lamp", hmLight];
 HP_PAGES["hue-fn"] = ["hm_function", "lamp", hmPick("hue-fn")];
 HP_PAGES["hue-pw"] = ["hm_power_on", "power", hmPick("hue-pw")];
 HP_PAGES["hue-or"] = ["mounting_direction", "axis", hmPick("hue-or")];
 HP_PAGES["hue-od"] = ["segment_order", "swap", hmPick("hue-od")];
 HP_PAGES["hue-switches"] = ["hm_switches", "cog", hmSwitches];
-HP_PAGES["hue-switch"] = ["hm_switch_one", "cog", hmSwitch];
-HP_PAGES["hue-button"] = ["hm_button_label", "cog", hmButtonPage];
-HP_PAGES["hue-press"] = ["hm_press", "cog", hmPress];
-HP_PAGES["hue-pick-scene"] = ["hm_single_scene", "scene", hmScenePick];
-HP_PAGES["hue-cycle"] = ["hm_scene_cycle", "scene", hmCycle];
 HP_PAGES["hue-time"] = ["hm_time_based_light", "clock", hmTimePage];
 HP_PAGES["hue-tslot"] = ["hm_time", "clock", hmTimeSlot];
 HP_PAGES["hue-cslot"] = ["hm_scene", "scene", hmCycleSlot];
-HP_PAGES["hue-bridge"] = ["hm_bridges", "plug", hmBridge];
-HP_PAGES["hue-updates"] = ["hm_software_update", "restart", hmUpdates];
-HP_PAGES["hue-matter"] = ["hm_smart_home", "scene", hmMatter];
 HP_PAGES["hue-apps"] = ["hm_applications", "lock", hmApps];
 HP_PAGES["hue-routines"] = ["routines_and_automations", "clock", hmRoutines];
-HP_PAGES["hue-ent"] = ["entertainment_areas", "target", hmAreas];
-HP_PAGES["hue-area"] = ["entertainment_area", "target", hmArea];
 HP_PAGES["hue-end"] = ["hm_when_sync_stops", "target", hmEnd];
 HP_PAGES["hue-perf"] = ["hm_performance", "target", hmPerf];
 HP_PAGES["hue-escene"] = ["hp_scene", "scene", hmEndScene];
@@ -4843,7 +4293,7 @@ var HPRENAME = {};
 
 function hpRenamePage(b, id) {
   hmBox(b);
-  if (b.parentNode) b.parentNode.classList.add("shortpg");
+  hpRoot(b).classList.add("shortpg");
   var hue = A(id).hue_light_id,
     st = HPRENAME[id] || (HPRENAME[id] = { name: hpName(id), type: null, read: false }),
     big = mk("div", "rnbig");
@@ -4961,6 +4411,2190 @@ function hpButtonLightsPage(b, id) {
 HP_PAGES["app-devinfo"] = ["hm_device_info", "info", hpDeviceInfoPage];
 HP_PAGES["app-rename"] = ["app_edit_name_and_type", "edit", hpRenamePage];
 HP_PAGES["app-btnlights"] = ["app_selected_lights", "home", hpButtonLightsPage];
+
+/* What the pages of the Hue dashboard panel share with Home Control's Hue Plus menu: small helpers (round buttons, switches, zoom), the icons only this plugin draws, the scenes the bridge has (colours, speed,
+ auto-play) and a scene's settings page. The panel draws these pages in the Hue app's way and Home Control in its own theme (huecss.js and hueappcss.js style them); the pages are the same. */
+
+/* Icons Home Control's set does not have (the panel's own table has them too: see HOST_ICONS in shell.js). */
+var HP_EXTRA_ICONS = {
+  headphones: "<path d='M4 15v-3a8 8 0 0 1 16 0v3'/><rect x='3' y='14' width='4.5' height='7' rx='1.6'/><rect x='16.5' y='14' width='4.5' height='7' rx='1.6'/>",
+  switch: "<rect x='7' y='2.5' width='10' height='19' rx='2.4'/><path d='M10 6.5h4M10 10h4M10 13.5h4M10 17h4'/>",
+  shuffle: "<path d='M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5'/>",
+  sunrise: "<path d='M12 4V2M4.9 7.9 3.5 6.5M19.1 7.9l1.4-1.4M2 17h3M19 17h3M7 17a5 5 0 0 1 10 0M3 21h18'/>",
+  hue: "<text x='1' y='16' font-size='9' font-weight='700' fill='currentColor' stroke='none' font-family='sans-serif'>hue</text>",
+};
+
+/* How much the browser has zoomed the page, when it reports what it measures (a rectangle, a pointer's place) in zoomed units while a style's px is not zoomed (Safari's page zoom): a measured length
+ becomes a style's px by dividing by this. It is 1 where the two agree. */
+function hpZoom() {
+  var styled = parseFloat(getComputedStyle(document.body).width);
+  return styled ? document.body.getBoundingClientRect().width / styled || 1 : 1;
+}
+
+/* A round button of the page's top: an icon, a label for the screen reader, and what it does. */
+function hpRound(icon, label, fn) {
+  var b = mk("button", "rbt", svg(icon));
+  b.type = "button";
+  b.setAttribute("aria-label", label);
+  b.addEventListener("click", fn);
+  return b;
+}
+
+function hpActive(el, open) {
+  el.tabIndex = 0;
+  el.setAttribute("role", "button");
+  el.addEventListener("click", open);
+  el.addEventListener("keydown", function (e) {
+    if ((e.key === "Enter" || e.key === " ") && e.target === el) {
+      e.preventDefault();
+      open();
+    }
+  });
+}
+
+function hpToggle(label, get, set) {
+  var t = mk("button", "tg", "<i></i>");
+  t.type = "button";
+  t.setAttribute("role", "switch");
+  t.setAttribute("aria-label", label);
+  t.addEventListener("click", function (e) {
+    e.stopPropagation();
+    set();
+  });
+  t.refresh = function () {
+    var on = get();
+    t.classList.toggle("on", on);
+    t.setAttribute("aria-checked", on ? "true" : "false");
+  };
+  reg(t.refresh);
+  return t;
+}
+
+/* The scenes of each bridge, as get_resources lists them (their colours, speed and auto-play), by the bridge's own id. */
+var HPSC = { byId: {}, loaded: false, waiting: [] };
+
+function hpSceneData(then) {
+  if (HPSC.loaded) return then();
+  HPSC.waiting.push(then);
+  if (HPSC.waiting.length > 1) return;
+  hmReady().then(
+    function () {
+      (HM.scenes || []).forEach(function (s) {
+        HPSC.byId[s.id] = s;
+      });
+      HPSC.loaded = true;
+      HPSC.waiting.splice(0).forEach(function (fn) {
+        fn();
+      });
+    },
+    function () {
+      HPSC.waiting.splice(0);
+    }
+  );
+}
+
+function hpSceneInfo(sid) {
+  return HPSC.byId[hueSceneUid(sid)] || {};
+}
+
+function hpIsDynamic(sid) {
+  return A(sid).is_dynamic !== false;
+}
+
+function hpColourCss(c) {
+  if (c.xy) return cssRgb(liveXyRgb(c.xy[0], c.xy[1]));
+  if (c.mirek) return cssRgb(kelvinRgb(Math.round(1000000 / c.mirek)));
+  return "#f9d27a";
+}
+
+/* The round tile of a scene: its colours as a disc. */
+function hpDisc(sid) {
+  var d = mk("span", "disc");
+  function paint() {
+    var cols = (hpSceneInfo(sid).colours || []).map(hpColourCss);
+    d.style.background = !cols.length ? "#f9d27a" : cols.length === 1 ? cols[0] : "conic-gradient(" + cols.concat(cols[0]).join(",") + ")";
+  }
+  paint();
+  hpSceneData(paint);
+  return d;
+}
+
+function hpSpeedWord(step) {
+  return step <= 3 ? _T("app_slow") : step <= 7 ? _T("app_medium") : _T("app_fast");
+}
+
+var HPSCN = {};
+
+function hpScenePage(body, key) {
+  var sid = String(key).split("~")[0],
+    room = String(key).split("~")[1] || "",
+    P = HUESCENES;
+  if (!H().states[sid]) {
+    body.appendChild(mk("div", "empty")).textContent = _T("nothing_found");
+    return;
+  }
+  hmBox(body);
+  var root = hpRoot(body);
+  root.classList.add("scenepg");
+  var cols = (hpSceneInfo(sid).colours || []).map(hpColourCss);
+  root.style.setProperty("--sc1", cols[0] || "#8a7a4a");
+  root.style.setProperty("--sc2", cols[1] || cols[0] || "#2a2a2c");
+  root.style.setProperty("--sc3", cols[2] || cols[1] || cols[0] || "#2a2a2c");
+  /* What is changed on this page is kept until SAVE, also while a page opened from it (the speed) is shown and this one is drawn again. */
+  var dyn = hpIsDynamic(sid),
+    draft = HPSCN[sid] || (HPSCN[sid] = {});
+  var panel = !!window.HueHost,
+    canEdit = isAdmin() && hueplus.has(H(), "update_scene");
+  if (panel) {
+    var head = mk("div", "schead", "<span class='big'></span><div class='nm'></div>");
+    head.querySelector(".big").appendChild(hpDisc(sid));
+    head.querySelector(".nm").textContent = A(sid).name || sid;
+    if (canEdit)
+      head.appendChild(
+        hpRound("edit", _T("hn_rename"), function () {
+          hueSceneRename(sid);
+        })
+      );
+    body.appendChild(head);
+  } else
+    body.appendChild(
+      hmGroup([
+        hmRow({
+          ldisc: cols[0] || "#8a7a4a",
+          title: A(sid).name || sid,
+          sub: canEdit ? _T("hn_rename") : "",
+          tap: canEdit
+            ? function () {
+                hueSceneRename(sid);
+              }
+            : null,
+        }),
+      ])
+    );
+  var briRow = (
+      sliderRow({
+        icon: "bright",
+        name: _T("app_scene_brightness"),
+        min: 1,
+        max: 100,
+        step: 1,
+        get: function () {
+          var g = P.group(H(), sid);
+          return g && V_(g) === "on" ? Math.max(1, Math.round((A(g).brightness || 0) / 2.55)) : hueSceneSet(sid).bri;
+        },
+        fmt: function (v) {
+          return v + "%";
+        },
+        on: function () {
+          return P.active(H(), sid);
+        },
+        live: function (v) {
+          var g = P.group(H(), sid);
+          if (g && P.active(H(), sid) && V_(g) === "on") callLive(g, "light", "turn_on", { entity_id: g, brightness_pct: v });
+        },
+        commit: function (v) {
+          var st = hueSceneSet(sid);
+          st.bri = v;
+          hueSceneSave(sid, st);
+          var g = P.group(H(), sid);
+          if (g && P.active(H(), sid) && V_(g) === "on") call("light", "turn_on", { entity_id: g, brightness_pct: v });
+        },
+      })
+  );
+  if (panel) body.appendChild(hmGroup([briRow]));
+  if (dyn)
+    hmLoad(body, ["scenes"], function (box, r) {
+      var s = (r.scenes || []).filter(function (x) {
+        return x.id === hueSceneUid(sid);
+      })[0];
+      if (!s) return;
+      if (!draft.read) {
+        draft.read = true;
+        draft.saved = typeof s.speed === "number" ? s.speed : 0.5;
+        draft.speed = draft.saved;
+        draft.auto = !!s.auto_dynamic;
+      }
+      box.appendChild(hmLabel(_T("app_dynamic_scene")));
+      box.appendChild(
+        hmGroup([
+          panel
+            ? hmRow({
+                title: _T("app_dynamic_speed"),
+                val: function () {
+                  var step = P.speedToStep(Math.round(draft.speed * 100));
+                  return step + " - " + hpSpeedWord(step);
+                },
+                tap: "app-speed:" + sid,
+              })
+            : null,
+          hmRow({
+            title: _T("app_auto_play"),
+            sub: _T("app_auto_play_sub"),
+            toggle: {
+              get: function () {
+                return draft.auto;
+              },
+              set: function () {
+                draft.auto = !draft.auto;
+                draft.changed = true;
+                refresh();
+              },
+            },
+          }),
+        ])
+      );
+      guardUnsaved({
+        dirty: function () {
+          return !!draft.changed || !!draft.recolor;
+        },
+        discard: function () {
+          delete HPSCN[sid];
+        },
+        save: function (leave) {
+          var change = { scene: hueSceneUid(sid), speed: draft.speed, auto_dynamic: draft.auto };
+          if (draft.recolor) change.recolor = draft.recolor;
+          return hpCall("hue_plus", "update_scene", change).then(
+            function () {
+              delete HPSCN[sid];
+              HPSC.loaded = false;
+              HPSC.byId = {};
+              hpSceneData(function () {});
+              leave();
+              return true;
+            },
+            function () {
+              toast(_T("hn_couldn_t_save_the_scene"));
+              return false;
+            }
+          );
+        },
+      });
+    });
+  var lights = hpSceneLights(sid);
+  if (!panel) {
+    /* Home Control: the scene's own popup has playing, brightness and speed; this page has what changes the scene. */
+    if (canEdit) {
+      var rows = [
+        hmRow({
+          icon: "palette",
+          title: _T("app_scene_look"),
+          sub: _T("app_scene_look_sub"),
+          tap: function () {
+            hueSceneEdit(sid);
+          },
+        }),
+      ];
+      if (dyn)
+        rows.push(
+          hmRow({
+            icon: "shuffle",
+            title: _T("app_colors"),
+            sub: _T("app_colors_sub"),
+            tap: function () {
+              draft.recolor = "shuffle";
+              toast(_T("app_colors_when_saved"));
+            },
+          })
+        );
+      body.appendChild(hmGroup(rows));
+    }
+  } else if (lights.length || canEdit) {
+    /* The Lights title has the Colors button of a moving scene: it gives the scene's colours out to the lights again, in another order (kept until SAVE). */
+    var bar = mk("div", "lbrow lightsbar");
+    var title = mk("div", "lbtitle");
+    title.textContent = _T("lights");
+    bar.appendChild(title);
+    if (dyn && hueplus.has(H(), "update_scene")) {
+      var shuffle = mk("button", "colorsbtn", svg("shuffle") + "<span></span>");
+      shuffle.type = "button";
+      shuffle.querySelector("span").textContent = _T("app_colors");
+      shuffle.addEventListener("click", function () {
+        draft.recolor = "shuffle";
+        toast(_T("app_colors_when_saved"));
+      });
+      bar.appendChild(shuffle);
+    }
+    if (canEdit)
+      bar.appendChild(
+        hpRound("edit", _T("hn_scene_lights"), function () {
+          showPopup("hue-scene-lights:" + sid, true);
+        })
+      );
+    body.appendChild(bar);
+    var tiles = mk("div", "ltiles");
+    lights.forEach(function (lid) {
+      var tile = hpSceneTile(lid, room);
+      /* a zone can have lights of several rooms, and two of them can be named alike: the tile says the room too */
+      if (room && A(room).hue_type === "zone") tile.querySelector("b").textContent = hpEntityLabel(lid);
+      tiles.appendChild(tile);
+    });
+    body.appendChild(tiles);
+  }
+  var tail = [];
+  /* Reset scene: the palette is given out to the lights in its own order and at its own brightness again (kept until SAVE). */
+  if (dyn && hueplus.has(H(), "update_scene")) {
+    var reset = panel ? mk("button", "resetbtn") : null;
+    var doReset = function () {
+      draft.recolor = "reset";
+      toast(_T("app_reset_when_saved"));
+    };
+    if (panel) {
+      reset.type = "button";
+      reset.textContent = _T("app_reset_scene");
+      reset.addEventListener("click", doReset);
+      body.appendChild(reset);
+    } else tail.push(hmRow({ icon: "palette", title: _T("app_reset_scene"), tap: doReset }));
+  }
+  if (isAdmin() && hueplus.has(H(), "delete_scene")) {
+    var doDelete = function () {
+      confirmDlg(_T("hn_delete_scene") + ": " + (A(sid).name || sid) + "?", function () {
+        hueSceneRemove(sid).then(function () {
+          delete HPSCN[sid];
+          popBack();
+        });
+      });
+    };
+    if (panel) {
+      var del = mk("button", "deletebtn");
+      del.type = "button";
+      del.textContent = _T("hn_delete_scene");
+      del.addEventListener("click", doDelete);
+      body.appendChild(del);
+    } else tail.push(hmRow({ icon: "trash", title: _T("hn_delete_scene"), danger: true, tap: doDelete }));
+  }
+  if (tail.length) body.appendChild(hmGroup(tail));
+}
+
+/* The speed of a moving scene: a short sheet with the twelve steps of the app (kept on the scene's page until SAVE). */
+function hpSpeedPage(body, sid) {
+  hmBox(body);
+  var st = HPSCN[sid],
+    P = HUESCENES;
+  if (!st || !st.read) {
+    body.appendChild(hmCallout(_T("nothing_found")));
+    return;
+  }
+  hpRoot(body).classList.add("shortpg");
+  var box = mk("div", "spsheet"),
+    cap = mk("span", "spcap"),
+    val = mk("b", "spval"),
+    track = mk("div", "sptrack", "<div class='spfill'></div><div class='spthumb'></div>"),
+    ticks = mk("div", "spticks");
+  cap.textContent = _T("app_speed").toUpperCase();
+  for (var n = 1; n <= P.speedSteps; n++) ticks.appendChild(mk("i")).textContent = String(n);
+  var note = mk("div", "pintro");
+  note.textContent = _T("app_speed_text");
+  box.appendChild(cap);
+  box.appendChild(val);
+  box.appendChild(track);
+  box.appendChild(ticks);
+  body.appendChild(box);
+  body.appendChild(note);
+  var thumb = track.querySelector(".spthumb"),
+    fill = track.querySelector(".spfill");
+  function step() {
+    return P.speedToStep(Math.round(st.speed * 100));
+  }
+  function paint() {
+    var at = (step() - 1) / (P.speedSteps - 1);
+    thumb.style.left = at * 100 + "%";
+    fill.style.width = at * 100 + "%";
+    val.textContent = step() + " - " + hpSpeedWord(step()) + (step() === P.speedToStep(Math.round(st.saved * 100)) ? " " + _T("app_default_in_brackets") : "");
+  }
+  function from(e) {
+    var r = track.getBoundingClientRect(),
+      at = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)),
+      next = 1 + Math.round(at * (P.speedSteps - 1));
+    st.speed = P.stepToSpeed(next) / 100;
+    st.changed = true;
+    paint();
+  }
+  track.addEventListener("pointerdown", function (e) {
+    track.setPointerCapture(e.pointerId);
+    from(e);
+    track.onpointermove = from;
+    track.onpointerup = track.onpointercancel = function () {
+      track.onpointermove = null;
+    };
+  });
+  paint();
+  HC.onDone = function () {
+    popBack();
+  };
+}
+
+/* The lights a scene has, by the bridge's ids: the Hue Plus lights of the ids its actions name. */
+function hpSceneLights(sid) {
+  return (hpSceneInfo(sid).lights || [])
+    .filter(Boolean)
+    .map(hpEntityOf)
+    .filter(Boolean);
+}
+
+/* A light of a scene: the panel's tile opens its light screen; Home Control's is a row that opens the light's own popup. */
+function hpSceneTile(lid, room) {
+  if (typeof hpLightTile === "function") return hpLightTile(lid, room);
+  var where = hpRoomOfLight(lid);
+  return pill("light", hpName(lid), {
+    sub: function () {
+      return where ? where.name : "";
+    },
+    tap: function () {
+      showPopup("light:" + lid, true);
+    },
+  });
+}
+
+HP_PAGES["app-speed"] = ["app_dynamic_speed", "tune", hpSpeedPage];
+HP_PAGES["app-scene"] = ["app_edit_scene", "scene", hpScenePage];
+
+function hpSyncEntities(test) {
+  var h = H();
+  return Object.keys(h.states)
+    .filter(function (id) {
+      var e = h.entities[id];
+      return test(h, id) && !(e && e.hidden);
+    })
+    .sort();
+}
+
+/* The panel's pages end with DONE or SAVE in the bar of the page (`HC.onDone = function`). Home Control's popups have no such button, so there the same function is a row at the end of the page (DONE keeps what the
+ page holds, as it does in the panel). */
+var HP_DONE_PAGE = null;
+
+if (!window.HueHost)
+  Object.defineProperty(HC, "onDone", {
+    configurable: true,
+    get: function () {
+      return HP_DONE_PAGE && HP_DONE_PAGE.fn;
+    },
+    set: function (fn) {
+      if (!HP_DONE_PAGE) return;
+      HP_DONE_PAGE.fn = fn;
+      if (HP_DONE_PAGE.row) HP_DONE_PAGE.row.remove();
+      HP_DONE_PAGE.row = null;
+      if (!fn) return;
+      HP_DONE_PAGE.row = pill("check", _T("hm_done"), { tap: fn });
+      HP_DONE_PAGE.row.classList.add("hp-done");
+      HP_DONE_PAGE.body.appendChild(HP_DONE_PAGE.row);
+    },
+  });
+
+/* Hold, then drag, to put things in another order, as the Hue app does for the scenes of a folder, the folders of a room and the presses of a cycle. The app keeps this order in the app, not on the bridge
+ (the bridge has no place for it), so here it is kept on this device only, like the other choices the dashboard keeps for a device. */
+
+/* The order kept for a list: ids in order. Anything the list has that is not in it goes last, in the order it came. */
+function hpOrderGet(key) {
+  var v = deviceGet("db_order_" + key, []);
+  return Array.isArray(v) ? v : [];
+}
+
+function hpOrderSet(key, ids) {
+  deviceSet("db_order_" + key, ids.slice(0, 200));
+}
+
+function hpOrdered(list, key, idOf) {
+  var order = hpOrderGet(key);
+  return list.slice().sort(function (a, b) {
+    var x = order.indexOf(idOf(a)),
+      y = order.indexOf(idOf(b));
+    return (x < 0 ? 1e6 : x) - (y < 0 ? 1e6 : y);
+  });
+}
+
+/* Makes the children of `box` that match `selector` movable: press and hold one for a moment, and it lifts; drag it over the others and they make room; let go and done(ids) is called with the new order
+ (ids come from idOf(element)). A press that moves before the hold is a scroll or a tap, and is left alone. */
+function hpSortable(box, selector, idOf, done, opts) {
+  opts = opts || {};
+  var HOLD = 380;
+  box.addEventListener("pointerdown", function (e) {
+    var el = e.target.closest(selector);
+    if (!el || !box.contains(el) || e.button > 0) return;
+    var timer = null,
+      lifted = false,
+      target = null,
+      sx = e.clientX,
+      sy = e.clientY,
+      grab = null,
+      endX = 0,
+      endY = 0;
+    function inside(node, x, y) {
+      var r = node.getBoundingClientRect();
+      return x > r.left && x < r.right && y > r.top && y < r.bottom;
+    }
+    function items() {
+      return [].filter.call(box.children, function (c) {
+        return c.matches(selector);
+      });
+    }
+    function place(ev) {
+      el.style.transform = "none";
+      var base = el.getBoundingClientRect();
+      var z = hpZoom();
+      el.style.transform = "translate(" + (ev.clientX - grab.x - base.left) / z + "px," + (ev.clientY - grab.y - base.top) / z + "px) scale(1.03)";
+    }
+    function lift() {
+      lifted = true;
+      var r = el.getBoundingClientRect();
+      grab = { x: sx - r.left, y: sy - r.top };
+      el.classList.add("lifting");
+      /* The tile is carried over the whole page, not only over its own row. */
+      box.style.overflow = "visible";
+      try {
+        el.setPointerCapture(e.pointerId);
+      } catch (x) {}
+      if (navigator.vibrate) navigator.vibrate(12);
+    }
+    function move(ev) {
+      if (!lifted) {
+        if (Math.hypot(ev.clientX - sx, ev.clientY - sy) > 9) stop(false);
+        return;
+      }
+      ev.preventDefault();
+      target = null;
+      items().forEach(function (other) {
+        other.classList.remove("mergeable");
+        if (other === el) return;
+        var r = other.getBoundingClientRect(),
+          inside = ev.clientX > r.left && ev.clientX < r.right && ev.clientY > r.top && ev.clientY < r.bottom,
+          middle =
+            ev.clientX > r.left + r.width * 0.3 && ev.clientX < r.right - r.width * 0.3 && ev.clientY > r.top + r.height * 0.3 && ev.clientY < r.bottom - r.height * 0.3;
+        /* The middle of another item is a drop onto it; its edges make room, as before. */
+        if (opts.merge && middle) {
+          target = other;
+          other.classList.add("mergeable");
+        } else if (inside && !(opts.merge && middle) && opts.live !== false) {
+          var all = items();
+          box.insertBefore(el, all.indexOf(other) > all.indexOf(el) ? other.nextSibling : other);
+        }
+      });
+      place(ev);
+    }
+    /* The tile was carried over the others without them moving; where it is let go is its new place, and the tiles in between slide to theirs. */
+    function dropAt(x, y) {
+      var others = items().filter(function (o) {
+          return o !== el;
+        }),
+        before = others.map(function (o) {
+          return o.getBoundingClientRect();
+        }),
+        best = null,
+        bestD = Infinity;
+      others.forEach(function (o, i) {
+        var r = before[i],
+          d = Math.hypot(x - (r.left + r.width / 2), y - (r.top + r.height / 2));
+        if (d < bestD) {
+          bestD = d;
+          best = { o: o, r: r };
+        }
+      });
+      if (!best) return;
+      var after = x > best.r.left + best.r.width / 2 && y > best.r.top - 1 ? best.o.nextSibling : best.o;
+      if (y > best.r.bottom) after = best.o.nextSibling;
+      box.insertBefore(el, after);
+      others.forEach(function (o, i) {
+        var r = o.getBoundingClientRect(),
+          dx = (before[i].left - r.left) / hpZoom(),
+          dy = (before[i].top - r.top) / hpZoom();
+        if ((dx || dy) && o.animate) o.animate([{ transform: "translate(" + dx + "px," + dy + "px)" }, { transform: "none" }], { duration: 220, easing: "cubic-bezier(.2,.8,.2,1)" });
+      });
+    }
+    function stop(commit) {
+      clearTimeout(timer);
+      document.removeEventListener("pointermove", move, true);
+      document.removeEventListener("pointerup", up, true);
+      document.removeEventListener("pointercancel", cancel, true);
+      if (lifted) {
+        box.style.overflow = "";
+        el.classList.remove("lifting");
+        el.style.transform = "";
+        /* The click that ends a drag is not a tap. */
+        var eat = function (c) {
+          c.stopPropagation();
+          c.preventDefault();
+        };
+        box.addEventListener("click", eat, { capture: true, once: true });
+        setTimeout(function () {
+          box.removeEventListener("click", eat, true);
+        }, 60);
+        items().forEach(function (other) {
+          other.classList.remove("mergeable");
+        });
+        if (commit && target && opts.merge) opts.merge(idOf(el), idOf(target));
+        else if (commit && opts.outside && !inside(opts.bounds ? opts.bounds() : box, endX, endY)) opts.outside(idOf(el));
+        else if (commit) {
+          if (opts.live === false) dropAt(endX, endY);
+          done(items().map(idOf));
+        }
+      }
+    }
+    function up(ev) {
+      endX = ev.clientX;
+      endY = ev.clientY;
+      stop(true);
+    }
+    function cancel() {
+      stop(false);
+    }
+    document.addEventListener("pointermove", move, { capture: true, passive: false });
+    document.addEventListener("pointerup", up, true);
+    document.addEventListener("pointercancel", cancel, true);
+    timer = setTimeout(lift, HOLD);
+  });
+  box.addEventListener("contextmenu", function (e) {
+    if (e.target.closest(selector)) e.preventDefault();
+  });
+}
+
+/* The pages of the app's Settings, as the app draws them: the Settings list, Devices (and where devices are added), Lights, Software update with its time of day, Smart home and the apps that can be linked,
+ Entertainment areas with their edit page, light placement and brightness balancer. They are the Hue Plus menu's pages (what is read and written is the same); only the page is the app's. */
+
+/* A round blue button in the top bar of a page (the app's plus on a list). */
+function hpBarPlus(b, label, fn) {
+  var root = b.parentNode,
+    bar = root && root.querySelector(".lbar");
+  /* Home Control's popup has no bar for it: the same action is the first row of the page. */
+  if (!bar) {
+    b.appendChild(hmGroup([hmRow({ icon: "plus", title: label, tap: fn })]));
+    return;
+  }
+  root.classList.add("plusbar");
+  var plus = hpRound("plus", label, fn);
+  plus.classList.add("blue");
+  bar.appendChild(plus);
+}
+
+function hpCount(n) {
+  return n === undefined || n === null ? "" : String(n);
+}
+
+/* ---- the Settings list ---- */
+
+function hpSettingsTab(box) {
+  var head = mk("div", "hd", "<h1></h1>");
+  head.querySelector("h1").textContent = _T("app_settings");
+  box.appendChild(head);
+  var inner = mk("div");
+  box.appendChild(inner);
+  hmBox(inner);
+  hmLoad(inner, HM_KINDS, function (list) {
+    list.appendChild(hmLabel(_T("hm_in_this_home")));
+    list.appendChild(
+      hmGroup([
+        hmRow({ icon: "lights", title: _T("hm_devices"), tap: "hue-devices" }),
+        hmRow({ icon: "plug", title: _T("hm_bridges"), tap: "app-bridges" }),
+        hmRow({ icon: "motion", title: _T("hm_motionaware_areas"), tap: "hue-motion" }),
+        hmRow({ icon: "target", title: _T("entertainment_areas"), tap: "hue-ent" }),
+        hmRow({ icon: "scene", title: _T("hm_smart_home"), tap: "hue-matter" }),
+        hmRow({ icon: "restart", title: _T("hm_software_update"), tap: "hue-updates" }),
+      ])
+    );
+    list.appendChild(hmLabel(_T("hm_advanced")));
+    list.appendChild(hmGroup([hmRow({ icon: "lock", title: _T("hm_applications"), tap: "hue-apps" })]));
+  });
+}
+
+/* ---- Devices and adding devices ---- */
+
+function hpDevicesPage(b) {
+  hmBox(b);
+  hmEnsure();
+  var E = hpBridgeEnts();
+  hpBarPlus(b, _T("app_add_devices"), function () {
+    showPopup("app-adddev", true);
+  });
+  b.appendChild(
+    hmGroup([
+      hmRow({
+        icon: "lamp",
+        title: _T("hm_lights_and_smart_plugs"),
+        val: function () {
+          return hpCount(hueplus.lights(H()).length);
+        },
+        tap: "hue-lights",
+        chev: true,
+      }),
+      hmRow({
+        icon: "switch",
+        title: _T("hm_switches"),
+        val: function () {
+          return HM.accessories ? hpCount(hmList("accessories").length) : "";
+        },
+        tap: "hue-switches",
+        chev: true,
+      }),
+    ])
+  );
+  if (E.search) b.dataset.search = "1";
+}
+
+/* Where do you want to add devices: the rooms of the bridge, and a new room. */
+function hpAddDevicesWhere(b) {
+  hmBox(b);
+  hmLoad(b, ["rooms"], function (box, r) {
+    box.appendChild(hmTitle("", _T("app_where_add_devices")));
+    box.appendChild(hmLabel((HM.bridge && HM.bridge.name) || _T("hue_bridge")));
+    var rows = (r.rooms || []).map(function (room) {
+      return hpNoChev(hmRow({ icon: "bed", title: room.name, tap: "app-adddev2:" + encodeURIComponent(room.name) }));
+    });
+    rows.push(hpNoChev(hmRow({ icon: "plus", title: _T("app_create_new_room"), tap: "hue-group", blue: true })));
+    var card = hmGroup(rows);
+    card.classList.add("card");
+    box.appendChild(card);
+  });
+}
+
+/* Add devices to a room: the bridge searches for new lights and switches, which then appear in its rooms. */
+function hpAddDevicesTo(b, id) {
+  hmBox(b);
+  var name = decodeURIComponent(id || ""),
+    E = hpBridgeEnts();
+  b.appendChild(hmTitle("", _T("app_add_devices_to") + " " + name, _T("app_add_devices_text")));
+  b.appendChild(
+    hmActions([
+      E.search
+        ? hmButton(_T("search_for_new_devices"), "primary", function () {
+            call("button", "press", { entity_id: E.search });
+            toast(_T("app_searching"));
+          })
+        : null,
+    ])
+  );
+}
+
+/* Lights and smart plugs: each one a row, a tap opens its settings. */
+function hpLightsListPage(b) {
+  hmBox(b);
+  var list = hueplus.lights(H());
+  if (!list.length) b.appendChild(hmCallout(_T("nothing_found")));
+  b.appendChild(
+    hmGroup(
+      list.map(function (id) {
+        return hmRow({
+          icon: "lamp",
+          title: hpName(id),
+          sub: function () {
+            var where = hpRoomOfLight(id);
+            return where ? where.name : "";
+          },
+          val: function () {
+            return V_(id) === "unavailable" ? _T("hm_unreachable") : "";
+          },
+          tap: "hue-light:" + id,
+        });
+      })
+    )
+  );
+}
+
+/* ---- Software update ---- */
+
+/* A wheel of values to scroll to one: the centre row is the choice. */
+function hpWheel(values, current, pick) {
+  var wheel = mk("div", "wheel"),
+    ROW = 36,
+    timer = null;
+  wheel.appendChild(mk("div", "pad"));
+  values.forEach(function (v) {
+    wheel.appendChild(mk("div", "wv")).textContent = String(v).length < 2 ? "0" + v : String(v);
+  });
+  wheel.appendChild(mk("div", "pad"));
+  var at = Math.max(0, values.indexOf(current));
+  requestAnimationFrame(function () {
+    wheel.scrollTop = at * ROW;
+  });
+  wheel.addEventListener("scroll", function () {
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      var i = Math.max(0, Math.min(values.length - 1, Math.round(wheel.scrollTop / ROW)));
+      pick(values[i]);
+    }, 140);
+  });
+  return wheel;
+}
+
+function hpUpdateTime(E) {
+  var raw = String(V_(E.auto_update_time) || "00:00").split(":"),
+    h = parseInt(raw[0], 10) || 0,
+    m = parseInt(raw[1], 10) || 0,
+    box = mk("div", "wheels"),
+    hours = [],
+    mins = [];
+  for (var i = 0; i < 24; i++) hours.push(i);
+  for (var j = 0; j < 60; j++) mins.push(j);
+  var send = function () {
+    call("time", "set_value", { entity_id: E.auto_update_time, time: (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m + ":00" });
+  };
+  box.appendChild(mk("div", "band"));
+  box.appendChild(
+    hpWheel(hours, h, function (v) {
+      if (v === h) return;
+      h = v;
+      send();
+    })
+  );
+  box.appendChild(
+    hpWheel(mins, m, function (v) {
+      if (v === m) return;
+      m = v;
+      send();
+    })
+  );
+  return box;
+}
+
+function hpUpdatesPage(b) {
+  hmBox(b);
+  var E = hpBridgeEnts(),
+    list = hueplus.updates(H());
+  var status = hmRow({
+    title: function () {
+      var n = hmUpdatesDue();
+      return n ? cntS(n, _T("update_available_2"), _T("updates_available")) : _T("hm_everything_is_up_to_date");
+    },
+    good: function () {
+      return !hmUpdatesDue();
+    },
+    check: function () {
+      return !hmUpdatesDue();
+    },
+  });
+  b.appendChild(hmGroup([status]));
+  if (E.auto_update) {
+    var auto = [
+      hmRow({
+        title: _T("automatic_updates"),
+        toggle: {
+          get: function () {
+            return isOn(E.auto_update);
+          },
+          set: function () {
+            toggleEnt(E.auto_update);
+          },
+        },
+      }),
+    ];
+    var g = hmGroup(auto);
+    if (E.auto_update_time) g.appendChild(hpUpdateTime(E));
+    b.appendChild(g);
+    if (E.auto_update_time) b.appendChild(mk("div", "pintro small")).textContent = _T("hm_updates_are_installed_at_this_time");
+  }
+  b.appendChild(hmLabel(_T("hm_devices")));
+  if (!list.length) b.appendChild(hmCallout(_T("nothing_found")));
+  b.appendChild(
+    hmGroup(
+      list.map(function (id) {
+        return hmRow({
+          title: hpName(id).replace(/ (bridge )?firmware$/i, ""),
+          sub: function () {
+            return A(id).installed_version || "";
+          },
+          val: function () {
+            return V_(id) === "on" ? hmUpdateText(id) : "";
+          },
+          tap: function () {
+            if (V_(id) !== "on") return;
+            confirmDlg(_T("install_this_update"), function () {
+              call("update", "install", { entity_id: id });
+            });
+          },
+        });
+      })
+    )
+  );
+  if (E.check_update)
+    b.appendChild(
+      hmActions([
+        hmButton(_T("check_for_an_update"), "ghost", function () {
+          call("button", "press", { entity_id: E.check_update });
+        }),
+      ])
+    );
+}
+
+/* ---- Smart home ---- */
+
+var HP_LINK_APPS = ["Apple Home", "Amazon Alexa", "Google Home", "Smart Things", "Sonos Voice Control"];
+
+function hpSmartHomePage(b) {
+  hmBox(b);
+  var E = hpBridgeEnts(),
+    f = (E.matter_fabrics && A(E.matter_fabrics).fabrics) || [];
+  hpBarPlus(b, _T("app_link_an_app"), function () {
+    showPopup("app-link", true);
+  });
+  b.appendChild(hmLabel(_T("hm_linked_to_hue")));
+  if (!f.length) b.appendChild(hmCallout(_T("nothing_connected")));
+  else
+    b.appendChild(
+      hmGroup(
+        f.map(function (x) {
+          return hmRow({
+            icon: "home",
+            title: x.label || x.vendor || _T("app_matter_controller"),
+            sub: [x.vendor, x.status].filter(Boolean).join(" · "),
+            tap: function () {
+              confirmDlg(_T("disconnect_this_matter_app_from_the_bridge"), function () {
+                call("hue_plus", "remove_matter_fabric", { fabric: x.id, confirm: true });
+                popBack();
+              });
+            },
+          });
+        })
+      )
+    );
+}
+
+function hpLinkPage(b) {
+  hmBox(b);
+  b.appendChild(hmTitle("", _T("app_what_to_link")));
+  var grid = mk("div", "pgrid");
+  HP_LINK_APPS.concat([_T("app_other_apps")]).forEach(function (name) {
+    var t = mk("div", "ptile", "<span class='ic'></span><b></b>");
+    t.querySelector(".ic").textContent = name.charAt(0);
+    t.querySelector("b").textContent = name;
+    hpActive(t, function () {
+      showPopup("app-link2", true);
+    });
+    grid.appendChild(t);
+  });
+  b.appendChild(grid);
+}
+
+function hpLinkAnother(b) {
+  hmBox(b);
+  b.appendChild(hmTitle("", _T("app_link_another_app"), _T("hm_matter_pairing_code_note")));
+}
+
+/* ---- Entertainment areas ---- */
+
+function hpAreasPage(b) {
+  hmBox(b);
+  hpBarPlus(b, _T("app_new_area"), function () {
+    showPopup("app-newarea", true);
+  });
+  hmLoad(b, ["entertainment_areas"], function (box, r) {
+    var list = r.entertainment_areas || [];
+    if (!list.length) box.appendChild(hmCallout(_T("nothing_found")));
+    else
+      box.appendChild(
+        hmGroup(
+          list.map(function (x) {
+            return hpNoChev(hmRow({ icon: "headphones", title: x.name, tap: "hue-area:" + x.id }));
+          })
+        )
+      );
+  });
+}
+
+var HP_AREA_TYPES = ["screen", "monitor", "music", "3dspace", "other"];
+
+/* A new area: its name, what it is for, and the lights in it. The lights start in a row; Light placement on the area's page puts them where they are. */
+function hpNewAreaPage(b) {
+  hmBox(b);
+  var picked = {},
+    type = "other",
+    name = mk("input", "sq pin");
+  name.type = "text";
+  name.maxLength = 32;
+  name.placeholder = _T("app_name");
+  b.appendChild(hmTitle("", _T("app_new_area")));
+  var field = mk("div", "pfield");
+  field.appendChild(name);
+  b.appendChild(field);
+  b.appendChild(hmLabel(_T("app_area_type")));
+  b.appendChild(
+    hmGroup(
+      HP_AREA_TYPES.map(function (t) {
+        return hmRow({
+          title: _T("app_area_" + t),
+          check: function () {
+            return type === t;
+          },
+          tap: function () {
+            type = t;
+            refresh();
+          },
+        });
+      })
+    )
+  );
+  b.appendChild(hmLabel(_T("hm_lights_label")));
+  var lights = hueplus.lights(H()).filter(hpHueId);
+  b.appendChild(
+    hmGroup(
+      lights.map(function (e) {
+        return hmRow({
+          icon: "lamp",
+          title: hpName(e),
+          check: function () {
+            return !!picked[e];
+          },
+          tap: function () {
+            picked[e] = !picked[e];
+            refresh();
+          },
+        });
+      })
+    )
+  );
+  b.appendChild(
+    hmActions([
+      hmButton(_T("app_create"), "primary", function () {
+        var chosen = lights.filter(function (e) {
+          return picked[e];
+        });
+        if (!name.value.trim()) {
+          toast(_T("give_the_area_a_name"));
+          return;
+        }
+        if (!chosen.length) {
+          toast(_T("add_at_least_one_light"));
+          return;
+        }
+        var step = chosen.length > 1 ? 1.6 / (chosen.length - 1) : 0;
+        hpCall("hue_plus", "create_entertainment_area", {
+          name: name.value.trim(),
+          area_type: type,
+          lights: chosen.map(function (e, i) {
+            return { light: hpHueId(e), x: chosen.length > 1 ? -0.8 + i * step : 0, y: 0, z: 0 };
+          }),
+        }).then(
+          function () {
+            toast(_T("hm_saved_to_the_bridge"));
+            HM_READY = false;
+            popBack();
+            hmEnsure();
+          },
+          function () {
+            toast(_T("hm_the_bridge_did_not_accept_this"));
+          }
+        );
+      }),
+    ])
+  );
+}
+
+/* What the area has for its lights: the draft when something was changed, else the bridge's. */
+function hpAreaKey(id) {
+  return hmdKey("area", id);
+}
+
+function hpAreaBase(x) {
+  return (x.lights || []).map(function (l) {
+    var o = { light: l.light_id, name: l.name || String(l.light_id), x: l.x || 0, y: l.y || 0, z: l.z || 0, balance: typeof l.balance === "number" ? l.balance : 1 };
+    /* every position the bridge holds (the ends of a strip or tube) */
+    if (Array.isArray(l.positions) && l.positions.length > 1) o.positions = l.positions;
+    return o;
+  });
+}
+
+function hpAreaLights(x) {
+  return hmdValue(hpAreaKey(x.id), "lights", hpAreaBase(x));
+}
+
+function hpAreaName(x) {
+  return hmdValue(hpAreaKey(x.id), "name", x.name);
+}
+
+function hpStageLights(x, lights) {
+  hmdStage(hpAreaKey(x.id), "lights", lights, hpAreaBase(x));
+}
+
+/* The area's changes (its lights, their places, its name) go to the bridge with the rest of the area's draft. */
+var hpSaveAreaRest = hmSaveArea;
+hmSaveArea = function (id, ch) {
+  var job = Promise.resolve();
+  if (ch.lights || ch.name) {
+    var data = { area: id };
+    if (ch.name) data.name = ch.name;
+    if (ch.lights)
+      data.lights = ch.lights.map(function (l) {
+        var item = { light: l.light, x: l.x, y: l.y, z: l.z, balance: l.balance };
+        if (l.positions) item.positions = l.positions;
+        return item;
+      });
+    job = hpCall("hue_plus", "update_entertainment_area", data);
+  }
+  var rest = Object.assign({}, ch);
+  delete rest.lights;
+  delete rest.name;
+  return job.then(function () {
+    return hpSaveAreaRest(id, rest);
+  });
+};
+
+/* The edit page of an area, as the app draws it: its icon and name, its lights (each can be taken out, a blue plus adds one), then placement, brightness balance, what happens when the sync stops, performance and Delete. */
+function hpAreaPage(b, id) {
+  hmBox(b);
+  hmGuard(hpAreaKey(id));
+  hmLoad(b, ["entertainment_areas", "scenes"], function (box, r, again) {
+    var x = hmEntArea(id);
+    if (!x) {
+      box.appendChild(hmCallout(_T("nothing_found")));
+      return;
+    }
+    var head = mk("div", "swhead named", "<span class='ic'></span><div class='nm'></div>"),
+      pen = hpRound("edit", _T("app_rename"), function () {
+        hpPrompt(_T("app_name"), hpAreaName(x), function (v) {
+          hmdStage(hpAreaKey(id), "name", v, x.name);
+          refresh();
+        });
+      });
+    head.querySelector(".ic").innerHTML = svg("headphones");
+    head.appendChild(pen);
+    box.appendChild(head);
+    var label = mk("div", "lbrow"),
+      text = mk("div", "lbtitle"),
+      add = hpRound("plus", _T("app_add_a_light"), function () {
+        showPopup("app-areaadd:" + id, true);
+      });
+    add.classList.add("blue");
+    text.textContent = _T("hm_lights_label");
+    label.appendChild(text);
+    label.appendChild(add);
+    box.appendChild(label);
+    var tiles = mk("div", "ltiles areal");
+    box.appendChild(tiles);
+    function draw() {
+      head.querySelector(".nm").textContent = hpAreaName(x);
+      tiles.innerHTML = "";
+      hpAreaLights(x).forEach(function (l) {
+        var t = mk("div", "ptile sm", "<span class='ic'></span><b></b>"),
+          minus = mk("button", "minus", svg("minus"));
+        minus.type = "button";
+        minus.setAttribute("aria-label", _T("app_remove"));
+        t.querySelector(".ic").innerHTML = svg("lamp");
+        t.querySelector("b").textContent = hpLightLabel(l.name, l.light);
+        minus.addEventListener("click", function () {
+          var rest = hpAreaLights(x).filter(function (o) {
+            return o.light !== l.light;
+          });
+          if (!rest.length) {
+            toast(_T("add_at_least_one_light"));
+            return;
+          }
+          hpStageLights(x, rest);
+          draw();
+        });
+        t.appendChild(minus);
+        tiles.appendChild(t);
+      });
+    }
+    draw();
+    reg(draw);
+    box.appendChild(
+      hmGroup([
+        hpNoChev(
+          hmRow({
+            title: _T("hm_light_placement"),
+            val: "",
+            /* the panel places the lights in its own light frame; Home Control's area editor opens on the bridge's area */
+            tap:
+              typeof hpPlacePage === "function"
+                ? "app-place:" + id
+                : function () {
+                    hpEditOnBridge(x, refresh);
+                  },
+          })
+        ),
+        hmRow({
+          title: _T("app_balancer"),
+          val: function () {
+            return hpAreaLights(x).every(function (l) {
+              return l.balance === 1;
+            })
+              ? _T("app_default")
+              : _T("app_custom");
+          },
+          tap: "app-balance:" + id,
+        }),
+        hmRow({
+          title: _T("hm_when_sync_stops"),
+          val: function () {
+            return _T("end_" + hmAreaEnd(x).end_state);
+          },
+          tap: "hue-end:" + id,
+        }),
+        hmRow({
+          title: _T("hm_performance"),
+          val: function () {
+            return hmAreaPerf(x).mode === "manual" ? _T("hm_manual") : _T("hm_auto");
+          },
+          tap: "hue-perf:" + id,
+        }),
+      ])
+    );
+    box.appendChild(
+      hmActions([
+        hmButton(_T("hm_delete"), "danger", function () {
+          confirmDlg(_T("hm_delete_this_entertainment_area"), function () {
+            hmdDiscard(hpAreaKey(id));
+            call("hue_plus", "delete_entertainment_area", { area: id, confirm: true });
+            HM_READY = false;
+            closePopup();
+            hmEnsure();
+          });
+        }),
+      ])
+    );
+  });
+}
+
+/* The lights that can still be added to an area. */
+function hpAreaAddPage(b, id) {
+  hmBox(b);
+  hmGuard(hpAreaKey(id), true);
+  hmLoad(b, ["entertainment_areas"], function (box) {
+    var x = hmEntArea(id),
+      have = hpAreaLights(x).map(function (l) {
+        return l.light;
+      }),
+      free = hueplus.lights(H()).filter(function (e) {
+        return hpHueId(e) && have.indexOf(hpHueId(e)) < 0;
+      });
+    if (!free.length) box.appendChild(hmCallout(_T("nothing_found")));
+    box.appendChild(
+      hmGroup(
+        free.map(function (e) {
+          return hmRow({
+            icon: "lamp",
+            title: hpEntityLabel(e),
+            tap: function () {
+              hpStageLights(x, hpAreaLights(x).concat([{ light: hpHueId(e), name: hpName(e), x: 0, y: 0, z: 0, balance: 1 }]));
+              popBack();
+            },
+          });
+        })
+      )
+    );
+  });
+}
+
+/* Brightness balancer: how bright each light of the area is next to the others. */
+function hpBalancePage(b, id) {
+  hmBox(b);
+  hmGuard(hpAreaKey(id), true);
+  hmLoad(b, ["entertainment_areas"], function (box) {
+    var x = hmEntArea(id);
+    hpAreaLights(x).forEach(function (l) {
+      box.appendChild(
+        sliderRow({
+          icon: "lamp",
+          name: l.name,
+          min: 0.2,
+          max: 2,
+          step: 0.1,
+          get: function () {
+            var cur = hpAreaLights(x).filter(function (o) {
+              return o.light === l.light;
+            })[0];
+            return cur ? cur.balance : 1;
+          },
+          fmt: function (v) {
+            return v.toFixed(1) + "×";
+          },
+          on: function () {
+            return true;
+          },
+          commit: function (v) {
+            hpStageLights(
+              x,
+              hpAreaLights(x).map(function (o) {
+                return o.light === l.light ? Object.assign({}, o, { balance: Math.round(v * 10) / 10 }) : o;
+              })
+            );
+            refresh();
+          },
+        })
+      );
+    });
+  });
+}
+
+HP_PAGES["hue-devices"] = ["hm_devices", "lights", hpDevicesPage];
+HP_PAGES["app-adddev"] = ["app_add_devices", "plus", hpAddDevicesWhere];
+HP_PAGES["app-adddev2"] = ["app_add_devices", "plus", hpAddDevicesTo];
+HP_PAGES["hue-lights"] = ["hm_lights_and_smart_plugs", "lamp", hpLightsListPage];
+HP_PAGES["hue-updates"] = ["hm_software_update", "restart", hpUpdatesPage];
+HP_PAGES["hue-matter"] = ["hm_smart_home", "scene", hpSmartHomePage];
+HP_PAGES["app-link"] = ["hm_smart_home", "scene", hpLinkPage];
+HP_PAGES["app-link2"] = ["hm_smart_home", "scene", hpLinkAnother];
+HP_PAGES["hue-ent"] = ["entertainment_areas", "target", hpAreasPage];
+HP_PAGES["hue-area"] = ["app_edit", "target", hpAreaPage];
+HP_PAGES["app-areaadd"] = ["app_add_a_light", "plus", hpAreaAddPage];
+HP_PAGES["app-balance"] = ["app_balancer", "tune", hpBalancePage];
+HP_PAGES["app-newarea"] = ["app_new_area", "plus", hpNewAreaPage];
+
+/* A switch and what its buttons do, laid out as the Hue app lays it out: Switch settings (the switch, its room, a tile for each button, what the selected button controls, its lights, what a press does, smart on/off),
+ the Press page (the kind of press and what it acts on), the choice of kind, the scene to recall, and Smart on/off. What a press does is staged and written to the bridge when the switch is saved, with the same functions the
+ Hue Plus menu uses (hmStagePress, hmSaveSwitch); only the pages are the app's. They replace the menu's pages of the same names in this panel. */
+
+var HPSW = { sel: {} };
+
+/* The tiles of the four buttons of a dimmer switch carry the app's names and pictures; any other switch has its buttons by number. */
+function hpButtonLook(acc, btn) {
+  var four = (acc.buttons || []).length === 4,
+    look = four ? { 1: ["power", "app_btn_onoff"], 2: ["bright", "app_btn_brighten"], 3: ["bright", "app_btn_dim"], 4: ["hue", "app_btn_hue"] }[btn.number] : null;
+  return look ? { icon: look[0], name: _T(look[1]) } : { icon: "power", name: _T("hm_button_label") + " " + btn.number };
+}
+
+/* The name of the room or zone a device is in. */
+function hpRoomOfDevice(r, id) {
+  var found = null;
+  (r.rooms || []).concat(r.zones || []).forEach(function (g) {
+    if ((g.children || []).some(function (c) { return c.id === id; })) found = found || g;
+  });
+  return found;
+}
+
+/* A round tile with the picture of what a press recalls: the colours of a scene, or an icon on a dark disc. */
+function hpDiscOf(colours) {
+  var d = mk("span", "disc"),
+    cols = (colours || []).map(hpColourCss);
+  d.style.background = !cols.length ? "#f9d27a" : cols.length === 1 ? cols[0] : "conic-gradient(" + cols.concat(cols[0]).join(",") + ")";
+  return d;
+}
+
+function hpKindIcon(kind) {
+  return { time: "clock", cycle: "swap", scene: "palette", brighten: "bright", dim: "bright", off: "power", homeoff: "power", nothing: "minus" }[kind] || "palette";
+}
+
+function hpKindTitle(kind) {
+  return _T({ time: "hm_time_based_light", cycle: "hm_scene_cycle", scene: "hm_single_scene", brighten: "hm_brighten", dim: "hm_dim", off: "hm_lights_off", homeoff: "hm_entire_home_off", nothing: "hm_do_nothing" }[kind]);
+}
+
+/* The app has no arrow on a row that shows its value. */
+function hpNoChev(row) {
+  row.classList.add("nochev");
+  return row;
+}
+
+/* A row whose end is a round picture, as the app's rows are. */
+function hpDiscRow(o) {
+  var row = hmRow({ title: o.title, sub: o.sub, val: o.val, tap: o.tap });
+  var end = mk("span", "rend");
+  if (o.disc) end.appendChild(o.disc);
+  else if (o.icon) {
+    end.classList.add("ico");
+    end.innerHTML = svg(o.icon);
+  }
+  row.appendChild(end);
+  row.classList.add("nochev");
+  return row;
+}
+
+/* ---- Switch settings ---- */
+
+function hpSwitchPage(b, id) {
+  hmBox(b);
+  hmGuard(hmdKey("acc", id));
+  hmLoad(b, ["accessories", "scenes", "rooms", "zones"], function (box, r) {
+    var x = (r.accessories || []).filter(function (y) {
+      return y.id === id;
+    })[0];
+    if (!x) {
+      box.appendChild(hmCallout(_T("nothing_found")));
+      return;
+    }
+    var room = hpRoomOfDevice(r, id),
+      buttons = x.buttons || [],
+      selected = HPSW.sel[id] || (buttons[0] && buttons[0].number),
+      head = mk("div", "swhead named", "<span class='ic'></span><div class='nm'></div>");
+    head.querySelector(".ic").innerHTML = svg("switch");
+    head.querySelector(".nm").textContent = x.name;
+    if (hueplus.has(H(), "set_name"))
+      head.appendChild(
+        hpRound("edit", _T("app_edit_name_and_type"), function () {
+          delete HPRENAME[id];
+          showPopup("app-rename:" + id, true);
+        })
+      );
+    box.appendChild(head);
+    /* The room the switch is in: the row opens the room, where its devices are chosen (a switch moves by being added to another room). */
+    box.appendChild(
+      hmGroup([
+        hmRow({
+          title: _T("app_room"),
+          val: room ? room.name : _T("hm_the_whole_home"),
+          tap: room
+            ? function () {
+                hrwStart(room.type === "zone" ? "zone" : "room", room);
+              }
+            : null,
+        }),
+      ])
+    );
+    var tiles = mk("div", "btiles");
+    buttons.forEach(function (btn) {
+      var look = hpButtonLook(x, btn),
+        t = mk("div", "btile" + (btn.number === selected ? " sel" : ""), "<span class='ic'></span><b></b>");
+      t.querySelector(".ic").innerHTML = svg(look.icon);
+      t.querySelector("b").textContent = look.name;
+      hpActive(t, function () {
+        HPSW.sel[id] = btn.number;
+        showPopup("hue-switch:" + id, false);
+      });
+      tiles.appendChild(t);
+    });
+    box.appendChild(tiles);
+    var btn = buttons.filter(function (y) {
+      return y.number === selected;
+    })[0];
+    if (!btn) return;
+    box.appendChild(
+      hpDiscRow({
+        title: _T("app_button_controls"),
+        val: _T("lights"),
+        icon: "lights",
+        tap: "app-btnctl:" + x.id + "|" + btn.number,
+      })
+    );
+    var t = hmBtnTargets(r, x, btn);
+    /* "Selected lights" is a row with its pencil, and the room or zone as a tile under it. */
+    var lights = mk("div", "lbrow"),
+      selectable = hueplus.has(H(), "set_button_lights"),
+      open = function () {
+        showPopup("app-btnlights:" + x.id + "|" + btn.number, true);
+      };
+    var lt = mk("div", "lbtitle");
+    lt.textContent = _T("app_selected_lights");
+    lights.appendChild(lt);
+    if (selectable) lights.appendChild(hpRound("edit", _T("app_selected_lights"), open));
+    box.appendChild(lights);
+    var sel = mk("div", "selroom", "<span class='ic'></span><div><b></b><i></i></div>");
+    sel.querySelector(".ic").innerHTML = svg(room && room.type === "zone" ? "target" : "home");
+    sel.querySelector("b").textContent = t.name || (room ? room.name : _T("hm_the_whole_home"));
+    sel.querySelector("i").textContent = _T("app_entire_room");
+    box.appendChild(sel);
+    box.appendChild(hmLabel(_T("hm_behavior")));
+    box.appendChild(
+      hmGroup(
+        HM_PRESSES.map(function (p) {
+          var spec = function () {
+            return hmPressSpec(x, btn, p[0]);
+          };
+          var scenes = hmPressScenes(spec()).map(function (sid) {
+            return (r.scenes || []).filter(function (s) {
+              return s.id === sid;
+            })[0];
+          });
+          return hpDiscRow({
+            title: _T(p[1]),
+            val: function () {
+              var kind = hmPressKind(spec());
+              return kind === "scene" ? _T("app_press_all_lights") : kind === "cycle" || kind === "time" ? hmPressSummary(r, spec()).replace(/^[^·]*· ?/, "") : hpKindTitle(kind);
+            },
+            disc: scenes[0] ? hpDiscOf(scenes[0].colours) : null,
+            icon: scenes[0] ? null : hpKindIcon(hmPressKind(spec())),
+            tap: p[0] === "long" && hmHoldRepeats(x, btn) ? null : "app-press:" + x.id + "|" + btn.number + "|" + p[0],
+          });
+        })
+      )
+    );
+    box.appendChild(
+      hmActions([
+        hmButton(_T("hm_delete"), "danger", function () {
+          hmRemoveDevice(x.id, null);
+        }),
+      ])
+    );
+  });
+}
+
+/* ---- the Press page: the kind, and what it acts on ---- */
+
+function hpPressPage(b, id) {
+  hmBox(b);
+  hmGuard(hmdKey("acc", hmBtnKey(id).acc), true);
+  hmLoad(b, ["accessories", "scenes", "rooms", "zones"], function (box, r) {
+    var k = hmBtnKey(id),
+      f = hmBtnFind(r, k);
+    if (!f.acc || !f.btn) {
+      box.appendChild(hmCallout(_T("nothing_found")));
+      return;
+    }
+    var spec = function () {
+        return hmPressSpec(f.acc, f.btn, k.press);
+      },
+      kind = function () {
+        return hmPressKind(spec());
+      },
+      room = hpRoomOfDevice(r, f.acc.id);
+    /* A press that is a cycle is the cycle's list itself, as in the app. */
+    if (kind() === "cycle") {
+      hpCycleDraw(box, r, id, k, f, 1);
+      return;
+    }
+    box.appendChild(
+      hmGroup([
+        hpDiscRow({
+          title: _T(HM_PRESSES.filter(function (p) { return p[0] === k.press; })[0][1]),
+          val: function () {
+            return hpKindTitle(kind());
+          },
+          icon: hpKindIcon(kind()),
+          tap: "hue-press:" + id,
+        }),
+      ])
+    );
+    var k0 = kind();
+    if (k0 === "scene" || k0 === "cycle" || k0 === "time") {
+      box.appendChild(hmLabel(_T("hm_behavior")));
+      var names = hmPressScenes(spec()).map(function (sid) {
+          return (r.scenes || []).filter(function (s) {
+            return s.id === sid;
+          })[0];
+        }),
+        target = k0 === "scene" ? "hue-pick-scene:" : k0 === "cycle" ? "hue-cycle:" : "hue-time:";
+      box.appendChild(
+        hmGroup([
+          hpDiscRow({
+            title: room ? room.name : _T("hm_the_whole_home"),
+            val: k0 === "scene" ? _T("app_press_all_lights") : hmPressSummary(r, spec()).replace(/^[^·]*· ?/, ""),
+            disc: names[0] ? hpDiscOf(names[0].colours) : null,
+            icon: names[0] ? null : "palette",
+            tap: target + id,
+          }),
+        ])
+      );
+      box.appendChild(hmLabel(_T("hm_advanced")));
+      box.appendChild(
+        hmGroup([
+          hpNoChev(
+            hmRow({
+              title: _T("hm_smart_on_off"),
+              val: function () {
+                return hmPressWithOff(spec()) ? _T("app_enabled") : _T("app_disabled");
+              },
+              tap: "app-smart:" + id,
+            })
+          ),
+        ])
+      );
+    }
+  });
+}
+
+/* ---- the kind of press ---- */
+
+function hpPressKindPage(b, id) {
+  hmBox(b);
+  hmGuard(hmdKey("acc", hmBtnKey(id).acc), true);
+  hmLoad(b, ["accessories", "scenes", "rooms", "zones"], function (box, r) {
+    var k = hmBtnKey(id),
+      f = hmBtnFind(r, k);
+    if (!f.acc || !f.btn) {
+      box.appendChild(hmCallout(_T("nothing_found")));
+      return;
+    }
+    var kind = hmPressKind(f.spec),
+      look = hpButtonLook(f.acc, f.btn),
+      intro = mk("div", "pintro");
+    intro.appendChild(document.createTextNode(_T("app_set_what_happens")));
+    intro.appendChild(mk("b")).textContent = (k.press === "long" ? _T("hm_long_press") : _T("hm_press")).toLowerCase();
+    intro.appendChild(document.createTextNode(" " + _T("app_the_button") + " "));
+    intro.appendChild(mk("b")).textContent = look.name.toLowerCase();
+    box.appendChild(intro);
+    HM_CHOICES.forEach(function (group) {
+      box.appendChild(hmLabel(_T(group[0])));
+      box.appendChild(
+        hmGroup(
+          group[1].map(function (c) {
+            var row = hmRow({
+              title: _T(c[2]),
+              sub: _T(c[2] + "_sub"),
+              icon: hpKindIcon(c[0]),
+              check: function () {
+                return kind === c[0];
+              },
+              tap: function () {
+                if (c[0] === "scene") showPopup("hue-pick-scene:" + id, true);
+                else if (c[0] === "cycle") showPopup("hue-cycle:" + id, true);
+                else if (c[0] === "time") showPopup("hue-time:" + id, true);
+                else {
+                  hmStagePress(k, f, { action: c[1] });
+                  popBack();
+                }
+              },
+            });
+            row.classList.add("discic");
+            return row;
+          })
+        )
+      );
+    });
+  });
+}
+
+/* ---- the scene a press recalls: the room's scenes as round tiles, and what else a press can do ---- */
+
+function hpPressScenePage(b, id) {
+  hmBox(b);
+  hmGuard(hmdKey("acc", hmBtnKey(id).acc), true);
+  hmLoad(b, ["accessories", "scenes", "rooms", "zones"], function (box, r) {
+    var k = hmBtnKey(id),
+      f = hmBtnFind(r, k);
+    if (!f.acc || !f.btn) {
+      box.appendChild(hmCallout(_T("nothing_found")));
+      return;
+    }
+    var targets = hmBtnTargets(r, f.acc, f.btn),
+      scenes = hmBtnScenes(r, targets),
+      current = hmPressScenes(f.spec)[0],
+      preview = HPSW.preview === true,
+      done = function () {
+        popBack();
+        popBack();
+      };
+    /* The room's name is the title of the page, as in the app. */
+    var ttl = b.parentNode && b.parentNode.querySelector(".pbar .ttl");
+    if (ttl) ttl.textContent = targets.name || _T("hm_the_whole_home");
+    /* My scenes: the label with the blue plus that makes a new scene, then the scenes in two rows; the one chosen has its pencil beside it. */
+    var bar = mk("div", "lbrow");
+    bar.appendChild(hmLabel(_T("app_my_scenes")));
+    if (hueplus.has(H(), "create_scene")) {
+      var plus = hpRound("plus", _T("hn_add_a_scene"), function () {
+        hueStartMaker("home");
+      });
+      plus.classList.add("blue");
+      bar.appendChild(plus);
+    }
+    box.appendChild(bar);
+    var grid = mk("div", "pgrid scrows"),
+      rowsOf = [mk("div", "scr"), mk("div", "scr")];
+    grid.appendChild(rowsOf[0]);
+    grid.appendChild(rowsOf[1]);
+    function entityOf(sceneId) {
+      return Object.keys(H().entities).filter(function (e) {
+        return H().entities[e].unique_id === sceneId;
+      })[0];
+    }
+    scenes.forEach(function (sc, at) {
+      var t = mk("div", "sitem" + (current === sc.id ? " on" : ""), "<span class='dc'></span><b></b>"),
+        lane = rowsOf[at % 2];
+      t.querySelector(".dc").appendChild(hpDiscOf(sc.colours));
+      t.querySelector("b").textContent = sc.name;
+      hpActive(t, function () {
+        hmStagePress(k, f, { action: "scene", scene: sc.id, with_off: hmPressWithOff(f.spec) });
+        var ent = entityOf(sc.id);
+        if (preview && ent) call("scene", "turn_on", { entity_id: ent });
+        done();
+      });
+      lane.appendChild(t);
+      if (current === sc.id && entityOf(sc.id)) {
+        var pen = hpRound("edit", _T("hn_rename"), function () {
+          showPopup("app-scene:" + entityOf(sc.id) + "~", true);
+        });
+        pen.classList.add("scpen");
+        lane.appendChild(pen);
+      }
+    });
+    box.appendChild(grid);
+    box.appendChild(hmLabel(_T("app_suggestions")));
+    var sug = mk("div", "pgrid");
+    var bright = scenes.filter(function (sc) {
+      return /^bright$/i.test(sc.name);
+    })[0];
+    [
+      bright ? ["bright", { action: "scene", scene: bright.id, with_off: hmPressWithOff(f.spec) }, "app_bright", "bright"] : null,
+      ["off", { action: "all_off" }, "app_off", "target"],
+      ["nothing", { action: "do_nothing" }, "hm_do_nothing", "minus"],
+    ]
+      .filter(Boolean)
+      .forEach(function (c) {
+        var t = mk("div", "sitem", "<span class='dc'></span><b></b>");
+        t.querySelector(".dc").innerHTML = "<span class='disc dark'>" + svg(c[3]) + "</span>";
+        t.querySelector("b").textContent = _T(c[2]);
+        hpActive(t, function () {
+          hmStagePress(k, f, c[1]);
+          done();
+        });
+        sug.appendChild(t);
+      });
+    box.appendChild(sug);
+    /* Show preview: with it on, a scene that is chosen plays in the room at once. */
+    box.appendChild(
+      hmGroup([
+        hmRow({
+          title: _T("app_show_preview"),
+          sub: _T("app_show_preview_sub"),
+          toggle: {
+            get: function () {
+              return HPSW.preview === true;
+            },
+            set: function () {
+              HPSW.preview = !HPSW.preview;
+              preview = HPSW.preview;
+              refresh();
+            },
+          },
+        }),
+      ])
+    );
+  });
+}
+
+/* ---- Smart on/off ---- */
+
+function hpSmartPage(b, id) {
+  hmBox(b);
+  hmGuard(hmdKey("acc", hmBtnKey(id).acc), true);
+  hmLoad(b, ["accessories", "scenes", "rooms", "zones"], function (box, r) {
+    var k = hmBtnKey(id),
+      f = hmBtnFind(r, k);
+    if (!f.acc || !f.btn) {
+      box.appendChild(hmCallout(_T("nothing_found")));
+      return;
+    }
+    var spec = function () {
+      return hmPressSpec(f.acc, f.btn, k.press);
+    };
+    /* The text of the page, with the two parts the app writes in bold. */
+    function paragraph(parts) {
+      var p = mk("div", "pintro smart");
+      parts.forEach(function (part, i) {
+        var node = i % 2 ? mk("b") : document.createTextNode("");
+        node.textContent = part;
+        p.appendChild(node);
+      });
+      return p;
+    }
+    box.appendChild(paragraph([_T("app_smart_1"), _T("app_smart_on_and_off"), _T("app_smart_2"), _T("app_smart_only_on"), "."]));
+    box.appendChild(paragraph([_T("app_smart_3")]));
+    function choose(on) {
+      var s = spec(),
+        kind = hmPressKind(s),
+        ids = hmPressScenes(s),
+        seconds = ((s.scene_cycle_extended || s.time_based_extended || {}).repeat_timeout || {}).seconds || 3;
+      if (kind !== "scene" && kind !== "cycle" && kind !== "time") return;
+      hmStagePress(
+        k,
+        f,
+        kind === "scene"
+          ? { action: "scene", scene: ids[0], with_off: on }
+          : kind === "cycle"
+            ? { action: "scene_cycle", scenes: ids, with_off: on, repeat_timeout: seconds }
+            : { action: "time_based", slots: hmTimeSlots(s), with_off: on, repeat_timeout: seconds }
+      );
+      refresh();
+    }
+    box.appendChild(
+      hmGroup(
+        [
+          [false, "app_disabled"],
+          [true, "app_enabled"],
+        ].map(function (c) {
+          return hmRow({
+            title: _T(c[1]),
+            check: function () {
+              return hmPressWithOff(spec()) === c[0];
+            },
+            tap: function () {
+              choose(c[0]);
+            },
+          });
+        })
+      )
+    );
+  });
+}
+
+HP_PAGES["hue-switch"] = ["app_switch_settings", "switch", hpSwitchPage];
+HP_PAGES["hue-press"] = ["hm_press", "switch", hpPressKindPage];
+HP_PAGES["hue-pick-scene"] = ["app_my_scenes", "palette", hpPressScenePage];
+HP_PAGES["app-press"] = ["hm_press", "switch", hpPressPage];
+HP_PAGES["app-smart"] = ["hm_smart_on_off", "switch", hpSmartPage];
+
+/* What a button controls: the question with the button's name, and the kinds the app offers. A button of this bridge's switches controls lights; the Hue app's "Automations" (start or stop an automation) is not offered here yet. */
+function hpButtonControlsPage(b, id) {
+  hmBox(b);
+  hmGuard(hmdKey("acc", hmBtnKey(id).acc), true);
+  hmLoad(b, ["accessories"], function (box, r) {
+    var k = hmBtnKey(id),
+      acc = (r.accessories || []).filter(function (x) {
+        return x.id === k.acc;
+      })[0],
+      btn = acc && (acc.buttons || []).filter(function (y) {
+        return y.number === k.n;
+      })[0];
+    if (!btn) {
+      box.appendChild(hmCallout(_T("nothing_found")));
+      return;
+    }
+    var ask = mk("div", "pintro bigask"),
+      name = mk("b");
+    name.textContent = hpButtonLook(acc, btn).name.toLowerCase();
+    ask.appendChild(document.createTextNode(_T("app_control_with_pre")));
+    ask.appendChild(name);
+    ask.appendChild(document.createTextNode(_T("app_control_with_post")));
+    box.appendChild(ask);
+    box.appendChild(hmLabel(_T("app_button_controls")));
+    var row = hmRow({ icon: "lights", title: _T("lights"), sub: _T("app_lights_sub"), check: function () { return true; } });
+    row.classList.add("discic");
+    box.appendChild(hmGroup([row]));
+  });
+}
+
+HP_PAGES["app-btnctl"] = ["app_button_controls", "lights", hpButtonControlsPage];
+
+/* A scene cycle, as the app lays it out: the kind of press on top, then BEHAVIOR with the presses in order (each with the picture of its scene, and a blue plus that adds one), a line saying the rows
+ can be dragged, and ADVANCED. DONE keeps the cycle (it is staged and written when the switch is saved). The draft is the menu's (HM_CYCLE); only the page is the app's. */
+
+function hpCyclePage(b, id) {
+  hmBox(b);
+  hmGuard(hmdKey("acc", hmBtnKey(id).acc), true);
+  hmLoad(b, ["accessories", "scenes", "rooms", "zones"], function (box, r) {
+    var k = hmBtnKey(id),
+      f = hmBtnFind(r, k);
+    if (!f.acc || !f.btn) {
+      box.appendChild(hmCallout(_T("nothing_found")));
+      return;
+    }
+    hpCycleDraw(box, r, id, k, f, 2);
+  });
+}
+
+/* The cycle's presses, drawn on the page of a press that already is a cycle (the Press page) and on the page the kind of press leads to; DONE goes back `pops` pages. */
+function hpCycleDraw(box, r, id, k, f, pops) {
+  {
+    var scenes = hmBtnScenes(r, hmBtnTargets(r, f.acc, f.btn));
+    if (!HM_CYCLE || HM_CYCLE.id !== id) {
+      var cfg = (f.spec && f.spec.scene_cycle_extended) || {};
+      HM_CYCLE = {
+        id: id,
+        scenes: hmPressScenes(f.spec).slice(),
+        with_off: hmPressWithOff(f.spec),
+        timeout: (cfg.repeat_timeout && cfg.repeat_timeout.seconds) || 3,
+        names: r,
+        pool: scenes,
+      };
+    }
+    HM_CYCLE.names = r;
+    HM_CYCLE.pool = scenes;
+    HM_CYCLE.with_off = hmPressWithOff(f.spec);
+    var d = HM_CYCLE,
+      ords = ["hm_first", "hm_second", "hm_third", "hm_fourth", "hm_fifth", "hm_sixth", "hm_seventh", "hm_eighth", "hm_ninth", "hm_tenth"];
+    HC.onDone = function () {
+      if (d.scenes.length < 2) {
+        toast(_T("hm_a_cycle_needs_two_scenes"));
+        return;
+      }
+      hmStagePress(k, f, { action: "scene_cycle", scenes: d.scenes.slice(), with_off: d.with_off, repeat_timeout: d.timeout });
+      HM_CYCLE = null;
+      for (var n = 0; n < pops; n++) popBack();
+    };
+    box.appendChild(
+      hmGroup([
+        hpDiscRow({
+          title: _T(HM_PRESSES.filter(function (p) { return p[0] === k.press; })[0][1]),
+          val: _T("hm_scene_cycle"),
+          icon: "swap",
+          tap: "hue-press:" + id,
+        }),
+      ])
+    );
+    var label = mk("div", "lbrow"),
+      text = hmLabel(_T("hm_behavior"));
+    label.appendChild(text);
+    if (d.scenes.length < 10) {
+      var plus = hpRound("plus", _T("hm_add_a_scene"), function () {
+        showPopup("hue-cslot:" + id + "|" + d.scenes.length, true);
+      });
+      plus.classList.add("blue");
+      label.appendChild(plus);
+    }
+    box.appendChild(label);
+    var list = mk("div", "hm-group cyc");
+    d.scenes.forEach(function (sid, i) {
+      var scene = (r.scenes || []).filter(function (s) {
+        return s.id === sid;
+      })[0];
+      var row = hpDiscRow({
+        title: _T(ords[i]) + " " + _T("hm_press_word"),
+        val: scene ? scene.name : _T("hm_unknown_scene"),
+        disc: hpDiscOf(scene && scene.colours),
+        tap: "hue-cslot:" + id + "|" + i,
+      });
+      row.dataset.sid = sid;
+      row.dataset.slot = String(i);
+      list.appendChild(row);
+    });
+    box.appendChild(list);
+    /* Hold a press and drag it to another place: the order of the presses is the order of the scenes. */
+    hpSortable(
+      list,
+      ".hm-row",
+      function (el) {
+        return el.dataset.sid + "|" + el.dataset.slot;
+      },
+      function (ids) {
+        d.scenes = ids.map(function (x) {
+          return x.split("|")[0];
+        });
+        showPopup("hue-cycle:" + id, false);
+      }
+    );
+    var hint = mk("div", "pintro small");
+    hint.textContent = _T("app_drag_to_order");
+    box.appendChild(hint);
+    box.appendChild(hmLabel(_T("hm_advanced")));
+    /* Smart on/off is its own page, as in the app. The cycle as it stands is staged first, so that page changes this cycle. */
+    box.appendChild(
+      hmGroup([
+        hpNoChev(
+          hmRow({
+            title: _T("hm_smart_on_off"),
+            val: function () {
+              return d.with_off ? _T("app_enabled") : _T("app_disabled");
+            },
+            tap: function () {
+              if (d.scenes.length < 2) {
+                toast(_T("hm_a_cycle_needs_two_scenes"));
+                return;
+              }
+              hmStagePress(k, f, { action: "scene_cycle", scenes: d.scenes.slice(), with_off: d.with_off, repeat_timeout: d.timeout });
+              showPopup("app-smart:" + id, true);
+            },
+          })
+        ),
+      ])
+    );
+  }
+}
+
+HP_PAGES["hue-cycle"] = ["hm_scene_cycle", "swap", hpCyclePage];
+
+/* A light's settings, as the app has them: the light and its name, the room it is in (the bridge's), General (function, power on, orientation), and Support, with the light's device info one tap away. What
+ this adds to the app's page, Hue Plus's own timed effects, stays at the end. It is the menu's page (hmLight) with those parts changed, so what is edited and saved is the same. */
+
+function hpLightSettings(b, id) {
+  hmLight(b, id);
+  var kids = [].slice.call(b.children);
+  /* The room of the light comes from the bridge, as the app shows it. */
+  var title = b.querySelector(".hm-title"),
+    room = hpRoomOfLight(id);
+  if (title && room && !b.querySelector(".hm-group .hm-i svg + *") && !kids.some(function (k) { return /^Room\b/.test(k.textContent || ""); })) {
+    var g = hmGroup([hmRow({ title: _T("hm_room"), val: room.name })]);
+    b.insertBefore(g, title.nextSibling);
+  }
+}
+
+HP_PAGES["hue-light"] = ["app_light_settings", "lamp", hpLightSettings];
+
+/* The Bridges list of the app: the bridge, and a tap opens its settings. (The menu's Bridges row goes straight to the settings.) */
+function hpBridgesPage(b) {
+  hmBox(b);
+  hmEnsure();
+  b.appendChild(
+    hmGroup([
+      hpNoChev(
+        hmRow({
+          icon: "plug",
+          title: function () {
+            return (HM.bridge && HM.bridge.name) || _T("hue_bridge");
+          },
+          tap: "hue-bridge",
+        })
+      ),
+    ])
+  );
+}
+
+HP_PAGES["app-bridges"] = ["hm_bridges", "plug", hpBridgesPage];
+HP_PAGES["hue-bridge"] = ["app_bridge_settings", "plug", hmBridge];
+
+/* The Automations tab, as the Hue app draws it: a blue top, the title with a round plus, and the bridge's automations in a group for each kind (its icon, its name, how many, and a button that folds it), each automation a card with
+ its time and name, the days it repeats, and a switch. A card opens the automation's own page (the Hue Plus menu's); the plus is the new-automation wizard. */
+
+var HP_AUTO_KINDS = [
+  ["wake_up", "app_k_wake_up", "bright"],
+  ["go_to_sleep", "hw_go_to_sleep", "moon"],
+  ["coming_home", "hw_coming_home", "home"],
+  ["leaving_home", "hw_leaving_home", "leave"],
+  ["mimic_presence", "hw_mimic_presence", "home"],
+  ["timer", "hw_timer", "clock"],
+  ["schedule", "hw_lighting_schedule", "clock"],
+];
+
+var HP_DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+var HP_FOLDED = {};
+
+/* The first value under `key` anywhere in what the bridge keeps for an automation. */
+function hpDeep(node, key) {
+  if (!node || typeof node !== "object") return undefined;
+  if (node[key] !== undefined) return node[key];
+  var names = Object.keys(node);
+  for (var i = 0; i < names.length; i++) {
+    var found = hpDeep(node[names[i]], key);
+    if (found !== undefined) return found;
+  }
+  return undefined;
+}
+
+function hpPad(n) {
+  return (n < 10 ? "0" : "") + n;
+}
+
+/* "06:00" from the automation's time point, when it has one. */
+function hpAutoTime(x) {
+  var t = hpDeep(x.configuration, "time_point");
+  t = t && t.time;
+  return t && typeof t.hour === "number" ? hpPad(t.hour) + ":" + hpPad(t.minute || 0) : "";
+}
+
+/* "Every Wednesday", "Every day", "Weekdays" from the days it repeats. */
+function hpAutoDays(x) {
+  var d = hpDeep(x.configuration, "recurrence_days");
+  if (!Array.isArray(d) || !d.length) return "";
+  var set = HP_DAYS.filter(function (n) {
+    return d.indexOf(n) >= 0;
+  });
+  if (set.length === 7) return _T("app_every_day");
+  if (set.length === 5 && set.indexOf("saturday") < 0 && set.indexOf("sunday") < 0) return _T("app_weekdays");
+  return _T("app_every") + set
+    .map(function (n) {
+      return _T("hw_day_long_" + n);
+    })
+    .join(", ");
+}
+
+function hpAutoCard(x, again) {
+  var card = mk("div", "acard", "<div class='tx'><b></b><i></i></div>"),
+    time = hpAutoTime(x);
+  card.querySelector("b").textContent = (time ? time + " • " : "") + x.name;
+  card.querySelector("i").textContent = hpAutoDays(x) || x.script || "";
+  var tg = hpToggle(
+    x.name,
+    function () {
+      return !!x.enabled;
+    },
+    function () {
+      x.enabled = !x.enabled;
+      hpDo(again, "update_automation", { automation: x.id, enabled: x.enabled });
+      refresh();
+    }
+  );
+  card.appendChild(tg);
+  hpActive(card, function () {
+    showPopup("hue-routine:" + x.id, true);
+  });
+  return card;
+}
+
+function hpAutomationsTab(box) {
+  var head = mk("div", "hd", "<h1></h1><div class='acts'></div>");
+  head.querySelector("h1").textContent = _T("automations");
+  if (isAdmin()) head.querySelector(".acts").appendChild(hpRound("plus", _T("hw_new_automation"), function () {
+    showPopup("hue-newauto", true);
+  }));
+  head.querySelector(".acts .rbt") && head.querySelector(".acts .rbt").classList.add("blue");
+  box.appendChild(head);
+  hmLoad(box, ["automations"], function (inner, r, again) {
+    var list = r.automations || [];
+    if (!list.length) {
+      inner.appendChild(mk("div", "empty")).textContent = _T("nothing_found");
+      return;
+    }
+    HP_AUTO_KINDS.forEach(function (k) {
+      var mine = list.filter(function (x) {
+        return hwKindOf(x) === k[0];
+      });
+      if (!mine.length) return;
+      var g = mk("div", "agroup"),
+        top = mk("div", "ahead", "<span class='ic'></span><b></b><i></i>"),
+        fold = hpRound("chev", _T("app_fold"), function () {
+          HP_FOLDED[k[0]] = !HP_FOLDED[k[0]];
+          g.classList.toggle("folded", !!HP_FOLDED[k[0]]);
+        });
+      top.querySelector(".ic").innerHTML = svg(k[2]);
+      top.querySelector("b").textContent = _T(k[1]);
+      top.querySelector("i").textContent = String(mine.length);
+      fold.classList.add("fold");
+      top.appendChild(fold);
+      g.classList.toggle("folded", !!HP_FOLDED[k[0]]);
+      g.appendChild(top);
+      var cards = mk("div", "acards");
+      mine.forEach(function (x) {
+        cards.appendChild(hpAutoCard(x, again));
+      });
+      g.appendChild(cards);
+      inner.appendChild(g);
+    });
+    /* The bridge's own automations (its dimmer switches, the light state after streaming) are not in the app's list. */
+  });
+}
+
+/* Home Control's Hue Plus menu, in the dashboard's Settings: the panel's tabs, Automations, Sync and Settings (Home is the dashboard's own, with its own lights and colour wheel), each drawn by the
+ panel's own page builder in Home Control's theme. */
+
+var HP_ROOT_TAB = "settings";
+
+/* Sync: the Spotify sync and the HDMI sync box, which open their own pages (the same ones the Lights section opens). */
+function hpSyncMenuTab(box) {
+  var inner = mk("div");
+  box.appendChild(inner);
+  hmBox(inner);
+  var sync = hpSyncEntities(function (h, id) {
+      return HUESYNC.isSync(h, id);
+    }),
+    boxes = hpSyncEntities(function (h, id) {
+      return HUESYNCBOX.isBox(h, id);
+    });
+  inner.appendChild(hmLabel(_T("app_music")));
+  if (sync.length) inner.appendChild(hsyncRow({ id: sync[0], name: _T("spotify_sync"), icon: "syncring" }));
+  else inner.appendChild(hmCallout(_T("app_no_spotify_sync")));
+  inner.appendChild(hmLabel(_T("app_tv_and_games")));
+  if (boxes.length)
+    boxes.forEach(function (id) {
+      inner.appendChild(hsboxRow({ id: id, name: _T("hue_play_hdmi_sync_box"), icon: "syncring" }));
+    });
+  else inner.appendChild(hmCallout(_T("app_no_sync_box")));
+}
+
+function hpRootTabs() {
+  return [
+    { id: "automations", title: _T("automations"), build: hpAutomationsTab },
+    { id: "sync", title: _T("app_sync"), build: hpSyncMenuTab },
+    { id: "settings", title: _T("app_settings"), build: hpSettingsTab },
+  ];
+}
+
+function hpRootPage(b) {
+  hmBox(b);
+  var bar = mk("div", "htabs"),
+    body = mk("div", "htab"),
+    buttons = {};
+  function show(id) {
+    HP_ROOT_TAB = id;
+    body.innerHTML = "";
+    hpRootTabs()
+      .filter(function (t) {
+        return t.id === id;
+      })[0]
+      .build(body);
+    Object.keys(buttons).forEach(function (k) {
+      buttons[k].classList.toggle("on", k === id);
+      buttons[k].setAttribute("aria-pressed", k === id ? "true" : "false");
+    });
+    refresh();
+  }
+  hpRootTabs().forEach(function (t) {
+    var button = mk("button", "htabb");
+    button.type = "button";
+    button.textContent = t.title;
+    button.addEventListener("click", function () {
+      show(t.id);
+    });
+    buttons[t.id] = button;
+    bar.appendChild(button);
+  });
+  b.appendChild(bar);
+  b.appendChild(body);
+  show(HP_ROOT_TAB);
+}
+
+HP_PAGES["stg-hue"] = ["hue_plus", HP_ICON, hpRootPage];
 
 /* The lights picker of the Hue app: "Choose your lights" and "Edit lights". My entire home is a row of its own, and the rooms and zones are rows with a round check on the left and a chevron on the right; the row opens to show
    its lights as tiles, each with a round check, so a room is chosen whole or by single lights. Used wherever the app asks for lights (a button's lights, an automation's lights).
@@ -5390,7 +7024,7 @@ function hwPickPage(b) {
   /* the sheet is called what is chosen (Style, Fade duration...), and each choice can have its picture in front */
   var ttl = b.parentNode && b.parentNode.querySelector(".pbar .ttl");
   if (ttl && p.title) ttl.textContent = p.title;
-  if (b.parentNode) b.parentNode.classList.add("shortpg");
+  hpRoot(b).classList.add("shortpg");
   hwHint(b, p.hint);
   b.appendChild(
     hmGroup(
@@ -5627,7 +7261,7 @@ function hwPointPage(b, which) {
     timeKey = which === "start" ? "time" : "until",
     ttl = b.parentNode && b.parentNode.querySelector(".pbar .ttl");
   if (ttl) ttl.textContent = _T(which === "start" ? "hw_start_at" : "hw_end_at");
-  if (b.parentNode) b.parentNode.classList.add("shortpg");
+  hpRoot(b).classList.add("shortpg");
   hwHint(b, hwHasLocation() ? "" : _T("hw_sun_needs_home_location"));
   b.appendChild(
     hmGroup(
@@ -6750,7 +8384,7 @@ function hweBody(box, r, kind, groups) {
 function hweFadePage(b) {
   hmBox(b);
   /* as short as its content, up from the bottom of the screen, as the app has it */
-  if (b.parentNode) b.parentNode.classList.add("shortpg");
+  hpRoot(b).classList.add("shortpg");
   if (!HW) {
     b.appendChild(hmCallout(_T("nothing_found")));
     return;
@@ -6842,7 +8476,7 @@ function hweBriPage(b) {
     b.appendChild(hmCallout(_T("nothing_found")));
     return;
   }
-  if (b.parentNode) b.parentNode.classList.add("shortpg");
+  hpRoot(b).classList.add("shortpg");
   var head = mk("div", "hwe-fade", "<div class='hwe-fl'><span></span><b></b></div><div></div>"),
     track = mk("div", "hwe-track", "<div class='hwe-fill2'></div><div class='hwe-thumb'></div>"),
     wrap = mk("div", "hwe-slider"),
@@ -7310,10 +8944,6 @@ function hmwDonePage(b) {
 }
 
 /* ---- what an area does: the times, as rows ---- */
-
-function hmwNext(i) {
-  return HW.slots[(i + 1) % HW.slots.length];
-}
 
 function hmwSceneName(id) {
   var s = hmList("scenes").filter(function (x) {
@@ -9188,94 +10818,110 @@ function hueSceneToggle(id) {
   else hueSceneStart(id);
 }
 
-
-/* The scene settings of the bridge for a moving scene (the speed it starts with, Auto-play, Colors and Reset scene), written with update_scene. */
-function hueSceneBridge(b, id) {
-  var P = HUESCENES,
-    uid = hueSceneUid(id),
-    st = { speed: 0.5, auto: false };
-  function save(change, done) {
-    return Promise.resolve(callRaw("hue_plus", "update_scene", Object.assign({ scene: uid }, change))).then(
-      function () {
-        if (done) toast(done);
-      },
-      function () {
-        toast(_T("hn_couldn_t_save_the_scene"));
+/* The lights a scene has: the lights of its own room or zone, each with its room (lights of different rooms can have one name), a tick for the ones in the scene. */
+function hueSceneLightsPage(b, key) {
+  var sid = String(key).split("~")[0],
+    uid = hueSceneUid(sid),
+    box = mk("div"),
+    chosen = {},
+    all = [];
+  b.appendChild(box);
+  box.appendChild(mkHint(_T("loading")));
+  hueplus.resources(["scenes", "rooms", "zones"]).then(
+    function (r) {
+      var s = ((r || {}).scenes || []).filter(function (x) {
+          return x.id === uid;
+        })[0],
+        group = s && ((s.group_type === "zone" ? r.zones : r.rooms) || []).filter(function (g) {
+          return g.id === s.group_id;
+        })[0];
+      box.innerHTML = "";
+      if (!s || !group) {
+        box.appendChild(mkHint(_T("nothing_found")));
+        return;
       }
-    );
-  }
-  b.appendChild(sep(_T("hn_scene_settings"), "tune"));
-  hueplus.resources(["scenes"]).then(function (r) {
-    var s = ((r || {}).scenes || []).filter(function (x) {
-      return x.id === uid;
-    })[0];
-    if (!s) return;
-    st.speed = s.speed;
-    st.auto = !!s.auto_dynamic;
-    refresh();
-  }, function () {});
-  b.appendChild(
-    sliderRow({
-      icon: "tune",
-      name: _T("hn_default_speed"),
-      min: 1,
-      max: P.speedSteps,
-      step: 1,
-      get: function () {
-        return P.speedToStep(Math.round(st.speed * 100));
-      },
-      fmt: function (v) {
-        return v + " / " + P.speedSteps;
-      },
-      commit: function (v) {
-        st.speed = P.stepToSpeed(v) / 100;
-        save({ speed: st.speed });
-      },
-    })
-  );
-  b.appendChild(
-    pill("play", _T("app_auto_play"), {
-      sub: function () {
-        return _T("app_auto_play_sub");
-      },
-      on: function () {
-        return st.auto;
-      },
-      tap: function () {
-        st.auto = !st.auto;
-        save({ auto_dynamic: st.auto });
-        refresh();
-      },
-    })
-  );
-  var g = mk("div", "gridl g2");
-  g.appendChild(
-    pill("swap", _T("app_colors"), {
-      sub: function () {
-        return _T("hn_colors_sub");
-      },
-      tap: function () {
-        save({ recolor: "shuffle" }, _T("hn_colors_done"));
-      },
-    })
-  );
-  g.appendChild(
-    pill("restart", _T("app_reset_scene"), {
-      sub: function () {
-        return _T("hn_reset_sub");
-      },
-      tap: function () {
-        confirmDlg(_T("hn_reset_question"), function () {
-          save({ recolor: "reset" }, _T("hn_reset_done"));
+      var roomOf = {};
+      (r.rooms || []).forEach(function (g) {
+        (g.lights || []).forEach(function (l) {
+          roomOf[l] = g.name;
         });
-      },
-    })
+      });
+      all = group.light_items || [];
+      (s.lights || []).forEach(function (l) {
+        chosen[l] = true;
+      });
+      box.appendChild(mkHint(_T("hn_scene_lights_hint")));
+      box.appendChild(
+        pill("light", _T("hn_all_lights"), {
+          check: function () {
+            return all.every(function (l) {
+              return chosen[l.id];
+            });
+          },
+          tap: function () {
+            var every = all.every(function (l) {
+              return chosen[l.id];
+            });
+            all.forEach(function (l) {
+              chosen[l.id] = !every;
+            });
+            refresh();
+          },
+        })
+      );
+      all.forEach(function (l) {
+        box.appendChild(
+          pill("light", l.name, {
+            sub: function () {
+              return roomOf[l.id] || "";
+            },
+            check: function () {
+              return !!chosen[l.id];
+            },
+            tap: function () {
+              chosen[l.id] = !chosen[l.id];
+              refresh();
+            },
+          })
+        );
+      });
+      function save() {
+        var wanted = all
+          .filter(function (l) {
+            return chosen[l.id];
+          })
+          .map(function (l) {
+            return l.id;
+          });
+        if (!wanted.length) {
+          toast(_T("hn_a_scene_needs_a_light"));
+          return;
+        }
+        Promise.resolve(callRaw("hue_plus", "update_scene", { scene: uid, lights: wanted })).then(
+          function () {
+            toast(_T("hn_the_scene_has_these_lights"));
+            /* a host that keeps the bridge's scenes (the Hue Plus panel) reads them again */
+            if (window.HueHost && window.HueHost.onSceneChanged) window.HueHost.onSceneChanged();
+            popBack();
+          },
+          function () {
+            toast(_T("hn_couldn_t_save_the_scene"));
+          }
+        );
+      }
+      /* the panel has DONE in the bar of the page; Home Control has a row at the end */
+      if (typeof HC !== "undefined" && HC.keepsBridgeData) HC.onDone = save;
+      else box.appendChild(pill("check", _T("hn_save"), { tap: save }));
+    },
+    function () {
+      box.innerHTML = "";
+      box.appendChild(mkHint(_T("couldn_t_read_the_hue_bridge")));
+    }
   );
-  b.appendChild(g);
 }
 
-/* The popup of a Hue scene. A static scene has only what a classic scene has (importing it as one, hiding it); a live one has: brightness (follows the room live), speed (starts the scene again at the new speed), play (live) and freeze (a still picture). */
-function hueScenePopup(b, id, room) {
+/* The brightness and speed of a Hue scene and playing it live: what anyone can do with a Hue scene. A still scene has only what a classic scene has. */
+function hueScenePlayPopup(b, id) {
   var P = HUESCENES,
     stat = A(id).is_dynamic === false;
   function grp() {
@@ -9337,6 +10983,9 @@ function hueScenePopup(b, id, room) {
           var st = hueSceneSet(id);
           st.speed = P.stepToSpeed(v);
           hueSceneSave(id, st);
+          /* the speed is also the one the scene starts with on the bridge (and in the Hue app) */
+          if (isAdmin() && hueplus.has(H(), "update_scene"))
+            callRaw("hue_plus", "update_scene", { scene: hueSceneUid(id), speed: st.speed / 100 });
           if (playing()) hueSceneStart(id);
         },
       })
@@ -9363,6 +11012,18 @@ function hueScenePopup(b, id, room) {
     );
     b.appendChild(g2);
   }
+}
+
+/* What Home Control adds under a scene's popup: importing it as a scene of the dashboard, changing the lights of a still scene, hiding it from the room. */
+function hueSceneExtras(b, id, room) {
+  var P = HUESCENES,
+    stat = A(id).is_dynamic === false;
+  function grp() {
+    return P.group(H(), id);
+  }
+  function playing() {
+    return P.active(H(), id) && P.playing(H(), grp());
+  }
   if (isAdmin() && hueImportable())
     b.appendChild(
       pill(stat ? "scene" : "palette", _T(stat ? "import_as_a_classic_scene" : "import_as_a_live_scene"), {
@@ -9371,40 +11032,6 @@ function hueScenePopup(b, id, room) {
         },
         tap: function () {
           importLiveScene(stat ? "hue-classic" : "hue", id);
-        },
-      })
-    );
-  /* In edit mode, the scene can be changed the way the Hue app changes it, and it is written to the bridge. */
-  if (isEditing() && isAdmin() && hueplus.has(H(), "update_scene") && stat) {
-    b.appendChild(
-      pill("light", _T("hn_change_the_lights"), {
-        sub: function () {
-          return _T("hn_change_the_lights_sub");
-        },
-        tap: function () {
-          hueSceneEdit(id, room);
-        },
-      })
-    );
-    b.appendChild(
-      pill("edit", _T("hn_rename"), {
-        tap: function () {
-          hueSceneRename(id);
-        },
-      })
-    );
-  }
-  /* What the bridge keeps of a moving scene, as the Hue app's scene settings have it: the speed it starts with, whether it plays by itself, and the two buttons that give its colours to the lights again. */
-  if (isEditing() && isAdmin() && hueplus.has(H(), "update_scene") && !stat) hueSceneBridge(b, id);
-  if (isEditing() && isAdmin() && hueplus.has(H(), "delete_scene"))
-    b.appendChild(
-      pill("trash", _T("hn_delete_scene"), {
-        tap: function () {
-          confirmDlg(_T("hn_delete_scene") + ": " + (A(id).name || id) + "?", function () {
-            hueSceneRemove(id).then(function () {
-              closeSheet();
-            });
-          });
         },
       })
     );
@@ -9422,12 +11049,35 @@ function hueScenePopup(b, id, room) {
     );
 }
 
+/* The popup of a Hue scene: its brightness and speed and playing it. An administrator also has Edit scene, the panel's scene settings page (name, auto-play, lights, Colors, Reset scene, Delete), and what Home Control adds. */
+function hueScenePopup(b, id, room) {
+  if (isAdmin() && hueplus.has(H(), "update_scene")) {
+    hueScenePlayPopup(b, id);
+    b.appendChild(
+      pill("edit", _T("app_edit_scene"), {
+        sub: function () {
+          return _T("app_edit_scene_sub");
+        },
+        tap: function () {
+          showPopup("app-scene:" + id + "~", true);
+        },
+      })
+    );
+    hueSceneExtras(b, id, room);
+    return;
+  }
+  hueScenePlayPopup(b, id);
+}
+
+/* The page of the lights a scene has (the loaded file stands alone in the tests, which have no pages). */
+if (typeof HP_PAGES !== "undefined") HP_PAGES["hue-scene-lights"] = ["hn_scene_lights", "light", hueSceneLightsPage];
+
 /* Making and changing Hue scenes from the dashboard's scenes section, the way the Hue app does ("Add a scene"): choose the room or zone, then a custom scene (the lights set
  in the dashboard's light popup, then saved), the current settings saved as a scene, an all-day scene (scenes by time of day) or a colour palette taken from a photo. Everything is written
  to the bridge (hue_plus.create_scene, update_scene, delete_scene, create_daily_smart_scene). Dynamic scenes cannot be made here: the Hue app only has them from its cloud gallery. */
 
 /* g: the room or zone chosen {id, name, type, lights: [the bridge's light ids]}; sel: the bridge's light ids of it (a scene sets every light of its room or zone: the bridge refuses one that leaves a light out); data: what the bridge says about its rooms, zones and scenes. */
-var HUENEW = { scope: "", g: null, sel: {}, mode: "", name: "", slots: [], days: [1, 1, 1, 1, 1, 1, 1], open: {}, restrict: "", target: "", data: null };
+var HUENEW = { scope: "", g: null, sel: {}, mode: "", name: "", slots: [], days: [1, 1, 1, 1, 1, 1, 1], open: {}, target: "", data: null };
 
 /* ---- what the bridge has ---- */
 
@@ -9460,13 +11110,6 @@ function hueLightEntity(lightId) {
 function hueLightName(lightId) {
   var e = hueLightEntity(lightId);
   return e ? A(e).friendly_name || e : lightId;
-}
-
-/* The lights that have an entity (a light of the bridge Home Assistant does not show cannot be set from here). */
-function hueGroupLightIds(g) {
-  return g.lights.filter(function (id) {
-    return !!hueLightEntity(id);
-  });
 }
 
 function hueSelectedIds() {
@@ -9523,7 +11166,7 @@ function mkHint(text) {
 /* ---- the start: the Hue app's "Add a scene" ---- */
 
 function hueStartMaker(scope) {
-  HUENEW = { scope: scope, g: null, sel: {}, mode: "", name: "", slots: [], days: [1, 1, 1, 1, 1, 1, 1], open: {}, restrict: "", target: "", data: null };
+  HUENEW = { scope: scope, g: null, sel: {}, mode: "", name: "", slots: [], days: [1, 1, 1, 1, 1, 1, 1], open: {}, target: "", data: null };
   hueLoadData().then(
     function () {
       showPopup("hue-add-scene", true);
@@ -9578,8 +11221,9 @@ function hueChooseLights(mode) {
   HUENEW.sel = {};
   HUENEW.g = null;
   if (g) hueSelectGroup(g);
-  /* The scene is for the room or zone the page is of ("save to this Room"), so there is no room to choose: the app goes straight on. */
-  if (g && mode !== "edit") {
+  /* In the Hue Plus panel the scene is for the room the page is of ("save to this Room"), as in the Hue app, so it goes straight on. Home Control keeps the choice:
+     the scene can be for any room or zone, whatever page it was started from. */
+  if (g && typeof window !== "undefined" && window.HueHost) {
     hueAfterLights();
     return;
   }
@@ -9596,11 +11240,8 @@ function hueSelectGroup(g) {
 
 function hueLightsPage(b) {
   var box = mk("div"),
-    groups = HUENEW.data.groups.filter(function (g) {
-      return !HUENEW.restrict || g.id === HUENEW.restrict;
-    });
+    groups = HUENEW.data.groups;
   b.appendChild(box);
-  if (HUENEW.mode === "edit") HUENEW.open[HUENEW.restrict] = true;
   function groupRow(g) {
     var wrap = mk("div"),
       row = pill(g.type === "zone" ? "target" : "home", g.name, {
@@ -9627,7 +11268,7 @@ function hueLightsPage(b) {
       /* The lights of the room or zone, for information: the scene sets all of them (any one can be set to off in the light popup). */
       var grid = mk("div", "gridl g2");
       g.lights.forEach(function (id) {
-        grid.appendChild(pill("light", hueLightName(id), {}));
+        grid.appendChild(pill("light", hpLightLabel(hueLightName(id), id), {}));
       });
       wrap.appendChild(grid);
     }
@@ -9635,7 +11276,7 @@ function hueLightsPage(b) {
   }
   function draw() {
     box.innerHTML = "";
-    box.appendChild(mkHint(_T(HUENEW.mode === "edit" ? "hn_choose_hint_edit" : "hn_choose_hint")));
+    box.appendChild(mkHint(_T("hn_choose_hint")));
     [["zone", "hn_zones"], ["room", "hn_rooms"]].forEach(function (t) {
       var list = groups.filter(function (g) {
         return g.type === t[0];
@@ -9666,7 +11307,6 @@ function hueAfterLights() {
   var m = HUENEW.mode;
   if (m === "allday") hueStartAllDay();
   else if (m === "photo") showPopup("hue-photo", true);
-  else if (m === "edit") hueEditOpen();
   else hueAskName(m);
 }
 
@@ -10034,6 +11674,7 @@ function huePhotoPage(b) {
 /* ---- changing a scene that exists ---- */
 
 /* The scene's own room or zone is shown, then its lights are set as the scene has them, the light popup opens on all of them, and the checkmark records what they show as the scene. */
+/* The colour wheel editor on the scene's own lights, with SAVE: no page to choose lights first (the editor's tiles pick which light the wheel sets). */
 function hueSceneEdit(id) {
   var uid = hueSceneUid(id);
   if (!uid) {
@@ -10043,16 +11684,17 @@ function hueSceneEdit(id) {
   hueLoadData().then(
     function (data) {
       var scene = data.scenes.filter(function (s) {
-          return s.id === uid;
-        })[0],
-        g = scene && data.groups.filter(function (x) { return x.id === scene.group_id; })[0];
-      if (!g) {
+        return s.id === uid;
+      })[0];
+      var lights = ((scene && scene.lights) || []).map(hueLightEntity).filter(Boolean);
+      if (!lights.length) {
         toast(_T("hn_no_hue_lights_here"));
         return;
       }
-      HUENEW = { scope: "", g: g, sel: {}, mode: "edit", name: A(id).name || A(id).friendly_name || "", slots: [], days: [], open: {}, restrict: g.id, target: id, data: data };
-      hueSelectGroup(g);
-      showPopup("hue-pick-lights", true);
+      var room = data.groups.filter(function (g) {
+        return g.id === scene.group_id;
+      })[0];
+      hueEditOpen(id, A(id).name || A(id).friendly_name || "", lights, room ? room.lights.map(hueLightEntity).filter(Boolean) : []);
     },
     function () {
       toast(_T("hn_couldn_t_read_the_hue_bridge"));
@@ -10060,11 +11702,8 @@ function hueSceneEdit(id) {
   );
 }
 
-function hueEditOpen() {
-  var id = HUENEW.target,
-    uid = hueSceneUid(id),
-    name = HUENEW.name,
-    lights = hueSelectedEntities();
+function hueEditOpen(id, name, lights, candidates) {
+  var uid = hueSceneUid(id);
   if (!uid || !lights.length) {
     toast(_T("hn_no_hue_lights_here"));
     return;
@@ -10075,8 +11714,15 @@ function hueEditOpen() {
       name: name,
       icon: "palette",
       lights: lights,
-      onSave: function () {
-        return Promise.resolve(callRaw("hue_plus", "update_scene", { scene: uid, record_current: true })).then(
+      candidates: function () {
+        return candidates;
+      },
+      /* The lights the editor ends with are the scene's lights, each as it looks now. */
+      onSave: function (acts, ended) {
+        var ids = (ended || []).map(function (e) {
+          return A(e).hue_light_id;
+        });
+        return Promise.resolve(callRaw("hue_plus", "update_scene", { scene: uid, record_current: true, lights: ids })).then(
           function () {
             toast(_T("hn_scene_saved") + name);
             return true;
@@ -10203,13 +11849,13 @@ function lpStylePopup(b, id) {
  pages themselves, drawn in the tab. Everything sits inside the plugin's scope, so it uses the same pages and helpers as the menu. The Explore tab of the app (a gallery from Signify's cloud) has nothing behind
  it here. Nothing is kept in Home Assistant: the panel shows the bridge and writes to it. */
 
+Object.keys(HP_EXTRA_ICONS).forEach(function (k) {
+  HOST_ICONS[k] = HP_EXTRA_ICONS[k];
+});
 HOST_ICONS.undo = "<path d='M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3'/>";
 HOST_ICONS.bolt = "<path d='M13 2L5 14h6l-1 8 8-12h-6z'/>";
 HOST_ICONS.tabhome = "<path d='M12 2.6 2.4 11.4h2.8v8.8h5.3v-5.6h3v5.6h5.3v-8.8h2.8z'/>";
 HOST_ICONS.tabbolt = "<path d='M14 1.8 5.2 13.6h5.4L9.2 22.2 18.8 9.6h-5.6z'/>";
-HOST_ICONS.switch = "<rect x='7' y='2.5' width='10' height='19' rx='2.4'/><path d='M10 6.5h4M10 10h4M10 13.5h4M10 17h4'/>";
-HOST_ICONS.shuffle = "<path d='M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5'/>";
-HOST_ICONS.sunrise = "<path d='M12 4V2M4.9 7.9 3.5 6.5M19.1 7.9l1.4-1.4M2 17h3M19 17h3M7 17a5 5 0 0 1 10 0M3 21h18'/>";
 HOST_ICONS.dots = "<circle cx='5' cy='12' r='1.7' fill='currentColor'/><circle cx='12' cy='12' r='1.7' fill='currentColor'/><circle cx='19' cy='12' r='1.7' fill='currentColor'/>";
 
 var HPAPP = { tab: "", el: null, bridge: "", modules: null, sigOf: null, lastSig: "" };
@@ -10256,13 +11902,6 @@ function hpShowTab(id) {
 /* What the home screen is made of changes when a room or zone is added or removed: the tab draws itself again then. */
 function hpWatch() {
   if (HPAPP.sigOf && HPAPP.sigOf() !== HPAPP.lastSig && !HPAPI.hasSheet()) hpShowTab(HPAPP.tab);
-}
-
-/* How much the browser has zoomed the page, when it reports what it measures (a rectangle, a pointer's place) in zoomed units while a style's px is not zoomed (Safari's page zoom): a measured length
- becomes a style's px by dividing by this. It is 1 where the two agree. */
-function hpZoom() {
-  var styled = parseFloat(getComputedStyle(document.body).width);
-  return styled ? document.body.getBoundingClientRect().width / styled || 1 : 1;
 }
 
 /* The panel is a phone. Its size and the root font size (1rem when the phone is 393 wide, the width the Hue app's screens
@@ -10359,172 +11998,6 @@ window.HuePlusApp = {
   },
 };
 
-/* Hold, then drag, to put things in another order, as the Hue app does for the scenes of a folder, the folders of a room and the presses of a cycle. The app keeps this order in the app, not on the bridge
- (the bridge has no place for it), so here it is kept on this device only, like the other choices the dashboard keeps for a device. */
-
-/* The order kept for a list: ids in order. Anything the list has that is not in it goes last, in the order it came. */
-function hpOrderGet(key) {
-  var v = deviceGet("db_order_" + key, []);
-  return Array.isArray(v) ? v : [];
-}
-
-function hpOrderSet(key, ids) {
-  deviceSet("db_order_" + key, ids.slice(0, 200));
-}
-
-function hpOrdered(list, key, idOf) {
-  var order = hpOrderGet(key);
-  return list.slice().sort(function (a, b) {
-    var x = order.indexOf(idOf(a)),
-      y = order.indexOf(idOf(b));
-    return (x < 0 ? 1e6 : x) - (y < 0 ? 1e6 : y);
-  });
-}
-
-/* Makes the children of `box` that match `selector` movable: press and hold one for a moment, and it lifts; drag it over the others and they make room; let go and done(ids) is called with the new order
- (ids come from idOf(element)). A press that moves before the hold is a scroll or a tap, and is left alone. */
-function hpSortable(box, selector, idOf, done, opts) {
-  opts = opts || {};
-  var HOLD = 380;
-  box.addEventListener("pointerdown", function (e) {
-    var el = e.target.closest(selector);
-    if (!el || !box.contains(el) || e.button > 0) return;
-    var timer = null,
-      lifted = false,
-      target = null,
-      sx = e.clientX,
-      sy = e.clientY,
-      grab = null,
-      endX = 0,
-      endY = 0;
-    function inside(node, x, y) {
-      var r = node.getBoundingClientRect();
-      return x > r.left && x < r.right && y > r.top && y < r.bottom;
-    }
-    function items() {
-      return [].filter.call(box.children, function (c) {
-        return c.matches(selector);
-      });
-    }
-    function place(ev) {
-      el.style.transform = "none";
-      var base = el.getBoundingClientRect();
-      var z = hpZoom();
-      el.style.transform = "translate(" + (ev.clientX - grab.x - base.left) / z + "px," + (ev.clientY - grab.y - base.top) / z + "px) scale(1.03)";
-    }
-    function lift() {
-      lifted = true;
-      var r = el.getBoundingClientRect();
-      grab = { x: sx - r.left, y: sy - r.top };
-      el.classList.add("lifting");
-      /* The tile is carried over the whole page, not only over its own row. */
-      box.style.overflow = "visible";
-      try {
-        el.setPointerCapture(e.pointerId);
-      } catch (x) {}
-      if (navigator.vibrate) navigator.vibrate(12);
-    }
-    function move(ev) {
-      if (!lifted) {
-        if (Math.hypot(ev.clientX - sx, ev.clientY - sy) > 9) stop(false);
-        return;
-      }
-      ev.preventDefault();
-      target = null;
-      items().forEach(function (other) {
-        other.classList.remove("mergeable");
-        if (other === el) return;
-        var r = other.getBoundingClientRect(),
-          inside = ev.clientX > r.left && ev.clientX < r.right && ev.clientY > r.top && ev.clientY < r.bottom,
-          middle =
-            ev.clientX > r.left + r.width * 0.3 && ev.clientX < r.right - r.width * 0.3 && ev.clientY > r.top + r.height * 0.3 && ev.clientY < r.bottom - r.height * 0.3;
-        /* The middle of another item is a drop onto it; its edges make room, as before. */
-        if (opts.merge && middle) {
-          target = other;
-          other.classList.add("mergeable");
-        } else if (inside && !(opts.merge && middle) && opts.live !== false) {
-          var all = items();
-          box.insertBefore(el, all.indexOf(other) > all.indexOf(el) ? other.nextSibling : other);
-        }
-      });
-      place(ev);
-    }
-    /* The tile was carried over the others without them moving; where it is let go is its new place, and the tiles in between slide to theirs. */
-    function dropAt(x, y) {
-      var others = items().filter(function (o) {
-          return o !== el;
-        }),
-        before = others.map(function (o) {
-          return o.getBoundingClientRect();
-        }),
-        best = null,
-        bestD = Infinity;
-      others.forEach(function (o, i) {
-        var r = before[i],
-          d = Math.hypot(x - (r.left + r.width / 2), y - (r.top + r.height / 2));
-        if (d < bestD) {
-          bestD = d;
-          best = { o: o, r: r };
-        }
-      });
-      if (!best) return;
-      var after = x > best.r.left + best.r.width / 2 && y > best.r.top - 1 ? best.o.nextSibling : best.o;
-      if (y > best.r.bottom) after = best.o.nextSibling;
-      box.insertBefore(el, after);
-      others.forEach(function (o, i) {
-        var r = o.getBoundingClientRect(),
-          dx = (before[i].left - r.left) / hpZoom(),
-          dy = (before[i].top - r.top) / hpZoom();
-        if ((dx || dy) && o.animate) o.animate([{ transform: "translate(" + dx + "px," + dy + "px)" }, { transform: "none" }], { duration: 220, easing: "cubic-bezier(.2,.8,.2,1)" });
-      });
-    }
-    function stop(commit) {
-      clearTimeout(timer);
-      document.removeEventListener("pointermove", move, true);
-      document.removeEventListener("pointerup", up, true);
-      document.removeEventListener("pointercancel", cancel, true);
-      if (lifted) {
-        box.style.overflow = "";
-        el.classList.remove("lifting");
-        el.style.transform = "";
-        /* The click that ends a drag is not a tap. */
-        var eat = function (c) {
-          c.stopPropagation();
-          c.preventDefault();
-        };
-        box.addEventListener("click", eat, { capture: true, once: true });
-        setTimeout(function () {
-          box.removeEventListener("click", eat, true);
-        }, 60);
-        items().forEach(function (other) {
-          other.classList.remove("mergeable");
-        });
-        if (commit && target && opts.merge) opts.merge(idOf(el), idOf(target));
-        else if (commit && opts.outside && !inside(opts.bounds ? opts.bounds() : box, endX, endY)) opts.outside(idOf(el));
-        else if (commit) {
-          if (opts.live === false) dropAt(endX, endY);
-          done(items().map(idOf));
-        }
-      }
-    }
-    function up(ev) {
-      endX = ev.clientX;
-      endY = ev.clientY;
-      stop(true);
-    }
-    function cancel() {
-      stop(false);
-    }
-    document.addEventListener("pointermove", move, { capture: true, passive: false });
-    document.addEventListener("pointerup", up, true);
-    document.addEventListener("pointercancel", cancel, true);
-    timer = setTimeout(lift, HOLD);
-  });
-  box.addEventListener("contextmenu", function (e) {
-    if (e.target.closest(selector)) e.preventDefault();
-  });
-}
-
 /* The Home tab and a room's page, as in the Hue app: the home's name over a card for each room and zone (its icon, name, a switch and a brightness bar, gold while the lights are on), and a room's page with
  its coloured header, its scenes, its lights and its controls. The scenes are played, stopped and adjusted with the functions the dashboard's scene rows use (huescenes.js); making one is the app's "Add a scene"
  (huenewscene.js); a light opens as the colour screen (light.js). Everything shown is what the bridge says; nothing is kept in Home Assistant. */
@@ -10564,7 +12037,7 @@ function hpGroups() {
     });
 }
 
-/* The lights of a room or zone. The group lists them by entity when it can; the bridge's rooms list them by name (the `lights` attribute), and then the Hue Plus lights of those names are the room's. */
+/* The lights of a room or zone. The group lists them by entity when it can; else the bridge's own list of the room's lights (their ids) says which Hue Plus lights are the room's, and only without it the names the group lists. */
 function hpGroupLights(id) {
   var h = H(),
     a = A(id),
@@ -10572,7 +12045,12 @@ function hpGroupLights(id) {
       return m.indexOf("light.") === 0 && h.states[m];
     });
   if (listed.length) return listed;
-  var names = Array.isArray(a.lights) ? a.lights : [];
+  /* The bridge says which lights a room has by their ids; only when it has not been read are the names the group lists used (two lights of different rooms can have one name, and by name they would be in both rooms). */
+  var names = Array.isArray(a.lights) ? a.lights : [],
+    bridge = ((a.hue_type === "zone" ? HM.zones : HM.rooms) || []).filter(function (g) {
+      return g.name === a.friendly_name;
+    }),
+    ids = bridge.length === 1 ? bridge[0].lights || [] : null;
   /* A light is the room's whether or not Home Assistant hides it (a Home Assistant group of lights hides its members, and the Hue app still shows them). The only ones left out are the Hue integration's own
      twins of the lights Hue Plus made: of the entities of one Hue light, Hue Plus's is used, else a visible one, else the first. */
   var byLight = {};
@@ -10581,7 +12059,8 @@ function hpGroupLights(id) {
     .forEach(function (m) {
       var b = h.states[m].attributes,
         e = h.entities[m];
-      if (m.indexOf("light.") !== 0 || !b.hue_light_id || b.is_hue_group || names.indexOf(b.friendly_name) < 0) return;
+      if (m.indexOf("light.") !== 0 || !b.hue_light_id || b.is_hue_group) return;
+      if (ids ? ids.indexOf(b.hue_light_id) < 0 : names.indexOf(b.friendly_name) < 0) return;
       var rank = e && e.platform === "hue_plus" ? 0 : e && e.hidden ? 2 : 1,
         had = byLight[b.hue_light_id];
       if (!had || rank < had.rank) byLight[b.hue_light_id] = { id: m, rank: rank };
@@ -10683,24 +12162,6 @@ function hpGold(el, ids) {
 
 /* ---- the parts ---- */
 
-function hpToggle(label, get, set) {
-  var t = mk("button", "tg", "<i></i>");
-  t.type = "button";
-  t.setAttribute("role", "switch");
-  t.setAttribute("aria-label", label);
-  t.addEventListener("click", function (e) {
-    e.stopPropagation();
-    set();
-  });
-  t.refresh = function () {
-    var on = get();
-    t.classList.toggle("on", on);
-    t.setAttribute("aria-checked", on ? "true" : "false");
-  };
-  reg(t.refresh);
-  return t;
-}
-
 function hpLightToggle(id, label) {
   return hpToggle(
     label,
@@ -10756,27 +12217,6 @@ function hpSlider(id) {
   };
   reg(s.refresh);
   return s;
-}
-
-/* A round button of the page's top: an icon, a label for the screen reader, and what it does. */
-function hpRound(icon, label, fn) {
-  var b = mk("button", "rbt", svg(icon));
-  b.type = "button";
-  b.setAttribute("aria-label", label);
-  b.addEventListener("click", fn);
-  return b;
-}
-
-function hpActive(el, open) {
-  el.tabIndex = 0;
-  el.setAttribute("role", "button");
-  el.addEventListener("click", open);
-  el.addEventListener("keydown", function (e) {
-    if ((e.key === "Enter" || e.key === " ") && e.target === el) {
-      e.preventDefault();
-      open();
-    }
-  });
 }
 
 /* ---- Home ---- */
@@ -11189,61 +12629,12 @@ HC.registerPage(
  and three dots beside it; the pencil is the scene's settings page (its name, brightness, dynamic speed, auto-play and lights, with SAVE) and the three dots list what can be done with it.
  The app draws a moving scene with its picture, which comes from Signify's cloud; here the round tile is drawn with the colours of the scene, which the bridge gives. */
 
-/* The scenes of each bridge, as get_resources lists them (their colours, speed and auto-play), by the bridge's own id. */
-var HPSC = { byId: {}, loaded: false, waiting: [] };
-
-function hpSceneData(then) {
-  if (HPSC.loaded) return then();
-  HPSC.waiting.push(then);
-  if (HPSC.waiting.length > 1) return;
-  hmReady().then(
-    function () {
-      (HM.scenes || []).forEach(function (s) {
-        HPSC.byId[s.id] = s;
-      });
-      HPSC.loaded = true;
-      HPSC.waiting.splice(0).forEach(function (fn) {
-        fn();
-      });
-    },
-    function () {
-      HPSC.waiting.splice(0);
-    }
-  );
-}
-
-function hpSceneInfo(sid) {
-  return HPSC.byId[hueSceneUid(sid)] || {};
-}
-
-function hpIsDynamic(sid) {
-  return A(sid).is_dynamic !== false;
-}
-
 /* What the Hue app calls its own ready-made still scenes. */
 var HP_DEFAULT_SCENES = ["bright", "relax", "read", "concentrate", "energize", "nightlight", "dimmed"];
 
 function hpFolderOf(sid) {
   if (hpIsDynamic(sid)) return "scenes";
   return HP_DEFAULT_SCENES.indexOf(String(A(sid).name || "").toLowerCase()) >= 0 ? "defaults" : "lights";
-}
-
-function hpColourCss(c) {
-  if (c.xy) return cssRgb(liveXyRgb(c.xy[0], c.xy[1]));
-  if (c.mirek) return cssRgb(kelvinRgb(Math.round(1000000 / c.mirek)));
-  return "#f9d27a";
-}
-
-/* The round tile of a scene: its colours as a disc. */
-function hpDisc(sid) {
-  var d = mk("span", "disc");
-  function paint() {
-    var cols = (hpSceneInfo(sid).colours || []).map(hpColourCss);
-    d.style.background = !cols.length ? "#f9d27a" : cols.length === 1 ? cols[0] : "conic-gradient(" + cols.concat(cols[0]).join(",") + ")";
-  }
-  paint();
-  hpSceneData(paint);
-  return d;
 }
 
 /* The folders the person makes by dropping a scene on another. The app keeps them in the app, the bridge has no place for them, so here they are kept on this device. */
@@ -11736,1084 +13127,6 @@ function hpSceneActions(sid, room, close) {
 
 /* ---- a scene's settings page ---- */
 
-function hpSpeedWord(step) {
-  return step <= 3 ? _T("app_slow") : step <= 7 ? _T("app_medium") : _T("app_fast");
-}
-
-var HPSCN = {};
-
-function hpScenePage(body, key) {
-  var sid = String(key).split("~")[0],
-    room = String(key).split("~")[1] || "",
-    P = HUESCENES;
-  if (!H().states[sid]) {
-    body.appendChild(mk("div", "empty")).textContent = _T("nothing_found");
-    return;
-  }
-  hmBox(body);
-  var root = body.parentNode;
-  root.classList.add("scenepg");
-  var cols = (hpSceneInfo(sid).colours || []).map(hpColourCss);
-  root.style.setProperty("--sc1", cols[0] || "#8a7a4a");
-  root.style.setProperty("--sc2", cols[1] || cols[0] || "#2a2a2c");
-  root.style.setProperty("--sc3", cols[2] || cols[1] || cols[0] || "#2a2a2c");
-  /* What is changed on this page is kept until SAVE, also while a page opened from it (the speed) is shown and this one is drawn again. */
-  var dyn = hpIsDynamic(sid),
-    draft = HPSCN[sid] || (HPSCN[sid] = {});
-  var head = mk("div", "schead", "<span class='big'></span><div class='nm'></div>");
-  head.querySelector(".big").appendChild(hpDisc(sid));
-  head.querySelector(".nm").textContent = A(sid).name || sid;
-  if (isAdmin() && hueplus.has(H(), "update_scene"))
-    head.appendChild(
-      hpRound("edit", _T("hn_rename"), function () {
-        hueSceneRename(sid);
-      })
-    );
-  body.appendChild(head);
-  body.appendChild(
-    hmGroup([
-      sliderRow({
-        name: _T("app_scene_brightness"),
-        min: 1,
-        max: 100,
-        step: 1,
-        get: function () {
-          var g = P.group(H(), sid);
-          return g && V_(g) === "on" ? Math.max(1, Math.round((A(g).brightness || 0) / 2.55)) : hueSceneSet(sid).bri;
-        },
-        fmt: function (v) {
-          return v + "%";
-        },
-        on: function () {
-          return P.active(H(), sid);
-        },
-        live: function (v) {
-          var g = P.group(H(), sid);
-          if (g && P.active(H(), sid) && V_(g) === "on") callLive(g, "light", "turn_on", { entity_id: g, brightness_pct: v });
-        },
-        commit: function (v) {
-          var st = hueSceneSet(sid);
-          st.bri = v;
-          hueSceneSave(sid, st);
-          var g = P.group(H(), sid);
-          if (g && P.active(H(), sid) && V_(g) === "on") call("light", "turn_on", { entity_id: g, brightness_pct: v });
-        },
-      }),
-    ])
-  );
-  if (dyn)
-    hmLoad(body, ["scenes"], function (box, r) {
-      var s = (r.scenes || []).filter(function (x) {
-        return x.id === hueSceneUid(sid);
-      })[0];
-      if (!s) return;
-      if (!draft.read) {
-        draft.read = true;
-        draft.saved = s.speed;
-        draft.speed = s.speed;
-        draft.auto = !!s.auto_dynamic;
-      }
-      box.appendChild(hmLabel(_T("app_dynamic_scene")));
-      box.appendChild(
-        hmGroup([
-          hmRow({
-            title: _T("app_dynamic_speed"),
-            val: function () {
-              var step = P.speedToStep(Math.round(draft.speed * 100));
-              return step + " - " + hpSpeedWord(step);
-            },
-            tap: "app-speed:" + sid,
-          }),
-          hmRow({
-            title: _T("app_auto_play"),
-            sub: _T("app_auto_play_sub"),
-            toggle: {
-              get: function () {
-                return draft.auto;
-              },
-              set: function () {
-                draft.auto = !draft.auto;
-                draft.changed = true;
-                refresh();
-              },
-            },
-          }),
-        ])
-      );
-      guardUnsaved({
-        dirty: function () {
-          return !!draft.changed || !!draft.recolor;
-        },
-        discard: function () {
-          delete HPSCN[sid];
-        },
-        save: function (leave) {
-          var change = { scene: hueSceneUid(sid), speed: draft.speed, auto_dynamic: draft.auto };
-          if (draft.recolor) change.recolor = draft.recolor;
-          return hpCall("hue_plus", "update_scene", change).then(
-            function () {
-              delete HPSCN[sid];
-              HPSC.loaded = false;
-              HPSC.byId = {};
-              hpSceneData(function () {});
-              leave();
-              return true;
-            },
-            function () {
-              toast(_T("hn_couldn_t_save_the_scene"));
-              return false;
-            }
-          );
-        },
-      });
-    });
-  var lights = hpSceneLights(sid);
-  if (lights.length) {
-    /* The Lights title has the Colors button of a moving scene: it gives the scene's colours out to the lights again, in another order (kept until SAVE). */
-    var bar = mk("div", "lbrow lightsbar");
-    var title = mk("div", "lbtitle");
-    title.textContent = _T("lights");
-    bar.appendChild(title);
-    if (dyn && hueplus.has(H(), "update_scene")) {
-      var shuffle = mk("button", "colorsbtn", svg("shuffle") + "<span></span>");
-      shuffle.type = "button";
-      shuffle.querySelector("span").textContent = _T("app_colors");
-      shuffle.addEventListener("click", function () {
-        draft.recolor = "shuffle";
-        toast(_T("app_colors_when_saved"));
-      });
-      bar.appendChild(shuffle);
-    }
-    body.appendChild(bar);
-    var tiles = mk("div", "ltiles");
-    lights.forEach(function (lid) {
-      tiles.appendChild(hpLightTile(lid, room));
-    });
-    body.appendChild(tiles);
-  }
-  /* Reset scene: the palette is given out to the lights in its own order and at its own brightness again (kept until SAVE). */
-  if (dyn && hueplus.has(H(), "update_scene")) {
-    var reset = mk("button", "resetbtn");
-    reset.type = "button";
-    reset.textContent = _T("app_reset_scene");
-    reset.addEventListener("click", function () {
-      draft.recolor = "reset";
-      toast(_T("app_reset_when_saved"));
-    });
-    body.appendChild(reset);
-  }
-  if (isAdmin() && hueplus.has(H(), "delete_scene")) {
-    var del = mk("button", "deletebtn");
-    del.type = "button";
-    del.textContent = _T("hn_delete_scene");
-    del.addEventListener("click", function () {
-      confirmDlg(_T("hn_delete_scene") + ": " + (A(sid).name || sid) + "?", function () {
-        hueSceneRemove(sid).then(function () {
-          delete HPSCN[sid];
-          popBack();
-        });
-      });
-    });
-    body.appendChild(del);
-  }
-}
-
-/* The speed of a moving scene: a short sheet with the twelve steps of the app (kept on the scene's page until SAVE). */
-function hpSpeedPage(body, sid) {
-  hmBox(body);
-  var st = HPSCN[sid],
-    P = HUESCENES;
-  if (!st || !st.read) {
-    body.appendChild(hmCallout(_T("nothing_found")));
-    return;
-  }
-  body.parentNode.classList.add("shortpg");
-  var box = mk("div", "spsheet"),
-    cap = mk("span", "spcap"),
-    val = mk("b", "spval"),
-    track = mk("div", "sptrack", "<div class='spfill'></div><div class='spthumb'></div>"),
-    ticks = mk("div", "spticks");
-  cap.textContent = _T("app_speed").toUpperCase();
-  for (var n = 1; n <= P.speedSteps; n++) ticks.appendChild(mk("i")).textContent = String(n);
-  var note = mk("div", "pintro");
-  note.textContent = _T("app_speed_text");
-  box.appendChild(cap);
-  box.appendChild(val);
-  box.appendChild(track);
-  box.appendChild(ticks);
-  body.appendChild(box);
-  body.appendChild(note);
-  var thumb = track.querySelector(".spthumb"),
-    fill = track.querySelector(".spfill");
-  function step() {
-    return P.speedToStep(Math.round(st.speed * 100));
-  }
-  function paint() {
-    var at = (step() - 1) / (P.speedSteps - 1);
-    thumb.style.left = at * 100 + "%";
-    fill.style.width = at * 100 + "%";
-    val.textContent = step() + " - " + hpSpeedWord(step()) + (step() === P.speedToStep(Math.round(st.saved * 100)) ? " " + _T("app_default_in_brackets") : "");
-  }
-  function from(e) {
-    var r = track.getBoundingClientRect(),
-      at = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)),
-      next = 1 + Math.round(at * (P.speedSteps - 1));
-    st.speed = P.stepToSpeed(next) / 100;
-    st.changed = true;
-    paint();
-  }
-  track.addEventListener("pointerdown", function (e) {
-    track.setPointerCapture(e.pointerId);
-    from(e);
-    track.onpointermove = from;
-    track.onpointerup = track.onpointercancel = function () {
-      track.onpointermove = null;
-    };
-  });
-  paint();
-  HC.onDone = function () {
-    popBack();
-  };
-}
-
-/* The lights a scene sets: the lights of its room that the bridge lists among its actions. */
-function hpSceneLights(sid) {
-  var room = hpRoomOfScene(sid),
-    ids = (hpSceneInfo(sid).lights || []).filter(Boolean);
-  if (!room) return [];
-  return hpGroupLights(room).filter(function (lid) {
-    return !ids.length || ids.indexOf(A(lid).hue_light_id) >= 0 || ids.indexOf(lid) >= 0;
-  });
-}
-
-function hpRoomOfScene(sid) {
-  var a = A(sid);
-  return hpGroups().filter(function (g) {
-    return A(g).friendly_name === a.group_name && A(g).hue_type === a.group_type;
-  })[0];
-}
-
-HP_PAGES["app-speed"] = ["app_dynamic_speed", "tune", hpSpeedPage];
-
-HC.registerPage(
-  "app-scene",
-  function () {
-    return _T("app_edit_scene");
-  },
-  "scene",
-  hpScenePage
-);
-
-/* A switch and what its buttons do, laid out as the Hue app lays it out: Switch settings (the switch, its room, a tile for each button, what the selected button controls, its lights, what a press does, smart on/off),
- the Press page (the kind of press and what it acts on), the choice of kind, the scene to recall, and Smart on/off. What a press does is staged and written to the bridge when the switch is saved, with the same functions the
- Hue Plus menu uses (hmStagePress, hmSaveSwitch); only the pages are the app's. They replace the menu's pages of the same names in this panel. */
-
-var HPSW = { sel: {} };
-
-/* The tiles of the four buttons of a dimmer switch carry the app's names and pictures; any other switch has its buttons by number. */
-function hpButtonLook(acc, btn) {
-  var four = (acc.buttons || []).length === 4,
-    look = four ? { 1: ["power", "app_btn_onoff"], 2: ["bright", "app_btn_brighten"], 3: ["bright", "app_btn_dim"], 4: ["hue", "app_btn_hue"] }[btn.number] : null;
-  return look ? { icon: look[0], name: _T(look[1]) } : { icon: "power", name: _T("hm_button_label") + " " + btn.number };
-}
-
-HOST_ICONS.hue = "<text x='1' y='16' font-size='9' font-weight='700' fill='currentColor' stroke='none' font-family='sans-serif'>hue</text>";
-
-/* The name of the room or zone a device is in. */
-function hpRoomOfDevice(r, id) {
-  var found = null;
-  (r.rooms || []).concat(r.zones || []).forEach(function (g) {
-    if ((g.children || []).some(function (c) { return c.id === id; })) found = found || g;
-  });
-  return found;
-}
-
-/* A round tile with the picture of what a press recalls: the colours of a scene, or an icon on a dark disc. */
-function hpDiscOf(colours) {
-  var d = mk("span", "disc"),
-    cols = (colours || []).map(hpColourCss);
-  d.style.background = !cols.length ? "#f9d27a" : cols.length === 1 ? cols[0] : "conic-gradient(" + cols.concat(cols[0]).join(",") + ")";
-  return d;
-}
-
-function hpKindIcon(kind) {
-  return { time: "clock", cycle: "swap", scene: "palette", brighten: "bright", dim: "bright", off: "power", homeoff: "power", nothing: "minus" }[kind] || "palette";
-}
-
-function hpKindTitle(kind) {
-  return _T({ time: "hm_time_based_light", cycle: "hm_scene_cycle", scene: "hm_single_scene", brighten: "hm_brighten", dim: "hm_dim", off: "hm_lights_off", homeoff: "hm_entire_home_off", nothing: "hm_do_nothing" }[kind]);
-}
-
-/* The app has no arrow on a row that shows its value. */
-function hpNoChev(row) {
-  row.classList.add("nochev");
-  return row;
-}
-
-/* A row whose end is a round picture, as the app's rows are. */
-function hpDiscRow(o) {
-  var row = hmRow({ title: o.title, sub: o.sub, val: o.val, tap: o.tap });
-  var end = mk("span", "rend");
-  if (o.disc) end.appendChild(o.disc);
-  else if (o.icon) {
-    end.classList.add("ico");
-    end.innerHTML = svg(o.icon);
-  }
-  row.appendChild(end);
-  row.classList.add("nochev");
-  return row;
-}
-
-/* ---- Switch settings ---- */
-
-function hpSwitchPage(b, id) {
-  hmBox(b);
-  hmGuard(hmdKey("acc", id));
-  hmLoad(b, ["accessories", "scenes", "rooms", "zones"], function (box, r) {
-    var x = (r.accessories || []).filter(function (y) {
-      return y.id === id;
-    })[0];
-    if (!x) {
-      box.appendChild(hmCallout(_T("nothing_found")));
-      return;
-    }
-    var room = hpRoomOfDevice(r, id),
-      buttons = x.buttons || [],
-      selected = HPSW.sel[id] || (buttons[0] && buttons[0].number),
-      head = mk("div", "swhead named", "<span class='ic'></span><div class='nm'></div>");
-    head.querySelector(".ic").innerHTML = svg("switch");
-    head.querySelector(".nm").textContent = x.name;
-    if (hueplus.has(H(), "set_name"))
-      head.appendChild(
-        hpRound("edit", _T("app_edit_name_and_type"), function () {
-          delete HPRENAME[id];
-          showPopup("app-rename:" + id, true);
-        })
-      );
-    box.appendChild(head);
-    /* The room the switch is in: the row opens the room, where its devices are chosen (a switch moves by being added to another room). */
-    box.appendChild(
-      hmGroup([
-        hmRow({
-          title: _T("app_room"),
-          val: room ? room.name : _T("hm_the_whole_home"),
-          tap: room
-            ? function () {
-                hrwStart(room.type === "zone" ? "zone" : "room", room);
-              }
-            : null,
-        }),
-      ])
-    );
-    var tiles = mk("div", "btiles");
-    buttons.forEach(function (btn) {
-      var look = hpButtonLook(x, btn),
-        t = mk("div", "btile" + (btn.number === selected ? " sel" : ""), "<span class='ic'></span><b></b>");
-      t.querySelector(".ic").innerHTML = svg(look.icon);
-      t.querySelector("b").textContent = look.name;
-      hpActive(t, function () {
-        HPSW.sel[id] = btn.number;
-        showPopup("hue-switch:" + id, false);
-      });
-      tiles.appendChild(t);
-    });
-    box.appendChild(tiles);
-    var btn = buttons.filter(function (y) {
-      return y.number === selected;
-    })[0];
-    if (!btn) return;
-    box.appendChild(
-      hpDiscRow({
-        title: _T("app_button_controls"),
-        val: _T("lights"),
-        icon: "lights",
-        tap: "app-btnctl:" + x.id + "|" + btn.number,
-      })
-    );
-    var t = hmBtnTargets(r, x, btn);
-    /* "Selected lights" is a row with its pencil, and the room or zone as a tile under it. */
-    var lights = mk("div", "lbrow"),
-      selectable = hueplus.has(H(), "set_button_lights"),
-      open = function () {
-        showPopup("app-btnlights:" + x.id + "|" + btn.number, true);
-      };
-    var lt = mk("div", "lbtitle");
-    lt.textContent = _T("app_selected_lights");
-    lights.appendChild(lt);
-    if (selectable) lights.appendChild(hpRound("edit", _T("app_selected_lights"), open));
-    box.appendChild(lights);
-    var sel = mk("div", "selroom", "<span class='ic'></span><div><b></b><i></i></div>");
-    sel.querySelector(".ic").innerHTML = svg(room && room.type === "zone" ? "target" : "home");
-    sel.querySelector("b").textContent = t.name || (room ? room.name : _T("hm_the_whole_home"));
-    sel.querySelector("i").textContent = _T("app_entire_room");
-    box.appendChild(sel);
-    box.appendChild(hmLabel(_T("hm_behavior")));
-    box.appendChild(
-      hmGroup(
-        HM_PRESSES.map(function (p) {
-          var spec = function () {
-            return hmPressSpec(x, btn, p[0]);
-          };
-          var scenes = hmPressScenes(spec()).map(function (sid) {
-            return (r.scenes || []).filter(function (s) {
-              return s.id === sid;
-            })[0];
-          });
-          return hpDiscRow({
-            title: _T(p[1]),
-            val: function () {
-              var kind = hmPressKind(spec());
-              return kind === "scene" ? _T("app_press_all_lights") : kind === "cycle" || kind === "time" ? hmPressSummary(r, spec()).replace(/^[^·]*· ?/, "") : hpKindTitle(kind);
-            },
-            disc: scenes[0] ? hpDiscOf(scenes[0].colours) : null,
-            icon: scenes[0] ? null : hpKindIcon(hmPressKind(spec())),
-            tap: p[0] === "long" && hmHoldRepeats(x, btn) ? null : "app-press:" + x.id + "|" + btn.number + "|" + p[0],
-          });
-        })
-      )
-    );
-    box.appendChild(
-      hmActions([
-        hmButton(_T("hm_delete"), "danger", function () {
-          hmRemoveDevice(x.id, null);
-        }),
-      ])
-    );
-  });
-}
-
-/* ---- the Press page: the kind, and what it acts on ---- */
-
-function hpPressPage(b, id) {
-  hmBox(b);
-  hmGuard(hmdKey("acc", hmBtnKey(id).acc), true);
-  hmLoad(b, ["accessories", "scenes", "rooms", "zones"], function (box, r) {
-    var k = hmBtnKey(id),
-      f = hmBtnFind(r, k);
-    if (!f.acc || !f.btn) {
-      box.appendChild(hmCallout(_T("nothing_found")));
-      return;
-    }
-    var spec = function () {
-        return hmPressSpec(f.acc, f.btn, k.press);
-      },
-      kind = function () {
-        return hmPressKind(spec());
-      },
-      room = hpRoomOfDevice(r, f.acc.id);
-    /* A press that is a cycle is the cycle's list itself, as in the app. */
-    if (kind() === "cycle") {
-      hpCycleDraw(box, r, id, k, f, 1);
-      return;
-    }
-    box.appendChild(
-      hmGroup([
-        hpDiscRow({
-          title: _T(HM_PRESSES.filter(function (p) { return p[0] === k.press; })[0][1]),
-          val: function () {
-            return hpKindTitle(kind());
-          },
-          icon: hpKindIcon(kind()),
-          tap: "hue-press:" + id,
-        }),
-      ])
-    );
-    var k0 = kind();
-    if (k0 === "scene" || k0 === "cycle" || k0 === "time") {
-      box.appendChild(hmLabel(_T("hm_behavior")));
-      var names = hmPressScenes(spec()).map(function (sid) {
-          return (r.scenes || []).filter(function (s) {
-            return s.id === sid;
-          })[0];
-        }),
-        target = k0 === "scene" ? "hue-pick-scene:" : k0 === "cycle" ? "hue-cycle:" : "hue-time:";
-      box.appendChild(
-        hmGroup([
-          hpDiscRow({
-            title: room ? room.name : _T("hm_the_whole_home"),
-            val: k0 === "scene" ? _T("app_press_all_lights") : hmPressSummary(r, spec()).replace(/^[^·]*· ?/, ""),
-            disc: names[0] ? hpDiscOf(names[0].colours) : null,
-            icon: names[0] ? null : "palette",
-            tap: target + id,
-          }),
-        ])
-      );
-      box.appendChild(hmLabel(_T("hm_advanced")));
-      box.appendChild(
-        hmGroup([
-          hpNoChev(
-            hmRow({
-              title: _T("hm_smart_on_off"),
-              val: function () {
-                return hmPressWithOff(spec()) ? _T("app_enabled") : _T("app_disabled");
-              },
-              tap: "app-smart:" + id,
-            })
-          ),
-        ])
-      );
-    }
-  });
-}
-
-/* ---- the kind of press ---- */
-
-function hpPressKindPage(b, id) {
-  hmBox(b);
-  hmGuard(hmdKey("acc", hmBtnKey(id).acc), true);
-  hmLoad(b, ["accessories", "scenes", "rooms", "zones"], function (box, r) {
-    var k = hmBtnKey(id),
-      f = hmBtnFind(r, k);
-    if (!f.acc || !f.btn) {
-      box.appendChild(hmCallout(_T("nothing_found")));
-      return;
-    }
-    var kind = hmPressKind(f.spec),
-      look = hpButtonLook(f.acc, f.btn),
-      intro = mk("div", "pintro");
-    intro.appendChild(document.createTextNode(_T("app_set_what_happens")));
-    intro.appendChild(mk("b")).textContent = (k.press === "long" ? _T("hm_long_press") : _T("hm_press")).toLowerCase();
-    intro.appendChild(document.createTextNode(" " + _T("app_the_button") + " "));
-    intro.appendChild(mk("b")).textContent = look.name.toLowerCase();
-    box.appendChild(intro);
-    HM_CHOICES.forEach(function (group) {
-      box.appendChild(hmLabel(_T(group[0])));
-      box.appendChild(
-        hmGroup(
-          group[1].map(function (c) {
-            var row = hmRow({
-              title: _T(c[2]),
-              sub: _T(c[2] + "_sub"),
-              icon: hpKindIcon(c[0]),
-              check: function () {
-                return kind === c[0];
-              },
-              tap: function () {
-                if (c[0] === "scene") showPopup("hue-pick-scene:" + id, true);
-                else if (c[0] === "cycle") showPopup("hue-cycle:" + id, true);
-                else if (c[0] === "time") showPopup("hue-time:" + id, true);
-                else {
-                  hmStagePress(k, f, { action: c[1] });
-                  popBack();
-                }
-              },
-            });
-            row.classList.add("discic");
-            return row;
-          })
-        )
-      );
-    });
-  });
-}
-
-/* ---- the scene a press recalls: the room's scenes as round tiles, and what else a press can do ---- */
-
-function hpPressScenePage(b, id) {
-  hmBox(b);
-  hmGuard(hmdKey("acc", hmBtnKey(id).acc), true);
-  hmLoad(b, ["accessories", "scenes", "rooms", "zones"], function (box, r) {
-    var k = hmBtnKey(id),
-      f = hmBtnFind(r, k);
-    if (!f.acc || !f.btn) {
-      box.appendChild(hmCallout(_T("nothing_found")));
-      return;
-    }
-    var targets = hmBtnTargets(r, f.acc, f.btn),
-      scenes = hmBtnScenes(r, targets),
-      current = hmPressScenes(f.spec)[0],
-      preview = HPSW.preview === true,
-      done = function () {
-        popBack();
-        popBack();
-      };
-    /* The room's name is the title of the page, as in the app. */
-    var ttl = b.parentNode && b.parentNode.querySelector(".pbar .ttl");
-    if (ttl) ttl.textContent = targets.name || _T("hm_the_whole_home");
-    /* My scenes: the label with the blue plus that makes a new scene, then the scenes in two rows; the one chosen has its pencil beside it. */
-    var bar = mk("div", "lbrow");
-    bar.appendChild(hmLabel(_T("app_my_scenes")));
-    if (hueplus.has(H(), "create_scene")) {
-      var plus = hpRound("plus", _T("hn_add_a_scene"), function () {
-        hueStartMaker("home");
-      });
-      plus.classList.add("blue");
-      bar.appendChild(plus);
-    }
-    box.appendChild(bar);
-    var grid = mk("div", "pgrid scrows"),
-      rowsOf = [mk("div", "scr"), mk("div", "scr")];
-    grid.appendChild(rowsOf[0]);
-    grid.appendChild(rowsOf[1]);
-    function entityOf(sceneId) {
-      return Object.keys(H().entities).filter(function (e) {
-        return H().entities[e].unique_id === sceneId;
-      })[0];
-    }
-    scenes.forEach(function (sc, at) {
-      var t = mk("div", "sitem" + (current === sc.id ? " on" : ""), "<span class='dc'></span><b></b>"),
-        lane = rowsOf[at % 2];
-      t.querySelector(".dc").appendChild(hpDiscOf(sc.colours));
-      t.querySelector("b").textContent = sc.name;
-      hpActive(t, function () {
-        hmStagePress(k, f, { action: "scene", scene: sc.id, with_off: hmPressWithOff(f.spec) });
-        var ent = entityOf(sc.id);
-        if (preview && ent) call("scene", "turn_on", { entity_id: ent });
-        done();
-      });
-      lane.appendChild(t);
-      if (current === sc.id && entityOf(sc.id)) {
-        var pen = hpRound("edit", _T("hn_rename"), function () {
-          showPopup("app-scene:" + entityOf(sc.id) + "~", true);
-        });
-        pen.classList.add("scpen");
-        lane.appendChild(pen);
-      }
-    });
-    box.appendChild(grid);
-    box.appendChild(hmLabel(_T("app_suggestions")));
-    var sug = mk("div", "pgrid");
-    var bright = scenes.filter(function (sc) {
-      return /^bright$/i.test(sc.name);
-    })[0];
-    [
-      bright ? ["bright", { action: "scene", scene: bright.id, with_off: hmPressWithOff(f.spec) }, "app_bright", "bright"] : null,
-      ["off", { action: "all_off" }, "app_off", "target"],
-      ["nothing", { action: "do_nothing" }, "hm_do_nothing", "minus"],
-    ]
-      .filter(Boolean)
-      .forEach(function (c) {
-        var t = mk("div", "sitem", "<span class='dc'></span><b></b>");
-        t.querySelector(".dc").innerHTML = "<span class='disc dark'>" + svg(c[3]) + "</span>";
-        t.querySelector("b").textContent = _T(c[2]);
-        hpActive(t, function () {
-          hmStagePress(k, f, c[1]);
-          done();
-        });
-        sug.appendChild(t);
-      });
-    box.appendChild(sug);
-    /* Show preview: with it on, a scene that is chosen plays in the room at once. */
-    box.appendChild(
-      hmGroup([
-        hmRow({
-          title: _T("app_show_preview"),
-          sub: _T("app_show_preview_sub"),
-          toggle: {
-            get: function () {
-              return HPSW.preview === true;
-            },
-            set: function () {
-              HPSW.preview = !HPSW.preview;
-              preview = HPSW.preview;
-              refresh();
-            },
-          },
-        }),
-      ])
-    );
-  });
-}
-
-/* ---- Smart on/off ---- */
-
-function hpSmartPage(b, id) {
-  hmBox(b);
-  hmGuard(hmdKey("acc", hmBtnKey(id).acc), true);
-  hmLoad(b, ["accessories", "scenes", "rooms", "zones"], function (box, r) {
-    var k = hmBtnKey(id),
-      f = hmBtnFind(r, k);
-    if (!f.acc || !f.btn) {
-      box.appendChild(hmCallout(_T("nothing_found")));
-      return;
-    }
-    var spec = function () {
-      return hmPressSpec(f.acc, f.btn, k.press);
-    };
-    /* The text of the page, with the two parts the app writes in bold. */
-    function paragraph(parts) {
-      var p = mk("div", "pintro smart");
-      parts.forEach(function (part, i) {
-        var node = i % 2 ? mk("b") : document.createTextNode("");
-        node.textContent = part;
-        p.appendChild(node);
-      });
-      return p;
-    }
-    box.appendChild(paragraph([_T("app_smart_1"), _T("app_smart_on_and_off"), _T("app_smart_2"), _T("app_smart_only_on"), "."]));
-    box.appendChild(paragraph([_T("app_smart_3")]));
-    function choose(on) {
-      var s = spec(),
-        kind = hmPressKind(s),
-        ids = hmPressScenes(s),
-        seconds = ((s.scene_cycle_extended || s.time_based_extended || {}).repeat_timeout || {}).seconds || 3;
-      if (kind !== "scene" && kind !== "cycle" && kind !== "time") return;
-      hmStagePress(
-        k,
-        f,
-        kind === "scene"
-          ? { action: "scene", scene: ids[0], with_off: on }
-          : kind === "cycle"
-            ? { action: "scene_cycle", scenes: ids, with_off: on, repeat_timeout: seconds }
-            : { action: "time_based", slots: hmTimeSlots(s), with_off: on, repeat_timeout: seconds }
-      );
-      refresh();
-    }
-    box.appendChild(
-      hmGroup(
-        [
-          [false, "app_disabled"],
-          [true, "app_enabled"],
-        ].map(function (c) {
-          return hmRow({
-            title: _T(c[1]),
-            check: function () {
-              return hmPressWithOff(spec()) === c[0];
-            },
-            tap: function () {
-              choose(c[0]);
-            },
-          });
-        })
-      )
-    );
-  });
-}
-
-HP_PAGES["hue-switch"] = ["app_switch_settings", "switch", hpSwitchPage];
-HP_PAGES["hue-press"] = ["hm_press", "switch", hpPressKindPage];
-HP_PAGES["hue-pick-scene"] = ["app_my_scenes", "palette", hpPressScenePage];
-HP_PAGES["app-press"] = ["hm_press", "switch", hpPressPage];
-HP_PAGES["app-smart"] = ["hm_smart_on_off", "switch", hpSmartPage];
-
-/* What a button controls: the question with the button's name, and the kinds the app offers. A button of this bridge's switches controls lights; the Hue app's "Automations" (start or stop an automation) is not offered here yet. */
-function hpButtonControlsPage(b, id) {
-  hmBox(b);
-  hmGuard(hmdKey("acc", hmBtnKey(id).acc), true);
-  hmLoad(b, ["accessories"], function (box, r) {
-    var k = hmBtnKey(id),
-      acc = (r.accessories || []).filter(function (x) {
-        return x.id === k.acc;
-      })[0],
-      btn = acc && (acc.buttons || []).filter(function (y) {
-        return y.number === k.n;
-      })[0];
-    if (!btn) {
-      box.appendChild(hmCallout(_T("nothing_found")));
-      return;
-    }
-    var ask = mk("div", "pintro bigask"),
-      name = mk("b");
-    name.textContent = hpButtonLook(acc, btn).name.toLowerCase();
-    ask.appendChild(document.createTextNode(_T("app_control_with_pre")));
-    ask.appendChild(name);
-    ask.appendChild(document.createTextNode(_T("app_control_with_post")));
-    box.appendChild(ask);
-    box.appendChild(hmLabel(_T("app_button_controls")));
-    var row = hmRow({ icon: "lights", title: _T("lights"), sub: _T("app_lights_sub"), check: function () { return true; } });
-    row.classList.add("discic");
-    box.appendChild(hmGroup([row]));
-  });
-}
-
-HP_PAGES["app-btnctl"] = ["app_button_controls", "lights", hpButtonControlsPage];
-
-/* A scene cycle, as the app lays it out: the kind of press on top, then BEHAVIOR with the presses in order (each with the picture of its scene, and a blue plus that adds one), a line saying the rows
- can be dragged, and ADVANCED. DONE keeps the cycle (it is staged and written when the switch is saved). The draft is the menu's (HM_CYCLE); only the page is the app's. */
-
-function hpCyclePage(b, id) {
-  hmBox(b);
-  hmGuard(hmdKey("acc", hmBtnKey(id).acc), true);
-  hmLoad(b, ["accessories", "scenes", "rooms", "zones"], function (box, r) {
-    var k = hmBtnKey(id),
-      f = hmBtnFind(r, k);
-    if (!f.acc || !f.btn) {
-      box.appendChild(hmCallout(_T("nothing_found")));
-      return;
-    }
-    hpCycleDraw(box, r, id, k, f, 2);
-  });
-}
-
-/* The cycle's presses, drawn on the page of a press that already is a cycle (the Press page) and on the page the kind of press leads to; DONE goes back `pops` pages. */
-function hpCycleDraw(box, r, id, k, f, pops) {
-  {
-    var scenes = hmBtnScenes(r, hmBtnTargets(r, f.acc, f.btn));
-    if (!HM_CYCLE || HM_CYCLE.id !== id) {
-      var cfg = (f.spec && f.spec.scene_cycle_extended) || {};
-      HM_CYCLE = {
-        id: id,
-        scenes: hmPressScenes(f.spec).slice(),
-        with_off: hmPressWithOff(f.spec),
-        timeout: (cfg.repeat_timeout && cfg.repeat_timeout.seconds) || 3,
-        names: r,
-        pool: scenes,
-      };
-    }
-    HM_CYCLE.names = r;
-    HM_CYCLE.pool = scenes;
-    HM_CYCLE.with_off = hmPressWithOff(f.spec);
-    var d = HM_CYCLE,
-      ords = ["hm_first", "hm_second", "hm_third", "hm_fourth", "hm_fifth", "hm_sixth", "hm_seventh", "hm_eighth", "hm_ninth", "hm_tenth"];
-    HC.onDone = function () {
-      if (d.scenes.length < 2) {
-        toast(_T("hm_a_cycle_needs_two_scenes"));
-        return;
-      }
-      hmStagePress(k, f, { action: "scene_cycle", scenes: d.scenes.slice(), with_off: d.with_off, repeat_timeout: d.timeout });
-      HM_CYCLE = null;
-      for (var n = 0; n < pops; n++) popBack();
-    };
-    box.appendChild(
-      hmGroup([
-        hpDiscRow({
-          title: _T(HM_PRESSES.filter(function (p) { return p[0] === k.press; })[0][1]),
-          val: _T("hm_scene_cycle"),
-          icon: "swap",
-          tap: "hue-press:" + id,
-        }),
-      ])
-    );
-    var label = mk("div", "lbrow"),
-      text = hmLabel(_T("hm_behavior"));
-    label.appendChild(text);
-    if (d.scenes.length < 10) {
-      var plus = hpRound("plus", _T("hm_add_a_scene"), function () {
-        showPopup("hue-cslot:" + id + "|" + d.scenes.length, true);
-      });
-      plus.classList.add("blue");
-      label.appendChild(plus);
-    }
-    box.appendChild(label);
-    var list = mk("div", "hm-group cyc");
-    d.scenes.forEach(function (sid, i) {
-      var scene = (r.scenes || []).filter(function (s) {
-        return s.id === sid;
-      })[0];
-      var row = hpDiscRow({
-        title: _T(ords[i]) + " " + _T("hm_press_word"),
-        val: scene ? scene.name : _T("hm_unknown_scene"),
-        disc: hpDiscOf(scene && scene.colours),
-        tap: "hue-cslot:" + id + "|" + i,
-      });
-      row.dataset.sid = sid;
-      row.dataset.slot = String(i);
-      list.appendChild(row);
-    });
-    box.appendChild(list);
-    /* Hold a press and drag it to another place: the order of the presses is the order of the scenes. */
-    hpSortable(
-      list,
-      ".hm-row",
-      function (el) {
-        return el.dataset.sid + "|" + el.dataset.slot;
-      },
-      function (ids) {
-        d.scenes = ids.map(function (x) {
-          return x.split("|")[0];
-        });
-        showPopup("hue-cycle:" + id, false);
-      }
-    );
-    var hint = mk("div", "pintro small");
-    hint.textContent = _T("app_drag_to_order");
-    box.appendChild(hint);
-    box.appendChild(hmLabel(_T("hm_advanced")));
-    /* Smart on/off is its own page, as in the app. The cycle as it stands is staged first, so that page changes this cycle. */
-    box.appendChild(
-      hmGroup([
-        hpNoChev(
-          hmRow({
-            title: _T("hm_smart_on_off"),
-            val: function () {
-              return d.with_off ? _T("app_enabled") : _T("app_disabled");
-            },
-            tap: function () {
-              if (d.scenes.length < 2) {
-                toast(_T("hm_a_cycle_needs_two_scenes"));
-                return;
-              }
-              hmStagePress(k, f, { action: "scene_cycle", scenes: d.scenes.slice(), with_off: d.with_off, repeat_timeout: d.timeout });
-              showPopup("app-smart:" + id, true);
-            },
-          })
-        ),
-      ])
-    );
-  }
-}
-
-HP_PAGES["hue-cycle"] = ["hm_scene_cycle", "swap", hpCyclePage];
-
-/* A light's settings, as the app has them: the light and its name, the room it is in (the bridge's), General (function, power on, orientation), and Support, with the light's device info one tap away. What
- this adds to the app's page, Hue Plus's own timed effects, stays at the end. It is the menu's page (hmLight) with those parts changed, so what is edited and saved is the same. */
-
-function hpRoomOfLight(id) {
-  var hue = A(id).hue_light_id,
-    found = null;
-  (HM.rooms || []).concat(HM.zones || []).forEach(function (g) {
-    if (hue && (g.lights || []).indexOf(hue) >= 0) found = found || g;
-  });
-  return found;
-}
-
-function hpLightSettings(b, id) {
-  hmLight(b, id);
-  var kids = [].slice.call(b.children);
-  /* The room of the light comes from the bridge, as the app shows it. */
-  var title = b.querySelector(".hm-title"),
-    room = hpRoomOfLight(id);
-  if (title && room && !b.querySelector(".hm-group .hm-i svg + *") && !kids.some(function (k) { return /^Room\b/.test(k.textContent || ""); })) {
-    var g = hmGroup([hmRow({ title: _T("hm_room"), val: room.name })]);
-    b.insertBefore(g, title.nextSibling);
-  }
-}
-
-HP_PAGES["hue-light"] = ["app_light_settings", "lamp", hpLightSettings];
-
-/* The Bridges list of the app: the bridge, and a tap opens its settings. (The menu's Bridges row goes straight to the settings.) */
-function hpBridgesPage(b) {
-  hmBox(b);
-  hmEnsure();
-  b.appendChild(
-    hmGroup([
-      hpNoChev(
-        hmRow({
-          icon: "plug",
-          title: function () {
-            return (HM.bridge && HM.bridge.name) || _T("hue_bridge");
-          },
-          tap: "hue-bridge",
-        })
-      ),
-    ])
-  );
-}
-
-HP_PAGES["app-bridges"] = ["hm_bridges", "plug", hpBridgesPage];
-HP_PAGES["hue-bridge"] = ["app_bridge_settings", "plug", hmBridge];
-
-/* The Automations tab, as the Hue app draws it: a blue top, the title with a round plus, and the bridge's automations in a group for each kind (its icon, its name, how many, and a button that folds it), each automation a card with
- its time and name, the days it repeats, and a switch. A card opens the automation's own page (the Hue Plus menu's); the plus is the new-automation wizard. */
-
-var HP_AUTO_KINDS = [
-  ["wake_up", "app_k_wake_up", "bright"],
-  ["go_to_sleep", "hw_go_to_sleep", "moon"],
-  ["coming_home", "hw_coming_home", "home"],
-  ["leaving_home", "hw_leaving_home", "leave"],
-  ["mimic_presence", "hw_mimic_presence", "home"],
-  ["timer", "hw_timer", "clock"],
-  ["schedule", "hw_lighting_schedule", "clock"],
-];
-
-var HP_DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
-var HP_FOLDED = {};
-
-/* The first value under `key` anywhere in what the bridge keeps for an automation. */
-function hpDeep(node, key) {
-  if (!node || typeof node !== "object") return undefined;
-  if (node[key] !== undefined) return node[key];
-  var names = Object.keys(node);
-  for (var i = 0; i < names.length; i++) {
-    var found = hpDeep(node[names[i]], key);
-    if (found !== undefined) return found;
-  }
-  return undefined;
-}
-
-function hpPad(n) {
-  return (n < 10 ? "0" : "") + n;
-}
-
-/* "06:00" from the automation's time point, when it has one. */
-function hpAutoTime(x) {
-  var t = hpDeep(x.configuration, "time_point");
-  t = t && t.time;
-  return t && typeof t.hour === "number" ? hpPad(t.hour) + ":" + hpPad(t.minute || 0) : "";
-}
-
-/* "Every Wednesday", "Every day", "Weekdays" from the days it repeats. */
-function hpAutoDays(x) {
-  var d = hpDeep(x.configuration, "recurrence_days");
-  if (!Array.isArray(d) || !d.length) return "";
-  var set = HP_DAYS.filter(function (n) {
-    return d.indexOf(n) >= 0;
-  });
-  if (set.length === 7) return _T("app_every_day");
-  if (set.length === 5 && set.indexOf("saturday") < 0 && set.indexOf("sunday") < 0) return _T("app_weekdays");
-  return _T("app_every") + set
-    .map(function (n) {
-      return _T("hw_day_long_" + n);
-    })
-    .join(", ");
-}
-
-function hpAutoCard(x, again) {
-  var card = mk("div", "acard", "<div class='tx'><b></b><i></i></div>"),
-    time = hpAutoTime(x);
-  card.querySelector("b").textContent = (time ? time + " • " : "") + x.name;
-  card.querySelector("i").textContent = hpAutoDays(x) || x.script || "";
-  var tg = hpToggle(
-    x.name,
-    function () {
-      return !!x.enabled;
-    },
-    function () {
-      x.enabled = !x.enabled;
-      hpDo(again, "update_automation", { automation: x.id, enabled: x.enabled });
-      refresh();
-    }
-  );
-  card.appendChild(tg);
-  hpActive(card, function () {
-    showPopup("hue-routine:" + x.id, true);
-  });
-  return card;
-}
-
-function hpAutomationsTab(box) {
-  var head = mk("div", "hd", "<h1></h1><div class='acts'></div>");
-  head.querySelector("h1").textContent = _T("automations");
-  if (isAdmin()) head.querySelector(".acts").appendChild(hpRound("plus", _T("hw_new_automation"), function () {
-    showPopup("hue-newauto", true);
-  }));
-  head.querySelector(".acts .rbt") && head.querySelector(".acts .rbt").classList.add("blue");
-  box.appendChild(head);
-  hmLoad(box, ["automations"], function (inner, r, again) {
-    var list = r.automations || [];
-    if (!list.length) {
-      inner.appendChild(mk("div", "empty")).textContent = _T("nothing_found");
-      return;
-    }
-    HP_AUTO_KINDS.forEach(function (k) {
-      var mine = list.filter(function (x) {
-        return hwKindOf(x) === k[0];
-      });
-      if (!mine.length) return;
-      var g = mk("div", "agroup"),
-        top = mk("div", "ahead", "<span class='ic'></span><b></b><i></i>"),
-        fold = hpRound("chev", _T("app_fold"), function () {
-          HP_FOLDED[k[0]] = !HP_FOLDED[k[0]];
-          g.classList.toggle("folded", !!HP_FOLDED[k[0]]);
-        });
-      top.querySelector(".ic").innerHTML = svg(k[2]);
-      top.querySelector("b").textContent = _T(k[1]);
-      top.querySelector("i").textContent = String(mine.length);
-      fold.classList.add("fold");
-      top.appendChild(fold);
-      g.classList.toggle("folded", !!HP_FOLDED[k[0]]);
-      g.appendChild(top);
-      var cards = mk("div", "acards");
-      mine.forEach(function (x) {
-        cards.appendChild(hpAutoCard(x, again));
-      });
-      g.appendChild(cards);
-      inner.appendChild(g);
-    });
-    /* The bridge's own automations (its dimmer switches, the light state after streaming) are not in the app's list. */
-  });
-}
-
 /* The light screen of the Hue app: the colour wheel of a room's lights, the white and effects pages and the brightness button, and the scene editor (the same screen with SAVE).
  The panel itself is Home Control's, run as it is in a frame of its own (popup.html, with a copy of Home Control's dashboard code in lights/); this file only gives it a page: the bar above it, and the
  frame under the bar. Nothing is kept in Home Assistant: what a change does goes to the lights, which are the bridge's. */
@@ -12966,6 +13279,17 @@ window.HueHost.frameBar = function (title, onDone, onCancel) {
 window.HueHost.lightType = function (id) {
   return hpArchetypeOf(id);
 };
+window.HueHost.onSceneChanged = function () {
+  hueplus.resources(["scenes"]).then(function (r) {
+    if (r && r.scenes) HM.scenes = r.scenes;
+    HPSC.loaded = false;
+    HPSC.byId = {};
+    hpSceneData(function () {
+      refresh();
+    });
+  }, function () {});
+};
+
 window.HueHost.onRenamed = function () {
   hpLoadLightStates();
 };
@@ -13139,19 +13463,67 @@ HC.registerPage(
   hpEditPage
 );
 
+/* Light placement in the Hue dashboard panel: Home Control's area editor (the room in three dimensions, the lights to drag, their tray) run in the light frame under the page's bar. In Home Control's own
+ menu the area page opens that editor on the bridge's area instead (hpEditOnBridge). */
+
+/* Light placement is Home Control's area editor (the room in three dimensions, the lights to drag, their tray), run in the light frame under this page's bar and drawn as the app draws it. DONE takes what it holds
+ back into the area's draft; it goes to the bridge with SAVE on the area, like the rest of the area's changes. */
+var HPPLACE = null;
+
+function hpPlacePage(b, id) {
+  hmBox(b);
+  hmGuard(hpAreaKey(id), true);
+  var wait = mk("div", "empty"),
+    token = (HPPLACE = {});
+  wait.textContent = _T("loading");
+  b.appendChild(wait);
+  hmLoad(b, ["entertainment_areas"], function (box) {
+    var x = hmEntArea(id);
+    if (!x) {
+      box.appendChild(hmCallout(_T("nothing_found")));
+      return;
+    }
+    var area = {
+        id: id,
+        name: hpAreaName(x),
+        lights: hpAreaLights(x).map(function (l) {
+          return { light_id: l.light, name: l.name, x: l.x, y: l.y, z: l.z, positions: l.positions, balance: l.balance };
+        }),
+      },
+      names = {};
+    area.lights.forEach(function (l) {
+      names[l.light_id] = l.name;
+    });
+    hpLightFrame(function (win) {
+      if (HPPLACE !== token) return;
+      wait.remove();
+      win.HuePopup.hide();
+      hpFrameShow(true);
+      win.HuePopup.area(area);
+      HC.onDone = function () {
+        var d = JSON.parse(win.HuePopup.areaDraft() || "null");
+        if (d) {
+          var lights = (d.kept || []).map(function (k) {
+            return { light: k.light, name: names[k.light] || String(k.light), x: k.x, y: k.y, z: k.z, balance: typeof k.balance === "number" ? k.balance : 1 };
+          });
+          (d.lights || []).forEach(function (l) {
+            var every = hpBarPositions(l),
+              first = every ? every[0] : { x: l.x, y: hpFlip(l.y), z: l.z };
+            lights.push({ light: hpHueId(l.id), name: hpName(l.id), x: first.x, y: first.y, z: first.z, positions: every || undefined, balance: typeof l.balance === "number" ? l.balance : 1 });
+          });
+          if (lights.length) hpStageLights(x, lights);
+        }
+        popBack();
+      };
+    });
+  });
+}
+
+HP_PAGES["app-place"] = ["hm_light_placement", "target", hpPlacePage];
+
 /* The Sync tab, as the Hue app draws it: the whole screen takes its colour from the cover of what plays; the Spotify mark at the top, the cover, where it plays, the title and the artist, Style, Intensity, Color
  and Brightness as four round-ended buttons (each opens a card over the screen, Brightness a slider that rises out of its button), and the bar with what is synced (WHAT), the button that starts and stops the
  sync and where it plays (WHERE, the entertainment area). The entities and what they accept are Hue Plus's own (the sync module: huesync.js). Without a Spotify sync the tab lists what there is as rows. */
-
-function hpSyncEntities(test) {
-  var h = H();
-  return Object.keys(h.states)
-    .filter(function (id) {
-      var e = h.entities[id];
-      return test(h, id) && !(e && e.hidden);
-    })
-    .sort();
-}
 
 var HP_SPOTIFY_MARK =
   "<svg viewBox='0 0 24 24' aria-hidden='true'><circle cx='12' cy='12' r='11' fill='#fff'/><path d='M5.6 9.3c4.2-1.2 9.2-.8 12.8 1.3M6.4 12.6c3.4-.9 7.1-.6 10 1M7.2 15.6c2.6-.7 5.2-.4 7.6.9' fill='none' stroke='#1b1c20' stroke-width='1.9' stroke-linecap='round'/></svg>";
@@ -13566,722 +13938,6 @@ function hpSyncTab(outer) {
 
 HP_PAGES["app-syncarea"] = ["app_entertainment_area", "target", hpSyncAreaPage];
 
-/* The pages of the app's Settings, as the app draws them: the Settings list, Devices (and where devices are added), Lights, Software update with its time of day, Smart home and the apps that can be linked,
- Entertainment areas with their edit page, light placement and brightness balancer. They are the Hue Plus menu's pages (what is read and written is the same); only the page is the app's. */
-
-HOST_ICONS.headphones = "<path d='M4 15v-3a8 8 0 0 1 16 0v3'/><rect x='3' y='14' width='4.5' height='7' rx='1.6'/><rect x='16.5' y='14' width='4.5' height='7' rx='1.6'/>";
-
-/* A round blue button in the top bar of a page (the app's plus on a list). */
-function hpBarPlus(b, label, fn) {
-  var root = b.parentNode,
-    bar = root && root.querySelector(".lbar");
-  if (!bar) return;
-  root.classList.add("plusbar");
-  var plus = hpRound("plus", label, fn);
-  plus.classList.add("blue");
-  bar.appendChild(plus);
-}
-
-function hpCount(n) {
-  return n === undefined || n === null ? "" : String(n);
-}
-
-/* ---- the Settings list ---- */
-
-function hpSettingsTab(box) {
-  var head = mk("div", "hd", "<h1></h1>");
-  head.querySelector("h1").textContent = _T("app_settings");
-  box.appendChild(head);
-  var inner = mk("div");
-  box.appendChild(inner);
-  hmBox(inner);
-  hmLoad(inner, HM_KINDS, function (list) {
-    list.appendChild(hmLabel(_T("hm_in_this_home")));
-    list.appendChild(
-      hmGroup([
-        hmRow({ icon: "lights", title: _T("hm_devices"), tap: "hue-devices" }),
-        hmRow({ icon: "plug", title: _T("hm_bridges"), tap: "app-bridges" }),
-        hmRow({ icon: "motion", title: _T("hm_motionaware_areas"), tap: "hue-motion" }),
-        hmRow({ icon: "target", title: _T("entertainment_areas"), tap: "hue-ent" }),
-        hmRow({ icon: "scene", title: _T("hm_smart_home"), tap: "hue-matter" }),
-        hmRow({ icon: "restart", title: _T("hm_software_update"), tap: "hue-updates" }),
-      ])
-    );
-    list.appendChild(hmLabel(_T("hm_advanced")));
-    list.appendChild(hmGroup([hmRow({ icon: "lock", title: _T("hm_applications"), tap: "hue-apps" })]));
-  });
-}
-
-/* ---- Devices and adding devices ---- */
-
-function hpDevicesPage(b) {
-  hmBox(b);
-  hmEnsure();
-  var E = hpBridgeEnts();
-  hpBarPlus(b, _T("app_add_devices"), function () {
-    showPopup("app-adddev", true);
-  });
-  b.appendChild(
-    hmGroup([
-      hmRow({
-        icon: "lamp",
-        title: _T("hm_lights_and_smart_plugs"),
-        val: function () {
-          return hpCount(hueplus.lights(H()).length);
-        },
-        tap: "hue-lights",
-        chev: true,
-      }),
-      hmRow({
-        icon: "switch",
-        title: _T("hm_switches"),
-        val: function () {
-          return HM.accessories ? hpCount(hmList("accessories").length) : "";
-        },
-        tap: "hue-switches",
-        chev: true,
-      }),
-    ])
-  );
-  if (E.search) b.dataset.search = "1";
-}
-
-/* Where do you want to add devices: the rooms of the bridge, and a new room. */
-function hpAddDevicesWhere(b) {
-  hmBox(b);
-  hmLoad(b, ["rooms"], function (box, r) {
-    box.appendChild(hmTitle("", _T("app_where_add_devices")));
-    box.appendChild(hmLabel((HM.bridge && HM.bridge.name) || _T("hue_bridge")));
-    var rows = (r.rooms || []).map(function (room) {
-      return hpNoChev(hmRow({ icon: "bed", title: room.name, tap: "app-adddev2:" + encodeURIComponent(room.name) }));
-    });
-    rows.push(hpNoChev(hmRow({ icon: "plus", title: _T("app_create_new_room"), tap: "hue-group", blue: true })));
-    var card = hmGroup(rows);
-    card.classList.add("card");
-    box.appendChild(card);
-  });
-}
-
-/* Add devices to a room: the bridge searches for new lights and switches, which then appear in its rooms. */
-function hpAddDevicesTo(b, id) {
-  hmBox(b);
-  var name = decodeURIComponent(id || ""),
-    E = hpBridgeEnts();
-  b.appendChild(hmTitle("", _T("app_add_devices_to") + " " + name, _T("app_add_devices_text")));
-  b.appendChild(
-    hmActions([
-      E.search
-        ? hmButton(_T("search_for_new_devices"), "primary", function () {
-            call("button", "press", { entity_id: E.search });
-            toast(_T("app_searching"));
-          })
-        : null,
-    ])
-  );
-}
-
-/* Lights and smart plugs: each one a row, a tap opens its settings. */
-function hpLightsListPage(b) {
-  hmBox(b);
-  var list = hueplus.lights(H());
-  if (!list.length) b.appendChild(hmCallout(_T("nothing_found")));
-  b.appendChild(
-    hmGroup(
-      list.map(function (id) {
-        return hmRow({
-          icon: "lamp",
-          title: hpName(id),
-          val: function () {
-            return V_(id) === "unavailable" ? _T("hm_unreachable") : "";
-          },
-          tap: "hue-light:" + id,
-        });
-      })
-    )
-  );
-}
-
-/* ---- Software update ---- */
-
-/* A wheel of values to scroll to one: the centre row is the choice. */
-function hpWheel(values, current, pick) {
-  var wheel = mk("div", "wheel"),
-    ROW = 36,
-    timer = null;
-  wheel.appendChild(mk("div", "pad"));
-  values.forEach(function (v) {
-    wheel.appendChild(mk("div", "wv")).textContent = String(v).length < 2 ? "0" + v : String(v);
-  });
-  wheel.appendChild(mk("div", "pad"));
-  var at = Math.max(0, values.indexOf(current));
-  requestAnimationFrame(function () {
-    wheel.scrollTop = at * ROW;
-  });
-  wheel.addEventListener("scroll", function () {
-    clearTimeout(timer);
-    timer = setTimeout(function () {
-      var i = Math.max(0, Math.min(values.length - 1, Math.round(wheel.scrollTop / ROW)));
-      pick(values[i]);
-    }, 140);
-  });
-  return wheel;
-}
-
-function hpUpdateTime(E) {
-  var raw = String(V_(E.auto_update_time) || "00:00").split(":"),
-    h = parseInt(raw[0], 10) || 0,
-    m = parseInt(raw[1], 10) || 0,
-    box = mk("div", "wheels"),
-    hours = [],
-    mins = [];
-  for (var i = 0; i < 24; i++) hours.push(i);
-  for (var j = 0; j < 60; j++) mins.push(j);
-  var send = function () {
-    call("time", "set_value", { entity_id: E.auto_update_time, time: (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m + ":00" });
-  };
-  box.appendChild(mk("div", "band"));
-  box.appendChild(
-    hpWheel(hours, h, function (v) {
-      if (v === h) return;
-      h = v;
-      send();
-    })
-  );
-  box.appendChild(
-    hpWheel(mins, m, function (v) {
-      if (v === m) return;
-      m = v;
-      send();
-    })
-  );
-  return box;
-}
-
-function hpUpdatesPage(b) {
-  hmBox(b);
-  var E = hpBridgeEnts(),
-    list = hueplus.updates(H());
-  var status = hmRow({
-    title: function () {
-      var n = hmUpdatesDue();
-      return n ? cntS(n, _T("update_available_2"), _T("updates_available")) : _T("hm_everything_is_up_to_date");
-    },
-    good: function () {
-      return !hmUpdatesDue();
-    },
-    check: function () {
-      return !hmUpdatesDue();
-    },
-  });
-  b.appendChild(hmGroup([status]));
-  if (E.auto_update) {
-    var auto = [
-      hmRow({
-        title: _T("automatic_updates"),
-        toggle: {
-          get: function () {
-            return isOn(E.auto_update);
-          },
-          set: function () {
-            toggleEnt(E.auto_update);
-          },
-        },
-      }),
-    ];
-    var g = hmGroup(auto);
-    if (E.auto_update_time) g.appendChild(hpUpdateTime(E));
-    b.appendChild(g);
-    if (E.auto_update_time) b.appendChild(mk("div", "pintro small")).textContent = _T("hm_updates_are_installed_at_this_time");
-  }
-  b.appendChild(hmLabel(_T("hm_devices")));
-  if (!list.length) b.appendChild(hmCallout(_T("nothing_found")));
-  b.appendChild(
-    hmGroup(
-      list.map(function (id) {
-        return hmRow({
-          title: hpName(id).replace(/ (bridge )?firmware$/i, ""),
-          sub: function () {
-            return A(id).installed_version || "";
-          },
-          val: function () {
-            return V_(id) === "on" ? hmUpdateText(id) : "";
-          },
-          tap: function () {
-            if (V_(id) !== "on") return;
-            confirmDlg(_T("install_this_update"), function () {
-              call("update", "install", { entity_id: id });
-            });
-          },
-        });
-      })
-    )
-  );
-  if (E.check_update)
-    b.appendChild(
-      hmActions([
-        hmButton(_T("check_for_an_update"), "ghost", function () {
-          call("button", "press", { entity_id: E.check_update });
-        }),
-      ])
-    );
-}
-
-/* ---- Smart home ---- */
-
-var HP_LINK_APPS = ["Apple Home", "Amazon Alexa", "Google Home", "Smart Things", "Sonos Voice Control"];
-
-function hpSmartHomePage(b) {
-  hmBox(b);
-  var E = hpBridgeEnts(),
-    f = (E.matter_fabrics && A(E.matter_fabrics).fabrics) || [];
-  hpBarPlus(b, _T("app_link_an_app"), function () {
-    showPopup("app-link", true);
-  });
-  b.appendChild(hmLabel(_T("hm_linked_to_hue")));
-  if (!f.length) b.appendChild(hmCallout(_T("nothing_connected")));
-  else
-    b.appendChild(
-      hmGroup(
-        f.map(function (x) {
-          return hmRow({
-            icon: "home",
-            title: x.label || x.vendor || _T("app_matter_controller"),
-            sub: [x.vendor, x.status].filter(Boolean).join(" · "),
-            tap: function () {
-              confirmDlg(_T("disconnect_this_matter_app_from_the_bridge"), function () {
-                call("hue_plus", "remove_matter_fabric", { fabric: x.id, confirm: true });
-                popBack();
-              });
-            },
-          });
-        })
-      )
-    );
-}
-
-function hpLinkPage(b) {
-  hmBox(b);
-  b.appendChild(hmTitle("", _T("app_what_to_link")));
-  var grid = mk("div", "pgrid");
-  HP_LINK_APPS.concat([_T("app_other_apps")]).forEach(function (name) {
-    var t = mk("div", "ptile", "<span class='ic'></span><b></b>");
-    t.querySelector(".ic").textContent = name.charAt(0);
-    t.querySelector("b").textContent = name;
-    hpActive(t, function () {
-      showPopup("app-link2", true);
-    });
-    grid.appendChild(t);
-  });
-  b.appendChild(grid);
-}
-
-function hpLinkAnother(b) {
-  hmBox(b);
-  b.appendChild(hmTitle("", _T("app_link_another_app"), _T("hm_matter_pairing_code_note")));
-}
-
-/* ---- Entertainment areas ---- */
-
-function hpAreasPage(b) {
-  hmBox(b);
-  hpBarPlus(b, _T("app_new_area"), function () {
-    showPopup("app-newarea", true);
-  });
-  hmLoad(b, ["entertainment_areas"], function (box, r) {
-    var list = r.entertainment_areas || [];
-    if (!list.length) box.appendChild(hmCallout(_T("nothing_found")));
-    else
-      box.appendChild(
-        hmGroup(
-          list.map(function (x) {
-            return hpNoChev(hmRow({ icon: "headphones", title: x.name, tap: "hue-area:" + x.id }));
-          })
-        )
-      );
-  });
-}
-
-var HP_AREA_TYPES = ["screen", "monitor", "music", "3dspace", "other"];
-
-/* A new area: its name, what it is for, and the lights in it. The lights start in a row; Light placement on the area's page puts them where they are. */
-function hpNewAreaPage(b) {
-  hmBox(b);
-  var picked = {},
-    type = "other",
-    name = mk("input", "sq pin");
-  name.type = "text";
-  name.maxLength = 32;
-  name.placeholder = _T("app_name");
-  b.appendChild(hmTitle("", _T("app_new_area")));
-  var field = mk("div", "pfield");
-  field.appendChild(name);
-  b.appendChild(field);
-  b.appendChild(hmLabel(_T("app_area_type")));
-  b.appendChild(
-    hmGroup(
-      HP_AREA_TYPES.map(function (t) {
-        return hmRow({
-          title: _T("app_area_" + t),
-          check: function () {
-            return type === t;
-          },
-          tap: function () {
-            type = t;
-            refresh();
-          },
-        });
-      })
-    )
-  );
-  b.appendChild(hmLabel(_T("hm_lights_label")));
-  var lights = hueplus.lights(H()).filter(hpHueId);
-  b.appendChild(
-    hmGroup(
-      lights.map(function (e) {
-        return hmRow({
-          icon: "lamp",
-          title: hpName(e),
-          check: function () {
-            return !!picked[e];
-          },
-          tap: function () {
-            picked[e] = !picked[e];
-            refresh();
-          },
-        });
-      })
-    )
-  );
-  b.appendChild(
-    hmActions([
-      hmButton(_T("app_create"), "primary", function () {
-        var chosen = lights.filter(function (e) {
-          return picked[e];
-        });
-        if (!name.value.trim()) {
-          toast(_T("give_the_area_a_name"));
-          return;
-        }
-        if (!chosen.length) {
-          toast(_T("add_at_least_one_light"));
-          return;
-        }
-        var step = chosen.length > 1 ? 1.6 / (chosen.length - 1) : 0;
-        hpCall("hue_plus", "create_entertainment_area", {
-          name: name.value.trim(),
-          area_type: type,
-          lights: chosen.map(function (e, i) {
-            return { light: hpHueId(e), x: chosen.length > 1 ? -0.8 + i * step : 0, y: 0, z: 0 };
-          }),
-        }).then(
-          function () {
-            toast(_T("hm_saved_to_the_bridge"));
-            HM_READY = false;
-            popBack();
-            hmEnsure();
-          },
-          function () {
-            toast(_T("hm_the_bridge_did_not_accept_this"));
-          }
-        );
-      }),
-    ])
-  );
-}
-
-/* What the area has for its lights: the draft when something was changed, else the bridge's. */
-function hpAreaKey(id) {
-  return hmdKey("area", id);
-}
-
-function hpAreaBase(x) {
-  return (x.lights || []).map(function (l) {
-    var o = { light: l.light_id, name: l.name || String(l.light_id), x: l.x || 0, y: l.y || 0, z: l.z || 0, balance: typeof l.balance === "number" ? l.balance : 1 };
-    /* every position the bridge holds (the ends of a strip or tube) */
-    if (Array.isArray(l.positions) && l.positions.length > 1) o.positions = l.positions;
-    return o;
-  });
-}
-
-function hpAreaLights(x) {
-  return hmdValue(hpAreaKey(x.id), "lights", hpAreaBase(x));
-}
-
-function hpAreaName(x) {
-  return hmdValue(hpAreaKey(x.id), "name", x.name);
-}
-
-function hpStageLights(x, lights) {
-  hmdStage(hpAreaKey(x.id), "lights", lights, hpAreaBase(x));
-}
-
-/* The area's changes (its lights, their places, its name) go to the bridge with the rest of the area's draft. */
-var hpSaveAreaRest = hmSaveArea;
-hmSaveArea = function (id, ch) {
-  var job = Promise.resolve();
-  if (ch.lights || ch.name) {
-    var data = { area: id };
-    if (ch.name) data.name = ch.name;
-    if (ch.lights)
-      data.lights = ch.lights.map(function (l) {
-        var item = { light: l.light, x: l.x, y: l.y, z: l.z, balance: l.balance };
-        if (l.positions) item.positions = l.positions;
-        return item;
-      });
-    job = hpCall("hue_plus", "update_entertainment_area", data);
-  }
-  var rest = Object.assign({}, ch);
-  delete rest.lights;
-  delete rest.name;
-  return job.then(function () {
-    return hpSaveAreaRest(id, rest);
-  });
-};
-
-/* The edit page of an area, as the app draws it: its icon and name, its lights (each can be taken out, a blue plus adds one), then placement, brightness balance, what happens when the sync stops, performance and Delete. */
-function hpAreaPage(b, id) {
-  hmBox(b);
-  hmGuard(hpAreaKey(id));
-  hmLoad(b, ["entertainment_areas", "scenes"], function (box, r, again) {
-    var x = hmEntArea(id);
-    if (!x) {
-      box.appendChild(hmCallout(_T("nothing_found")));
-      return;
-    }
-    var head = mk("div", "swhead named", "<span class='ic'></span><div class='nm'></div>"),
-      pen = hpRound("edit", _T("app_rename"), function () {
-        hpPrompt(_T("app_name"), hpAreaName(x), function (v) {
-          hmdStage(hpAreaKey(id), "name", v, x.name);
-          refresh();
-        });
-      });
-    head.querySelector(".ic").innerHTML = svg("headphones");
-    head.appendChild(pen);
-    box.appendChild(head);
-    var label = mk("div", "lbrow"),
-      text = mk("div", "lbtitle"),
-      add = hpRound("plus", _T("app_add_a_light"), function () {
-        showPopup("app-areaadd:" + id, true);
-      });
-    add.classList.add("blue");
-    text.textContent = _T("hm_lights_label");
-    label.appendChild(text);
-    label.appendChild(add);
-    box.appendChild(label);
-    var tiles = mk("div", "ltiles areal");
-    box.appendChild(tiles);
-    function draw() {
-      head.querySelector(".nm").textContent = hpAreaName(x);
-      tiles.innerHTML = "";
-      hpAreaLights(x).forEach(function (l) {
-        var t = mk("div", "ptile sm", "<span class='ic'></span><b></b>"),
-          minus = mk("button", "minus", svg("minus"));
-        minus.type = "button";
-        minus.setAttribute("aria-label", _T("app_remove"));
-        t.querySelector(".ic").innerHTML = svg("lamp");
-        t.querySelector("b").textContent = l.name;
-        minus.addEventListener("click", function () {
-          var rest = hpAreaLights(x).filter(function (o) {
-            return o.light !== l.light;
-          });
-          if (!rest.length) {
-            toast(_T("add_at_least_one_light"));
-            return;
-          }
-          hpStageLights(x, rest);
-          draw();
-        });
-        t.appendChild(minus);
-        tiles.appendChild(t);
-      });
-    }
-    draw();
-    reg(draw);
-    box.appendChild(
-      hmGroup([
-        hpNoChev(hmRow({ title: _T("hm_light_placement"), tap: "app-place:" + id, val: "" })),
-        hmRow({
-          title: _T("app_balancer"),
-          val: function () {
-            return hpAreaLights(x).every(function (l) {
-              return l.balance === 1;
-            })
-              ? _T("app_default")
-              : _T("app_custom");
-          },
-          tap: "app-balance:" + id,
-        }),
-        hmRow({
-          title: _T("hm_when_sync_stops"),
-          val: function () {
-            return _T("end_" + hmAreaEnd(x).end_state);
-          },
-          tap: "hue-end:" + id,
-        }),
-        hmRow({
-          title: _T("hm_performance"),
-          val: function () {
-            return hmAreaPerf(x).mode === "manual" ? _T("hm_manual") : _T("hm_auto");
-          },
-          tap: "hue-perf:" + id,
-        }),
-      ])
-    );
-    box.appendChild(
-      hmActions([
-        hmButton(_T("hm_delete"), "danger", function () {
-          confirmDlg(_T("hm_delete_this_entertainment_area"), function () {
-            hmdDiscard(hpAreaKey(id));
-            call("hue_plus", "delete_entertainment_area", { area: id, confirm: true });
-            HM_READY = false;
-            closePopup();
-            hmEnsure();
-          });
-        }),
-      ])
-    );
-  });
-}
-
-/* The lights that can still be added to an area. */
-function hpAreaAddPage(b, id) {
-  hmBox(b);
-  hmGuard(hpAreaKey(id), true);
-  hmLoad(b, ["entertainment_areas"], function (box) {
-    var x = hmEntArea(id),
-      have = hpAreaLights(x).map(function (l) {
-        return l.light;
-      }),
-      free = hueplus.lights(H()).filter(function (e) {
-        return hpHueId(e) && have.indexOf(hpHueId(e)) < 0;
-      });
-    if (!free.length) box.appendChild(hmCallout(_T("nothing_found")));
-    box.appendChild(
-      hmGroup(
-        free.map(function (e) {
-          return hmRow({
-            icon: "lamp",
-            title: hpName(e),
-            tap: function () {
-              hpStageLights(x, hpAreaLights(x).concat([{ light: hpHueId(e), name: hpName(e), x: 0, y: 0, z: 0, balance: 1 }]));
-              popBack();
-            },
-          });
-        })
-      )
-    );
-  });
-}
-
-/* Light placement is Home Control's area editor (the room in three dimensions, the lights to drag, their tray), run in the light frame under this page's bar and drawn as the app draws it. DONE takes what it holds
- back into the area's draft; it goes to the bridge with SAVE on the area, like the rest of the area's changes. */
-var HPPLACE = null;
-
-function hpPlacePage(b, id) {
-  hmBox(b);
-  hmGuard(hpAreaKey(id), true);
-  var wait = mk("div", "empty"),
-    token = (HPPLACE = {});
-  wait.textContent = _T("loading");
-  b.appendChild(wait);
-  hmLoad(b, ["entertainment_areas"], function (box) {
-    var x = hmEntArea(id);
-    if (!x) {
-      box.appendChild(hmCallout(_T("nothing_found")));
-      return;
-    }
-    var area = {
-        id: id,
-        name: hpAreaName(x),
-        lights: hpAreaLights(x).map(function (l) {
-          return { light_id: l.light, name: l.name, x: l.x, y: l.y, z: l.z, positions: l.positions, balance: l.balance };
-        }),
-      },
-      names = {};
-    area.lights.forEach(function (l) {
-      names[l.light_id] = l.name;
-    });
-    hpLightFrame(function (win) {
-      if (HPPLACE !== token) return;
-      wait.remove();
-      win.HuePopup.hide();
-      hpFrameShow(true);
-      win.HuePopup.area(area);
-      HC.onDone = function () {
-        var d = JSON.parse(win.HuePopup.areaDraft() || "null");
-        if (d) {
-          var lights = (d.kept || []).map(function (k) {
-            return { light: k.light, name: names[k.light] || String(k.light), x: k.x, y: k.y, z: k.z, balance: typeof k.balance === "number" ? k.balance : 1 };
-          });
-          (d.lights || []).forEach(function (l) {
-            var every = hpBarPositions(l),
-              first = every ? every[0] : { x: l.x, y: hpFlip(l.y), z: l.z };
-            lights.push({ light: hpHueId(l.id), name: hpName(l.id), x: first.x, y: first.y, z: first.z, positions: every || undefined, balance: typeof l.balance === "number" ? l.balance : 1 });
-          });
-          if (lights.length) hpStageLights(x, lights);
-        }
-        popBack();
-      };
-    });
-  });
-}
-
-/* Brightness balancer: how bright each light of the area is next to the others. */
-function hpBalancePage(b, id) {
-  hmBox(b);
-  hmGuard(hpAreaKey(id), true);
-  hmLoad(b, ["entertainment_areas"], function (box) {
-    var x = hmEntArea(id);
-    hpAreaLights(x).forEach(function (l) {
-      box.appendChild(
-        sliderRow({
-          icon: "lamp",
-          name: l.name,
-          min: 0.2,
-          max: 2,
-          step: 0.1,
-          get: function () {
-            var cur = hpAreaLights(x).filter(function (o) {
-              return o.light === l.light;
-            })[0];
-            return cur ? cur.balance : 1;
-          },
-          fmt: function (v) {
-            return v.toFixed(1) + "×";
-          },
-          on: function () {
-            return true;
-          },
-          commit: function (v) {
-            hpStageLights(
-              x,
-              hpAreaLights(x).map(function (o) {
-                return o.light === l.light ? Object.assign({}, o, { balance: Math.round(v * 10) / 10 }) : o;
-              })
-            );
-            refresh();
-          },
-        })
-      );
-    });
-  });
-}
-
-HP_PAGES["hue-devices"] = ["hm_devices", "lights", hpDevicesPage];
-HP_PAGES["app-adddev"] = ["app_add_devices", "plus", hpAddDevicesWhere];
-HP_PAGES["app-adddev2"] = ["app_add_devices", "plus", hpAddDevicesTo];
-HP_PAGES["hue-lights"] = ["hm_lights_and_smart_plugs", "lamp", hpLightsListPage];
-HP_PAGES["hue-updates"] = ["hm_software_update", "restart", hpUpdatesPage];
-HP_PAGES["hue-matter"] = ["hm_smart_home", "scene", hpSmartHomePage];
-HP_PAGES["app-link"] = ["hm_smart_home", "scene", hpLinkPage];
-HP_PAGES["app-link2"] = ["hm_smart_home", "scene", hpLinkAnother];
-HP_PAGES["hue-ent"] = ["entertainment_areas", "target", hpAreasPage];
-HP_PAGES["hue-area"] = ["app_edit", "target", hpAreaPage];
-HP_PAGES["app-areaadd"] = ["app_add_a_light", "plus", hpAreaAddPage];
-HP_PAGES["app-place"] = ["hm_light_placement", "target", hpPlacePage];
-HP_PAGES["app-balance"] = ["app_balancer", "tune", hpBalancePage];
-HP_PAGES["app-newarea"] = ["app_new_area", "plus", hpNewAreaPage];
-
 /* The edit mode of a room, as the Hue app has it (its room edit screens): the header is the room's icon and name with a pencil and DONE; every section has SELECT ALL; a tile that is tapped is
  chosen (a blue line around it); the tab bar gives way to what can be done: REARRANGE while nothing is chosen (the tiles are then held and dragged), MOVE TO, EDIT and DELETE for what is chosen. */
 
@@ -14486,7 +14142,8 @@ function hpEditDelete(room, sel, after) {
       var job = Promise.resolve();
       items.forEach(function (x) {
         job = job.then(function () {
-          if (x.kind === "light" || x.kind === "switch") return hpCall("hue_plus", "remove_device", { device: x.name, confirm: true });
+          if (x.kind === "light") return hpCall("hue_plus", "remove_device", { light: A(x.id).hue_light_id, confirm: true });
+          if (x.kind === "switch") return hpCall("hue_plus", "remove_device", { device: x.id, confirm: true });
           if (x.kind === "scene") return hpCall("hue_plus", "delete_scene", { scene: hueSceneUid(x.id), confirm: true });
           hpSaveUserFolders(
             room,

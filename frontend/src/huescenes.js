@@ -149,94 +149,110 @@ function hueSceneToggle(id) {
   else hueSceneStart(id);
 }
 
-
-/* The scene settings of the bridge for a moving scene (the speed it starts with, Auto-play, Colors and Reset scene), written with update_scene. */
-function hueSceneBridge(b, id) {
-  var P = HUESCENES,
-    uid = hueSceneUid(id),
-    st = { speed: 0.5, auto: false };
-  function save(change, done) {
-    return Promise.resolve(callRaw("hue_plus", "update_scene", Object.assign({ scene: uid }, change))).then(
-      function () {
-        if (done) toast(done);
-      },
-      function () {
-        toast(_T("hn_couldn_t_save_the_scene"));
+/* The lights a scene has: the lights of its own room or zone, each with its room (lights of different rooms can have one name), a tick for the ones in the scene. */
+function hueSceneLightsPage(b, key) {
+  var sid = String(key).split("~")[0],
+    uid = hueSceneUid(sid),
+    box = mk("div"),
+    chosen = {},
+    all = [];
+  b.appendChild(box);
+  box.appendChild(mkHint(_T("loading")));
+  hueplus.resources(["scenes", "rooms", "zones"]).then(
+    function (r) {
+      var s = ((r || {}).scenes || []).filter(function (x) {
+          return x.id === uid;
+        })[0],
+        group = s && ((s.group_type === "zone" ? r.zones : r.rooms) || []).filter(function (g) {
+          return g.id === s.group_id;
+        })[0];
+      box.innerHTML = "";
+      if (!s || !group) {
+        box.appendChild(mkHint(_T("nothing_found")));
+        return;
       }
-    );
-  }
-  b.appendChild(sep(_T("hn_scene_settings"), "tune"));
-  hueplus.resources(["scenes"]).then(function (r) {
-    var s = ((r || {}).scenes || []).filter(function (x) {
-      return x.id === uid;
-    })[0];
-    if (!s) return;
-    st.speed = s.speed;
-    st.auto = !!s.auto_dynamic;
-    refresh();
-  }, function () {});
-  b.appendChild(
-    sliderRow({
-      icon: "tune",
-      name: _T("hn_default_speed"),
-      min: 1,
-      max: P.speedSteps,
-      step: 1,
-      get: function () {
-        return P.speedToStep(Math.round(st.speed * 100));
-      },
-      fmt: function (v) {
-        return v + " / " + P.speedSteps;
-      },
-      commit: function (v) {
-        st.speed = P.stepToSpeed(v) / 100;
-        save({ speed: st.speed });
-      },
-    })
-  );
-  b.appendChild(
-    pill("play", _T("app_auto_play"), {
-      sub: function () {
-        return _T("app_auto_play_sub");
-      },
-      on: function () {
-        return st.auto;
-      },
-      tap: function () {
-        st.auto = !st.auto;
-        save({ auto_dynamic: st.auto });
-        refresh();
-      },
-    })
-  );
-  var g = mk("div", "gridl g2");
-  g.appendChild(
-    pill("swap", _T("app_colors"), {
-      sub: function () {
-        return _T("hn_colors_sub");
-      },
-      tap: function () {
-        save({ recolor: "shuffle" }, _T("hn_colors_done"));
-      },
-    })
-  );
-  g.appendChild(
-    pill("restart", _T("app_reset_scene"), {
-      sub: function () {
-        return _T("hn_reset_sub");
-      },
-      tap: function () {
-        confirmDlg(_T("hn_reset_question"), function () {
-          save({ recolor: "reset" }, _T("hn_reset_done"));
+      var roomOf = {};
+      (r.rooms || []).forEach(function (g) {
+        (g.lights || []).forEach(function (l) {
+          roomOf[l] = g.name;
         });
-      },
-    })
+      });
+      all = group.light_items || [];
+      (s.lights || []).forEach(function (l) {
+        chosen[l] = true;
+      });
+      box.appendChild(mkHint(_T("hn_scene_lights_hint")));
+      box.appendChild(
+        pill("light", _T("hn_all_lights"), {
+          check: function () {
+            return all.every(function (l) {
+              return chosen[l.id];
+            });
+          },
+          tap: function () {
+            var every = all.every(function (l) {
+              return chosen[l.id];
+            });
+            all.forEach(function (l) {
+              chosen[l.id] = !every;
+            });
+            refresh();
+          },
+        })
+      );
+      all.forEach(function (l) {
+        box.appendChild(
+          pill("light", l.name, {
+            sub: function () {
+              return roomOf[l.id] || "";
+            },
+            check: function () {
+              return !!chosen[l.id];
+            },
+            tap: function () {
+              chosen[l.id] = !chosen[l.id];
+              refresh();
+            },
+          })
+        );
+      });
+      function save() {
+        var wanted = all
+          .filter(function (l) {
+            return chosen[l.id];
+          })
+          .map(function (l) {
+            return l.id;
+          });
+        if (!wanted.length) {
+          toast(_T("hn_a_scene_needs_a_light"));
+          return;
+        }
+        Promise.resolve(callRaw("hue_plus", "update_scene", { scene: uid, lights: wanted })).then(
+          function () {
+            toast(_T("hn_the_scene_has_these_lights"));
+            /* a host that keeps the bridge's scenes (the Hue Plus panel) reads them again */
+            if (window.HueHost && window.HueHost.onSceneChanged) window.HueHost.onSceneChanged();
+            popBack();
+          },
+          function () {
+            toast(_T("hn_couldn_t_save_the_scene"));
+          }
+        );
+      }
+      /* the panel has DONE in the bar of the page; Home Control has a row at the end */
+      if (typeof HC !== "undefined" && HC.keepsBridgeData) HC.onDone = save;
+      else box.appendChild(pill("check", _T("hn_save"), { tap: save }));
+    },
+    function () {
+      box.innerHTML = "";
+      box.appendChild(mkHint(_T("couldn_t_read_the_hue_bridge")));
+    }
   );
-  b.appendChild(g);
 }
 
-/* The popup of a Hue scene. A static scene has only what a classic scene has (importing it as one, hiding it); a live one has: brightness (follows the room live), speed (starts the scene again at the new speed), play (live) and freeze (a still picture). */
-function hueScenePopup(b, id, room) {
+/* The brightness and speed of a Hue scene and playing it live: what anyone can do with a Hue scene. A still scene has only what a classic scene has. */
+function hueScenePlayPopup(b, id) {
   var P = HUESCENES,
     stat = A(id).is_dynamic === false;
   function grp() {
@@ -298,6 +314,9 @@ function hueScenePopup(b, id, room) {
           var st = hueSceneSet(id);
           st.speed = P.stepToSpeed(v);
           hueSceneSave(id, st);
+          /* the speed is also the one the scene starts with on the bridge (and in the Hue app) */
+          if (isAdmin() && hueplus.has(H(), "update_scene"))
+            callRaw("hue_plus", "update_scene", { scene: hueSceneUid(id), speed: st.speed / 100 });
           if (playing()) hueSceneStart(id);
         },
       })
@@ -324,6 +343,18 @@ function hueScenePopup(b, id, room) {
     );
     b.appendChild(g2);
   }
+}
+
+/* What Home Control adds under a scene's popup: importing it as a scene of the dashboard, changing the lights of a still scene, hiding it from the room. */
+function hueSceneExtras(b, id, room) {
+  var P = HUESCENES,
+    stat = A(id).is_dynamic === false;
+  function grp() {
+    return P.group(H(), id);
+  }
+  function playing() {
+    return P.active(H(), id) && P.playing(H(), grp());
+  }
   if (isAdmin() && hueImportable())
     b.appendChild(
       pill(stat ? "scene" : "palette", _T(stat ? "import_as_a_classic_scene" : "import_as_a_live_scene"), {
@@ -332,40 +363,6 @@ function hueScenePopup(b, id, room) {
         },
         tap: function () {
           importLiveScene(stat ? "hue-classic" : "hue", id);
-        },
-      })
-    );
-  /* In edit mode, the scene can be changed the way the Hue app changes it, and it is written to the bridge. */
-  if (isEditing() && isAdmin() && hueplus.has(H(), "update_scene") && stat) {
-    b.appendChild(
-      pill("light", _T("hn_change_the_lights"), {
-        sub: function () {
-          return _T("hn_change_the_lights_sub");
-        },
-        tap: function () {
-          hueSceneEdit(id, room);
-        },
-      })
-    );
-    b.appendChild(
-      pill("edit", _T("hn_rename"), {
-        tap: function () {
-          hueSceneRename(id);
-        },
-      })
-    );
-  }
-  /* What the bridge keeps of a moving scene, as the Hue app's scene settings have it: the speed it starts with, whether it plays by itself, and the two buttons that give its colours to the lights again. */
-  if (isEditing() && isAdmin() && hueplus.has(H(), "update_scene") && !stat) hueSceneBridge(b, id);
-  if (isEditing() && isAdmin() && hueplus.has(H(), "delete_scene"))
-    b.appendChild(
-      pill("trash", _T("hn_delete_scene"), {
-        tap: function () {
-          confirmDlg(_T("hn_delete_scene") + ": " + (A(id).name || id) + "?", function () {
-            hueSceneRemove(id).then(function () {
-              closeSheet();
-            });
-          });
         },
       })
     );
@@ -382,3 +379,26 @@ function hueScenePopup(b, id, room) {
       })
     );
 }
+
+/* The popup of a Hue scene: its brightness and speed and playing it. An administrator also has Edit scene, the panel's scene settings page (name, auto-play, lights, Colors, Reset scene, Delete), and what Home Control adds. */
+function hueScenePopup(b, id, room) {
+  if (isAdmin() && hueplus.has(H(), "update_scene")) {
+    hueScenePlayPopup(b, id);
+    b.appendChild(
+      pill("edit", _T("app_edit_scene"), {
+        sub: function () {
+          return _T("app_edit_scene_sub");
+        },
+        tap: function () {
+          showPopup("app-scene:" + id + "~", true);
+        },
+      })
+    );
+    hueSceneExtras(b, id, room);
+    return;
+  }
+  hueScenePlayPopup(b, id);
+}
+
+/* The page of the lights a scene has (the loaded file stands alone in the tests, which have no pages). */
+if (typeof HP_PAGES !== "undefined") HP_PAGES["hue-scene-lights"] = ["hn_scene_lights", "light", hueSceneLightsPage];

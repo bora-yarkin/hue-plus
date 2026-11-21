@@ -268,6 +268,9 @@ update_scene:
     "actions":
       selector:
         object: {}
+    "lights":
+      selector:
+        object: {}
     "recolor":
       selector:
         select:
@@ -616,7 +619,9 @@ search_for_devices:
 remove_device:
   fields:
     "device":
-      required: true
+      selector:
+        text: {}
+    "light":
       selector:
         text: {}
     "confirm":

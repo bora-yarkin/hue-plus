@@ -4,6 +4,24 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.22.5] - 2026-11-21
+
+### Changed
+- **Home Control's Hue Plus menu is the panel's own pages.** Settings > Hue Plus shows Automations, Sync and Settings with every page behind them (devices, switches and their buttons, areas, bridges, light settings, scene settings), the same code the Hue dashboard runs, in Home Control's theme and without the colour wheel (Home Control's Lights section has it). A scene's popup there is as in the Hue app: Brightness, Speed, Play and Freeze, and an Edit scene row that opens the scene settings (Colors and effects, which opens the colour wheel editor on the scene's own lights at once, with SAVE; then Colors, auto-play, name, Reset scene, Delete) as plain rows. Pages that were written twice, once for the menu and once for the panel, are now one.
+
+### Fixed
+- **Two lights with the same name in different rooms were taken for each other.** The panel found a room's lights by the names the room lists, so a light named *Ceiling* was in every room that has one. A room's lights are now found by the bridge's ids. A zone, an entertainment area, the Devices list and the lights page of a scene say which room each light is in, and an area's light list in Home Control does too.
+- **Removing a light sent its name to the bridge**, which could not tell two lights of one name apart (or removed the wrong one). It sends the light's id (`remove_device` takes `light`).
+- Sending a Home Control area to the bridge by name no longer changes one of two bridge areas that have the same name; it says so instead.
+
+### Added
+- **A scene's colour editor can take lights out and add lights** (`update_scene` takes `lights` together with `record_current`: the scene has exactly those lights, each as it looks now). Home Control's editor shows a minus on each light tile and a plus tile listing the other lights of the room or zone (needs Home Control with the same feature).
+- **A scene's lights can be chosen** (`update_scene` takes `lights`): the lights of the scene's own room or zone, each with its room, the ticked ones are the scene's, one that is added plays a colour of a moving scene's palette (else how it looks now). The panel's scene page has its pencil by Lights, Home Control's scene popup has a Lights row.
+- **Home Control's scene popup has the scene settings of the panel, outside edit mode too**: Rename, Lights, Auto-play, Colors and Reset scene; its Speed slider also sets the speed the scene starts with on the bridge. Home Control keeps the choice of a room or zone when a scene is added (the panel goes straight on for the room it is in).
+
+### Changed
+- Colors (shuffle) keeps to the lights the scene has; Reset scene gives the palette to every light of the room or zone, as a scene from the Hue gallery has it.
+
 ## [0.21.11] - 2026-11-21
 
 ### Added

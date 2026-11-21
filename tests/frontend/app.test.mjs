@@ -8,10 +8,12 @@ import vm from "node:vm";
 
 const root = new URL("../../", import.meta.url);
 const read = (path) => readFileSync(new URL(path, root), "utf8");
-const APP_FILES = ["shell.js", "home.js", "sortable.js", "scenes.js", "switchpages.js", "cyclepage.js", "lightsettings.js", "autotab.js", "light.js", "syncpage.js", "menupages.js", "roomedit.js"].map((f) => read(`frontend/app/${f}`));
+const APP_FILES = ["shell.js", "home.js", "scenes.js", "light.js", "placepage.js", "syncpage.js", "roomedit.js"].map((f) => read(`frontend/app/${f}`));
+const SHARED_APP_FILES = ["hueapp.js", "huesortable.js", "huesettings.js", "hueswitch.js", "huecycle.js", "huelightpage.js", "hueauto.js"].map((f) => read(`frontend/src/${f}`));
 const host = read("frontend/app/host.js");
 const bundle = read("custom_components/hue_plus/frontend/app.js");
-const plugin = [...APP_FILES, ...["huemenu.js", "huepicker.js", "huewizard.js", "hueedit.js", "humotion.js", "huerooms.js", "huesync.js", "huescenes.js", "huestyle.js"].map((f) => read(`frontend/src/${f}`))].join("\n");
+const PANEL_PAGES = [...APP_FILES, ...SHARED_APP_FILES];
+const plugin = [...APP_FILES, ...SHARED_APP_FILES, ...["huemenu.js", "huepicker.js", "huewizard.js", "hueedit.js", "humotion.js", "huerooms.js", "huesync.js", "huescenes.js", "huestyle.js"].map((f) => read(`frontend/src/${f}`))].join("\n");
 const strings = read("frontend/src/strings.js");
 
 // The words the host itself holds, the table (EN) in host.js.
@@ -19,14 +21,14 @@ const hostTable = host.slice(host.indexOf("var EN = {"), host.indexOf("\n  };", 
 const hasText = (key) => strings.includes(`"${key}":`) || hostTable.includes(`"${key}":`) || hostTable.includes(`${key}:`);
 
 test("every text the panel's own pages use is defined", () => {
-  const keys = new Set(APP_FILES.join("\n").matchAll(/_T\("([a-z0-9_]+)"\)/g).map((m) => m[1]));
+  const keys = new Set(PANEL_PAGES.join("\n").matchAll(/_T\("([a-z0-9_]+)"\)/g).map((m) => m[1]));
   assert.ok(keys.size > 20);
   for (const key of keys) assert.ok(hasText(key), `${key} has no text`);
 });
 
 test("every page the panel opens is registered by the panel or by the Hue Plus menu", () => {
   const registered = new Set([...plugin.matchAll(/HP_PAGES\["([a-z0-9-]+)"\]\s*=|^\s*"([a-z0-9-]+)": \[/gm)].map((m) => m[1] || m[2]));
-  for (const m of APP_FILES.join("\n").matchAll(/(?:showPopup\(|tap: )"([a-z-]+)(?::|")/g)) assert.ok(registered.has(m[1]) || /^app-/.test(m[1]), `${m[1]} is opened but has no page`);
+  for (const m of PANEL_PAGES.join("\n").matchAll(/(?:showPopup\(|tap: )"([a-z-]+)(?::|")/g)) assert.ok(registered.has(m[1]) || /^app-/.test(m[1]) || m[1] === "light", `${m[1]} is opened but has no page`);
 });
 
 test("no function of the bundle is declared twice (the later one would silently replace the first)", () => {
@@ -43,19 +45,19 @@ test("the bundle is plain script that can be loaded as a classic script", () => 
 });
 
 test("nothing a bridge or a device names is put into the page as markup", () => {
-  for (const code of APP_FILES) {
+  for (const code of PANEL_PAGES) {
     for (const m of code.matchAll(/\.innerHTML\s*=\s*([^;]+);/g)) assert.ok(!/friendly_name|\.name\b|attributes/.test(m[1]), `innerHTML takes a name: ${m[0]}`);
   }
 });
 
 test("the panel does not write to the bridge except through Hue Plus services, the light and scene services, a device's firmware update and the settings of Hue Plus's own entities", () => {
-  const calls = [...APP_FILES.join("\n").matchAll(/\bcall(?:Raw|Live)?\("([a-z_]+)",\s*"([a-z_]+)"/g)].map((m) => `${m[1]}.${m[2]}`);
+  const calls = [...PANEL_PAGES.join("\n").matchAll(/\bcall(?:Raw|Live)?\("([a-z_]+)",\s*"([a-z_]+)"/g)].map((m) => `${m[1]}.${m[2]}`);
   for (const call of calls) assert.ok(/^(light\.|hue_plus\.|scene\.|update\.install|select\.select_option|number\.set_value|time\.set_value|switch\.turn_o(n|ff)|button\.press)/.test(call), `${call} is not a service the panel should call`);
 });
 
 test("nothing is kept in Home Assistant: the panel and the frame of the light panel do not read or write its saved data", () => {
   const popup = read("custom_components/hue_plus/frontend/popup.html");
-  for (const code of [...APP_FILES, host, popup]) assert.ok(!/set_user_data|set_system_data|get_user_data|get_system_data|subscribe_system_data/.test(code.replace(/\/\*[\s\S]*?\*\//g, "")), "a call that saves data in Home Assistant");
+  for (const code of [...PANEL_PAGES, host, popup]) assert.ok(!/set_user_data|set_system_data|get_user_data|get_system_data|subscribe_system_data/.test(code.replace(/\/\*[\s\S]*?\*\//g, "")), "a call that saves data in Home Assistant");
   // Home Control's dashboard saves its layout, theme and colours there; the frame turns all of that into nothing.
   assert.ok(/HA\.data = \{ get: nothing, set: nothing, subscribe: nothing, unsubscribe: nothing \}/.test(popup));
   assert.ok(/window\.savedRoomOf = function \(\) \{\s*return null;/.test(popup));
@@ -64,7 +66,7 @@ test("nothing is kept in Home Assistant: the panel and the frame of the light pa
 test("a room's scenes are the app's folders and a scene's page has only what the bridge can do", () => {
   const scenes = read("frontend/app/scenes.js");
   // The Hue Plus scene page has Home Control's "import as a classic scene" and "hide"; the app has neither, and the panel does not open that page.
-  assert.ok(!/import_as_a|importLiveScene|hueImportable/.test(APP_FILES.join("\n")));
+  assert.ok(!/import_as_a|importLiveScene|hueImportable/.test(PANEL_PAGES.join("\n")));
   // What the scene's page and its three dots change goes to the bridge with services Hue Plus has.
   for (const service of scenes.matchAll(/hpCall\("hue_plus", "([a-z_]+)"/g)) assert.ok(read("custom_components/hue_plus/bridge/spec.py").includes(`"${service[1]}"`), `${service[1]} is not a Hue Plus service`);
   assert.ok(/frows/.test(read("frontend/app/app.css")) && /grid-auto-rows/.test(read("frontend/app/app.css")), "the folders are rows that scroll sideways");
@@ -94,4 +96,33 @@ test("no function declares two helpers of the same name (the second silently rep
     }
   }
   assert.deepEqual(dupes, []);
+});
+
+test("two lights with one name in different rooms are each in their own room, by the bridge's ids and not by name", () => {
+  const source = readFileSync(new URL("../../frontend/app/home.js", import.meta.url), "utf8");
+  const start = source.indexOf("function hpGroupLights(id)");
+  const end = source.indexOf("/* A room's lights in the order");
+  const state = (name, hue, extra = {}) => ({ attributes: { friendly_name: name, hue_light_id: hue, ...extra } });
+  const states = {
+    "light.kitchen_room": { attributes: { friendly_name: "Kitchen", hue_type: "room", lights: ["Ceiling"] } },
+    "light.hall_room": { attributes: { friendly_name: "Hall", hue_type: "room", lights: ["Ceiling"] } },
+    "light.ceiling_a": state("Ceiling", "hue-a"),
+    "light.ceiling_b": state("Ceiling", "hue-b"),
+  };
+  const entities = { "light.ceiling_a": { platform: "hue_plus" }, "light.ceiling_b": { platform: "hue_plus" } };
+  const context = vm.createContext({
+    H: () => ({ states, entities }),
+    A: (id) => (states[id] || {}).attributes || {},
+    HM: {
+      rooms: [
+        { id: "r1", name: "Kitchen", lights: ["hue-a"] },
+        { id: "r2", name: "Hall", lights: ["hue-b"] },
+      ],
+      zones: [],
+    },
+  });
+  vm.runInContext(source.slice(start, end), context);
+  const lightsOf = (room) => JSON.parse(JSON.stringify(vm.runInContext(`hpGroupLights("${room}")`, context)));
+  assert.deepEqual(lightsOf("light.kitchen_room"), ["light.ceiling_a"]);
+  assert.deepEqual(lightsOf("light.hall_room"), ["light.ceiling_b"]);
 });

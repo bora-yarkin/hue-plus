@@ -20,6 +20,11 @@ function hpNote(text) {
   return pill("info", text, {});
 }
 
+/* The element a page may put its look on: in the panel the page's own frame (which the panel clears for the next page), in Home Control the page's body (the dashboard's popup is shared by the pages that follow). */
+function hpRoot(b) {
+  return window.HueHost && b.parentNode ? b.parentNode : b;
+}
+
 function hpName(id) {
   return A(id).friendly_name || id;
 }
@@ -66,6 +71,33 @@ function hpDo(again, service, data) {
  runs from the back corner (-1) to the left corner (1). x and the height are the same. A light is turned over with this on its way in and on its way out, so it stands where the Hue app shows it. */
 function hpFlip(y) {
   return y ? -y : 0;
+}
+
+/* The room (else a zone) a light is in, by the bridge's own id of the light: two lights can have the same name in different rooms, so a list of lights says which room each is in. */
+function hpRoomOfHueLight(hue) {
+  if (!hue) return null;
+  /* the rooms are read from the bridge once, when a page first asks which room a light is in; the page is drawn again when they are in */
+  if (typeof HM_READY !== "undefined" && !HM_READY && !HM_READING) hmEnsure();
+  function within(kind) {
+    return ((HM && HM[kind]) || []).filter(function (g) {
+      return (g.lights || []).indexOf(hue) >= 0;
+    })[0];
+  }
+  return within("rooms") || within("zones") || null;
+}
+
+function hpRoomOfLight(id) {
+  return hpRoomOfHueLight(A(id).hue_light_id);
+}
+
+/* "Ceiling light · Living room". */
+function hpLightLabel(name, hue) {
+  var room = hpRoomOfHueLight(hue);
+  return room ? name + " · " + room.name : name;
+}
+
+function hpEntityLabel(id) {
+  return hpLightLabel(hpName(id), A(id).hue_light_id);
 }
 
 function hpHueId(entity) {
@@ -129,9 +161,15 @@ function hpSendArea(draft) {
   }
   hueplus.resources(["entertainment_areas"]).then(
     function (r) {
-      var found = ((r && r.entertainment_areas) || []).filter(function (a) {
-        return String(a.name).toLowerCase() === name.toLowerCase();
-      })[0];
+      var named = ((r && r.entertainment_areas) || []).filter(function (a) {
+          return String(a.name).toLowerCase() === name.toLowerCase();
+        }),
+        found = named[0];
+      /* more than one area with this name: which one is meant cannot be guessed, so none is changed */
+      if (named.length > 1) {
+        toast(_T("more_than_one_area_has_this_name"));
+        return;
+      }
       if (found) call("hue_plus", "update_entertainment_area", { area: found.id, lights: lights });
       else call("hue_plus", "create_entertainment_area", { name: name, area_type: "other", lights: lights });
       toast(_T("sent_to_the_hue_bridge"));
@@ -305,7 +343,7 @@ function hpEditOnBridge(area, after) {
 /* The lights that can be put in a bridge area: the Hue Plus lights (the ones Hue lights, not groups). */
 function hpBridgeLights() {
   return hueplus.lights(H()).map(function (id) {
-    return { id: id, name: hpName(id), icon: "lamp" };
+    return { id: id, name: hpEntityLabel(id), icon: "lamp" };
   });
 }
 

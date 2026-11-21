@@ -472,7 +472,7 @@ function hweBody(box, r, kind, groups) {
 function hweFadePage(b) {
   hmBox(b);
   /* as short as its content, up from the bottom of the screen, as the app has it */
-  if (b.parentNode) b.parentNode.classList.add("shortpg");
+  hpRoot(b).classList.add("shortpg");
   if (!HW) {
     b.appendChild(hmCallout(_T("nothing_found")));
     return;
@@ -564,7 +564,7 @@ function hweBriPage(b) {
     b.appendChild(hmCallout(_T("nothing_found")));
     return;
   }
-  if (b.parentNode) b.parentNode.classList.add("shortpg");
+  hpRoot(b).classList.add("shortpg");
   var head = mk("div", "hwe-fade", "<div class='hwe-fl'><span></span><b></b></div><div></div>"),
     track = mk("div", "hwe-track", "<div class='hwe-fill2'></div><div class='hwe-thumb'></div>"),
     wrap = mk("div", "hwe-slider"),

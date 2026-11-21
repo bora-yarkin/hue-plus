@@ -1,13 +1,15 @@
 /* The pages of the app's Settings, as the app draws them: the Settings list, Devices (and where devices are added), Lights, Software update with its time of day, Smart home and the apps that can be linked,
  Entertainment areas with their edit page, light placement and brightness balancer. They are the Hue Plus menu's pages (what is read and written is the same); only the page is the app's. */
 
-HOST_ICONS.headphones = "<path d='M4 15v-3a8 8 0 0 1 16 0v3'/><rect x='3' y='14' width='4.5' height='7' rx='1.6'/><rect x='16.5' y='14' width='4.5' height='7' rx='1.6'/>";
-
 /* A round blue button in the top bar of a page (the app's plus on a list). */
 function hpBarPlus(b, label, fn) {
   var root = b.parentNode,
     bar = root && root.querySelector(".lbar");
-  if (!bar) return;
+  /* Home Control's popup has no bar for it: the same action is the first row of the page. */
+  if (!bar) {
+    b.appendChild(hmGroup([hmRow({ icon: "plus", title: label, tap: fn })]));
+    return;
+  }
   root.classList.add("plusbar");
   var plus = hpRound("plus", label, fn);
   plus.classList.add("blue");
@@ -123,6 +125,10 @@ function hpLightsListPage(b) {
         return hmRow({
           icon: "lamp",
           title: hpName(id),
+          sub: function () {
+            var where = hpRoomOfLight(id);
+            return where ? where.name : "";
+          },
           val: function () {
             return V_(id) === "unavailable" ? _T("hm_unreachable") : "";
           },
@@ -511,7 +517,7 @@ function hpAreaPage(b, id) {
         minus.type = "button";
         minus.setAttribute("aria-label", _T("app_remove"));
         t.querySelector(".ic").innerHTML = svg("lamp");
-        t.querySelector("b").textContent = l.name;
+        t.querySelector("b").textContent = hpLightLabel(l.name, l.light);
         minus.addEventListener("click", function () {
           var rest = hpAreaLights(x).filter(function (o) {
             return o.light !== l.light;
@@ -531,7 +537,19 @@ function hpAreaPage(b, id) {
     reg(draw);
     box.appendChild(
       hmGroup([
-        hpNoChev(hmRow({ title: _T("hm_light_placement"), tap: "app-place:" + id, val: "" })),
+        hpNoChev(
+          hmRow({
+            title: _T("hm_light_placement"),
+            val: "",
+            /* the panel places the lights in its own light frame; Home Control's area editor opens on the bridge's area */
+            tap:
+              typeof hpPlacePage === "function"
+                ? "app-place:" + id
+                : function () {
+                    hpEditOnBridge(x, refresh);
+                  },
+          })
+        ),
         hmRow({
           title: _T("app_balancer"),
           val: function () {
@@ -593,7 +611,7 @@ function hpAreaAddPage(b, id) {
         free.map(function (e) {
           return hmRow({
             icon: "lamp",
-            title: hpName(e),
+            title: hpEntityLabel(e),
             tap: function () {
               hpStageLights(x, hpAreaLights(x).concat([{ light: hpHueId(e), name: hpName(e), x: 0, y: 0, z: 0, balance: 1 }]));
               popBack();
@@ -602,59 +620,6 @@ function hpAreaAddPage(b, id) {
         })
       )
     );
-  });
-}
-
-/* Light placement is Home Control's area editor (the room in three dimensions, the lights to drag, their tray), run in the light frame under this page's bar and drawn as the app draws it. DONE takes what it holds
- back into the area's draft; it goes to the bridge with SAVE on the area, like the rest of the area's changes. */
-var HPPLACE = null;
-
-function hpPlacePage(b, id) {
-  hmBox(b);
-  hmGuard(hpAreaKey(id), true);
-  var wait = mk("div", "empty"),
-    token = (HPPLACE = {});
-  wait.textContent = _T("loading");
-  b.appendChild(wait);
-  hmLoad(b, ["entertainment_areas"], function (box) {
-    var x = hmEntArea(id);
-    if (!x) {
-      box.appendChild(hmCallout(_T("nothing_found")));
-      return;
-    }
-    var area = {
-        id: id,
-        name: hpAreaName(x),
-        lights: hpAreaLights(x).map(function (l) {
-          return { light_id: l.light, name: l.name, x: l.x, y: l.y, z: l.z, positions: l.positions, balance: l.balance };
-        }),
-      },
-      names = {};
-    area.lights.forEach(function (l) {
-      names[l.light_id] = l.name;
-    });
-    hpLightFrame(function (win) {
-      if (HPPLACE !== token) return;
-      wait.remove();
-      win.HuePopup.hide();
-      hpFrameShow(true);
-      win.HuePopup.area(area);
-      HC.onDone = function () {
-        var d = JSON.parse(win.HuePopup.areaDraft() || "null");
-        if (d) {
-          var lights = (d.kept || []).map(function (k) {
-            return { light: k.light, name: names[k.light] || String(k.light), x: k.x, y: k.y, z: k.z, balance: typeof k.balance === "number" ? k.balance : 1 };
-          });
-          (d.lights || []).forEach(function (l) {
-            var every = hpBarPositions(l),
-              first = every ? every[0] : { x: l.x, y: hpFlip(l.y), z: l.z };
-            lights.push({ light: hpHueId(l.id), name: hpName(l.id), x: first.x, y: first.y, z: first.z, positions: every || undefined, balance: typeof l.balance === "number" ? l.balance : 1 });
-          });
-          if (lights.length) hpStageLights(x, lights);
-        }
-        popBack();
-      };
-    });
   });
 }
 
@@ -710,6 +675,5 @@ HP_PAGES["app-link2"] = ["hm_smart_home", "scene", hpLinkAnother];
 HP_PAGES["hue-ent"] = ["entertainment_areas", "target", hpAreasPage];
 HP_PAGES["hue-area"] = ["app_edit", "target", hpAreaPage];
 HP_PAGES["app-areaadd"] = ["app_add_a_light", "plus", hpAreaAddPage];
-HP_PAGES["app-place"] = ["hm_light_placement", "target", hpPlacePage];
 HP_PAGES["app-balance"] = ["app_balancer", "tune", hpBalancePage];
 HP_PAGES["app-newarea"] = ["app_new_area", "plus", hpNewAreaPage];

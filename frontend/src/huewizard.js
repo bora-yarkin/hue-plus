@@ -190,7 +190,7 @@ function hwPickPage(b) {
   /* the sheet is called what is chosen (Style, Fade duration...), and each choice can have its picture in front */
   var ttl = b.parentNode && b.parentNode.querySelector(".pbar .ttl");
   if (ttl && p.title) ttl.textContent = p.title;
-  if (b.parentNode) b.parentNode.classList.add("shortpg");
+  hpRoot(b).classList.add("shortpg");
   hwHint(b, p.hint);
   b.appendChild(
     hmGroup(
@@ -427,7 +427,7 @@ function hwPointPage(b, which) {
     timeKey = which === "start" ? "time" : "until",
     ttl = b.parentNode && b.parentNode.querySelector(".pbar .ttl");
   if (ttl) ttl.textContent = _T(which === "start" ? "hw_start_at" : "hw_end_at");
-  if (b.parentNode) b.parentNode.classList.add("shortpg");
+  hpRoot(b).classList.add("shortpg");
   hwHint(b, hwHasLocation() ? "" : _T("hw_sun_needs_home_location"));
   b.appendChild(
     hmGroup(
