@@ -73,7 +73,7 @@ test("the scene settings page keeps its changes until SAVE and writes the bridge
     return n;
   }
   const context = {
-    window: {},
+    window: { HueHost: {} },
     HP_PAGES: {},
     document: { createTextNode: () => node("text") },
     HM: {},

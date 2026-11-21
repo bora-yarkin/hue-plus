@@ -3339,18 +3339,35 @@ function hpScenePage(body, key) {
   /* What is changed on this page is kept until SAVE, also while a page opened from it (the speed) is shown and this one is drawn again. */
   var dyn = hpIsDynamic(sid),
     draft = HPSCN[sid] || (HPSCN[sid] = {});
-  var head = mk("div", "schead", "<span class='big'></span><div class='nm'></div>");
-  head.querySelector(".big").appendChild(hpDisc(sid));
-  head.querySelector(".nm").textContent = A(sid).name || sid;
-  if (isAdmin() && hueplus.has(H(), "update_scene"))
-    head.appendChild(
-      hpRound("edit", _T("hn_rename"), function () {
-        hueSceneRename(sid);
-      })
+  var panel = !!window.HueHost,
+    canEdit = isAdmin() && hueplus.has(H(), "update_scene");
+  if (panel) {
+    var head = mk("div", "schead", "<span class='big'></span><div class='nm'></div>");
+    head.querySelector(".big").appendChild(hpDisc(sid));
+    head.querySelector(".nm").textContent = A(sid).name || sid;
+    if (canEdit)
+      head.appendChild(
+        hpRound("edit", _T("hn_rename"), function () {
+          hueSceneRename(sid);
+        })
+      );
+    body.appendChild(head);
+  } else
+    body.appendChild(
+      hmGroup([
+        hmRow({
+          ldisc: cols[0] || "#8a7a4a",
+          title: A(sid).name || sid,
+          sub: canEdit ? _T("hn_rename") : "",
+          tap: canEdit
+            ? function () {
+                hueSceneRename(sid);
+              }
+            : null,
+        }),
+      ])
     );
-  body.appendChild(head);
-  body.appendChild(
-    hmGroup([
+  var briRow = (
       sliderRow({
         icon: "bright",
         name: _T("app_scene_brightness"),
@@ -3378,9 +3395,9 @@ function hpScenePage(body, key) {
           var g = P.group(H(), sid);
           if (g && P.active(H(), sid) && V_(g) === "on") call("light", "turn_on", { entity_id: g, brightness_pct: v });
         },
-      }),
-    ])
+      })
   );
+  body.appendChild(panel ? hmGroup([briRow]) : briRow);
   if (dyn)
     hmLoad(body, ["scenes"], function (box, r) {
       var s = (r.scenes || []).filter(function (x) {
@@ -3468,40 +3485,58 @@ function hpScenePage(body, key) {
       showPopup("hue-scene-lights:" + sid, true);
     }));
     body.appendChild(bar);
-    var tiles = mk("div", "ltiles");
-    lights.forEach(function (lid) {
-      var tile = hpSceneTile(lid, room);
-      /* a zone can have lights of several rooms, and two of them can be named alike: the tile says the room too */
-      if (room && A(room).hue_type === "zone") tile.querySelector("b").textContent = hpEntityLabel(lid);
-      tiles.appendChild(tile);
-    });
-    body.appendChild(tiles);
+    if (panel) {
+      var tiles = mk("div", "ltiles");
+      lights.forEach(function (lid) {
+        var tile = hpSceneTile(lid, room);
+        /* a zone can have lights of several rooms, and two of them can be named alike: the tile says the room too */
+        if (room && A(room).hue_type === "zone") tile.querySelector("b").textContent = hpEntityLabel(lid);
+        tiles.appendChild(tile);
+      });
+      body.appendChild(tiles);
+    } else if (lights.length)
+      body.appendChild(
+        hmGroup(
+          lights.map(function (lid) {
+            var where = hpRoomOfLight(lid);
+            return hmRow({ icon: "light", title: hpName(lid), sub: where ? where.name : "" });
+          })
+        )
+      );
   }
+  var tail = [];
   /* Reset scene: the palette is given out to the lights in its own order and at its own brightness again (kept until SAVE). */
   if (dyn && hueplus.has(H(), "update_scene")) {
-    var reset = mk("button", "resetbtn");
-    reset.type = "button";
-    reset.textContent = _T("app_reset_scene");
-    reset.addEventListener("click", function () {
+    var reset = panel ? mk("button", "resetbtn") : null;
+    var doReset = function () {
       draft.recolor = "reset";
       toast(_T("app_reset_when_saved"));
-    });
-    body.appendChild(reset);
+    };
+    if (panel) {
+      reset.type = "button";
+      reset.textContent = _T("app_reset_scene");
+      reset.addEventListener("click", doReset);
+      body.appendChild(reset);
+    } else tail.push(hmRow({ icon: "palette", title: _T("app_reset_scene"), tap: doReset }));
   }
   if (isAdmin() && hueplus.has(H(), "delete_scene")) {
-    var del = mk("button", "deletebtn");
-    del.type = "button";
-    del.textContent = _T("hn_delete_scene");
-    del.addEventListener("click", function () {
+    var doDelete = function () {
       confirmDlg(_T("hn_delete_scene") + ": " + (A(sid).name || sid) + "?", function () {
         hueSceneRemove(sid).then(function () {
           delete HPSCN[sid];
           popBack();
         });
       });
-    });
-    body.appendChild(del);
+    };
+    if (panel) {
+      var del = mk("button", "deletebtn");
+      del.type = "button";
+      del.textContent = _T("hn_delete_scene");
+      del.addEventListener("click", doDelete);
+      body.appendChild(del);
+    } else tail.push(hmRow({ icon: "trash", title: _T("hn_delete_scene"), danger: true, tap: doDelete }));
   }
+  if (tail.length) body.appendChild(hmGroup(tail));
 }
 
 /* The speed of a moving scene: a short sheet with the twelve steps of the app (kept on the scene's page until SAVE). */
