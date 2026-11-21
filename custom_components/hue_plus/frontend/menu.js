@@ -3392,9 +3392,7 @@ function hpScenePage(body, key) {
           if (g && P.active(H(), sid) && V_(g) === "on") callLive(g, "light", "turn_on", { entity_id: g, brightness_pct: v });
         },
         commit: function (v) {
-          var st = hueSceneSet(sid);
-          st.bri = v;
-          hueSceneSave(sid, st);
+          hueSceneSave(sid, { bri: v });
           var g = P.group(H(), sid);
           if (g && P.active(H(), sid) && V_(g) === "on") call("light", "turn_on", { entity_id: g, brightness_pct: v });
         },
@@ -9570,26 +9568,30 @@ function hueScenePalette(id, done) {
 }
 
 /* Speed and brightness a Hue scene is started with, kept on this device. */
+/* The speed and the brightness a scene starts with: the ones set here for it (kept on this device, only what was set), else the scene's own as the bridge has them (what the Hue app set). */
 function hueSceneSet(id) {
-  var s = deviceGet("db_hsc_" + id, {});
+  var s = deviceGet("db_hsd_" + id, {});
   return {
     speed: typeof s.speed === "number" ? s.speed : Math.round((A(id).speed || 0.5) * 100),
     bri: typeof s.bri === "number" ? s.bri : Math.round((A(id).brightness || 255) / 2.55),
   };
 }
 
-function hueSceneSave(id, st) {
-  deviceSet("db_hsc_" + id, st);
+/* Keeps what was changed (`part`: { bri } or { speed }) and nothing else, so a value that was never set here keeps following the scene's own. */
+function hueSceneSave(id, part) {
+  var s = deviceGet("db_hsd_" + id, {});
+  deviceSet("db_hsd_" + id, Object.assign({}, s, part));
 }
 
 /* The room's Hue group light of the scene that was frozen last, so the Freeze button can show it. */
 var HFROZEN = {};
 
-/* Starts the scene live with the saved speed, keeping the brightness the room has now. */
-function hueSceneStart(id) {
+/* Starts the scene live with its own speed and brightness (changed here, or as the Hue app has them). */
+function hueSceneStart(id, keep) {
   var st = hueSceneSet(id),
     grp = HUESCENES.group(H(), id),
-    bri = grp && V_(grp) === "on" ? (A(grp).brightness || 0) / 2.55 : st.bri;
+    /* The brightness the scene has (as the Hue app starts it), not the one the room had from the scene before; a scene that plays on keeps the one it has when its speed is changed. */
+    bri = keep && grp && V_(grp) === "on" ? (A(grp).brightness || 0) / 2.55 : st.bri;
   if (grp) {
     delete HFROZEN[grp];
     liveStopOn([grp]);
@@ -9755,9 +9757,7 @@ function hueScenePlayPopup(b, id) {
           if (live()) callLive(grp(), "light", "turn_on", { entity_id: grp(), brightness_pct: v });
         },
         commit: function (v) {
-          var st = hueSceneSet(id);
-          st.bri = v;
-          hueSceneSave(id, st);
+          hueSceneSave(id, { bri: v });
           if (live()) call("light", "turn_on", { entity_id: grp(), brightness_pct: v });
         },
       })
@@ -9779,13 +9779,12 @@ function hueScenePlayPopup(b, id) {
           return P.active(H(), id);
         },
         commit: function (v) {
-          var st = hueSceneSet(id);
-          st.speed = P.stepToSpeed(v);
-          hueSceneSave(id, st);
+          var speed = P.stepToSpeed(v);
+          hueSceneSave(id, { speed: speed });
           /* the speed is also the one the scene starts with on the bridge (and in the Hue app) */
           if (isAdmin() && hueplus.has(H(), "update_scene"))
-            callRaw("hue_plus", "update_scene", { scene: hueSceneUid(id), speed: st.speed / 100 });
-          if (playing()) hueSceneStart(id);
+            callRaw("hue_plus", "update_scene", { scene: hueSceneUid(id), speed: speed / 100 });
+          if (playing()) hueSceneStart(id, true);
         },
       })
     );
