@@ -5,6 +5,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 ## [Unreleased]
 
 ### Added
+- A Hue scene says which lights it plays on (`lights` in its scene kind), so Home Control can say Dynamics under a light that plays one.
 - The Spotify sync says it can be a tab of a Home Control lights master's light popup (`sync: true` in its device kind).
 
 ### Fixed

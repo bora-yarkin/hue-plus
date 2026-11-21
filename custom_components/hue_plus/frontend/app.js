@@ -14305,6 +14305,10 @@ function hpEditMove(room, sel) {
     dynamic: function (id) {
       return A(id).is_dynamic !== false;
     },
+    /* the lights it plays on (what a light says it is doing: Dynamics) */
+    lights: function (id) {
+      return hpSceneLights(id);
+    },
     palette: hueScenePalette,
   });
   /* The Hue app's "Add a scene", in the new-scene popup of a scenes section. */
