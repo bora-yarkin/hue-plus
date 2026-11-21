@@ -4,6 +4,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+### Fixed
+- **The colour wheel of the Hue panel was empty** (0.22.8). The light frame did not run two files that Home Control's light panel now calls into (`scenetab.js`, `mastersettings.js`). It runs them, and a test fails when a file of Home Control's list is neither run by the frame nor on the list of the ones it does not need.
+
 ## [0.22.8] - 2026-11-21
 
 ### Added
