@@ -91,8 +91,13 @@
     },
     /* the lights it plays on (what a light says it is doing: Dynamics) */
     lights: function (id) {
-      return hpSceneLights(id);
+      var own = hpSceneLights(id);
+      if (own.length) return own;
+      /* The bridge's list of the scene's lights is read later than the page is drawn: until then the scene is taken to play on the lights of its room. */
+      var grp = HUESCENES.group(H(), id);
+      return grp ? HUESCENES.roomLights(H(), grp) : [];
     },
+    dim: hueSceneDim,
     palette: hueScenePalette,
   });
   /* The Hue app's "Add a scene", in the new-scene popup of a scenes section. */

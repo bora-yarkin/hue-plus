@@ -176,12 +176,12 @@ function hpScenePage(body, key) {
         },
         live: function (v) {
           var g = P.group(H(), sid);
-          if (g && P.active(H(), sid) && V_(g) === "on") callLive(g, "light", "turn_on", { entity_id: g, brightness_pct: v });
+          if (g && P.active(H(), sid)) hueSceneDim(sid, v, false);
         },
         commit: function (v) {
           hueSceneSave(sid, { bri: v });
           var g = P.group(H(), sid);
-          if (g && P.active(H(), sid) && V_(g) === "on") call("light", "turn_on", { entity_id: g, brightness_pct: v });
+          if (g && P.active(H(), sid)) hueSceneDim(sid, v, true);
         },
       })
   );
