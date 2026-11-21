@@ -179,7 +179,7 @@ SPEC: dict[str, dict[str, Any]] = {
             "lights": f(
                 "object",
                 "The lights the scene should have, as a list of light ids (only lights of its own room or zone): one it had keeps what it does, one added gets "
-                "a colour of the palette of a moving scene (else how it looks now), one left out is dropped.",
+                "a colour of the palette of a moving scene (else how it looks now), one left out is dropped. With record_current every light of the list is recorded as it looks now.",
             ),
             "recolor": f(
                 "select",

@@ -428,10 +428,33 @@ async def update_scene(api, snap, data):
     scene = resolve(snap.scene, data["scene"], "scene")
     if sum(1 for key in ("record_current", "recolor") if data.get(key)) + (data.get("actions") is not None) > 1:
         raise ValueError("Give one of actions, record_current or recolor")
-    if data.get("lights") is not None and (data.get("record_current") or data.get("actions") is not None):
-        raise ValueError("Give the lights with a recolor or on their own, not with actions or record_current")
+    if data.get("lights") is not None and data.get("actions") is not None:
+        raise ValueError("Give the lights with a recolor, with record_current or on their own, not with actions")
     actions = None
-    if data.get("lights") is not None or data.get("recolor"):
+    if data.get("record_current"):
+        # The look of the scene's lights as they are now (after being adjusted): the same recording create_scene makes. With ``lights`` the scene has exactly those
+        # lights, each as it looks now (the lights of the scene's own room or zone only).
+        if data.get("lights") is not None:
+            kind = scene.get("group", {}).get("rtype")
+            group = (
+                next((g for g in models.groups(snap, kind) if g["id"] == scene["group"]["rid"]), None) if kind in ("room", "zone") else None
+            )
+            if group is None:
+                raise ValueError("This scene's room or zone was not found")
+            wanted = (
+                [str(ref) for ref in _json(data["lights"], "lights")]
+                if isinstance(data["lights"], str)
+                else [str(ref) for ref in data["lights"]]
+            )
+            foreign = [ref for ref in wanted if ref not in group["lights"]]
+            if foreign:
+                raise ValueError("A scene can only have lights of its own room or zone")
+        else:
+            wanted = [(a.get("target") or {}).get("rid") for a in scene.get("actions") or []]
+        actions = payloads.scene_actions_from_lights([light for light in snap.light if light["id"] in set(wanted)])
+        if not actions:
+            raise ValueError("This scene has no light to record")
+    elif data.get("lights") is not None or data.get("recolor"):
         kind = scene.get("group", {}).get("rtype")
         group = next((g for g in models.groups(snap, kind) if g["id"] == scene["group"]["rid"]), None) if kind in ("room", "zone") else None
         if group is None:
@@ -452,12 +475,6 @@ async def update_scene(api, snap, data):
             ]
             every = data["recolor"] == "reset" and data.get("lights") is None
             actions = payloads.scene_recolor(scene, group["lights"] if every else own, data["recolor"])
-    elif data.get("record_current"):
-        # The look of the scene's own lights as they are now (after being adjusted): the same recording create_scene makes.
-        wanted = {(a.get("target") or {}).get("rid") for a in scene.get("actions") or []}
-        actions = payloads.scene_actions_from_lights([light for light in snap.light if light["id"] in wanted])
-        if not actions:
-            raise ValueError("This scene has no light to record")
     elif data.get("actions") is not None:
         actions = _json(data["actions"], "actions")
     await api.put("scene", scene["id"], payloads.scene_put(data.get("name"), data.get("speed"), data.get("auto_dynamic"), actions))

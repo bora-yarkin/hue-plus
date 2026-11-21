@@ -148,8 +148,9 @@ test("changing a scene opens the light popup on the scene's own lights at once, 
   await new Promise((r) => setTimeout(r, 1000));
   assert.deepEqual(log.calls, [["scene", "turn_on", { entity_id: "scene.a" }]]);
   assert.deepEqual(plain(log.editors[0].lights), ["light.l1", "light.l2"]);
-  assert.equal(await log.editors[0].onSave([]), true);
-  assert.deepEqual(log.raw, [["hue_plus", "update_scene", { scene: "uid-a", record_current: true }]]);
+  assert.deepEqual(plain(log.editors[0].candidates()), ["light.l1", "light.l2", "light.l3"], "the lights of the scene's own room can be added");
+  assert.equal(await log.editors[0].onSave([], ["light.l1", "light.l3"]), true);
+  assert.deepEqual(log.raw, [["hue_plus", "update_scene", { scene: "uid-a", record_current: true, lights: ["bl1", "bl3"] }]]);
 });
 
 test("an all-day scene is written with its times in order, the scenes by their bridge ids, the room by its id and the days chosen", async () => {

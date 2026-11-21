@@ -456,6 +456,19 @@ class ActionTests(unittest.IsolatedAsyncioTestCase):
             with self.assertRaisesRegex(ValueError, message):
                 await self.go("update_scene", {"scene": "Aurora", "lights": bad}, snap=snap)
 
+    async def test_a_scene_can_record_the_lights_it_should_have_as_they_look_now(self):
+        snap = self.moving_scene()
+        calls, _ = await self.go("update_scene", {"scene": "Aurora", "lights": ["l1", "l2"], "record_current": True}, snap=snap)
+        self.assertEqual(
+            sorted(a["target"]["rid"] for a in calls[0][3]["actions"]), ["l1", "l2"], "added light recorded as it looks now, with the rest"
+        )
+        calls, _ = await self.go("update_scene", {"scene": "Aurora", "lights": ["l1"], "record_current": True}, snap=snap)
+        self.assertEqual([a["target"]["rid"] for a in calls[0][3]["actions"]], ["l1"], "a light left out is dropped")
+        with self.assertRaisesRegex(ValueError, "own room or zone"):
+            await self.go("update_scene", {"scene": "Aurora", "lights": ["l1", "elsewhere"], "record_current": True}, snap=snap)
+        with self.assertRaisesRegex(ValueError, "not with actions"):
+            await self.go("update_scene", {"scene": "Aurora", "lights": ["l1"], "actions": "[]"}, snap=snap)
+
     async def test_recolouring_needs_a_palette_and_is_not_combined_with_other_changes(self):
         with self.assertRaisesRegex(ValueError, "no palette"):
             await self.go("update_scene", {"scene": "Soho", "recolor": "reset"}, snap=self.with_room_scene())

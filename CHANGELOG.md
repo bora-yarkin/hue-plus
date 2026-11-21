@@ -13,6 +13,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 - Sending a Home Control area to the bridge by name no longer changes one of two bridge areas that have the same name; it says so instead.
 
 ### Added
+- **A scene's colour editor can take lights out and add lights** (`update_scene` takes `lights` together with `record_current`: the scene has exactly those lights, each as it looks now). Home Control's editor shows a minus on each light tile and a plus tile listing the other lights of the room or zone (needs Home Control with the same feature).
 - **A scene's lights can be chosen** (`update_scene` takes `lights`): the lights of the scene's own room or zone, each with its room, the ticked ones are the scene's, one that is added plays a colour of a moving scene's palette (else how it looks now). The panel's scene page has its pencil by Lights, Home Control's scene popup has a Lights row.
 - **Home Control's scene popup has the scene settings of the panel, outside edit mode too**: Rename, Lights, Auto-play, Colors and Reset scene; its Speed slider also sets the speed the scene starts with on the bridge. Home Control keeps the choice of a room or zone when a scene is added (the panel goes straight on for the room it is in).
 

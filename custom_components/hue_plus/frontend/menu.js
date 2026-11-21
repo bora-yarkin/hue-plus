@@ -10490,7 +10490,10 @@ function hueSceneEdit(id) {
         toast(_T("hn_no_hue_lights_here"));
         return;
       }
-      hueEditOpen(id, A(id).name || A(id).friendly_name || "", lights);
+      var room = data.groups.filter(function (g) {
+        return g.id === scene.group_id;
+      })[0];
+      hueEditOpen(id, A(id).name || A(id).friendly_name || "", lights, room ? room.lights.map(hueLightEntity).filter(Boolean) : []);
     },
     function () {
       toast(_T("hn_couldn_t_read_the_hue_bridge"));
@@ -10498,7 +10501,7 @@ function hueSceneEdit(id) {
   );
 }
 
-function hueEditOpen(id, name, lights) {
+function hueEditOpen(id, name, lights, candidates) {
   var uid = hueSceneUid(id);
   if (!uid || !lights.length) {
     toast(_T("hn_no_hue_lights_here"));
@@ -10510,8 +10513,15 @@ function hueEditOpen(id, name, lights) {
       name: name,
       icon: "palette",
       lights: lights,
-      onSave: function () {
-        return Promise.resolve(callRaw("hue_plus", "update_scene", { scene: uid, record_current: true })).then(
+      candidates: function () {
+        return candidates;
+      },
+      /* The lights the editor ends with are the scene's lights, each as it looks now. */
+      onSave: function (acts, ended) {
+        var ids = (ended || []).map(function (e) {
+          return A(e).hue_light_id;
+        });
+        return Promise.resolve(callRaw("hue_plus", "update_scene", { scene: uid, record_current: true, lights: ids })).then(
           function () {
             toast(_T("hn_scene_saved") + name);
             return true;
