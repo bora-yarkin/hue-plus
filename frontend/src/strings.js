@@ -729,6 +729,8 @@ var PLUGIN_STRINGS = {
   "hn_reset_question": "Reset this scene?",
   "hn_reset_done": "The scene is reset",
   "app_colors": "Colors",
+  "app_scene_look": "Colors and effects",
+  "app_scene_look_sub": "Colour wheel, white and effects for each light",
   "app_colors_sub": "Give the colors out to the lights again",
   "app_colors_when_saved": "The colors are given out again when you save",
   "app_reset_scene": "Reset scene",

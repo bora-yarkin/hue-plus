@@ -260,7 +260,17 @@ function hpScenePage(body, key) {
   if (!panel) {
     /* Home Control: the scene's own popup has playing, brightness and speed; this page has what changes the scene. */
     if (canEdit) {
-      var rows = [hmRow({ icon: "light", title: _T("lights"), tap: "hue-scene-lights:" + sid })];
+      var rows = [
+        hmRow({
+          icon: "palette",
+          title: _T("app_scene_look"),
+          sub: _T("app_scene_look_sub"),
+          tap: function () {
+            hueSceneEdit(sid);
+          },
+        }),
+        hmRow({ icon: "light", title: _T("lights"), tap: "hue-scene-lights:" + sid }),
+      ];
       if (dyn)
         rows.push(
           hmRow({

@@ -366,17 +366,6 @@ function hueSceneExtras(b, id, room) {
         },
       })
     );
-  if (isEditing() && stat)
-    b.appendChild(
-      pill("light", _T("hn_change_the_lights"), {
-        sub: function () {
-          return _T("hn_change_the_lights_sub");
-        },
-        tap: function () {
-          hueSceneEdit(id, room);
-        },
-      })
-    );
   if (isEditing() && room)
     b.appendChild(
       pill("eye", sceneEntHidden(room, id) ? _T("show_this_scene") : _T("hide_this_scene"), {

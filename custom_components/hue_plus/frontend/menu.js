@@ -824,6 +824,8 @@ var PLUGIN_STRINGS = {
   "hn_reset_question": "Reset this scene?",
   "hn_reset_done": "The scene is reset",
   "app_colors": "Colors",
+  "app_scene_look": "Colors and effects",
+  "app_scene_look_sub": "Colour wheel, white and effects for each light",
   "app_colors_sub": "Give the colors out to the lights again",
   "app_colors_when_saved": "The colors are given out again when you save",
   "app_reset_scene": "Reset scene",
@@ -3472,7 +3474,17 @@ function hpScenePage(body, key) {
   if (!panel) {
     /* Home Control: the scene's own popup has playing, brightness and speed; this page has what changes the scene. */
     if (canEdit) {
-      var rows = [hmRow({ icon: "light", title: _T("lights"), tap: "hue-scene-lights:" + sid })];
+      var rows = [
+        hmRow({
+          icon: "palette",
+          title: _T("app_scene_look"),
+          sub: _T("app_scene_look_sub"),
+          tap: function () {
+            hueSceneEdit(sid);
+          },
+        }),
+        hmRow({ icon: "light", title: _T("lights"), tap: "hue-scene-lights:" + sid }),
+      ];
       if (dyn)
         rows.push(
           hmRow({
@@ -9821,17 +9833,6 @@ function hueSceneExtras(b, id, room) {
         },
         tap: function () {
           importLiveScene(stat ? "hue-classic" : "hue", id);
-        },
-      })
-    );
-  if (isEditing() && stat)
-    b.appendChild(
-      pill("light", _T("hn_change_the_lights"), {
-        sub: function () {
-          return _T("hn_change_the_lights_sub");
-        },
-        tap: function () {
-          hueSceneEdit(id, room);
         },
       })
     );
