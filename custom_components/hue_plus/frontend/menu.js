@@ -10532,9 +10532,6 @@ function hueEditOpen(id, name, lights, candidates) {
           }
         );
       },
-      after: function () {
-        closeSheet();
-      },
     });
   }, 900);
 }
@@ -10680,6 +10677,8 @@ function lpStylePopup(b, id) {
     pop: "hsync",
     icon: "syncring",
     search: "light",
+    /* a lights master can show it as a tab of its light popup */
+    sync: true,
     row: hsyncRow,
   });
   HC.registerDeviceKind({
@@ -10732,6 +10731,10 @@ function lpStylePopup(b, id) {
     start: hueSceneStart,
     dynamic: function (id) {
       return A(id).is_dynamic !== false;
+    },
+    /* the lights it plays on (what a light says it is doing: Dynamics) */
+    lights: function (id) {
+      return hpSceneLights(id);
     },
     palette: hueScenePalette,
   });
