@@ -4,6 +4,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.22.5] - 2026-11-21
+
 ### Changed
 - **Home Control's Hue Plus menu is the panel's own pages.** Settings > Hue Plus shows Automations, Sync and Settings with every page behind them (devices, switches and their buttons, areas, bridges, light settings, scene settings), the same code the Hue dashboard runs, in Home Control's theme and without the colour wheel (Home Control's Lights section has it). A scene's popup there is as in the Hue app: Brightness, Speed, Play and Freeze, and an Edit scene row that opens the scene settings (Colors and effects, which opens the colour wheel editor on the scene's own lights at once, with SAVE; then Colors, auto-play, name, Reset scene, Delete) as plain rows. Pages that were written twice, once for the menu and once for the panel, are now one.
 
