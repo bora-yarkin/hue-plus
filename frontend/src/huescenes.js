@@ -345,7 +345,7 @@ function hueScenePlayPopup(b, id) {
   }
 }
 
-/* What Home Control adds under the scene's settings page: playing it live and freezing it, importing it as a scene of the dashboard, changing the lights of a still scene, hiding it from the room. */
+/* What Home Control adds under a scene's popup: importing it as a scene of the dashboard, changing the lights of a still scene, hiding it from the room. */
 function hueSceneExtras(b, id, room) {
   var P = HUESCENES,
     stat = A(id).is_dynamic === false;
@@ -354,29 +354,6 @@ function hueSceneExtras(b, id, room) {
   }
   function playing() {
     return P.active(H(), id) && P.playing(H(), grp());
-  }
-  if (!stat) {
-    var g2 = mk("div", "gridl g2");
-    g2.appendChild(
-      pill("play", _T("play"), {
-        on: playing,
-        tap: function () {
-          hueSceneStart(id);
-        },
-      })
-    );
-    g2.appendChild(
-      pill("pause", _T("freeze"), {
-        on: function () {
-          var g = grp();
-          return !!g && HFROZEN[g] === id && V_(g) === "on" && !P.playing(H(), g);
-        },
-        tap: function () {
-          hueSceneFreeze(id);
-        },
-      })
-    );
-    b.appendChild(g2);
   }
   if (isAdmin() && hueImportable())
     b.appendChild(
@@ -414,11 +391,20 @@ function hueSceneExtras(b, id, room) {
     );
 }
 
-/* The popup of a Hue scene: for an administrator the scene's settings page of the panel (its name, brightness, speed, auto-play, lights, Colors, Reset scene and Delete) with what Home Control adds under it;
- for anyone else the scene's brightness and speed and playing it. */
+/* The popup of a Hue scene: its brightness and speed and playing it. An administrator also has Edit scene, the panel's scene settings page (name, auto-play, lights, Colors, Reset scene, Delete), and what Home Control adds. */
 function hueScenePopup(b, id, room) {
   if (isAdmin() && hueplus.has(H(), "update_scene")) {
-    hpScenePage(b, id + "~");
+    hueScenePlayPopup(b, id);
+    b.appendChild(
+      pill("edit", _T("app_edit_scene"), {
+        sub: function () {
+          return _T("app_edit_scene_sub");
+        },
+        tap: function () {
+          showPopup("app-scene:" + id + "~", true);
+        },
+      })
+    );
     hueSceneExtras(b, id, room);
     return;
   }

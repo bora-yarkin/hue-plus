@@ -187,7 +187,7 @@ function hpScenePage(body, key) {
         },
       })
   );
-  body.appendChild(panel ? hmGroup([briRow]) : briRow);
+  if (panel) body.appendChild(hmGroup([briRow]));
   if (dyn)
     hmLoad(body, ["scenes"], function (box, r) {
       var s = (r.scenes || []).filter(function (x) {
@@ -203,14 +203,16 @@ function hpScenePage(body, key) {
       box.appendChild(hmLabel(_T("app_dynamic_scene")));
       box.appendChild(
         hmGroup([
-          hmRow({
-            title: _T("app_dynamic_speed"),
-            val: function () {
-              var step = P.speedToStep(Math.round(draft.speed * 100));
-              return step + " - " + hpSpeedWord(step);
-            },
-            tap: "app-speed:" + sid,
-          }),
+          panel
+            ? hmRow({
+                title: _T("app_dynamic_speed"),
+                val: function () {
+                  var step = P.speedToStep(Math.round(draft.speed * 100));
+                  return step + " - " + hpSpeedWord(step);
+                },
+                tap: "app-speed:" + sid,
+              })
+            : null,
           hmRow({
             title: _T("app_auto_play"),
             sub: _T("app_auto_play_sub"),
@@ -255,7 +257,25 @@ function hpScenePage(body, key) {
       });
     });
   var lights = hpSceneLights(sid);
-  if (lights.length || (isAdmin() && hueplus.has(H(), "update_scene"))) {
+  if (!panel) {
+    /* Home Control: the scene's own popup has playing, brightness and speed; this page has what changes the scene. */
+    if (canEdit) {
+      var rows = [hmRow({ icon: "light", title: _T("lights"), tap: "hue-scene-lights:" + sid })];
+      if (dyn)
+        rows.push(
+          hmRow({
+            icon: "shuffle",
+            title: _T("app_colors"),
+            sub: _T("app_colors_sub"),
+            tap: function () {
+              draft.recolor = "shuffle";
+              toast(_T("app_colors_when_saved"));
+            },
+          })
+        );
+      body.appendChild(hmGroup(rows));
+    }
+  } else if (lights.length || canEdit) {
     /* The Lights title has the Colors button of a moving scene: it gives the scene's colours out to the lights again, in another order (kept until SAVE). */
     var bar = mk("div", "lbrow lightsbar");
     var title = mk("div", "lbtitle");
@@ -271,28 +291,21 @@ function hpScenePage(body, key) {
       });
       bar.appendChild(shuffle);
     }
-    if (isAdmin() && hueplus.has(H(), "update_scene")) bar.appendChild(hpRound("edit", _T("hn_scene_lights"), function () {
-      showPopup("hue-scene-lights:" + sid, true);
-    }));
-    body.appendChild(bar);
-    if (panel) {
-      var tiles = mk("div", "ltiles");
-      lights.forEach(function (lid) {
-        var tile = hpSceneTile(lid, room);
-        /* a zone can have lights of several rooms, and two of them can be named alike: the tile says the room too */
-        if (room && A(room).hue_type === "zone") tile.querySelector("b").textContent = hpEntityLabel(lid);
-        tiles.appendChild(tile);
-      });
-      body.appendChild(tiles);
-    } else if (lights.length)
-      body.appendChild(
-        hmGroup(
-          lights.map(function (lid) {
-            var where = hpRoomOfLight(lid);
-            return hmRow({ icon: "light", title: hpName(lid), sub: where ? where.name : "" });
-          })
-        )
+    if (canEdit)
+      bar.appendChild(
+        hpRound("edit", _T("hn_scene_lights"), function () {
+          showPopup("hue-scene-lights:" + sid, true);
+        })
       );
+    body.appendChild(bar);
+    var tiles = mk("div", "ltiles");
+    lights.forEach(function (lid) {
+      var tile = hpSceneTile(lid, room);
+      /* a zone can have lights of several rooms, and two of them can be named alike: the tile says the room too */
+      if (room && A(room).hue_type === "zone") tile.querySelector("b").textContent = hpEntityLabel(lid);
+      tiles.appendChild(tile);
+    });
+    body.appendChild(tiles);
   }
   var tail = [];
   /* Reset scene: the palette is given out to the lights in its own order and at its own brightness again (kept until SAVE). */
