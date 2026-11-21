@@ -6,7 +6,6 @@ var PLUGIN_STRINGS = {
   "hn_zones": "Zones",
   "hn_rooms": "Rooms",
   "hn_choose_hint": "Choose a room or zone. A scene sets every light of it; in the light popup you can set any light you want dark to off. For only some lights, make a zone of them.",
-  "hn_choose_hint_edit": "The scene's room or zone, with all its lights. Next, the lights are set as the scene has them for you to change.",
   "hn_choose_a_room": "Choose a room or zone",
   "hn_couldn_t_read_the_hue_bridge": "Couldn’t read the Hue bridge",
   "hn_hue_scene": "Hue scene",

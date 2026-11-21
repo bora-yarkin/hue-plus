@@ -1302,7 +1302,6 @@ var PLUGIN_STRINGS = {
   "hn_zones": "Zones",
   "hn_rooms": "Rooms",
   "hn_choose_hint": "Choose a room or zone. A scene sets every light of it; in the light popup you can set any light you want dark to off. For only some lights, make a zone of them.",
-  "hn_choose_hint_edit": "The scene's room or zone, with all its lights. Next, the lights are set as the scene has them for you to change.",
   "hn_choose_a_room": "Choose a room or zone",
   "hn_couldn_t_read_the_hue_bridge": "Couldn’t read the Hue bridge",
   "hn_hue_scene": "Hue scene",
@@ -4684,7 +4683,6 @@ function hpScenePage(body, key) {
             hueSceneEdit(sid);
           },
         }),
-        hmRow({ icon: "light", title: _T("lights"), tap: "hue-scene-lights:" + sid }),
       ];
       if (dyn)
         rows.push(
@@ -11079,7 +11077,7 @@ if (typeof HP_PAGES !== "undefined") HP_PAGES["hue-scene-lights"] = ["hn_scene_l
  to the bridge (hue_plus.create_scene, update_scene, delete_scene, create_daily_smart_scene). Dynamic scenes cannot be made here: the Hue app only has them from its cloud gallery. */
 
 /* g: the room or zone chosen {id, name, type, lights: [the bridge's light ids]}; sel: the bridge's light ids of it (a scene sets every light of its room or zone: the bridge refuses one that leaves a light out); data: what the bridge says about its rooms, zones and scenes. */
-var HUENEW = { scope: "", g: null, sel: {}, mode: "", name: "", slots: [], days: [1, 1, 1, 1, 1, 1, 1], open: {}, restrict: "", target: "", data: null };
+var HUENEW = { scope: "", g: null, sel: {}, mode: "", name: "", slots: [], days: [1, 1, 1, 1, 1, 1, 1], open: {}, target: "", data: null };
 
 /* ---- what the bridge has ---- */
 
@@ -11168,7 +11166,7 @@ function mkHint(text) {
 /* ---- the start: the Hue app's "Add a scene" ---- */
 
 function hueStartMaker(scope) {
-  HUENEW = { scope: scope, g: null, sel: {}, mode: "", name: "", slots: [], days: [1, 1, 1, 1, 1, 1, 1], open: {}, restrict: "", target: "", data: null };
+  HUENEW = { scope: scope, g: null, sel: {}, mode: "", name: "", slots: [], days: [1, 1, 1, 1, 1, 1, 1], open: {}, target: "", data: null };
   hueLoadData().then(
     function () {
       showPopup("hue-add-scene", true);
@@ -11225,7 +11223,7 @@ function hueChooseLights(mode) {
   if (g) hueSelectGroup(g);
   /* In the Hue Plus panel the scene is for the room the page is of ("save to this Room"), as in the Hue app, so it goes straight on. Home Control keeps the choice:
      the scene can be for any room or zone, whatever page it was started from. */
-  if (g && mode !== "edit" && typeof window !== "undefined" && window.HueHost) {
+  if (g && typeof window !== "undefined" && window.HueHost) {
     hueAfterLights();
     return;
   }
@@ -11242,11 +11240,8 @@ function hueSelectGroup(g) {
 
 function hueLightsPage(b) {
   var box = mk("div"),
-    groups = HUENEW.data.groups.filter(function (g) {
-      return !HUENEW.restrict || g.id === HUENEW.restrict;
-    });
+    groups = HUENEW.data.groups;
   b.appendChild(box);
-  if (HUENEW.mode === "edit") HUENEW.open[HUENEW.restrict] = true;
   function groupRow(g) {
     var wrap = mk("div"),
       row = pill(g.type === "zone" ? "target" : "home", g.name, {
@@ -11281,7 +11276,7 @@ function hueLightsPage(b) {
   }
   function draw() {
     box.innerHTML = "";
-    box.appendChild(mkHint(_T(HUENEW.mode === "edit" ? "hn_choose_hint_edit" : "hn_choose_hint")));
+    box.appendChild(mkHint(_T("hn_choose_hint")));
     [["zone", "hn_zones"], ["room", "hn_rooms"]].forEach(function (t) {
       var list = groups.filter(function (g) {
         return g.type === t[0];
@@ -11312,7 +11307,6 @@ function hueAfterLights() {
   var m = HUENEW.mode;
   if (m === "allday") hueStartAllDay();
   else if (m === "photo") showPopup("hue-photo", true);
-  else if (m === "edit") hueEditOpen();
   else hueAskName(m);
 }
 
@@ -11680,6 +11674,7 @@ function huePhotoPage(b) {
 /* ---- changing a scene that exists ---- */
 
 /* The scene's own room or zone is shown, then its lights are set as the scene has them, the light popup opens on all of them, and the checkmark records what they show as the scene. */
+/* The colour wheel editor on the scene's own lights, with SAVE: no page to choose lights first (the editor's tiles pick which light the wheel sets). */
 function hueSceneEdit(id) {
   var uid = hueSceneUid(id);
   if (!uid) {
@@ -11689,16 +11684,14 @@ function hueSceneEdit(id) {
   hueLoadData().then(
     function (data) {
       var scene = data.scenes.filter(function (s) {
-          return s.id === uid;
-        })[0],
-        g = scene && data.groups.filter(function (x) { return x.id === scene.group_id; })[0];
-      if (!g) {
+        return s.id === uid;
+      })[0];
+      var lights = ((scene && scene.lights) || []).map(hueLightEntity).filter(Boolean);
+      if (!lights.length) {
         toast(_T("hn_no_hue_lights_here"));
         return;
       }
-      HUENEW = { scope: "", g: g, sel: {}, mode: "edit", name: A(id).name || A(id).friendly_name || "", slots: [], days: [], open: {}, restrict: g.id, target: id, data: data };
-      hueSelectGroup(g);
-      showPopup("hue-pick-lights", true);
+      hueEditOpen(id, A(id).name || A(id).friendly_name || "", lights);
     },
     function () {
       toast(_T("hn_couldn_t_read_the_hue_bridge"));
@@ -11706,11 +11699,8 @@ function hueSceneEdit(id) {
   );
 }
 
-function hueEditOpen() {
-  var id = HUENEW.target,
-    uid = hueSceneUid(id),
-    name = HUENEW.name,
-    lights = hueSelectedEntities();
+function hueEditOpen(id, name, lights) {
+  var uid = hueSceneUid(id);
   if (!uid || !lights.length) {
     toast(_T("hn_no_hue_lights_here"));
     return;

@@ -269,7 +269,6 @@ function hpScenePage(body, key) {
             hueSceneEdit(sid);
           },
         }),
-        hmRow({ icon: "light", title: _T("lights"), tap: "hue-scene-lights:" + sid }),
       ];
       if (dyn)
         rows.push(

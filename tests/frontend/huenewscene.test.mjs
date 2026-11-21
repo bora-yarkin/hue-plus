@@ -140,23 +140,14 @@ test("a scene that could not be written to the bridge leaves the popup open and 
   assert.deepEqual(log.toasts, ["hn_couldn_t_save_the_scene"]);
 });
 
-test("changing a scene starts with its own room chosen, and only that room is shown", async () => {
+test("changing a scene opens the light popup on the scene's own lights at once, with no page to choose lights, and its checkmark records them on the bridge", async () => {
   const { sandbox, log } = page();
   sandbox.hueSceneEdit("scene.a");
   await new Promise((r) => setImmediate(r));
-  assert.equal(sandbox.HUENEW.mode, "edit");
-  assert.equal(sandbox.HUENEW.restrict, "room-1");
-  assert.deepEqual(plain(sandbox.hueSelectedIds()), ["bl1", "bl2", "bl3"], "all the lights of the room");
-  assert.deepEqual(log.opened, ["hue-pick-lights"]);
-});
-
-test("then the lights are set as the scene has them, the light popup opens on the chosen ones, and its checkmark records them on the bridge", async () => {
-  const { sandbox, log } = page();
-  sandbox.hueSceneEdit("scene.a");
-  await new Promise((r) => setImmediate(r));
-  sandbox.hueAfterLights();
+  assert.deepEqual(log.opened, []);
+  await new Promise((r) => setTimeout(r, 1000));
   assert.deepEqual(log.calls, [["scene", "turn_on", { entity_id: "scene.a" }]]);
-  assert.deepEqual(plain(log.editors[0].lights), ["light.l1", "light.l2", "light.l3"]);
+  assert.deepEqual(plain(log.editors[0].lights), ["light.l1", "light.l2"]);
   assert.equal(await log.editors[0].onSave([]), true);
   assert.deepEqual(log.raw, [["hue_plus", "update_scene", { scene: "uid-a", record_current: true }]]);
 });
