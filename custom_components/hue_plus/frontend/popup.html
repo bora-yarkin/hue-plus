@@ -92,7 +92,7 @@ body.lg .wrap{zoom:1!important}
 <script>
 (function () {
   "use strict";
-  var FILES = ["camera-stream.js", "integrations.js", "app/strings.js", "app/core.js", "app/icons.js", "app/widgets.js", "app/lights.js", "app/lightpanel.js", "app/effects.js", "app/media.js", "app/climate.js", "app/vacuum.js", "app/camera.js", "app/advanced.js", "app/kinds.js", "app/popups.js", "app/model.js", "app/devices.js", "app/status.js", "app/sections.js", "app/rules.js", "app/editor.js", "app/pages.js", "app/header.js", "app/glance.js", "app/pins.js", "app/appearance.js", "app/search.js", "app/store.js", "app/scenes.js", "app/livescenes.js", "app/areas.js", "app/wall.js", "app/backups.js", "app/security.js", "app/conditions.js", "app/access.js", "app/settings.js", "app/pluginapi.js", "app/saved.js", "app/lighteditor.js", "app/scenenew.js", "app/staticmaker.js", "app/vlights.js", "app/livemaker.js", "app/history.js", "app/notifications.js", "app/roomoff.js", "app/remote.js", "app/appliance.js", "app/profiles.js", "app/manage.js", "app/doorcall.js"];
+  var FILES = ["camera-stream.js", "integrations.js", "app/strings.js", "app/core.js", "app/icons.js", "app/widgets.js", "app/lights.js", "app/lightpanel.js", "app/scenetab.js", "app/mastersettings.js", "app/effects.js", "app/media.js", "app/climate.js", "app/vacuum.js", "app/camera.js", "app/advanced.js", "app/kinds.js", "app/popups.js", "app/model.js", "app/devices.js", "app/status.js", "app/sections.js", "app/rules.js", "app/editor.js", "app/pages.js", "app/header.js", "app/glance.js", "app/pins.js", "app/appearance.js", "app/search.js", "app/store.js", "app/scenes.js", "app/livescenes.js", "app/areas.js", "app/wall.js", "app/backups.js", "app/security.js", "app/conditions.js", "app/access.js", "app/settings.js", "app/pluginapi.js", "app/saved.js", "app/lighteditor.js", "app/scenenew.js", "app/staticmaker.js", "app/vlights.js", "app/livemaker.js", "app/history.js", "app/notifications.js", "app/roomoff.js", "app/remote.js", "app/appliance.js", "app/profiles.js", "app/manage.js", "app/doorcall.js"];
   var query = new URLSearchParams(location.search);
   window.appFile = function (name) {
     return new URL("lights/app/" + name, location.href).href;
@@ -297,6 +297,8 @@ body.lg .wrap{zoom:1!important}
       lightPanel(b, lpMasterNode("hue", ids), {
         room: null,
         sliders: false,
+        /* The same wheel as Home Control's lights master with grouped lights as one light: a group is one light, a tap picks and never separates, taking one light out leaves the group as it is. There is no Scenes or Sync page here (the app has its own). */
+        groups: true,
         ready: function (S) {
           /* A tile for every light, always; the markers on the wheel are joined where lights look the same (an off light looks as it was last set). */
           var root = S.root;

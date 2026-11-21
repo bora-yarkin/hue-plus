@@ -4,6 +4,16 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.22.16] - 2026-11-21
+
+### Changed
+- **The wheel of the Hue panel is Home Control's lights master wheel with grouped lights as one light**: a group is one light with its icon, lights that look the same share a marker, tapping a tile or a marker picks and never separates, a light taken out of a group leaves the group as it is, the lights row says what each light is doing and opens a group beside its tile. It has no Scenes or Sync page: the app has its own.
+
+### Fixed
+- **The colour wheel of the Hue panel was empty** (0.22.8). The light frame did not run two files that Home Control's light panel now calls into (`scenetab.js`, `mastersettings.js`). It runs them, and a test fails when a file of Home Control's list is neither run by the frame nor on the list of the ones it does not need.
+- **A Hue scene started from Home Control did not start at its own brightness.** It kept the brightness the room had from the scene before (a scene the Hue app has at 24% started at the 36% of the one before, or at 100%). It starts with the scene's own brightness, as the Hue app does, unless one was set for it here. Only a value that was set here is kept; the speed and the brightness no longer keep each other's old values (their saved values start again from the scene's own).
+- **The brightness slider of a Hue scene set every light to the same level, and a scene started from Home Control did not keep its own levels.** A scene now starts as the bridge has it (the Hue app's overall brightness is the average of its lights, Arctic aurora's bed light at 84% and the others at 26% is 36%), and the slider scales every light from its own level as the Hue app does: below the scene's own brightness every light goes down in proportion, above it every light moves toward 100% in proportion to the way it has left, so the overall brightness is what the slider says and 100% is every light at 100%. The lights keep playing a live scene. A brightness set here is applied the same way when the scene starts. Recalling the scene with a brightness, which an earlier build of this fix used, puts every light at that one level. Home Control's light popup and lights master sliders do the same while a Hue scene plays on their lights (plugin API `dim`).
+
 ## [0.22.8] - 2026-11-21
 
 ### Added

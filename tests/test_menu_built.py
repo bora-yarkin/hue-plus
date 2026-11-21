@@ -49,3 +49,43 @@ def test_the_light_panel_is_home_controls_code_as_it_is():
     if not module.SOURCE.is_dir():
         pytest.skip("Home Control is not checked out next to Hue Plus")
     assert module.sync(check=True), "lights/ differs from Home Control's dashboard: run scripts/sync_light_popup.py"
+
+
+# The files of Home Control's dashboard that the light frame deliberately does not run (the Hue panel has no use for them). Every other file of Home Control's list is in popup.html's FILES:
+# a new file of Home Control that the light panel calls into was missing once and left the wheel empty.
+NOT_RUN_BY_THE_FRAME = {
+    "app/batteries.js",
+    "app/controls.js",
+    "app/appliancedial.js",
+    "app/lightgroups.js",
+    "app/addpopup.js",
+    "app/main.js",
+}
+
+
+def test_the_light_frame_runs_the_files_of_home_control_it_needs():
+    spec = importlib.util.spec_from_file_location("sync_light_popup", ROOT / "scripts" / "sync_light_popup.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    if not module.SOURCE.is_dir():
+        pytest.skip("Home Control is not checked out next to Hue Plus")
+    import re
+
+    popup = (ROOT / "custom_components" / "hue_plus" / "frontend" / "popup.html").read_text(encoding="utf-8")
+    listed = json.loads(re.search(r"var FILES = (\[.*?\]);", popup, flags=re.S).group(1))
+    home_control = json.loads(module._read("version.json").decode("utf-8"))["files"]
+    missing = [name for name in home_control if name not in listed and name not in NOT_RUN_BY_THE_FRAME]
+    assert not missing, (
+        f"popup.html does not run {missing}: add them to FILES (or to NOT_RUN_BY_THE_FRAME here if the Hue panel does not need them)"
+    )
+    assert [name for name in listed if name in home_control] == [name for name in home_control if name in listed], (
+        "popup.html runs them in Home Control's order"
+    )
+
+
+def test_the_hue_panels_wheel_treats_groups_as_single_lights_and_has_no_scenes_or_sync_page():
+    popup = (ROOT / "custom_components" / "hue_plus" / "frontend" / "popup.html").read_text(encoding="utf-8")
+    call = popup[popup.index('lightPanel(b, lpMasterNode("hue", ids), {') :][:700]
+    assert "groups: true," in call
+    # The Scenes and Sync pages are Home Control's lights master's: a panel named "hue" (not "page~section") has no section, so it has neither.
+    assert 'lpMasterNode("hue", ids)' in popup

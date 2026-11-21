@@ -4590,14 +4590,12 @@ function hpScenePage(body, key) {
         },
         live: function (v) {
           var g = P.group(H(), sid);
-          if (g && P.active(H(), sid) && V_(g) === "on") callLive(g, "light", "turn_on", { entity_id: g, brightness_pct: v });
+          if (g && P.active(H(), sid)) hueSceneDim(sid, v, false);
         },
         commit: function (v) {
-          var st = hueSceneSet(sid);
-          st.bri = v;
-          hueSceneSave(sid, st);
+          hueSceneSave(sid, { bri: v });
           var g = P.group(H(), sid);
-          if (g && P.active(H(), sid) && V_(g) === "on") call("light", "turn_on", { entity_id: g, brightness_pct: v });
+          if (g && P.active(H(), sid)) hueSceneDim(sid, v, true);
         },
       })
   );
@@ -10688,9 +10686,20 @@ var HUESCENES = {
  speedSteps:12,
  stepToSpeed:function(step){return Math.round((step-1)/(this.speedSteps-1)*100)},
  speedToStep:function(speed){return Math.max(1,Math.min(this.speedSteps,Math.round(speed/100*(this.speedSteps-1))+1))},
+ /* The lights of a room's group light: the members it lists, or else the lights its "lights" attribute names (Hue Plus's group lists their names, not entities). */
+ roomLights:function(h,grp){
+  var a=h.states[grp]&&h.states[grp].attributes;
+  if(!a)return[];
+  if((a.entity_id||[]).length)return a.entity_id;
+  var names=(a.lights||[]).map(function(n){return String(n).trim().toLowerCase()});
+  return Object.keys(h.states).filter(function(k){
+   var e=h.entities[k],x=h.states[k].attributes;
+   return k.indexOf("light.")===0&&e&&(e.platform==="hue"||e.platform==="hue_plus")&&!x.is_hue_group&&names.indexOf(String(x.friendly_name).trim().toLowerCase())>=0;
+  });
+ },
  /* Each Hue light reports "dynamic_palette" in its dynamics attribute while a live scene plays on it (an off light keeps the word). */
  playing:function(h,grp){
-  return !!grp&&(h.states[grp].attributes.entity_id||[]).some(function(m){var s=h.states[m];return s&&s.state==="on"&&s.attributes.dynamics==="dynamic_palette"});
+  return !!grp&&HUESCENES.roomLights(h,grp).some(function(m){var s=h.states[m];return s&&s.state==="on"&&s.attributes.dynamics==="dynamic_palette"});
  },
  /* Freezing a live scene: every light that is on is told the colour and brightness it shows right now, as a plain command. Hue then stops animating it. Returns service calls as [domain, service, data]. */
  freeze:function(h,grp){
@@ -10771,32 +10780,147 @@ function hueScenePalette(id, done) {
 }
 
 /* Speed and brightness a Hue scene is started with, kept on this device. */
+/* The speed and the brightness a scene starts with: the ones set here for it (kept on this device, only what was set), else the scene's own as the bridge has them (what the Hue app set). */
 function hueSceneSet(id) {
-  var s = deviceGet("db_hsc_" + id, {});
+  var s = deviceGet("db_hsd_" + id, {});
   return {
     speed: typeof s.speed === "number" ? s.speed : Math.round((A(id).speed || 0.5) * 100),
-    bri: typeof s.bri === "number" ? s.bri : Math.round((A(id).brightness || 255) / 2.55),
+    bri: typeof s.bri === "number" ? s.bri : HSLEVELS[id] ? Math.round(HSLEVELS[id].avg) : Math.round((A(id).brightness || 255) / 2.55),
   };
 }
 
-function hueSceneSave(id, st) {
-  deviceSet("db_hsc_" + id, st);
+/* Keeps what was changed (`part`: { bri } or { speed }) and nothing else, so a value that was never set here keeps following the scene's own. */
+function hueSceneSave(id, part) {
+  var s = deviceGet("db_hsd_" + id, {});
+  deviceSet("db_hsd_" + id, Object.assign({}, s, part));
 }
 
 /* The room's Hue group light of the scene that was frozen last, so the Freeze button can show it. */
 var HFROZEN = {};
 
-/* Starts the scene live with the saved speed, keeping the brightness the room has now. */
-function hueSceneStart(id) {
+/* The level of a light that the scene has at `own` percent when the scene's overall brightness, which is `avg` as the scene has it, is set to `v`: below it every light is scaled down in proportion,
+   above it every light moves toward 100% in proportion to the way it has left, so the overall brightness is `v` and 100% is every light at 100% (the Hue app: 36% to 54% takes a light at 84% to 89%, 36% to 20% takes it to 47%). */
+function hueSceneLevel(own, avg, v) {
+  var pct = v <= avg ? (own * v) / avg : own + ((100 - own) * (v - avg)) / Math.max(1, 100 - avg);
+  return Math.max(1, Math.min(100, Math.round(pct)));
+}
+
+/* What the bridge has each light of a Hue scene at ({ entity: 0..255 }) and the average of the lit ones in percent, read once: the scene's own levels, which the Hue app's brightness slider scales. */
+var HSLEVELS = {};
+
+function hueSceneLevels(id, then) {
+  if (HSLEVELS[id]) return then(HSLEVELS[id]);
+  if (!hueImportable()) return;
+  serviceResponse("hue_plus", "import_hue_scene", { entity_id: id })
+    .then(function (r) {
+      var map = {},
+        sum = 0,
+        n = 0;
+      ((r && r.states) || []).forEach(function (x) {
+        if (x.on && x.brightness) {
+          map[x.entity_id] = x.brightness;
+          sum += x.brightness / 2.55;
+          n++;
+        }
+      });
+      if (!n) return;
+      HSLEVELS[id] = { map: map, avg: sum / n };
+      then(HSLEVELS[id]);
+    })
+    .catch(function () {});
+}
+
+/* Starts the scene live at its own speed. It keeps its own levels, as the Hue app starts it: the lights are not given one brightness. One set here is applied by scaling those levels. */
+function hueSceneStart(id, keep) {
   var st = hueSceneSet(id),
     grp = HUESCENES.group(H(), id),
-    bri = grp && V_(grp) === "on" ? (A(grp).brightness || 0) / 2.55 : st.bri;
+    set = deviceGet("db_hsd_" + id, {}),
+    /* a scene that plays on while its speed is changed keeps the overall brightness it has */
+    now = keep && grp && V_(grp) === "on" ? lpAvgPct(HUESCENES.roomLights(H(), grp)) : typeof set.bri === "number" ? set.bri : 0;
   if (grp) {
     delete HFROZEN[grp];
     liveStopOn([grp]);
   }
-  var c = HUESCENES.start(H(), id, st.speed, Math.max(1, bri) * 2.55);
+  var c = HUESCENES.start(H(), id, st.speed, 255);
+  delete c[2].brightness;
   call(c[0], c[1], c[2]);
+  if (now) hueSceneLevels(id, function (lv) {
+    if (Math.abs(now - lv.avg) >= 1) setTimeout(function () { hueSceneDim(id, now, true); }, 1500);
+  });
+}
+
+/* The average brightness in percent of the lights of a list that are on. */
+function lpAvgPct(ids) {
+  var on = ids.filter(function (e) {
+    return V_(e) === "on";
+  });
+  return on.length
+    ? on.reduce(function (t, e) {
+        return t + (A(e).brightness || 0) / 2.55;
+      }, 0) / on.length
+    : 0;
+}
+
+/* Sets a Hue scene's overall brightness the way the Hue app does: every light of the scene is scaled by the same factor from the level the scene gives it (the bed light at 84% and the
+   rest at 26% stay 84:26), up to the most a light can do. Setting one brightness on the room would put every light at the same level, and recalling the scene with a brightness does that too.
+   The lights keep playing a live scene. A frozen scene is no longer the scene, so it gets a plain brightness. `now` sends at once, else only the latest value is sent while a slider moves. */
+function hueSceneDim(id, v, now) {
+  var grp = HUESCENES.group(H(), id);
+  if (!grp || V_(grp) !== "on") return;
+  if (HFROZEN[grp] === id) {
+    var plain = { entity_id: grp, brightness_pct: v };
+    return now ? call("light", "turn_on", plain) : callLive(grp, "light", "turn_on", plain);
+  }
+  hueSceneLevels(id, function (lv) {
+    var by = {};
+    Object.keys(lv.map).forEach(function (e) {
+      if (V_(e) !== "on") return;
+      var pct = hueSceneLevel(lv.map[e] / 2.55, lv.avg, v);
+      (by[pct] = by[pct] || []).push(e);
+    });
+    hueSceneDimSend(
+      id,
+      Object.keys(by).map(function (pct) {
+        return { entity_id: by[pct], brightness_pct: +pct };
+      })
+    );
+  });
+}
+
+/* The commands of one position of the slider are sent together, one position at a time for the scene, and only the latest waits: a command for each level of a light kept apart from the next would
+   send every position the finger passed, so the lights would go up and down through all of them before they settled. */
+var HSDIMQ = {};
+
+function hueSceneDimSend(id, plan) {
+  var q = HSDIMQ[id] || (HSDIMQ[id] = { busy: false, next: null });
+  q.next = plan;
+  if (q.busy) return;
+  q.busy = true;
+  (function run() {
+    var n = q.next;
+    q.next = null;
+    if (!n) {
+      q.busy = false;
+      return;
+    }
+    var ps = [];
+    gate(
+      n.reduce(function (all, d) {
+        return all.concat(d.entity_id);
+      }, []),
+      function () {
+        n.forEach(function (d) {
+          ps.push(Promise.resolve(callRaw("light", "turn_on", d)).catch(function () {}));
+        });
+      }
+    );
+    Promise.race([
+      Promise.all(ps),
+      new Promise(function (res) {
+        setTimeout(res, 2000);
+      }),
+    ]).then(run);
+  })();
 }
 
 /* Freezes the scene where it is: the lights keep the colours they show now. */
@@ -10924,6 +11048,7 @@ function hueSceneLightsPage(b, key) {
 function hueScenePlayPopup(b, id) {
   var P = HUESCENES,
     stat = A(id).is_dynamic === false;
+  hueSceneLevels(id, function () {});
   function grp() {
     return P.group(H(), id);
   }
@@ -10953,13 +11078,11 @@ function hueScenePlayPopup(b, id) {
           return P.active(H(), id);
         },
         live: function (v) {
-          if (live()) callLive(grp(), "light", "turn_on", { entity_id: grp(), brightness_pct: v });
+          if (live()) hueSceneDim(id, v, false);
         },
         commit: function (v) {
-          var st = hueSceneSet(id);
-          st.bri = v;
-          hueSceneSave(id, st);
-          if (live()) call("light", "turn_on", { entity_id: grp(), brightness_pct: v });
+          hueSceneSave(id, { bri: v });
+          if (live()) hueSceneDim(id, v, true);
         },
       })
     );
@@ -10980,13 +11103,12 @@ function hueScenePlayPopup(b, id) {
           return P.active(H(), id);
         },
         commit: function (v) {
-          var st = hueSceneSet(id);
-          st.speed = P.stepToSpeed(v);
-          hueSceneSave(id, st);
+          var speed = P.stepToSpeed(v);
+          hueSceneSave(id, { speed: speed });
           /* the speed is also the one the scene starts with on the bridge (and in the Hue app) */
           if (isAdmin() && hueplus.has(H(), "update_scene"))
-            callRaw("hue_plus", "update_scene", { scene: hueSceneUid(id), speed: st.speed / 100 });
-          if (playing()) hueSceneStart(id);
+            callRaw("hue_plus", "update_scene", { scene: hueSceneUid(id), speed: speed / 100 });
+          if (playing()) hueSceneStart(id, true);
         },
       })
     );
@@ -14307,8 +14429,13 @@ function hpEditMove(room, sel) {
     },
     /* the lights it plays on (what a light says it is doing: Dynamics) */
     lights: function (id) {
-      return hpSceneLights(id);
+      var own = hpSceneLights(id);
+      if (own.length) return own;
+      /* The bridge's list of the scene's lights is read later than the page is drawn: until then the scene is taken to play on the lights of its room. */
+      var grp = HUESCENES.group(H(), id);
+      return grp ? HUESCENES.roomLights(H(), grp) : [];
     },
+    dim: hueSceneDim,
     palette: hueScenePalette,
   });
   /* The Hue app's "Add a scene", in the new-scene popup of a scenes section. */
