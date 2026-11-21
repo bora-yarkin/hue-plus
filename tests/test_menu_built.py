@@ -81,3 +81,11 @@ def test_the_light_frame_runs_the_files_of_home_control_it_needs():
     assert [name for name in listed if name in home_control] == [name for name in home_control if name in listed], (
         "popup.html runs them in Home Control's order"
     )
+
+
+def test_the_hue_panels_wheel_treats_groups_as_single_lights_and_has_no_scenes_or_sync_page():
+    popup = (ROOT / "custom_components" / "hue_plus" / "frontend" / "popup.html").read_text(encoding="utf-8")
+    call = popup[popup.index('lightPanel(b, lpMasterNode("hue", ids), {') :][:700]
+    assert "groups: true," in call
+    # The Scenes and Sync pages are Home Control's lights master's: a panel named "hue" (not "page~section") has no section, so it has neither.
+    assert 'lpMasterNode("hue", ids)' in popup

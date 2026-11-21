@@ -297,6 +297,8 @@ body.lg .wrap{zoom:1!important}
       lightPanel(b, lpMasterNode("hue", ids), {
         room: null,
         sliders: false,
+        /* The same wheel as Home Control's lights master with grouped lights as one light: a group is one light, a tap picks and never separates, taking one light out leaves the group as it is. There is no Scenes or Sync page here (the app has its own). */
+        groups: true,
         ready: function (S) {
           /* A tile for every light, always; the markers on the wheel are joined where lights look the same (an off light looks as it was last set). */
           var root = S.root;
