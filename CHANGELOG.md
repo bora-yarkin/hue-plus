@@ -4,6 +4,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.22.17] - 2026-11-21
+
+### Changed
+- **The light popup of the Hue panel is Home Control 0.17.2's**: the power button of a lights master is in the place of the icon at the left of its title, and an opened group of the lights row is as wide as its lights, so the gap after it is the same for every group in Safari.
+
 ## [0.22.16] - 2026-11-21
 
 ### Changed
