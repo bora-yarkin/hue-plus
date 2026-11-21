@@ -4,6 +4,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+### Added
+- The Spotify sync says it can be a tab of a Home Control lights master's light popup (`sync: true` in its device kind).
+
 ### Fixed
 - **Saving a scene's colours in Home Control closed every popup**, the lights master under it too. The colour editor now closes to the page it was opened from.
 

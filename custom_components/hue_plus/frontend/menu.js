@@ -10677,6 +10677,8 @@ function lpStylePopup(b, id) {
     pop: "hsync",
     icon: "syncring",
     search: "light",
+    /* a lights master can show it as a tab of its light popup */
+    sync: true,
     row: hsyncRow,
   });
   HC.registerDeviceKind({
