@@ -180,3 +180,33 @@ test("the lights page of a scene lists the lights of its room or zone with their
   await new Promise((resolve) => setTimeout(resolve, 0));
   assert.deepEqual(calls, [["hue_plus", "update_scene", { scene: "bridge-scene", lights: ["a", "b"] }]], "by the lights' ids, not their names");
 });
+
+test("a scene starts with its own brightness as the Hue app has it, not the one the room had from the scene before; only what was set here is kept", () => {
+  const kept = {};
+  const calls = [];
+  const context = {
+    deviceGet: (key, fallback) => kept[key] || fallback,
+    deviceSet: (key, value) => {
+      kept[key] = value;
+    },
+    A: (id) => (id === "scene.nebula" ? { brightness: 61, speed: 0.56, is_dynamic: true } : id === "light.room" ? { brightness: 255 } : {}),
+    H: () => ({}),
+    V_: () => "on",
+    HFROZEN: {},
+    liveStopOn() {},
+    call: (...a) => calls.push(a),
+  };
+  vm.createContext(context);
+  vm.runInContext(readFileSync(new URL("../../frontend/src/huescenes.js", import.meta.url), "utf8") + "\n;this.set = hueSceneSet; this.save = hueSceneSave; this.start = hueSceneStart;", context);
+  vm.runInContext("HUESCENES.group = function () { return 'light.room'; }; HUESCENES.start = function (h, id, speed, bri) { return ['hue_plus', 'recall', { speed: speed, bri: bri }]; };", context);
+  assert.deepEqual(plain(context.set("scene.nebula")), { speed: 56, bri: 24 }, "the scene's own brightness (24%), as the Hue app has it");
+  context.start("scene.nebula");
+  assert.equal(Math.round(calls.pop()[2].bri), 61, "the room being on at full brightness from another scene does not change it");
+  context.save("scene.nebula", { speed: 30 });
+  assert.deepEqual(plain(context.set("scene.nebula")), { speed: 30, bri: 24 }, "changing the speed does not keep the brightness as it was");
+  context.save("scene.nebula", { bri: 40 });
+  context.start("scene.nebula");
+  assert.equal(Math.round(calls.pop()[2].bri), 102, "a brightness set here (40%) is the one it starts with");
+  context.start("scene.nebula", true);
+  assert.equal(Math.round(calls.pop()[2].bri), 255, "a scene that plays on keeps the brightness it has when its speed is changed");
+});

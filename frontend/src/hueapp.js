@@ -179,9 +179,7 @@ function hpScenePage(body, key) {
           if (g && P.active(H(), sid) && V_(g) === "on") callLive(g, "light", "turn_on", { entity_id: g, brightness_pct: v });
         },
         commit: function (v) {
-          var st = hueSceneSet(sid);
-          st.bri = v;
-          hueSceneSave(sid, st);
+          hueSceneSave(sid, { bri: v });
           var g = P.group(H(), sid);
           if (g && P.active(H(), sid) && V_(g) === "on") call("light", "turn_on", { entity_id: g, brightness_pct: v });
         },

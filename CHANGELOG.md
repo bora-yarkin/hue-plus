@@ -4,6 +4,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+### Fixed
+- **A Hue scene started from Home Control did not start at its own brightness.** It kept the brightness the room had from the scene before (a scene the Hue app has at 24% started at the 36% of the one before, or at 100%). It starts with the scene's own brightness, as the Hue app does, unless one was set for it here. Only a value that was set here is kept; the speed and the brightness no longer keep each other's old values (their saved values start again from the scene's own).
+
 ## [0.22.8] - 2026-11-21
 
 ### Added
