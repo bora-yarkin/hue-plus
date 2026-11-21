@@ -75,5 +75,9 @@ def test_the_light_frame_runs_the_files_of_home_control_it_needs():
     listed = json.loads(re.search(r"var FILES = (\[.*?\]);", popup, flags=re.S).group(1))
     home_control = json.loads(module._read("version.json").decode("utf-8"))["files"]
     missing = [name for name in home_control if name not in listed and name not in NOT_RUN_BY_THE_FRAME]
-    assert not missing, f"popup.html does not run {missing}: add them to FILES (or to NOT_RUN_BY_THE_FRAME here if the Hue panel does not need them)"
-    assert [name for name in listed if name in home_control] == [name for name in home_control if name in listed], "popup.html runs them in Home Control's order"
+    assert not missing, (
+        f"popup.html does not run {missing}: add them to FILES (or to NOT_RUN_BY_THE_FRAME here if the Hue panel does not need them)"
+    )
+    assert [name for name in listed if name in home_control] == [name for name in home_control if name in listed], (
+        "popup.html runs them in Home Control's order"
+    )
