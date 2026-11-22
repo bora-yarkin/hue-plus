@@ -4,6 +4,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.23.0] - 2026-11-22
+
+### Changed
+- Synced with Home Control 0.19.0 (layout 5, the lights master doing what separate lights did, auto scenes and scene tags).
+- The Hue app menu styles (`.hm-*`) are this plugin's own; the scene source and kind wording and the check for Hue rooms and zones come from here through the plugin API.
+
 ### Changed
 - The styles of the Hue app's menu pages (`.hm-*`) are this plugin's own now; Home Control no longer carries them.
 

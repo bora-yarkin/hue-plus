@@ -60,6 +60,8 @@ NOT_RUN_BY_THE_FRAME = {
     "app/lightgroups.js",
     "app/addpopup.js",
     "app/main.js",
+    "app/lightsmasters.js",
+    "app/autoscenes.js",
 }
 
 
