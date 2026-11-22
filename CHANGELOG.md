@@ -4,6 +4,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+### Changed
+- The styles of the Hue app's menu pages (`.hm-*`) are this plugin's own now; Home Control no longer carries them.
+
 ## [0.22.17] - 2026-11-21
 
 ### Changed
