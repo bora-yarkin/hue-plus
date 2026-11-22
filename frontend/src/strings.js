@@ -1,6 +1,9 @@
 /* The text of this plugin's pages (the dashboard adds it to its own table when the plugin starts). */
 
 var PLUGIN_STRINGS = {
+  "scene_kind_plugin": "Hue scene",
+  "scene_source_plugin": "Hue scenes of these lights' areas",
+  "scene_source_plugin_sub": "Scenes made on the bridge",
   "hn_add_a_scene_hint": "Browse, customize, or create scenes to save to this Room",
   "hn_choose_your_lights": "Choose your lights",
   "hn_zones": "Zones",

@@ -50,6 +50,7 @@ function load(hass) {
     registerSceneMaker: (def) => reg.makers.push(def),
     registerSceneImport: (def) => reg.imports.push(def),
     registerDeviceKind: (def) => reg.devices.push(def),
+    registerGroupCheck: (fn) => (reg.groups = (reg.groups || []).concat([fn])),
     registerPlayback: (def) => reg.playback.push(def),
     registerLightStyle: (def) => reg.styles.push(def),
   };
@@ -171,4 +172,12 @@ test("Hue offers its scenes in the new-scene popup only where Hue Plus can make 
   assert.equal(reg.makers[0].available(), false, "and no room or zone of the bridge to make it in");
   assert.equal(typeof reg.kinds[0].remove, "function");
   for (const key of ["hue-add-scene", "hue-pick-lights", "hue-scene-name", "hue-all-day", "hue-photo"]) assert.ok(reg.pages[key], key);
+});
+
+test("a Hue room or zone is told to the dashboard as a light that stands for other lights", () => {
+  const reg = load({ states: { "light.room": { state: "on", attributes: { is_hue_group: true } }, "light.lamp": { state: "on", attributes: {} } }, entities: {} });
+  const isGroup = reg.groups[0];
+  assert.equal(isGroup("light.room"), true);
+  assert.equal(isGroup("light.lamp"), false);
+  assert.equal(isGroup("light.gone"), false);
 });
