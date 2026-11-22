@@ -1297,6 +1297,9 @@ var HOST_CSS = ":root{--bg:#1b1c20;--bg-warm:#2b2926;--bar:#14151a;--head:#23242
 /* The text of this plugin's pages (the dashboard adds it to its own table when the plugin starts). */
 
 var PLUGIN_STRINGS = {
+  "scene_kind_hue": "Hue scene",
+  "scene_source_hue": "Hue scenes of these lights' areas",
+  "scene_source_hue_sub": "Scenes made on the bridge",
   "hn_add_a_scene_hint": "Browse, customize, or create scenes to save to this Room",
   "hn_choose_your_lights": "Choose your lights",
   "hn_zones": "Zones",
