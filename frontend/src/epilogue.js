@@ -47,6 +47,10 @@
     search: "light",
     row: hsboxRow,
   });
+  /* A Hue room or zone is a light that stands for other lights. */
+  HC.registerGroupCheck(function (id) {
+    return !!(HC.attrs(id) || {}).is_hue_group;
+  });
   HC.registerPlayback({
     plays: function (id) {
       var sw = lightSyncPlays(id);
