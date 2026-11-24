@@ -4,6 +4,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+### Fixed
+- **The colour wheel of the Hue panel was empty again** (0.23.0). The light frame still set `LWHEEL`, a name Home Control 0.19.0 removed with its colour wheel setting, so opening a light failed with a ReferenceError. The frame no longer names it (nor the `sliders` option Home Control stopped reading).
+
+### Changed
+- **The light frame is checked against the code it runs**: `scripts/check_light_frame.py` lists every name the frame's script uses that nothing it runs defines. `scripts/sync_light_popup.py` runs it after copying Home Control's code and stops with the names, and a test runs it, so a name Home Control renames or removes shows when the code is copied, not in the panel.
+- Synced with Home Control 0.21.0.
+
 ## [0.23.0] - 2026-11-22
 
 ### Changed

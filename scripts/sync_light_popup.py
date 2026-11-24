@@ -6,6 +6,8 @@ is picked up by running this again (the copy is in git so that the integration w
 
     python3 scripts/sync_light_popup.py            # copy
     python3 scripts/sync_light_popup.py --check    # fail when the copy differs from Home Control's files (used by a test when the checkout is there)
+
+After a copy the frame is checked: every name popup.html uses must be defined by the code it runs (scripts/check_light_frame.py). Then run scripts/build_menu.py.
 """
 
 from __future__ import annotations
@@ -56,4 +58,15 @@ def sync(check: bool) -> bool:
 if __name__ == "__main__":
     if not SOURCE.is_dir():
         sys.exit(f"Home Control's frontend is not at {SOURCE}")
-    sys.exit(0 if sync("--check" in sys.argv) else 1)
+    checking = "--check" in sys.argv
+    if not sync(checking):
+        sys.exit(1)
+    if not checking:
+        # What the frame (popup.html) names must still exist in the code just copied; Home Control renaming or removing a name broke the wheel before. The copy is built into lights/bundle.json after it.
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import check_light_frame
+
+        missing = check_light_frame.undefined_names()
+        if missing:
+            sys.exit("Home Control no longer defines what the light frame (frontend/popup.html) names: " + ", ".join(missing) + ". Change the frame to match, then run scripts/build_menu.py.")
+        print("Copied. Now run scripts/build_menu.py, then the tests.")
