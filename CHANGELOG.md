@@ -4,6 +4,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+## [0.24.0] - 2026-11-24
+
 ### Fixed
 - **The colour wheel of the Hue panel was empty again** (0.23.0). The light frame still set `LWHEEL`, a name Home Control 0.19.0 removed with its colour wheel setting, so opening a light failed with a ReferenceError. The frame no longer names it (nor the `sliders` option Home Control stopped reading).
 
