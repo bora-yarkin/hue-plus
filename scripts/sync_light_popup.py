@@ -68,5 +68,9 @@ if __name__ == "__main__":
 
         missing = check_light_frame.undefined_names()
         if missing:
-            sys.exit("Home Control no longer defines what the light frame (frontend/popup.html) names: " + ", ".join(missing) + ". Change the frame to match, then run scripts/build_menu.py.")
+            sys.exit(
+                "Home Control no longer defines what the light frame (frontend/popup.html) names: "
+                + ", ".join(missing)
+                + ". Change the frame to match, then run scripts/build_menu.py."
+            )
         print("Copied. Now run scripts/build_menu.py, then the tests.")

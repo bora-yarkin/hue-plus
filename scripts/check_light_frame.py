@@ -18,11 +18,67 @@ ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "custom_components" / "hue_plus" / "frontend"
 
 # What the page itself provides, and words of the language.
-KNOWN = set(
-    """break case catch continue default delete do else false finally for function if in instanceof new null return switch this throw true try typeof var void while let const undefined NaN Infinity of
-    window document console Promise URL URLSearchParams fetch Object Array JSON Math Date Number String Error setTimeout clearTimeout setInterval clearInterval requestAnimationFrame location parseFloat
-    parseInt isNaN encodeURIComponent getComputedStyle""".split()
-)
+KNOWN = {
+    "break",
+    "case",
+    "catch",
+    "continue",
+    "default",
+    "delete",
+    "do",
+    "else",
+    "false",
+    "finally",
+    "for",
+    "function",
+    "if",
+    "in",
+    "instanceof",
+    "new",
+    "null",
+    "return",
+    "switch",
+    "this",
+    "throw",
+    "true",
+    "try",
+    "typeof",
+    "var",
+    "void",
+    "while",
+    "let",
+    "const",
+    "undefined",
+    "NaN",
+    "Infinity",
+    "of",
+    "window",
+    "document",
+    "console",
+    "Promise",
+    "URL",
+    "URLSearchParams",
+    "fetch",
+    "Object",
+    "Array",
+    "JSON",
+    "Math",
+    "Date",
+    "Number",
+    "String",
+    "Error",
+    "setTimeout",
+    "clearTimeout",
+    "setInterval",
+    "clearInterval",
+    "requestAnimationFrame",
+    "location",
+    "parseFloat",
+    "parseInt",
+    "isNaN",
+    "encodeURIComponent",
+    "getComputedStyle",
+}
 
 
 def _strip(text: str) -> str:
@@ -66,6 +122,8 @@ if __name__ == "__main__":
     missing = undefined_names()
     if missing:
         print("The light frame names what nothing it runs defines: " + ", ".join(missing))
-        print("Home Control probably renamed or removed it: change frontend/popup.html (or frontend/src) to match, then run scripts/build_menu.py.")
+        print(
+            "Home Control probably renamed or removed it: change frontend/popup.html (or frontend/src) to match, then run scripts/build_menu.py."
+        )
         sys.exit(1)
     print("The light frame names only what it runs.")
