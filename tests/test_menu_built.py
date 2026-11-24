@@ -91,3 +91,11 @@ def test_the_hue_panels_wheel_treats_groups_as_single_lights_and_has_no_scenes_o
     assert "groups: true," in call
     # The Scenes and Sync pages are Home Control's lights master's: a panel named "hue" (not "page~section") has no section, so it has neither.
     assert 'lpMasterNode("hue", ids)' in popup
+
+
+def test_the_light_frame_names_only_what_the_code_it_runs_defines():
+    """popup.html reaches into Home Control's global names; one that Home Control removed (LWHEEL was) fails when the wheel opens, so it fails here first."""
+    spec = importlib.util.spec_from_file_location("check_light_frame", ROOT / "scripts" / "check_light_frame.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module.undefined_names() == [], "popup.html names what nothing it runs defines (see scripts/check_light_frame.py)"

@@ -293,10 +293,8 @@ body.lg .wrap{zoom:1!important}
       LMASTER.hue = ids;
       LMASTER_NAME.hue = name;
       LMASTER_ALL.hue = true;
-      LWHEEL["m:hue"] = undefined;
       lightPanel(b, lpMasterNode("hue", ids), {
         room: null,
-        sliders: false,
         /* The same wheel as Home Control's lights master with grouped lights as one light: a group is one light, a tap picks and never separates, taking one light out leaves the group as it is. There is no Scenes or Sync page here (the app has its own). */
         groups: true,
         ready: function (S) {

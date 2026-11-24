@@ -23,6 +23,9 @@ var KINDS = [
   "button",
   "cover",
   "lock",
+  "scene",
+  "cscene",
+  "scenes",
 ];
 
 /* The starting layout when nothing is saved yet: one room per Home Assistant area with its controllable devices,
@@ -183,36 +186,99 @@ function cleanHdr(a) {
 }
 
 /* A custom remote's grid (app/remote.js): the number of columns and up to 60 buttons, each an entity of a kind that can be pressed, an icon, a short label and how many columns it takes. */
+/* What a button of a remote does (app/remote.js): press an entity (a script, a button, a scene, a switch), send a key to a remote entity (`remote.send_command`), control a media player (volume, play, power) or select one of its sources. Anything else is dropped. A key may repeat while it is held (volume, channels). */
+var RM_ENT_DOMS = ["script", "button", "input_button", "scene", "switch"];
+var RM_MEDIA = ["volume_up", "volume_down", "volume_mute", "play_pause", "play", "pause", "stop", "next", "previous", "turn_on", "turn_off", "toggle"];
+
+function cleanRmAct(a) {
+  if (!a || typeof a !== "object" || typeof a.e !== "string" || !ENTRE.test(a.e)) return null;
+  var d = a.e.split(".")[0];
+  if (!a.t || a.t === "ent") return RM_ENT_DOMS.indexOf(d) >= 0 ? { t: "ent", e: a.e } : null;
+  if (a.t === "key") {
+    if (d !== "remote" || typeof a.c !== "string" || !/^[A-Za-z0-9_ .,:+\-]{1,40}$/.test(a.c)) return null;
+    var k = { t: "key", e: a.e, c: a.c };
+    if (a.r) k.r = 1;
+    /* How long the key is held (seconds), and a media player that is turned on instead while it is off (a TV's power key needs the TV to listen). */
+    if (typeof a.hs === "number" && a.hs >= 0.5 && a.hs <= 5) k.hs = Math.round(a.hs * 2) / 2;
+    if (typeof a.w === "string" && ENTRE.test(a.w) && a.w.split(".")[0] === "media_player") k.w = a.w;
+    return k;
+  }
+  if (a.t === "media") {
+    if (d !== "media_player" || RM_MEDIA.indexOf(a.m) < 0) return null;
+    var m = { t: "media", e: a.e, m: a.m };
+    if (a.r) m.r = 1;
+    return m;
+  }
+  if (a.t === "webos") return d === "media_player" && typeof a.b === "string" && /^[A-Z0-9_]{1,20}$/.test(a.b) ? (a.r ? { t: "webos", e: a.e, b: a.b, r: 1 } : { t: "webos", e: a.e, b: a.b }) : null;
+  if (a.t === "src") return d === "media_player" && typeof a.v === "string" && a.v && a.v.length <= 60 ? { t: "src", e: a.e, v: a.v } : null;
+  return null;
+}
+
+/* The remote of a device: a grid of buttons (width and height in cells, gaps, five-way pads) or a picture with touch areas over it. */
 function cleanRemote(r) {
-  var cols = r && typeof r.cols === "number" ? Math.max(2, Math.min(6, Math.round(r.cols))) : 3,
+  var cols = r && typeof r.cols === "number" ? Math.max(2, Math.min(12, Math.round(r.cols))) : 3,
     out = { cols: cols, btns: [] },
-    img = r && r.img;
+    img = r && r.img,
+    num = function (v, lo, hi, def) {
+      return typeof v === "number" && isFinite(v) ? Math.max(lo, Math.min(hi, Math.round(v))) : def;
+    },
+    act = function (x) {
+      /* A button made before actions had a kind has the entity on the button itself. */
+      return cleanRmAct(x && x.a ? x.a : x && x.e ? { t: "ent", e: x.e } : null);
+    };
   /* A picture of the remote: one of the integration's uploads or a file under /local/, with touch areas in percent of the picture. */
   if (img && typeof img.u === "string" && /^(\/home_control_remotes\/[a-f0-9]{12}\.(png|jpg|webp)|\/local\/[A-Za-z0-9_\-./]{1,150})(\?[A-Za-z0-9=_\-]{1,20})?$/.test(img.u) && img.u.indexOf("..") < 0) {
     var pct = function (v, lo, hi) {
       return typeof v === "number" && isFinite(v) ? Math.max(lo, Math.min(hi, Math.round(v * 100) / 100)) : lo;
     };
     out.img = { u: img.u, hs: [] };
-    (Array.isArray(img.hs) ? img.hs : []).slice(0, 60).forEach(function (h) {
-      if (!h || typeof h.e !== "string" || !ENTRE.test(h.e)) return;
-      if (["script", "button", "input_button", "scene", "switch"].indexOf(h.e.split(".")[0]) < 0) return;
-      var w = pct(h.w, 3, 100),
-        hh = pct(h.h, 3, 100);
-      out.img.hs.push({ x: pct(h.x, 0, 100 - w), y: pct(h.y, 0, 100 - hh), w: w, h: hh, r: h.r === "ellipse" ? "ellipse" : "rect", e: h.e });
+    (Array.isArray(img.hs) ? img.hs : []).slice(0, 120).forEach(function (h) {
+      var a = h && act(h);
+      if (!a) return;
+      var w = pct(h.w, 1, 100),
+        hh = pct(h.h, 1, 100);
+      out.img.hs.push({ x: pct(h.x, 0, 100 - w), y: pct(h.y, 0, 100 - hh), w: w, h: hh, r: h.r === "ellipse" ? "ellipse" : "rect", a: a });
     });
     if (r.v === "i") out.v = "i";
   }
-  (r && Array.isArray(r.btns) ? r.btns : []).slice(0, 60).forEach(function (x) {
-    if (!x || typeof x.e !== "string" || !ENTRE.test(x.e)) return;
-    if (["script", "button", "input_button", "scene", "switch"].indexOf(x.e.split(".")[0]) < 0) return;
-    var s = typeof x.s === "number" ? Math.round(x.s) : 1;
-    var btn = {
-      e: x.e,
-      i: iconOk(x.i) ? x.i : "info",
-      l: typeof x.l === "string" ? x.l.slice(0, 24) : "",
-      s: Math.max(1, Math.min(cols, 2, s)),
-    };
+  (r && Array.isArray(r.btns) ? r.btns : []).slice(0, 150).forEach(function (x) {
+    if (!x || typeof x !== "object") return;
+    var s = num(x.s, 1, cols, 1),
+      h = num(x.h, 1, 8, 1);
+    if (x.a && x.a.t === "gap") {
+      out.btns.push({ a: { t: "gap" }, i: "info", l: "", s: s, h: h });
+      return;
+    }
+    /* A five-way pad (arrows and OK) or a touchpad (swipes, a tap and a hold): the action of each part. */
+    if (x.a && (x.a.t === "dpad" || x.a.t === "touch")) {
+      var pad = { t: x.a.t },
+        any = false;
+      ["u", "d", "l", "r", "o"].concat(x.a.t === "touch" ? ["h"] : []).forEach(function (k) {
+        var a = act(x.a[k] ? { a: x.a[k] } : null);
+        if (a) {
+          pad[k] = a;
+          any = true;
+        }
+      });
+      if (any) out.btns.push({ a: pad, i: "info", l: "", s: num(x.s, 2, cols, Math.min(x.a.t === "touch" ? cols : 3, cols)), h: num(x.h, 2, 8, x.a.t === "touch" ? 4 : 3) });
+      return;
+    }
+    /* Parts that show a media player's state or a number: the now-playing card, the source menu, a keyboard button and a slider. */
+    if (x.a && ["now", "source", "text", "slider"].indexOf(x.a.t) >= 0) {
+      var ce = typeof x.a.e === "string" && ENTRE.test(x.a.e) ? x.a.e.split(".")[0] : "";
+      if (x.a.t === "slider" ? ["number", "input_number"].indexOf(ce) < 0 : ce !== "media_player") return;
+      var comp = { a: { t: x.a.t, e: x.a.e }, i: iconOk(x.i) ? x.i : x.a.t === "text" ? "keyboard" : x.a.t === "slider" ? "bright" : "info", l: typeof x.l === "string" ? x.l.slice(0, 24) : "", s: s, h: h };
+      /* The now-playing card can hold the apps menu (a tap opens it); a slider can be a round button that opens its slider. */
+      if ((x.a.t === "now" && x.a.m === "apps") || (x.a.t === "slider" && x.a.m === "pop")) comp.a.m = x.a.m;
+      out.btns.push(comp);
+      return;
+    }
+    var a = act(x);
+    if (!a) return;
+    var label = typeof x.l === "string" ? x.l.slice(0, 24) : "",
+      btn = { a: a, i: iconOk(x.i) ? x.i : x.i === "" && label ? "" : "info", l: label, s: s, h: h };
     if (x.q) btn.q = 1;
+    if (["red", "green", "yellow", "blue"].indexOf(x.k) >= 0) btn.k = x.k;
     out.btns.push(btn);
   });
   return out;
@@ -232,17 +298,32 @@ function cleanAppliance(a) {
       remaining: ["sensor", "input_datetime"],
       door: ["binary_sensor", "sensor"],
       permission: ["binary_sensor", "switch", "input_boolean"],
+      level: ["number", "input_number", "select", "input_select"],
     },
     extraDoms = ["select", "input_select", "number", "input_number", "switch", "input_boolean", "binary_sensor", "sensor", "button", "input_button", "script"],
     out = { type: "other", slots: {}, extra: [] };
-  if (a && ["oven", "washer", "dryer", "dishwasher", "other"].indexOf(a.type) >= 0) out.type = a.type;
+  if (a && ["oven", "washer", "dryer", "dishwasher", "coffee", "fridge", "projector", "other"].indexOf(a.type) >= 0) out.type = a.type;
   Object.keys(slotDoms).forEach(function (k) {
     var e = a && a.slots && a.slots[k];
     if (typeof e === "string" && ENTRE.test(e) && slotDoms[k].indexOf(e.split(".")[0]) >= 0) out.slots[k] = e;
   });
-  (a && Array.isArray(a.extra) ? a.extra : []).slice(0, 12).forEach(function (x) {
-    if (x && typeof x.e === "string" && ENTRE.test(x.e) && extraDoms.indexOf(x.e.split(".")[0]) >= 0)
-      out.extra.push({ e: x.e, l: typeof x.l === "string" ? x.l.slice(0, 30) : "" });
+  /* A name given to a slot on this appliance (a projector's Program is its Source). */
+  if (a && a.names && typeof a.names === "object")
+    Object.keys(slotDoms).forEach(function (k) {
+      var n = a.names[k];
+      if (typeof n === "string" && n.trim()) {
+        out.names = out.names || {};
+        out.names[k] = n.trim().slice(0, 24);
+      }
+    });
+  /* Rows of any entity that can be read or set, each with a label, an optional group heading, and whether it is shown on the appliance's page or behind its Details line. */
+  (a && Array.isArray(a.extra) ? a.extra : []).slice(0, 40).forEach(function (x) {
+    if (x && typeof x.e === "string" && ENTRE.test(x.e) && extraDoms.indexOf(x.e.split(".")[0]) >= 0) {
+      var row = { e: x.e, l: typeof x.l === "string" ? x.l.slice(0, 30) : "" };
+      if (typeof x.g === "string" && x.g.trim()) row.g = x.g.trim().slice(0, 24);
+      if (x.o) row.o = 1;
+      out.extra.push(row);
+    }
   });
   return out;
 }
@@ -271,6 +352,15 @@ function isVacuumMap(id) {
   });
 }
 
+/* The type of a media player (a TV, a receiver or a speaker) and of a fan (a fan or an air purifier) decides what its setup page offers. It is chosen in the device's settings; a device that has none yet gets one guessed once from its icon, name and id, and keeps it from then on. */
+var DEVTYPES = { media: ["tv", "receiver", "speaker"], fan: ["fan", "purifier"] };
+
+function guessDevType(d) {
+  if (d.kind === "media") return d.icon === "tv" ? "tv" : /speaker|homepod|sonos|cast|echo/i.test(d.icon + " " + d.id) ? "speaker" : "receiver";
+  if (d.kind === "fan") return /purif|air/i.test(d.icon + " " + d.name + " " + d.id) ? "purifier" : "fan";
+  return "";
+}
+
 function cleanDev(d) {
   if (
     !d ||
@@ -283,13 +373,16 @@ function cleanDev(d) {
     return null;
   var id = typeof d.id === "string" ? d.id : "";
   if (id && !ENTRE.test(id)) return null;
-  if (!id && d.kind !== "special" && d.kind !== "remote" && d.kind !== "appliance") return null;
+  if (!id && ["special", "remote", "appliance", "cscene", "scenes"].indexOf(d.kind) < 0) return null;
+  if (d.kind === "cscene" && !(typeof d.sid === "string" && /^[a-z0-9_-]{1,24}$/.test(d.sid))) return null;
+  if (d.kind === "scene" && id.split(".")[0] !== "scene") return null;
   if (d.kind === "appliance" && !(typeof d.aid === "string" && /^[a-z0-9_-]{1,24}$/.test(d.aid))) return null;
   if (d.kind === "remote" && !(typeof d.rid === "string" && /^[a-z0-9_-]{1,24}$/.test(d.rid))) return null;
   var c = { id: id, name: d.name, icon: iconOk(d.icon) ? d.icon : "plug", kind: d.kind };
   if (typeof d.pop === "string" && POPRE.test(d.pop) && d.pop) c.pop = d.pop;
   if (d.sub) c.sub = 1;
   if (d.setup) c.setup = 1;
+  if (DEVTYPES[d.kind]) c.dt = DEVTYPES[d.kind].indexOf(d.dt) >= 0 ? d.dt : guessDevType(d);
   if (Array.isArray(d.links)) {
     var ls = d.links.filter(function (x, i) {
       return typeof x === "string" && ENTRE.test(x) && x !== id && d.links.indexOf(x) === i;
@@ -341,6 +434,11 @@ function cleanDev(d) {
   if (d.kind === "appliance") {
     c.aid = d.aid;
     c.ap = cleanAppliance(d.ap);
+    /* An appliance can carry a grid of buttons or a picture, made with the remote builder (app/remote.js): a projector's arrows and inputs. */
+    if (d.rm) {
+      var arm = cleanRemote(d.rm);
+      if (arm.btns.length || arm.img) c.rm = arm;
+    }
   }
   if (d.kind === "remote") {
     c.rid = d.rid;
@@ -352,6 +450,23 @@ function cleanDev(d) {
   if (d.art && d.kind === "media") c.art = 1;
   if (d.nonp && d.kind === "media" && !c.art) c.nonp = 1;
   if (d.noslide && d.kind === "lock") c.noslide = 1;
+  if (d.noadv) c.noadv = 1;
+  /* A scene made on the dashboard is a device that points to it (its name and icon are the scene's); a collection of scenes takes in the scenes of pages and tags and of the areas it names (none: the page's own area). */
+  if (d.kind === "cscene") c.sid = d.sid;
+  if (d.kind === "scenes") {
+    var idsOf = function (v, re) {
+      return (Array.isArray(v) ? v : []).filter(function (x, i, a) {
+        return typeof x === "string" && re.test(x) && a.indexOf(x) === i;
+      }).slice(0, 40);
+    };
+    var sp = idsOf(d.spage, /^(page:[a-z0-9_-]{1,24}|area:[a-z0-9_-]{1,60}|hue:(@page|@lights|@rooms|[a-z0-9_-]{1,60}))$/),
+      xt = cleanTags(d.xtag),
+      st = cleanTags(d.stag);
+    if (sp.length) c.spage = sp;
+    if (st.length) c.stag = st;
+    if (xt.length) c.xtag = xt;
+    if (d.keepname) c.keepname = 1;
+  }
   if (d.kind === "vacuum" && d.map && typeof d.map === "object") {
     var m = {};
     if (d.map.m === 1) m.m = 1;
@@ -514,7 +629,7 @@ function cleanUI(u) {
   });
   var lv = u.layout && u.layout.v,
     cur = lv >= 4 ? { home: u.layout.home, rooms: u.layout.rooms || {} } : { home: null, rooms: {} };
-  o.layout.v = 5;
+  o.layout.v = 6;
   o.layout.home = cleanLayout(cur.home || seedSections("home"));
   Object.keys(ids).forEach(function (rid) {
     o.layout.rooms[rid] = cleanLayout(cur.rooms[rid] || seedSections("room:" + rid));
@@ -538,6 +653,37 @@ function cleanTags(list) {
   return out;
 }
 
+function scenesToDevices(s) {
+  var c = Object.assign({}, s),
+    devs = Array.isArray(s.devs) ? s.devs.slice() : [];
+  (Array.isArray(s.scn) ? s.scn : []).forEach(function (id) {
+    devs.push({ kind: "cscene", sid: id, id: "", name: "Scene", icon: "scene" });
+  });
+  (Array.isArray(s.sents) ? s.sents : []).forEach(function (e) {
+    if (typeof e === "string" && /^scene\.[a-z0-9_]+$/.test(e))
+      devs.push({ kind: "scene", id: e, name: e.split(".")[1].replace(/_/g, " ").slice(0, 40) || "Scene", icon: "scene" });
+  });
+  if (s.k === "scenes" || (s.scs && !(s.scn || []).length && !(s.sents || []).length) || s.spage || s.stag || s.sarea)
+    devs.push({
+      kind: "scenes",
+      id: "",
+      name: _T("scenes").slice(0, 40),
+      icon: "scene",
+      spage: (Array.isArray(s.spage) ? s.spage.map(function (x) { return "page:" + x; }) : []).concat(["hue:" + (s.sarea || "@page")]),
+      stag: s.stag,
+      xtag: s.xtag,
+      keepname: s.keepname,
+    });
+  ["scn", "sents", "sarea", "hscn", "pord", "hord", "spage", "stag", "xtag", "keepname", "scs"].forEach(function (k) {
+    delete c[k];
+  });
+  c.k = "devs";
+  c.devs = devs;
+  if (!c.t) c.t = _T("scenes").slice(0, 40);
+  if (!c.i) c.i = "scene";
+  return c;
+}
+
 function cleanLayout(a) {
   var out = [],
     seen = {};
@@ -546,6 +692,8 @@ function cleanLayout(a) {
       return;
     seen[s.id] = 1;
     /* Layout 5: the sections that held devices (Lights, Media, Climate, Controls, Sensors, Other devices, Devices) are one kind, Section; each keeps the name and icon its type gave it. Quick actions are Scenes. */
+    /* Layout 6: the scenes a Section showed (a scenes section's, or the ones kept on a Section) are devices of it now: each chosen scene, and one collection of scenes for the pages, tags and area it took in. */
+    if (s.k === "scenes" || s.k === "quick" || s.scs) s = scenesToDevices(s);
     var old = LEGACY_SECTYPES[s.k],
       k = old ? (old[2] || "devs") : typeof s.k === "string" && SECTYPES[s.k] ? s.k : "devs",
       ty = SECTYPES[k],
@@ -686,39 +834,33 @@ function cleanLayout(a) {
           return typeof x === "string" && /^[a-z0-9_-]{1,24}$/.test(x) && a.indexOf(x) === i;
         })
         .slice(0, 40);
-    /* The order of the scenes a plugin owns that a scenes section shows (`pord`; `hord` is what it was called). */
-    /* A scenes section can take in the scenes that have a tag (stag) and leave out the tagged ones it would otherwise have (xtag). */
-    if (k === "scenes") {
-      var st = cleanTags(s.stag),
-        xtg = cleanTags(s.xtag);
-      if (st.length) o.stag = st;
-      if (xtg.length) o.xtag = xtg;
-    }
-    if (k === "scenes" && (Array.isArray(s.pord) || Array.isArray(s.hord))) {
-      var hord = (s.pord || s.hord)
-        .filter(function (x, i, a) {
-          return typeof x === "string" && /^scene\.[a-z0-9_]{1,80}$/.test(x) && a.indexOf(x) === i;
-        })
-        .slice(0, 80);
-      if (hord.length) o.pord = hord;
-    }
     if (k === "devs") {
       /* The scenes page of the lights master: where its scenes come from, the folders the owner made and the order of the tiles outside them. */
       var key = function (x) {
         return typeof x === "string" && /^[a-z0-9_.-]{1,80}$/.test(x);
       };
-      if (Array.isArray(s.msrc))
-        o.msrc = s.msrc
+      if (Array.isArray(s.msrc) || (Array.isArray(s.mpa) && s.mpa.length))
+        o.msrc = (Array.isArray(s.msrc) ? s.msrc : ["hue"])
           .map(function (x) {
-            return x === "hue" ? "plugin" : x;
+            /* the scenes of a plugin were one source (and areas for it, mpa); they are Hue rooms among the rooms now */
+            return x === "hue" || x === "plugin" ? "hue:@lights" : x === "page" ? "page" : x;
           })
           .filter(function (x, i, a) {
-            return (x === "plugin" || x === "page" || (typeof x === "string" && (/^sec:[a-z0-9_-]{1,24}$/.test(x) || (/^tag:/.test(x) && cleanTags([x.slice(4)]).length)))) && a.indexOf(x) === i;
+            return (x === "page" || (typeof x === "string" && (/^(page:[a-z0-9_-]{1,24}|area:[a-z0-9_-]{1,60})$/.test(x) || /^hue:(@lights|@page|@rooms|[a-z0-9_-]{1,60})$/.test(x) || (/^tag:/.test(x) && cleanTags([x.slice(4)]).length)))) && a.indexOf(x) === i;
           })
-          .slice(0, 24);
+          .slice(0, 40);
+      if (Array.isArray(s.mpa) && s.mpa.length) {
+        o.msrc = o.msrc.filter(function (x) {
+          return x !== "hue:@lights";
+        });
+        s.mpa.forEach(function (a) {
+          if (typeof a === "string" && /^[a-z0-9_-]{1,60}$/.test(a) && a !== "-" && o.msrc.indexOf("hue:" + a) < 0) o.msrc.push("hue:" + a);
+        });
+      }
       /* Scenes tagged with any of these are left out of what the sources bring in (not of the scenes made from its own +). */
       var xt = cleanTags(s.mxt);
       if (xt.length) o.mxt = xt;
+
       if (Array.isArray(s.mf)) {
         var folders = s.mf
           .filter(function (f) {
@@ -740,20 +882,6 @@ function cleanLayout(a) {
             return key(x) || (typeof x === "string" && /^f:[a-z0-9]{1,12}$/.test(x));
           })
           .slice(0, 240);
-    }
-    if (k === "scenes") {
-      /* Where a scenes section gets its scenes: the area it names (the room's own when it names none), the scene entities chosen for it and the plugin scenes it hides (a list of its own, even an empty one). */
-      if (typeof s.sarea === "string" && /^[a-z0-9_]{1,64}$/.test(s.sarea)) o.sarea = s.sarea;
-      var sceneList = function (v) {
-        return v
-          .filter(function (x, i, a) {
-            return typeof x === "string" && /^scene\.[a-z0-9_]{1,80}$/.test(x) && a.indexOf(x) === i;
-          })
-          .slice(0, 80);
-      };
-      if (Array.isArray(s.sents) && sceneList(s.sents).length) o.sents = sceneList(s.sents);
-      if (Array.isArray(s.hscn)) o.hscn = sceneList(s.hscn);
-      if (s.keepname) o.keepname = 1;
     }
     if (ty.own) {
       o.devs = [];

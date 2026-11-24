@@ -17,7 +17,7 @@ function popupDef(key) {
     var inner = d.build;
     d.build = function (b) {
       inner(b);
-      if (ISADMIN && advList(ent).length) {
+      if (ISADMIN && !(UIDEV[ent] && UIDEV[ent].noadv) && advList(ent).length) {
         var n = advList(ent).length;
         b.appendChild(
           pill("tune", _T("advanced_settings"), {
@@ -80,15 +80,6 @@ var POPUP_DEFS = {
       icon: "pin",
       build: function (b) {
         pinPick(b, id);
-      },
-    };
-  },
-  "pick-scene": function (id) {
-    return {
-      title: _T("scenes_in_this_section"),
-      icon: "scene",
-      build: function (b) {
-        scnPick(b, id);
       },
     };
   },
@@ -360,6 +351,16 @@ var POPUP_DEFS = {
       build: function (b) {
         b.appendChild((UIDEV[id] || {}).dial ? acDial(id) : acSlider(id, _T("air_conditioner")));
         acSelects(b, id);
+      },
+    };
+  },
+  "cover": function (id) {
+    var cv = UIDEV[id] || {};
+    return {
+      title: cv.name || A(id).friendly_name || _T("cover"),
+      icon: cv.icon || "swap",
+      build: function (b) {
+        coverPopup(b, id);
       },
     };
   },
@@ -745,6 +746,43 @@ var POPUP_DEFS = {
       icon: "plus",
       build: function (b) {
         remoteBtnPage(b, id);
+      },
+    };
+  },
+  "remote-build": function (id) {
+    var rmd = remoteFind(id);
+    return {
+      title: (rmd ? rmd.name : _T("remote")) + " · " + _T("rm_buttons"),
+      icon: "tune",
+      build: function (b) {
+        remoteBuild(b, id);
+      },
+    };
+  },
+  "remote-keys": function (id) {
+    return {
+      title: _T("rm_add_keys"),
+      icon: "tune",
+      build: function (b) {
+        remoteKeysPage(b, id);
+      },
+    };
+  },
+  "remote-key": function (id) {
+    return {
+      title: _T("rm_choose_a_key"),
+      icon: "play",
+      build: function (b) {
+        remoteKeyPage(b, id);
+      },
+    };
+  },
+  "remote-media": function (id) {
+    return {
+      title: _T("rm_choose_a_control"),
+      icon: "play",
+      build: function (b) {
+        remoteMediaPage(b, id);
       },
     };
   },
@@ -1158,6 +1196,6 @@ function devPop(d) {
     var dk = pluginDeviceKind(d.id);
     return (dk ? dk.pop : "sw") + ":" + d.id;
   }
-  var p = { media: "media:", climate: "ac:", fan: "fan:", vacuum: "vac:" }[d.kind];
+  var p = { media: "media:", climate: "ac:", fan: "fan:", vacuum: "vac:", cover: "cover:" }[d.kind];
   return p ? p + d.id : "dev:" + d.id;
 }
