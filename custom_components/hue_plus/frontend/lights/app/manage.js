@@ -47,14 +47,13 @@ function namesPage(b) {
   b.appendChild(
     pill("clock", _T("show_the_clock_and_date"), {
       on: function () {
-        return hdrClockShown(m, m.size);
+        return hdrClockShown(m);
       },
       sub: function () {
-        return hdrClockShown(m, m.size) ? _T("shown_in_the_header") : _T("hidden");
+        return hdrClockShown(m) ? _T("shown_in_the_header") : _T("hidden");
       },
       tap: function () {
-        if (m.size === "slim") m.clockSlim = !hdrClockShown(m, m.size);
-        else m.clock = !hdrClockShown(m, m.size);
+        m.clock = !hdrClockShown(m);
         uiChanged();
       },
     })
@@ -188,7 +187,7 @@ function addDevTo(rid, id) {
   if (kind === "media" && d.icon === "tv") d.sub = 1;
   devList(rid).push(d);
   uiChanged();
-  toast(_T("added") + nm + "”");
+  toast(_T("added", { x: nm }));
 }
 
 function newDevPage(b) {
@@ -292,6 +291,7 @@ function newDevOne(b) {
   ).forEach(function (r) {
     b.appendChild(
       pill(r.icon || "home", r.name, {
+        kind: "other",
         sub: function () {
           return r === sg ? _T("same_area_in_home_assistant") : "";
         },
@@ -343,6 +343,7 @@ var KINDLAB = {
   scene: _T("scene_kind"),
   cscene: _T("scene_kind"),
   scenes: _T("scene_collection"),
+  widget: _T("widget"),
 };
 
 var ROOMICONS = [
@@ -407,9 +408,11 @@ var ADDDOMS = [
   ],
   [_T("scenes"), ["scene"]],
   [_T("helpers"), ["input_text", "input_datetime", "counter", "timer"]],
+  [_T("more_devices"), ["humidifier", "water_heater", "alarm_control_panel", "valve", "lawn_mower", "siren", "update", "automation", "weather", "event", "person", "device_tracker", "notify", "text", "date", "time", "datetime", "group", "remote"]],
   [_T("all_entities"), ["*"]],
   [_T("remote"), ["__remote"]],
   [_T("ap_appliance"), ["__appliance"]],
+  [_T("widgets"), ["__widget"]],
 ];
 
 var DOMKIND = {
@@ -425,7 +428,7 @@ var DOMKIND = {
   binary_sensor: "sensor",
   counter: "sensor",
   timer: "sensor",
-  input_text: "sensor",
+  input_text: "entity",
   input_datetime: "sensor",
   number: "number",
   input_number: "number",
@@ -437,6 +440,25 @@ var DOMKIND = {
   scene: "scene",
   cover: "cover",
   lock: "lock",
+  humidifier: "entity",
+  water_heater: "entity",
+  alarm_control_panel: "entity",
+  valve: "entity",
+  lawn_mower: "entity",
+  siren: "entity",
+  update: "entity",
+  automation: "entity",
+  text: "entity",
+  date: "entity",
+  time: "entity",
+  datetime: "entity",
+  notify: "entity",
+  weather: "entity",
+  event: "entity",
+  person: "entity",
+  device_tracker: "entity",
+  group: "entity",
+  remote: "entity",
 };
 
 /* A room by its id. "room.section" is the room as one of its scenes sections shows it: the room with that section (`sec`, which has its own hidden scenes and its own source of scenes). */
@@ -625,6 +647,7 @@ function candidates(doms, roomId, q, areaId) {
 
 function defIcon(kind, name, id) {
   if (id && pluginDeviceKind(id)) return pluginDeviceKind(id).icon;
+  if (kind === "entity" && id && domKnown(id)) return DOMAINS[dom(id)].icon;
   return kind === "sensor"
     ? id
       ? sensorIcon(id)
@@ -642,7 +665,7 @@ function defIcon(kind, name, id) {
             : kind === "light"
               ? "light"
               : kind === "media"
-                ? /tv/i.test(name)
+                ? (id && reportedType(id) === "tv") || /tv/i.test(name)
                   ? "tv"
                   : "media"
                 : kind === "climate"
@@ -806,7 +829,7 @@ function roomDetails(b, rid) {
     var delRoom = pill("trash", _T("delete_room"), {
         tap: function () {
           confirmDlg(
-            _T("delete") + r.name + _T("from_the_app_the_devices_stay_in_hom"),
+            _T("delete_room_q", { x: r.name }),
             function () {
               UI.rooms = UI.rooms.filter(function (x) {
                 return x.id !== rid;
@@ -951,7 +974,20 @@ function devLookOptions(c) {
     own.appendChild(flagPill("thermo", _T("thermostat_dial"), d, "dial", function () { return _T("a_round_dial_instead_of_the_slider_i"); }));
   if (d.kind === "vacuum" && d.id && vacMapEnt(d.id)) devVacuumMapOptions(c);
   if (d.kind === "media" && d.id) devMediaOptions(c);
+  if (d.kind === "media" && d.id && mediaRemoteKind(d.id)) c.box.appendChild(rbxPill(d.id));
+  if (d.kind !== "widget")
+    c.box.appendChild(
+      pill("palette", _T("customize"), {
+        sub: function () {
+          return _T("customize_sub");
+        },
+        tap: function () {
+          showPopup("cust:" + c.key, true);
+        },
+      })
+    );
   c.box = real;
+  sizeSettings(own, d, c.redraw);
   if (!own.children.length) return;
   real.appendChild(sep(_T("dp_how_it_looks"), "palette"));
   while (own.firstChild) real.appendChild(own.firstChild);
@@ -962,6 +998,7 @@ function devBehaviourTab(c) {
   var d = c.d,
     box = c.box;
   if (d.kind === "scenes") sceneCollectionSettings(box, d);
+  if (d.kind === "widget") widgetSettings(c);
   if (d.kind === "cscene") {
     var made = sceneById(d.sid);
     if (made)
@@ -1053,6 +1090,7 @@ function devBehaviourTab(c) {
 
 /* How a vacuum's map is drawn. The choices are kept in d.map and the key is dropped when it is back to its default. */
 function devVacuumMapOptions(c) {
+  /* also a robot vacuum appliance's map: its `d` keeps the same settings */
   var d = c.d,
     box = c.box,
     mp = (d.map = d.map || {});
@@ -1199,11 +1237,84 @@ function devLightOptions(c) {
   if (custom) box.appendChild(hintRow(_T("saved_turn_on_state") + ": " + lightDefaultText(d.id)));
 }
 
+/* A device's own Advanced settings switch. A device with an entity is switched on every page it is on, so the answer is the same wherever it is asked. */
+function advDevicePill(d) {
+  function off() {
+    return d.id ? advDevOff(d.id) : !!d.noadv;
+  }
+  return pill("tune", _T("advanced_settings_button"), {
+    on: function () {
+      return !advAllOff() && !off();
+    },
+    sub: function () {
+      return advAllOff() ? _T("adv_off_dashboard") : off() ? _T("off") : _T("on_cap");
+    },
+    tap: function () {
+      var turnOff = !off();
+      (d.id ? [d].concat(advCopies(d.id)) : [d]).forEach(function (c) {
+        if (turnOff) c.noadv = 1;
+        else delete c.noadv;
+      });
+      uiChanged();
+    },
+  });
+}
+
 /* Whether it is shown, which section it is in, and taking it off the page; and what it is. A light a lights master keeps (not a device of a section) has none of the first three. */
+/* What this device's popup is made of, beyond its own controls (decision D-47): added blocks, the order of an appliance's parts, and its Advanced settings' items. */
+function devPopupRows(c, advOf) {
+  var d = c.d,
+    kind = d.kind,
+    key = ["widget", "scene", "scenes", "cscene", "special"].indexOf(kind) < 0 ? devPop(d) : "";
+  if (!key) return;
+  var parts = c.key.split(":")[0].split("~"),
+    scope = parts.length > 1 ? parts[1] : parts[0];
+  if (scope !== "home" && !UI.layout.rooms[scope]) scope = "home";
+  c.box.appendChild(sep(_T("more_popup"), "apps"));
+  var holder = mk("div");
+  c.box.appendChild(holder);
+  function draw() {
+    moreRows(holder, key, scope, d.name, function () {
+      redrawBox(holder, draw);
+    });
+  }
+  draw();
+  if (kind === "appliance")
+    c.box.appendChild(
+      pill("edit", _T("preset_save_device"), {
+        sub: function () {
+          return _T("preset_save_device_sub");
+        },
+        tap: function () {
+          presetDownload(presetFromDevice(d), "home-control-device.json");
+        },
+      })
+    );
+  if (kind === "appliance")
+    c.box.appendChild(
+      pill("tune", _T("ap_parts"), {
+        tap: function () {
+          showPopup("ap-parts:" + d.aid, true);
+        },
+      })
+    );
+  if (advOf && dom(advOf) !== "light" && (advFound(advOf).length || advCfg(advOf)))
+    c.box.appendChild(
+      pill("tune", _T("advset_title"), {
+        tap: function () {
+          showPopup("advset:" + advOf, true);
+        },
+      })
+    );
+}
+
 function devPlaceRows(c) {
   var d = c.d,
     held = c.key.split(":")[0].split("~")[3] === "lx",
-    adv = d.id && advList(d.id).length;
+    /* a robot vacuum appliance's Advanced settings are its vacuum's */
+    advOf = d.id || (d.kind === "appliance" && d.ap && d.ap.type === "vacuum" && d.ap.slots.vacuum) || "",
+    /* also the devices whose popup ends with "More in Home Assistant": the same switch hides it */
+    adv = advOf && (advList(advOf).length || (d.id && String(devPop(d)).indexOf("dev:") === 0) || (d.kind === "media" && A(d.id).supported_features & 131072));
   if (!held || adv) c.box.appendChild(sep(_T("dp_in_the_section"), "home"));
   /* Showing and the Advanced button are two switches, side by side. */
   var sw = mk("div", "ap-grid");
@@ -1221,17 +1332,14 @@ function devPlaceRows(c) {
     );
   /* The device's popup ends with the Advanced settings button, unless it is switched off here. */
   if (adv)
-    sw.appendChild(
-      flagPill("tune", _T("advanced_settings_button"), d, "noadv", function (on) {
-        return on ? _T("on_cap") : _T("off");
-      }, true)
-    );
+    sw.appendChild(advDevicePill(d));
   if (sw.children.length) c.box.appendChild(sw);
+  devPopupRows(c, advOf);
   if (!held) {
     var act = mk("div", "ap-grid"),
       rm = pill("trash", _T("remove_from_the_section"), {
         tap: function () {
-          confirmDlg(_T("remove") + d.name + _T("from_this_section_it_stays_in_home_ass"), function () {
+          confirmDlg(_T("remove_from_section_q", { x: d.name }), function () {
             c.list.splice(c.i, 1);
             uiChanged();
             popBack();
@@ -1271,7 +1379,7 @@ function devMove(b, key) {
     .forEach(function (pg) {
       var sc = pg[0] === "home" ? "home" : "room:" + pg[0],
         secs = secOrder(sc).filter(function (s) {
-          return (SECTYPES[s.k] || {}).own && "~" + pg[0] + "~" + s.id !== rid;
+          return !s.of && (SECTYPES[s.k] || {}).own && "~" + pg[0] + "~" + s.id !== rid;
         });
       if (!secs.length) return;
       b.appendChild(sep(pg[1], pg[0] === "home" ? "home" : (roomById(pg[0]) || {}).icon || "home"));
@@ -1284,6 +1392,7 @@ function devMove(b, key) {
             tap: function () {
               list.splice(i, 1);
               (s.devs = s.devs || []).push(d);
+              popupFollow(d, pg[0]);
               uiChanged();
               toast(_T("moved_to_2") + " " + secName(s));
               STACK = [];

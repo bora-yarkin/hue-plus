@@ -4,9 +4,9 @@ var DAYLAB = [_T("mon"), _T("tue"), _T("wed"), _T("thu"), _T("fri"), _T("sat"), 
 
 /* ---- Conditions: shared by the section visibility rules ---- */
 var HHMM = /^([01]\d|2[0-3]):[0-5]\d$/,
-  RE_STATE =
-    /^(light|switch|fan|binary_sensor|input_boolean|media_player|climate|cover|lock|vacuum|person|device_tracker|alarm_control_panel|sensor|camera|input_select|weather)\.[a-z0-9_]+$/,
-  RE_SENS = /^sensor\.[a-z0-9_]+$/,
+  /* a condition can read any entity: its state, or one of its attributes */
+  RE_STATE = /^[a-z_]+\.[a-z0-9_]+$/,
+  RE_ATTR = /^[A-Za-z0-9_ .-]{1,60}$/,
   RE_WHO = /^person\.[a-z0-9_]+$/;
 
 function numIn(x, lo, hi) {
@@ -23,26 +23,7 @@ function persons() {
   });
 }
 
-var RE_SVAL = /^[A-Za-z0-9_ .:\/-]{1,40}$/,
-  STATE_DOMS = [
-    "light",
-    "switch",
-    "fan",
-    "binary_sensor",
-    "input_boolean",
-    "media_player",
-    "climate",
-    "cover",
-    "lock",
-    "vacuum",
-    "person",
-    "device_tracker",
-    "alarm_control_panel",
-    "sensor",
-    "camera",
-    "input_select",
-    "weather",
-  ];
+var RE_SVAL = /^[^<>]{1,40}$/;
 
 function stateOptions(id) {
   var o = STATEOPT[dom(id)];
@@ -163,6 +144,54 @@ function ruleUserName(id) {
   return u ? u.name : _T("user");
 }
 
+function withAttr(out, c) {
+  if (typeof c.attr === "string" && RE_ATTR.test(c.attr)) out.attr = c.attr;
+  return out;
+}
+
+/* What a condition reads: the entity's state, or the attribute it names (undefined when it has none). */
+function condValue(c) {
+  if (!c.attr) return V_(c.id);
+  var v = A(c.id)[c.attr];
+  return v === undefined || v === null ? undefined : String(v);
+}
+
+/* Every kind of entity there is, for choosing what a condition reads. */
+function allDomains() {
+  return Object.keys(H().states)
+    .map(dom)
+    .filter(function (d, i, all) {
+      return all.indexOf(d) === i;
+    });
+}
+
+/* "State", or one of the entity's attributes. */
+function attrPick(box, c, redraw) {
+  var names = Object.keys(A(c.id)).filter(function (k) {
+    return RE_ATTR.test(k) && ["friendly_name", "icon", "entity_picture", "supported_features"].indexOf(k) < 0;
+  });
+  if (!names.length && !c.attr) return;
+  box.appendChild(
+    dropRow(
+      _T("cond_reads"),
+      [""].concat(names),
+      function () {
+        return c.attr || "";
+      },
+      function (v) {
+        if (v) c.attr = v;
+        else delete c.attr;
+        if (c.c === "state") c.is = String(condValue(c) === undefined ? "on" : condValue(c)).slice(0, 40);
+        redraw();
+      },
+      "info",
+      function (v) {
+        return v || _T("state");
+      }
+    )
+  );
+}
+
 function cleanCond(c) {
   if (!c) return null;
   if (c.c === "days") {
@@ -189,16 +218,16 @@ function cleanCond(c) {
       : null;
   if (c.c === "state") {
     var is = typeof c.is === "string" ? c.is.trim() : "";
-    return RE_STATE.test(c.id) && RE_SVAL.test(is) ? { c: "state", id: c.id, is: is } : null;
+    return RE_STATE.test(c.id) && RE_SVAL.test(is) ? withAttr({ c: "state", id: c.id, is: is }, c) : null;
   }
   if (c.c === "sensor") {
     var v = numIn(c.val, -1e6, 1e6);
-    if (!(RE_SENS.test(c.id) && v !== null)) return null;
-    if (c.op === "above" || c.op === "below") return { c: "sensor", id: c.id, op: c.op, val: v };
+    if (!(RE_STATE.test(c.id) && v !== null)) return null;
+    if (c.op === "above" || c.op === "below") return withAttr({ c: "sensor", id: c.id, op: c.op, val: v }, c);
     if (c.op === "between") {
       var v2 = numIn(c.val2, -1e6, 1e6);
       return v2 !== null && v2 > v
-        ? { c: "sensor", id: c.id, op: "between", val: v, val2: v2 }
+        ? withAttr({ c: "sensor", id: c.id, op: "between", val: v, val2: v2 }, c)
         : null;
     }
     return null;
@@ -230,7 +259,7 @@ function condText(c) {
       ? _T("someone_is_home")
       : c.v === "nobody"
         ? _T("nobody_is_home")
-        : personName(c.v) + " " + _T("is_home_2");
+        : _T("is_home_2", { x: personName(c.v) });
   if (c.c === "users")
     return (
       _T("only_for") +
@@ -246,17 +275,19 @@ function condText(c) {
   if (c.c === "sun") return c.v === "dark" ? _T("after_dark_3") : _T("in_daylight_2");
   if (c.c === "sunrise")
     return (c.op === "after" ? _T("sunrise_is_after") : _T("sunrise_is_before")) + " " + c.at;
-  if (c.c === "state") return entName(c.id) + " " + stateWordT(c.is, false);
+  var who = c.id ? entName(c.id) + (c.attr ? " · " + c.attr : "") : "";
+  if (c.c === "state") return who + " " + (c.attr ? _T("is") + " " + c.is : stateWordT(c.is, false));
   if (c.c === "sensor")
     return c.op === "between"
-      ? entName(c.id) + " " + _T("is_between") + " " + c.val + "–" + c.val2
-      : entName(c.id) + " " + (c.op === "above" ? _T("is_above") : _T("is_below")) + " " + c.val;
+      ? _T("is_between", { x: who, from: c.val, to: c.val2 })
+      : who + " " + (c.op === "above" ? _T("is_above") : _T("is_below")) + " " + c.val;
   return "";
 }
 
 /* Where notifications send you: this dashboard's own page, wherever it is installed. */
 /* Dates and times follow the language and 12/24-hour choice of the Home Assistant user. */
 function LOC() {
+  if (window.HC_LANG_CHOSEN) return window.HC_LANG_CHOSEN;
   var h = H();
   return (h && h.locale && h.locale.language) || undefined;
 }
@@ -557,7 +588,7 @@ function condBody(b, c, onChange, footer) {
       );
       persons().forEach(function (id) {
         box.appendChild(
-          pill("person", personName(id) + " " + _T("is_home_2"), {
+          pill("person", _T("is_home_2", { x: personName(id) }), {
             on: function () {
               return c.v === id;
             },
@@ -609,11 +640,12 @@ function condBody(b, c, onChange, footer) {
       box.appendChild(
         pill("plug", c.id ? entName(c.id) : _T("choose_a_device"), {
           sub: function () {
-            return c.id ? _T("currently") + V_(c.id) : _T("required");
+            return c.id ? _T("currently", { x: V_(c.id) }) : _T("required");
           },
           tap: function () {
-            pickEntity(_T("choose_a_device"), STATE_DOMS, null, function (id) {
+            pickEntity(_T("choose_a_device"), allDomains(), null, function (id) {
               c.id = id;
+              delete c.attr;
               var o = stateOptions(id);
               if (o.indexOf(c.is) < 0) c.is = o[0];
               ch();
@@ -621,19 +653,32 @@ function condBody(b, c, onChange, footer) {
           },
         })
       );
-      if (c.id) statePick(box, c, "is", redraw);
+      if (c.id) {
+        attrPick(box, c, redraw);
+        if (!c.attr) statePick(box, c, "is", redraw);
+        else
+          box.appendChild(
+            textRow("edit", _T("or_type_the_exact_state"), c.is || "", function (v) {
+              if (RE_SVAL.test(v)) {
+                c.is = v;
+                redraw();
+              }
+            }, 40)
+          );
+      }
     }
     if (c.c === "sensor") {
       box.appendChild(
         pill("thermo", c.id ? entName(c.id) : _T("choose_a_sensor"), {
           sub: function () {
             return c.id
-              ? _T("currently") + V_(c.id) + " " + (A(c.id).unit_of_measurement || "")
+              ? _T("currently", { x: V_(c.id) }) + " " + (A(c.id).unit_of_measurement || "")
               : _T("required");
           },
           tap: function () {
-            pickEntity(_T("choose_a_sensor"), ["sensor"], null, function (id) {
+            pickEntity(_T("choose_a_sensor"), allDomains(), null, function (id) {
               c.id = id;
+              delete c.attr;
               var n = parseFloat(V_(id));
               if (c.val === undefined && isFinite(n)) c.val = Math.round(n * 10) / 10;
               ch();
@@ -642,6 +687,7 @@ function condBody(b, c, onChange, footer) {
         })
       );
       if (c.id) {
+        attrPick(box, c, redraw);
         box.appendChild(
           seg(
             [

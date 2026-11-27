@@ -47,6 +47,11 @@ function remoteFind(rid) {
   /* An appliance can carry a remote too: it is found by its own id. */
   function look(d) {
     if ((d.kind === "remote" && d.rid === rid) || (d.kind === "appliance" && d.aid === rid)) found = d;
+    /* and a remote master may keep remotes of its own */
+    if (d.kind === "widget" && d.w === "rmaster")
+      ((d.wx && d.wx.own) || []).forEach(function (o) {
+        if (o.rid === rid) found = o;
+      });
   }
   allSectionLists().forEach(function (secs) {
     secs.forEach(function (s) {
@@ -70,6 +75,13 @@ function remoteNew() {
   };
 }
 
+/* A button's colour: any colour, or one of the four a TV remote's coloured keys are named by. */
+var KEY_COLORS = { red: "#e5484d", green: "#30a46c", yellow: "#f5c542", blue: "#3e7bfa" };
+
+function keyColor(k) {
+  return KEY_COLORS[k] || k || "";
+}
+
 /* What a button or touch area does: its action, or, for one made before actions had a kind, the entity on it. */
 function rmAct(b) {
   return b.a || (b.e ? { t: "ent", e: b.e } : null);
@@ -84,7 +96,8 @@ function remoteUsable(e) {
 
 /* Whether an action can run now: a key needs its remote entity, a media control its player, a press its entity. */
 function rmUsable(a) {
-  if (!a) return false;
+  if (!a || a.t === "room") return false;
+  if (a.t === "do") return actUsable(a);
   if (a.t === "ent" || !a.t) return remoteUsable(a.e);
   var s = H().states[a.e];
   if (s && s.state !== "unavailable") return true;
@@ -95,6 +108,9 @@ function rmUsable(a) {
 
 /* The service call of an action, as [domain, service, data]. */
 function rmCall(a) {
+  /* a room on a vacuum's map is chosen on its own card, it calls nothing */
+  if (a.t === "room") return null;
+  if (a.t === "do") return actCall(a);
   if (a.t === "key") {
     /* A power key goes over the TV's network socket, which is closed while the TV is off: the media player is turned on instead. */
     if (a.w && V_(a.w) === "off") return ["media_player", "turn_on", { entity_id: a.w }];
@@ -108,13 +124,16 @@ function rmCall(a) {
     return ["media_player", RM_MEDIA_SVC[a.m], data];
   }
   if (a.t === "src") return ["media_player", "select_source", { entity_id: a.e, source: a.v }];
-  if (a.t === "webos") return ["webostv", "button", { entity_id: a.e, button: a.b }];
+  if (a.t === "webos") return Integrations.remote.button(a.e, a.b);
   var e = REMOTE_ACT[dom(a.e)];
   return e ? [e[0], e[1], { entity_id: a.e }] : null;
 }
 
 /* A press (of a button or a touch area). An action that cannot run says so; one that fails says so (call shows the error); one that goes through says nothing. A button set to ask first (a garage door) asks before it runs. */
 function remotePress(b) {
+  /* a remote master may send this button's role to the device on the screen */
+  if (b.a && b.a.hook && b.a.hook()) return;
+  if (b.hook && b.hook()) return;
   var a = rmAct(b),
     c = a && rmCall(a);
   if (!c) return;
@@ -122,6 +141,7 @@ function remotePress(b) {
     toast(_T("rm_not_available_right_now"));
     return;
   }
+  if (a.t === "do") return actRun(a, b.q, b.l);
   function run() {
     call(c[0], c[1], c[2]);
   }
@@ -163,6 +183,12 @@ function rmHold(el, b, after) {
 /* What an action is called, for lists: "KEY_UP · Living TV". */
 function rmActName(a) {
   if (!a) return "";
+  if (a.t === "room") {
+    var vd = RM.vacuum && apFind(RM.vacuum),
+      vr = vd && vacapConf(vd.ap).rooms.filter(function (r) { return r.k === a.r; })[0];
+    return _T("vacap_room") + " " + ((vr && vr.l) || a.r);
+  }
+  if (a.t === "do") return actName(a);
   var who = A(a.e).friendly_name || a.e;
   if (a.t === "key") return a.c + " · " + who;
   if (a.t === "media") return _T(RM_MEDIA_LABEL[a.m]) + " · " + who;
@@ -174,6 +200,7 @@ function rmActName(a) {
 function rmDefaultIcon(a) {
   if (a.t === "media") return { volume_up: "volup", volume_down: "voldown", volume_mute: "mute", play_pause: "playpause", play: "play", pause: "pause", stop: "stop", next: "next", previous: "prev", turn_on: "power", turn_off: "power", toggle: "power" }[a.m] || "info";
   if (a.t === "src") return "swap";
+  if (a.t === "do") return "play";
   return "info";
 }
 
@@ -185,7 +212,7 @@ function remoteRow(d) {
   });
 }
 
-/* Text typed for a TV: how it is sent depends on the integration (Samsung Smart, Apple TV, Android TV Remote, Roku); one that cannot say so. */
+/* Text typed for a TV: how it is sent depends on the integration (integrations.js); one that cannot say so. */
 function rmSendText(media, text) {
   var e = (H().entities || {})[media] || {},
     p = e.platform;
@@ -194,18 +221,11 @@ function rmSendText(media, text) {
       return dom(x.entity_id) === "remote";
     });
   }
-  if (p === "samsungtv_smart") {
-    var t = Integrations.media.samsungText(media, text);
-    return call(t[0], t[1], t[2]);
-  }
-  if (p === "apple_tv") {
-    var dv = e.device_id && H().devices[e.device_id],
-      a = Integrations.media.appleText(dv && dv.config_entries && dv.config_entries[0], text);
-    return call(a[0], a[1], a[2]);
-  }
-  if (p === "androidtv_remote" && remoteOf()) return send(remoteOf(), "text:" + text);
-  var fam = Integrations.remote.family(p);
-  if (remoteOf() && Integrations.remote.text(fam, text) !== null) return send(remoteOf(), Integrations.remote.text(fam, text));
+  var dv = e.device_id && H().devices[e.device_id],
+    own = Integrations.media.textCall(p, media, dv && dv.config_entries && dv.config_entries[0], text);
+  if (own) return call(own[0], own[1], own[2]);
+  var key = remoteOf() ? Integrations.media.textKey(p, text) : null;
+  if (key !== null) return send(remoteOf(), key);
   toast(_T("rm_text_unsupported"));
 }
 
@@ -297,7 +317,8 @@ function rmComponent(x, edit, onTap) {
     return ph;
   }
   var el;
-  if (a.t === "now") el = nowPlaying(a.e, "tv", a.m === "apps" ? tvSourceMenu(a.e) : null) || mk("div");
+  /* the part's own icon, if one was chosen (the builder's default for it is "media") */
+  if (a.t === "now") el = nowPlaying(a.e, x.i && x.i !== "media" && x.i !== "info" ? x.i : "tv", a.m === "apps" ? tvSourceMenu(a.e) : null) || mk("div");
   else if (a.t === "source") el = tvSources(a.e);
   else if (a.t === "text") {
     el = mk("div", "rm-t pane", svg(x.i || "keyboard"));
@@ -307,7 +328,8 @@ function rmComponent(x, edit, onTap) {
     if (x.l) el.appendChild(mk("span", "rm-l")).textContent = x.l;
     el.addEventListener("click", function () {
       kbDlg(function (v) {
-        rmSendText(a.e, v);
+        /* in a remote master the text goes where the screen is */
+        if (!(a.hook && a.hook(v))) rmSendText(a.e, v);
       });
     });
   } else if (a.t === "slider" && a.m === "pop") {
@@ -352,13 +374,14 @@ function rmTile(x, edit, onTap) {
     rmSpan(gap, x);
     return gap;
   }
-  var t = mk("div", "rm-t pane" + (x.k ? " rm-k rm-k-" + x.k : "") + (!edit && !rmUsable(x.a) ? " na" : "") + (edit ? " ed" : "") + (x.i ? "" : " txt"));
+  var t = mk("div", "rm-t pane" + (x.k ? " rm-k" : "") + (!edit && !rmUsable(x.a) ? " na" : "") + (edit ? " ed" : "") + (x.i ? "" : " txt"));
+  if (x.k) t.style.setProperty("--rmk", keyColor(x.k));
   t.setAttribute("role", "button");
   t.tabIndex = 0;
   if (x.i) t.innerHTML = svg(x.i);
   if (x.l || (!x.i && !x.k)) {
     var lab = mk("span", "rm-l");
-    lab.textContent = x.l || A(x.a.e).friendly_name || x.a.e;
+    lab.textContent = x.l || (x.a.t === "do" ? actName(x.a) : A(x.a.e).friendly_name || x.a.e);
     t.appendChild(lab);
   }
   t.setAttribute("aria-label", x.l || rmActName(x.a));
@@ -382,7 +405,7 @@ function rmTile(x, edit, onTap) {
 /* The grid. `tiles` collects each button's element, in order, so the builder can make them draggable. */
 function rmGrid(d, edit, onTap, tiles) {
   var rm = d.rm,
-    grid = mk("div", "rm-grid");
+    grid = mk("div", "rm-grid" + (rm.look === "native" ? " rm-native" : ""));
   grid.style.setProperty("--rc", rm.cols);
   rm.btns.forEach(function (x, i) {
     var t = rmTile(x, edit, function () {
@@ -400,13 +423,15 @@ function rmGrid(d, edit, onTap, tiles) {
 function remotePicture(box, d, edit, redraw) {
   var img = d.rm.img;
   if (!img) return;
+  /* an appliance that carries a remote is known by its own id */
+  var id = d.rid || d.aid;
   var wrap = mk("div", "rm-img"),
     pic = mk("img");
   pic.src = img.u;
   pic.alt = d.name;
   pic.draggable = false;
   wrap.appendChild(pic);
-  var sel = RM.sel && RM.sel.rid === d.rid ? RM.sel.i : -1;
+  var sel = RM.sel && RM.sel.rid === id ? RM.sel.i : -1;
   function place(el, h) {
     el.style.left = h.x + "%";
     el.style.top = h.y + "%";
@@ -446,8 +471,8 @@ function remotePicture(box, d, edit, redraw) {
       t.addEventListener("pointerdown", function (e) {
         e.stopPropagation();
         e.preventDefault();
-        var already = RM.sel && RM.sel.rid === d.rid && RM.sel.i === i;
-        RM.sel = { rid: d.rid, i: i };
+        var already = RM.sel && RM.sel.rid === id && RM.sel.i === i;
+        RM.sel = { rid: id, i: i };
         var r = wrap.getBoundingClientRect(),
           sx = e.clientX,
           sy = e.clientY,
@@ -465,7 +490,7 @@ function remotePicture(box, d, edit, redraw) {
         t.onpointerup = t.onpointercancel = function () {
           t.onpointermove = t.onpointerup = t.onpointercancel = null;
           if (moved) uiChanged();
-          else if (already) showPopup("remote-btn:" + d.rid + ":h" + i, true);
+          else if (already) showPopup("remote-btn:" + id + ":h" + i, true);
           redraw();
         };
       });
@@ -505,7 +530,7 @@ function remotePicture(box, d, edit, redraw) {
       rmChooseAction(function (a) {
         var h = { x: Math.max(0, Math.min(88, px - 6)), y: Math.max(0, Math.min(94, py - 3)), w: 12, h: 6, r: "rect", a: a };
         img.hs.push(h);
-        RM.sel = { rid: d.rid, i: img.hs.length - 1 };
+        RM.sel = { rid: id, i: img.hs.length - 1 };
         uiChanged();
       });
     });
@@ -515,10 +540,11 @@ function remotePicture(box, d, edit, redraw) {
 /* ---- using a remote ---- */
 
 /* The popup: the grid or the picture, used. Nothing here edits; the remote is built in the device's settings. */
-function remotePage(b, rid) {
+/* `given`: show this remote (a remote master's copy) instead of looking the id up. */
+function remotePage(b, rid, given) {
   var box = mk("div");
   b.appendChild(box);
-  var d = remoteFind(rid);
+  var d = given || remoteFind(rid);
   if (!d || !d.rm) return;
   var rm = d.rm;
   if (rm.v === "i" && rm.img) remotePicture(box, d, false, function () {});
@@ -526,7 +552,7 @@ function remotePage(b, rid) {
   else box.appendChild(rmGrid(d, false, null));
   reg(function () {
     /* A button whose entity became unavailable (or came back) is dimmed (or not) at once. */
-    var cur = remoteFind(rid);
+    var cur = given || remoteFind(rid);
     if (!cur) return;
     var plain = cur.rm.btns.filter(function (y) {
       return ["gap", "dpad", "touch", "now", "source", "text", "slider"].indexOf(y.a.t) < 0;
@@ -545,6 +571,8 @@ function remotePage(b, rid) {
 
 /* Where the remote is built: opened from the device's settings. The grid or the picture in editing, and what can be added. */
 function remoteBuild(b, rid) {
+  var vd = apFind(rid);
+  RM.vacuum = vd && vd.ap && vd.ap.type === "vacuum" ? rid : null;
   var box = mk("div");
   b.appendChild(box);
   function draw() {
@@ -593,6 +621,22 @@ function remoteBuild(b, rid) {
         )
       );
       box.appendChild(hintRow(_T("rm_columns_hint")));
+      box.appendChild(
+        pill("tune", _T("rm_native_look"), {
+          on: function () {
+            return rm.look === "native";
+          },
+          sub: function () {
+            return rm.look === "native" ? _T("on_cap") : _T("off");
+          },
+          tap: function () {
+            if (rm.look === "native") delete rm.look;
+            else rm.look = "native";
+            uiChanged();
+            draw();
+          },
+        })
+      );
       box.appendChild(sep(_T("rm_buttons"), "play"));
       var tiles = [];
       if (rm.btns.length) {
@@ -756,6 +800,26 @@ function rmChooseAction(done) {
     if (next) showPopup(next, true);
     else if (CURRENT) showPopup(CURRENT, false);
   }
+  /* On a robot vacuum's picture (its map) an area picks one of its rooms. */
+  var vacap = RM.vacuum && apFind(RM.vacuum);
+  if (vacap) {
+    VACAPPICK = { rooms: vacapConf(vacap.ap).rooms, done: finish };
+    showPopup("vacap-pick", true);
+    return;
+  }
+  /* besides an entity, any Home Assistant action */
+  PICKEXTRA = {
+    icon: "play",
+    label: "act_any",
+    sub: "act_any_sub",
+    tap: function () {
+      actEdit(null, function (a) {
+        popBack();
+        popBack();
+        finish(a);
+      });
+    },
+  };
   pickEntity(_T("rm_choose_what_the_button_runs"), REMOTE_PICK_DOMS, null, function (id) {
     var d = dom(id);
     setTimeout(function () {
@@ -1104,6 +1168,7 @@ function remoteBtnPage(b, key) {
         },
       })
     );
+    if (a.t === "room") return;
     var sw = [];
     if (["key", "media", "webos"].indexOf(a.t) >= 0)
       sw.push(
@@ -1348,20 +1413,15 @@ function remoteBtnPage(b, key) {
           })
         );
         box.appendChild(
-          dropRow(
+          colorButton(
             _T("rm_colour"),
-            ["", "red", "green", "yellow", "blue"],
             function () {
-              return x.k || "";
+              return keyColor(x.k);
             },
-            function (v) {
-              if (v) x.k = v;
+            function (c) {
+              if (c) x.k = c;
               else delete x.k;
               save();
-            },
-            "palette",
-            function (v) {
-              return _T(v ? "rm_c_" + v : "rm_c_none");
             }
           )
         );

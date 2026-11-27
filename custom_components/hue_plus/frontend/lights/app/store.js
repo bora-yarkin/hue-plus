@@ -306,6 +306,22 @@ function sceneTags() {
   return out.sort();
 }
 
+/* The most scenes that can be made (the integration keeps as many live scenes). */
+var SCENE_MAX = 200;
+
+/* Whether a scene can be saved: one that is already there always, a new one while there is room; else the person is told. */
+function sceneFits(id) {
+  if (
+    STORE.scenes.length < SCENE_MAX ||
+    STORE.scenes.some(function (x) {
+      return x.id === id;
+    })
+  )
+    return true;
+  toast(_T("scenes_full"));
+  return false;
+}
+
 function cleanStore(v) {
   var o = {
     v: 1,
@@ -350,8 +366,9 @@ function cleanStore(v) {
         });
         if (list.length) o.saved[room] = list;
       });
+  /* Every scene that is stored is loaded: cutting the list here would lose the rest for good at the next save. The limit is on making new ones (sceneFits). */
   if (v && Array.isArray(v.scenes))
-    v.scenes.slice(0, 60).forEach(function (s) {
+    v.scenes.forEach(function (s) {
       var c = cleanScene(s);
       if (c) o.scenes.push(c);
     });
@@ -379,20 +396,29 @@ function cleanCfg(c) {
     alertOff: [],
     wallPhotos: [],
     wallOff: [],
+    myAlerts: [],
   };
   if (c && typeof c === "object") {
     if (c.mediaCtl === true) o.mediaCtl = true;
     if (c.rb && typeof c.rb === "object")
       Object.keys(c.rb)
-        .slice(0, 40)
+        .slice(0, 120)
         .forEach(function (id) {
           var p = c.rb[id];
-          if (!/^\d{1,3}$/.test(id) || !p || typeof p !== "object") return;
+          /* a Xiaomi room by its number; a vacuum appliance's room as "<appliance>:<room>" */
+          if (!/^(\d{1,3}|[a-z0-9_]{1,40}:[A-Za-z0-9_-]{1,24})$/.test(id) || !p || typeof p !== "object") return;
           var q = {};
           ["mode", "fan", "water"].forEach(function (k) {
             if (typeof p[k] === "string" && /^[A-Za-z0-9 &_-]{1,40}$/.test(p[k])) q[k] = p[k];
           });
           if (p.times === 2 || p.times === 3) q.times = p.times;
+          /* a vacuum appliance's own settings of a room */
+          if (id.indexOf(":") > 0)
+            Object.keys(p)
+              .slice(0, 6)
+              .forEach(function (k) {
+                if (/^[A-Za-z0-9_]{1,40}$/.test(k) && typeof p[k] === "string" && /^[^<>]{1,40}$/.test(p[k])) q[k] = p[k];
+              });
           if (Object.keys(q).length) o.rb[id] = q;
         });
     if (c.gx && typeof c.gx === "object")
@@ -404,7 +430,14 @@ function cleanCfg(c) {
             })
             .slice(0, 60);
       });
-    if ([5, 10, 15, 20, 25].indexOf(c.partsLow) >= 0) o.partsLow = c.partsLow;
+    if (typeof c.partsLow === "number" && c.partsLow >= 1 && c.partsLow <= 90) o.partsLow = Math.round(c.partsLow);
+    o.myAlerts = (Array.isArray(c.myAlerts) ? c.myAlerts : [])
+      .slice(0, 30)
+      .map(function (x) {
+        var cond = x && cleanCond(x.c);
+        return cond && typeof x.t === "string" && x.t.trim() ? { c: cond, t: x.t.slice(0, 80) } : null;
+      })
+      .filter(Boolean);
     if (Array.isArray(c.alertOff))
       o.alertOff = c.alertOff.filter(function (k, i, a) {
         return ALERT_KEYS.indexOf(k) >= 0 && a.indexOf(k) === i;
@@ -565,7 +598,7 @@ function storeTake(v, fromCache) {
     force = !had,
     n = had ? cleanStore(v) : seedStore();
   if (!n.ui) {
-    n.ui = cleanUI(seedUI());
+    n.ui = cleanUI(setupEmpty());
     force = true;
   }
   if (!n.qaSeeded) {

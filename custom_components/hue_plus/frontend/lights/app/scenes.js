@@ -33,8 +33,8 @@ function scnToggle(e, id) {
     a.splice(i, 1);
     return true;
   }
-  if (a.length >= 40) {
-    toast(_T("a_section_holds_up_to_40_scenes"));
+  if (a.length >= SCENE_MAX) {
+    toast(_T("a_section_holds_up_to_200_scenes"));
     return false;
   }
   a.push(id);
@@ -52,10 +52,12 @@ function pruneSceneRefs() {
         s.scn = s.scn.filter(function (id) {
           return ok[id];
         });
-      if (s.pins)
-        s.pins = s.pins.filter(function (p) {
-          return p.kind !== "cscene" || ok[p.sid];
-        });
+      (s.devs || []).forEach(function (d) {
+        if (d.kind === "widget" && d.wx && d.wx.pins)
+          d.wx.pins = d.wx.pins.filter(function (p) {
+            return p.kind !== "cscene" || ok[p.sid];
+          });
+      });
     });
   });
 }
@@ -71,7 +73,7 @@ function sceneShown(id) {
 
 /* The trash of a scene deletes it, from every page it is on and from the saved scenes (taking it off one section is what picking it again in the list does). A live scene is stopped and forgotten by the integration with the area made for it. */
 function sceneDeleteEverywhere(sc) {
-  confirmDlg(_T("delete") + sc.name + _T("from_every_page_it_cannot_be_undone"), function () {
+  confirmDlg(_T("delete_scene_q", { x: sc.name }), function () {
     if (sc.live) {
       if (liveRun({ id: sc.id })) liveCall("stop", { scene_id: sc.id });
       liveForget(sc.id, sc.live.areas ? sc.live.area : null);
@@ -253,8 +255,7 @@ function sceneSummary(sc) {
   if (sc.live) return liveSub(sc);
   var n = sc.acts.length;
   return (
-    n +
-    (n === 1 ? " device" : " devices") +
+    _T(n === 1 ? "device_n" : "devices_n", { n: n }) +
     (sc.others === "lights"
       ? _T("other_lights_off")
       : sc.others === "all"
@@ -321,7 +322,17 @@ function execActs(acts) {
   });
 }
 
-function runScene(sc) {
+/* `page`: the page a scene is played from (the one open when not said). Only an auto scene needs it. */
+function runScene(sc, page) {
+  /* An auto scene has no room of its own: it gives the lights of the page it is played from its colours at random (a lights master plays it on its own lights), and that page is what must be allowed. */
+  if (sc.auto) {
+    var at = page || VIEW;
+    if (!sceneAllowed({ room: at })) {
+      toast(_T("this_is_view_only_for_you"));
+      return;
+    }
+    return autoScenePlay(sc, autoPageLights(at));
+  }
   if (!sceneAllowed(sc)) {
     toast(_T("this_is_view_only_for_you"));
     return;
@@ -330,8 +341,6 @@ function runScene(sc) {
     liveToggle(sc);
     return;
   }
-  /* An auto scene gives the lights of its page its colours at random; a lights master plays it on its own lights. */
-  if (sc.auto) return autoScenePlay(sc, lightUnits(sc.room === "home" ? allLights() : ROOMLIGHTS[sc.room] || []));
   var f = filterActs(compileScene(sc)),
     ids = actionIds(f.acts);
   if (!ids.length && !f.acts.some(function (a) { return a.live; })) {
@@ -342,7 +351,7 @@ function runScene(sc) {
   gate(ids, function () {
     liveStopOn(ids);
     execActs(f.acts);
-    toast(_T("running_2") + sc.name + "”");
+    toast(_T("running_2", { x: sc.name }));
   });
 }
 
@@ -382,7 +391,8 @@ function sceneEntSetHidden(room, id, hide) {
   var scenes = sceneEntHiddenList(room).filter(function (x) {
     return x !== id;
   });
-  if (hide && scenes.length < 80) scenes.push(id);
+  if (hide && scenes.length >= 400) return toast(_T("a_section_holds_up_to_200_scenes"));
+  if (hide) scenes.push(id);
   if (room.sec) room.sec.hscn = scenes;
   else if (scenes.length) room.hscn = scenes;
   else delete room.hscn;
@@ -454,16 +464,18 @@ function sceneActive(sc) {
 
 function sceneRow(sc) {
   if (sc.live) return liveRow(sc);
+  /* the page the row is built on: where an auto scene plays from it */
+  var page = secKey();
   if (sc.auto)
     return edMark(
       pill(sc.icon || "scene", sc.name, {
         sub: function () {
-          return _T("auto_scene") + " · " + sc.auto.colors.length + " " + _T("auto_colours").toLowerCase();
+          return _T("auto_scene") + " · " + _T("n_colours", { n: sc.auto.colors.length });
         },
         tap: function () {
-          runScene(sc);
+          runScene(sc, page);
         },
-        pin: { kind: "cscene", sid: sc.id, name: sc.name, icon: sc.icon || "scene", room: TITLES[sc.room] },
+        pin: { kind: "cscene", sid: sc.id, name: sc.name, icon: sc.icon || "scene", room: "" },
       }),
       function () {
         autoSceneEdit(sc);
@@ -496,16 +508,17 @@ function sceneRow(sc) {
 
 /* A scene put in a Section from the + : from a Section's new scene (the scene becomes a device of the Section) or from a lights master's scenes (it is one of the master's). */
 function sceneTargetAdd(target, id) {
-  var e = secById(target.scope, target.sid);
+  var e = target.into === "section" ? secById(target.scope, target.sid) : masterById(target.scope, target.sid);
   if (!e) return;
   if (target.into === "section") {
     e.devs = e.devs || [];
+    if (e.devs.length >= SCENE_MAX) return toast(_T("a_section_holds_up_to_200_scenes"));
     if (
       !e.devs.some(function (d) {
         return d.kind === "cscene" && d.sid === id;
       })
     )
-      e.devs.push({ kind: "cscene", sid: id, id: "", name: "Scene", icon: "scene" });
+      e.devs.push({ kind: "cscene", sid: id, id: "", name: _T("scene_default_name"), icon: "scene" });
   } else scnToggle(e, id);
 }
 
@@ -528,7 +541,12 @@ function sceneDeviceRow(d) {
 function sceneMadeRow(d) {
   var sc = sceneById(d.sid);
   if (!sc || !sceneAllowed(sc)) return null;
-  if (editing()) return pill(sc.icon || "scene", sc.name, { sub: mscKindLabel({ kind: sc.auto ? "auto" : sc.live ? "live" : "classic" }) });
+  if (editing())
+    return pill(sc.icon || "scene", sc.name, {
+      sub: function () {
+        return mscKindLabel({ kind: sc.auto ? "auto" : sc.live ? "live" : "classic" });
+      },
+    });
   return sceneRow(sc);
 }
 
@@ -552,6 +570,12 @@ function sceneCollectionItems(d) {
     }),
     ents = [];
   tokens.forEach(function (x) {
+    if (x.indexOf("group:") === 0) {
+      sceneGroupIds(x).forEach(function (id) {
+        if (ents.indexOf(id) < 0) ents.push(id);
+      });
+      return;
+    }
     if (x.indexOf("hue:") !== 0) return;
     var found =
       x === "hue:@rooms"
@@ -590,9 +614,10 @@ function sceneCollectionRow(d) {
   it.stored.forEach(function (sc) {
     box.appendChild(sceneRow(sc));
   });
+  var words = sceneNameSuffixes(it.ents);
   it.ents.forEach(function (id) {
     var kind = pluginSceneKind(id),
-      nm = d.keepname ? A(id).friendly_name || id : sceneShortName(A(id).friendly_name || id, ctx, {});
+      nm = (d.keepname ? A(id).friendly_name || id : sceneShortName(A(id).friendly_name || id, ctx, {})) + (words[id] || "");
     box.appendChild(sceneEntRow(id, nm, kind ? kind.icon : "scene", null, ctx));
   });
   /* Taken now: the page and Section being drawn are not known any more when the button is tapped. */
@@ -633,6 +658,7 @@ function devRow(d) {
 
 function devRowRaw(d) {
   var pk;
+  if (d.kind === "widget") return widgetRow(d, false);
   if (d.kind === "scene") return sceneDeviceRow(d);
   if (d.kind === "cscene") return sceneMadeRow(d);
   if (d.kind === "scenes") return sceneCollectionRow(d);
@@ -659,6 +685,7 @@ function devRowRaw(d) {
   if (d.kind === "vacuum") {
     pk = devPop(d);
     return pill(d.icon || "vac", d.name, {
+      kind: "clean",
       tap: function () {
         showPopup(pk, true);
       },
@@ -674,6 +701,7 @@ function devRowRaw(d) {
     pk = devPop(d);
     var pw = powerSib(d.id);
     return pill(d.icon || "plug", d.name, {
+      kind: iconKind(d.icon || "plug") === "other" ? "power" : "",
       on: function () {
         return isOn(d.id);
       },
@@ -692,6 +720,9 @@ function devRowRaw(d) {
       pin: pinPop(pk, d.id, d.name, d.icon || "plug"),
     });
   }
+  /* a type described in app/domains.js; one added earlier as a plain reading takes its controls too */
+  if ((d.kind === "entity" || d.kind === "sensor") && d.id && domKnown(d.id)) return domRow(d);
+  if (d.kind === "entity") return sensorRow(d);
   if (d.kind === "sensor") return sensorRow(d);
   if (d.kind === "number") return numberRow(d);
   if (d.kind === "select") return selectRow(d);

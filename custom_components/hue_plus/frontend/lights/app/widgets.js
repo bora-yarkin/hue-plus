@@ -242,15 +242,82 @@ function slideIcon(r, o, refresh) {
   );
 }
 
+/* The kind of device an icon stands for. A row's colour comes from its kind: lights amber, climate and air blue, media violet, security green, power and batteries lime, cleaning teal, scenes and actions pink, appliances and blinds their own warm and sage tones, warnings orange, links slate. Any other icon is "other", which takes the dashboard accent, so no icon is left without a colour. */
+var KINDWORDS = [
+  ["power", /^(plug|powerset|power|battery)/, ["power", "battery", "flash", "lightning", "bolt", "solar", "meter", "current", "ev", "outlet", "socket", "transmission", "gauge"]],
+  ["light", /^(light|lamp|floor|ceiling|strip|bright|flood|lights)/, ["lamp", "light", "lightbulb", "bulb", "led", "sconce", "chandelier", "ceiling", "spotlight", "candle", "lantern", "torch"]],
+  ["climate", /^(ac|fan|purifier|thermo|drop)/, ["air", "fan", "snowflake", "thermometer", "thermostat", "radiator", "heat", "water", "humidity", "weather", "wind", "temperature", "fire", "fireplace"]],
+  ["media", /^(tv|apple|speaker|media|movie|playc)/, ["television", "speaker", "music", "cast", "projector", "youtube", "netflix", "radio", "disc", "amplifier", "surround", "apple", "android", "monitor", "remote", "headphones", "audio", "soundbar"]],
+  ["security", /^(lock|padlock|cam|cctv|camoff|walk|motion|bell|phone)/, ["lock", "door", "shield", "cctv", "camera", "doorbell", "garage", "alarm", "smoke", "phone", "bell", "gate", "key", "window", "intercom", "motion", "walk", "run"]],
+  ["clean", /^(vac|broom|rug)/, ["robot", "vacuum", "broom", "mop", "spray", "roomba", "sweep"]],
+  ["scene", /^(scene|sparkle|palette|play|rec)/, ["palette", "party", "creation", "auto", "star", "heart", "play", "script", "movie", "theater", "sunset", "sunrise", "weather-night"]],
+  ["appliance", /^(printer)/, ["printer", "stove", "fridge", "refrigerator", "coffee", "kettle", "microwave", "dishwasher", "oven", "toaster", "blender", "iron", "hair", "washing", "dryer", "cooker", "boiler", "washer"]],
+  ["cover", /^(blind|shutter)/, ["blinds", "shutter", "roller", "curtains", "curtain"]],
+  ["alert", /^(alert|warn)/, ["alert", "warning"]],
+  ["link", /^(swap|link)/, ["link", "share", "swap"]],
+];
+
+/* A Material Design name is read word by word (mdi:desk-lamp is a lamp), the built-in names by how they begin. */
+function iconKind(icon) {
+  var n = String(icon || "");
+  if (!n) return "";
+  var words = n.indexOf("mdi:") === 0 ? n.slice(4).split("-") : null;
+  for (var i = 0; i < KINDWORDS.length; i++) {
+    var k = KINDWORDS[i];
+    if (!words && k[1].test(n)) return k[0];
+    if (
+      words &&
+      words.some(function (w) {
+        return k[2].indexOf(w) >= 0;
+      })
+    )
+      return k[0];
+  }
+  return "other";
+}
+
+/* A small round button at the end of a row (play and pause on a media row): its own tap, never the row's. */
+function rowAction(r, o) {
+  var b = mk("button", "pact", svg(o.icon()));
+  b.setAttribute("aria-label", o.label);
+  b.type = "button";
+  b.addEventListener("click", function (e) {
+    e.stopPropagation();
+    o.fn();
+  });
+  r.appendChild(b);
+  return b;
+}
+
+/* The picture of a row, when it has one (the artwork of what is playing), in place of the icon. */
+function rowArt(icn, url, icon) {
+  var ok = typeof url === "string" && /^(\/(?!\/)|https:\/\/)/.test(url);
+  if (icn._art === (ok ? url : "")) return;
+  icn._art = ok ? url : "";
+  icn.classList.toggle("art", ok);
+  icn.innerHTML = svg(icon);
+  if (!ok) return;
+  var im = new Image();
+  im.alt = "";
+  im.onload = function () {
+    if (icn._art === url) icn.innerHTML = "";
+    if (icn._art === url) icn.appendChild(im);
+  };
+  im.src = url;
+}
+
 function pill(icon, name, o) {
   var r = mk("div", "pill pane" + (o.tap ? "" : " static") + (o.on ? " tg" : ""));
   r.dataset.i = icon;
+  var kind = o.kind || iconKind(icon);
+  if (kind) r.dataset.k = kind;
   r.innerHTML =
     ic(icon) +
     "<span class='tx'><span class='nm'></span><span class='sb'></span></span><span class='vl'></span>";
   r.querySelector(".nm").textContent = name;
   var sb = r.querySelector(".sb"),
-    vl = r.querySelector(".vl");
+    vl = r.querySelector(".vl"),
+    act = o.action ? rowAction(r, o.action) : null;
   if (o.pin) r.dataset.pin = JSON.stringify(o.pin);
   if (o.check) {
     r.classList.add("chk");
@@ -285,6 +352,19 @@ function pill(icon, name, o) {
     r.classList.toggle("on", n);
     if (was !== null && n !== was) pop(r);
     was = n;
+    var tone = o.tone ? o.tone() : kind;
+    if (tone) r.dataset.k = tone;
+    else delete r.dataset.k;
+    if (o.art) rowArt(r.querySelector(".ic"), o.art(), icon);
+    if (act) {
+      var show = !!o.action.show();
+      act.style.display = show ? "" : "none";
+      var ai = show ? o.action.icon() : "";
+      if (show && ai !== act._i) {
+        act._i = ai;
+        act.innerHTML = svg(ai);
+      }
+    }
     if (o.sub) {
       var t = o.sub();
       sb.textContent = t || "";
@@ -309,6 +389,7 @@ function cssToRgb(s) {
 
 function sliderRow(o) {
   var r = mk("div", "pill pane slide");
+  if (iconKind(o.icon)) r.dataset.k = iconKind(o.icon);
   r.innerHTML =
     "<div class='fill'></div>" +
     ic(o.icon) +
@@ -411,6 +492,7 @@ function sliderRow(o) {
 
 function selectTile(label, opts, cur, pick, icon, fmt) {
   var r = mk("div", "sel pane");
+  if (iconKind(icon)) r.dataset.k = iconKind(icon);
   r.innerHTML =
     (icon ? ic(icon) : "") +
     "<span class='tx'><span class='nm'></span><span class='sb'></span></span><span class='chev'>" +
@@ -419,10 +501,6 @@ function selectTile(label, opts, cur, pick, icon, fmt) {
   r.querySelector(".nm").textContent = label;
   var sb = r.querySelector(".sb");
   r.addEventListener("click", function () {
-    if (r._noopen) {
-      r._noopen = false;
-      return;
-    }
     var o = opts();
     if (!o || !o.length) return;
     pop(r);
@@ -447,10 +525,6 @@ function multiTile(label, opts, isOn, toggle, icon, summary, state) {
   r.querySelector(".nm").textContent = label;
   var sb = r.querySelector(".sb");
   r.addEventListener("click", function () {
-    if (r._noopen) {
-      r._noopen = false;
-      return;
-    }
     var o = opts();
     if (!o || !o.length) return;
     pop(r);
@@ -535,17 +609,29 @@ function placeMenu(m, anchor) {
   }, 0);
 }
 
+/* A tap away from a menu closes it. A tap on what opened it (a dropdown, a popup's title, the now playing row) only closes it: the click that follows is taken, so that it does
+   not open it again. */
 function menuAway(e) {
   if (!MENU || MENU.contains(e.target)) return;
-  var a = e.target.closest ? e.target.closest(".sel") : null;
-  if (a && a === MENU_ANCHOR) {
-    a._noopen = true;
-    clearTimeout(a._noopenT);
-    a._noopenT = setTimeout(function () {
-      a._noopen = false;
-    }, 2500);
-  }
+  if (MENU_ANCHOR && MENU_ANCHOR.contains(e.target)) menuEatClick(MENU_ANCHOR);
   closeMenu();
+}
+
+function menuEatClick(anchor) {
+  var timer = 0;
+  function done() {
+    clearTimeout(timer);
+    document.removeEventListener("click", eat, true);
+  }
+  function eat(e) {
+    if (!anchor.contains(e.target)) return;
+    e.stopPropagation();
+    e.preventDefault();
+    done();
+  }
+  document.addEventListener("click", eat, true);
+  /* a press that ends elsewhere has no click to take */
+  timer = setTimeout(done, 2500);
 }
 
 function closeMenu(instant) {
@@ -577,6 +663,17 @@ function hintRow(text) {
 /* A row that switches one yes/no setting of an object, kept as a flag that is there when it is on (and removed when it is off, so saved settings stay small). `sub(on)` words the state;
    `inverted` is for a flag that names the exception (noslide: "no slider"), where the row is on while the flag is absent. Every change is saved at once. */
 /* The one way every object says whether it is shown: a row "Visible", On or Off. `isOn()` says whether it is shown now and `toggle()` flips it. */
+/* One named part of something, shown or hidden. */
+function partPill(title, isOn, toggle) {
+  return pill("eye", title, {
+    on: isOn,
+    sub: function () {
+      return isOn() ? _T("on_cap") : _T("off");
+    },
+    tap: toggle,
+  });
+}
+
 function visiblePill(isOn, toggle) {
   return pill("eye", _T("visible"), {
     on: isOn,
@@ -648,7 +745,7 @@ function glance(items, cols) {
       var x = it[1]();
       if (it[2]) b.querySelector("span").textContent = it[2]();
       v.textContent = x;
-      b.classList.toggle("off", x.indexOf("Offline") >= 0);
+      b.classList.toggle("off", x.indexOf(_T("offline")) >= 0);
     };
     reg(b.refresh);
     g.appendChild(b);
@@ -713,6 +810,18 @@ function downloadText(name, text, type) {
     a.remove();
     URL.revokeObjectURL(a.href);
   }, 1000);
+}
+
+/* A file's or a picture's bytes as a data: address, for a file that carries pictures. */
+function blobDataUrl(blob) {
+  return new Promise(function (resolve, reject) {
+    var rd = new FileReader();
+    rd.onload = function () {
+      resolve(String(rd.result));
+    };
+    rd.onerror = reject;
+    rd.readAsDataURL(blob);
+  });
 }
 
 /* Asks for a file and gives its text to `onText` (or the file itself when `o.asFile` is set, for a picture). `o.accept` (".json,application/json"), `o.maxBytes` (a file larger than that is refused, with a message). */
@@ -836,26 +945,54 @@ function section(name, icon, items) {
   items.forEach(function (i) {
     s.appendChild(i);
   });
+  /* Four or more plain rows form a grid that takes as many columns as the section is wide, so a long list of switches does not run down the page. */
+  if (
+    items.length >= 4 &&
+    items.every(function (i) {
+      return i.classList.contains("pill") && !i.classList.contains("slide");
+    })
+  )
+    s.classList.add("dense");
   return s;
 }
 
+/* A media row shows what is playing: the artwork in place of the icon, the title and artist beneath the name, and a play and pause button. An idle player shows its source only when the device's row is set to show it. */
 function mediaRow(icon, name, id, key, sub) {
+  var np = !(UIDEV[id] || {}).nonp;
+  function playing() {
+    return np && (V_(id) === "playing" || V_(id) === "paused");
+  }
   return pill(icon, name, {
     pin: pinPop(key, id, name, icon),
     on: function () {
       return mediaOn(id);
     },
-    sub: sub
-      ? function () {
-          var s = V_(id);
-          if (s === "off") return "Off";
-          var a = A(id);
-          var parts = [a.media_title, a.source].filter(function (x) {
-            return x;
-          });
-          return parts.length ? parts.join(" · ") : cap(s);
-        }
-      : null,
+    art: function () {
+      return playing() ? A(id).entity_picture_local || A(id).entity_picture || "" : "";
+    },
+    action: {
+      label: _T("play_pause"),
+      icon: function () {
+        return V_(id) === "playing" ? "pause" : "play";
+      },
+      show: playing,
+      fn: function () {
+        call("media_player", "media_play_pause", { entity_id: id });
+      },
+    },
+    sub:
+      sub || np
+        ? function () {
+            var s = V_(id);
+            if (s === "off") return sub ? _T("off") : "";
+            var a = A(id),
+              parts = [a.media_title, a.media_artist || a.source].filter(function (x) {
+                return x;
+              });
+            if (parts.length && (sub || playing())) return parts.join(" · ");
+            return sub ? cap(s) : "";
+          }
+        : null,
     tap: function () {
       showPopup(key, true);
     },
@@ -880,6 +1017,9 @@ function acRow(id, key, name, icon) {
     on: function () {
       var s = V_(id);
       return !!s && s !== "off" && svOk(id);
+    },
+    tone: function () {
+      return V_(id) === "heat" ? "heat" : "climate";
     },
     sub: function () {
       var a = A(id),
@@ -995,6 +1135,7 @@ function tile(icon, name, labelFn, onFn, tapFn, tintFn) {
   );
   t.querySelector(".nm").textContent = name;
   var sb = t.querySelector(".sb");
+  if (iconKind(icon)) t.dataset.k = iconKind(icon);
   t.addEventListener("click", tapFn);
   var was = null;
   t.refresh = function () {
@@ -1022,18 +1163,12 @@ function lightsLabel(ids) {
         var s = V_(i);
         return !s || s === "unknown" || s === "unavailable";
       }).length;
-    return (
-      on +
-      " " +
-      (on === 1 ? "light" : "lights") +
-      " on" +
-      (miss ? " · " + miss + " unavailable" : "")
-    );
+    return _T(on === 1 ? "light_on_n" : "lights_on_n", { n: on }) + (miss ? " · " + _T("n_unavailable", { n: miss }) : "");
   };
 }
 
 function sv(id, unit, dp) {
-  if (!svOk(id)) return "Offline";
+  if (!svOk(id)) return _T("offline");
   var v = Number(V_(id));
   return V_(id) === "" || !isFinite(v) ? "–" : v.toFixed(dp === undefined ? 1 : dp) + unit;
 }
@@ -1111,8 +1246,12 @@ function appVersion() {
 /* entity picker */
 /* 'taken' (optional) says which entities are already used and are left out of the list. */
 /* `near` is a list of entities already chosen for the same thing: the entities of their Home Assistant devices are listed first. */
+/* A choice offered above the list of the next picker: { icon, label, sub (string keys), tap }. */
+var PICKEXTRA = null;
+
 function pickEntity(title, doms, cls, cb, taken, near) {
-  PICK = { title: title, doms: doms, cls: cls || null, cb: cb, taken: taken || null, near: near || null, q: "" };
+  PICK = { title: title, doms: doms, cls: cls || null, cb: cb, taken: taken || null, near: near || null, q: "", extra: PICKEXTRA };
+  PICKEXTRA = null;
   showPopup("pick-ent", true);
 }
 
@@ -1128,6 +1267,15 @@ function pickBuild(b) {
   inp.setAttribute("autocomplete", "off");
   inp.setAttribute("autocapitalize", "off");
   w.appendChild(inp);
+  if (P.extra)
+    b.appendChild(
+      pill(P.extra.icon, _T(P.extra.label), {
+        sub: function () {
+          return _T(P.extra.sub);
+        },
+        tap: P.extra.tap,
+      })
+    );
   b.appendChild(w);
   b.appendChild(box);
   /* The devices of the entities in `near`. */

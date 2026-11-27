@@ -3,6 +3,7 @@
 
 import importlib.util
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -71,8 +72,6 @@ def test_the_light_frame_runs_the_files_of_home_control_it_needs():
     spec.loader.exec_module(module)
     if not module.SOURCE.is_dir():
         pytest.skip("Home Control is not checked out next to Hue Plus")
-    import re
-
     popup = (ROOT / "custom_components" / "hue_plus" / "frontend" / "popup.html").read_text(encoding="utf-8")
     listed = json.loads(re.search(r"var FILES = (\[.*?\]);", popup, flags=re.S).group(1))
     home_control = json.loads(module._read("version.json").decode("utf-8"))["files"]
@@ -83,6 +82,13 @@ def test_the_light_frame_runs_the_files_of_home_control_it_needs():
     assert [name for name in listed if name in home_control] == [name for name in home_control if name in listed], (
         "popup.html runs them in Home Control's order"
     )
+
+
+def test_the_light_frame_loads_the_texts_before_anything_that_asks_for_one():
+    """Home Control's files take their texts from _T() as they load (camera-stream.js did from 0.33.0), so the strings are first."""
+    popup = (ROOT / "custom_components" / "hue_plus" / "frontend" / "popup.html").read_text(encoding="utf-8")
+    listed = json.loads(re.search(r"var FILES = (\[.*?\]);", popup, flags=re.S).group(1))
+    assert listed[0] == "app/strings.js"
 
 
 def test_the_hue_panels_wheel_treats_groups_as_single_lights_and_has_no_scenes_or_sync_page():

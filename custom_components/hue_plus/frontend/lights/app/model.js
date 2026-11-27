@@ -26,10 +26,10 @@ var KINDS = [
   "scene",
   "cscene",
   "scenes",
+  "widget",
+  "entity",
 ];
 
-/* The starting layout when nothing is saved yet: one room per Home Assistant area with its controllable devices,
- temperature and humidity tiles, and every battery sensor tracked. Built from Home Assistant, so it fits any home. */
 /* The lights that are the zones of another light (a gradient tube is one light with a light for each of its colour zones). They are not put on a page by themselves: the main light controls its zones, and one can still be added by hand. */
 function zoneLightIds(states, entities) {
   var out = {};
@@ -82,75 +82,6 @@ function areaDevices(areaId) {
   return out;
 }
 
-function seedUI() {
-  var h = H(),
-    rooms = [],
-    devs = {},
-    stat = {},
-    layoutRooms = {},
-    chips = [],
-    bats = [],
-    all = Object.keys(h.states),
-    zones = zoneLightIds(h.states, h.entities),
-    ids = all.filter(function (id) {
-      var e = h.entities[id];
-      return !zones[id] && !(e && (e.entity_category || e.hidden || e.disabled_by));
-    });
-  function inArea(a, id) {
-    return areaIdOf(id) === a;
-  }
-  function byClass(a, c) {
-    return ids.filter(function (id) {
-      return inArea(a, id) && dom(id) === "sensor" && A(id).device_class === c;
-    })[0];
-  }
-  Object.values(h.areas || {}).forEach(function (a) {
-    var rid = ("r_" + a.area_id).replace(/[^a-z0-9_-]/g, "").slice(0, 24),
-      list = [],
-      t = byClass(a.area_id, "temperature"),
-      hu = byClass(a.area_id, "humidity");
-    ids.forEach(function (id) {
-      var d = areaDevice(a.area_id, id);
-      if (d) list.push(d);
-    });
-    rooms.push({
-      id: rid,
-      name: a.name,
-      short: a.name.split(" ")[0].slice(0, 16),
-      icon: "home",
-      area: a.area_id,
-    });
-    devs[rid] = list;
-    layoutRooms[rid] = [{ id: "status", k: "status", hide: false }].concat(groupSections(list));
-    stat[rid] = [];
-    if (t) {
-      stat[rid].push({ l: _T("temperature"), id: t, u: TEMPU(), dp: 1 });
-      var c = { l: a.name, t: t };
-      if (hu) c.h = hu;
-      chips.push(c);
-    }
-    if (hu) stat[rid].push({ l: _T("humidity"), id: hu, u: "%", dp: 0 });
-  });
-  all.forEach(function (id) {
-    if ((dom(id) === "sensor" || dom(id) === "binary_sensor") && A(id).device_class === "battery")
-      bats.push([(A(id).friendly_name || id).replace(/\s*battery\s*$/i, "").slice(0, 40), id]);
-  });
-  return {
-    rooms: rooms,
-    devs: devs,
-    chips: chips.slice(0, 4),
-    stat: stat,
-    bats: bats.slice(0, 30),
-    layout: { v: 5, home: seedSections("home"), rooms: layoutRooms, cols: {} },
-    meta: {
-      homeTab: _T("home"),
-      homeTitle: _T("app_title"),
-      eyebrow: _T("app_title"),
-      clock: true,
-    },
-  };
-}
-
 var ENTRE = /^[a-z_]+\.[a-z0-9_]+$/,
   POPRE = /^[a-z0-9_:.-]{0,60}$/;
 
@@ -159,22 +90,26 @@ function cleanMeta(m) {
   var s = function (v, n, d) {
     return typeof v === "string" && v.length <= n ? v : d;
   };
-  return {
+  var out = {
     homeTab: s(m.homeTab, 16, _T("home")) || _T("home"),
     homeTitle: s(m.homeTitle, 40, _T("app_title")) || _T("app_title"),
     eyebrow: s(m.eyebrow, 30, _T("app_title")),
     clock: m.clock !== false,
-    clockSlim: m.clockSlim === true,
-    size: m.size === "slim" ? "slim" : "regular",
     greet: m.greet === true,
+    sky: m.sky !== false,
     hdr: cleanHdr(m.hdr),
   };
+  /* no Advanced settings button anywhere on the dashboard (app/advanced.js) */
+  if (m.noadv) out.noadv = 1;
+  /* a new dashboard that has not been set up yet (app/setup.js) */
+  if (m.setup) out.setup = true;
+  return out;
 }
 
 function cleanHdr(a) {
   var out = [];
   (Array.isArray(a) ? a : []).slice(0, 4).forEach(function (x) {
-    if (!x || ["weather", "people", "lights", "entity"].indexOf(x.k) < 0) return;
+    if (!x || ["weather", "people", "lights", "alerts", "entity"].indexOf(x.k) < 0) return;
     var o = { k: x.k };
     if (typeof x.id === "string" && ENTRE.test(x.id)) o.id = x.id;
     if (typeof x.l === "string" && x.l && x.l.length <= 24) o.l = x.l;
@@ -190,7 +125,29 @@ function cleanHdr(a) {
 var RM_ENT_DOMS = ["script", "button", "input_button", "scene", "switch"];
 var RM_MEDIA = ["volume_up", "volume_down", "volume_mute", "play_pause", "play", "pause", "stop", "next", "previous", "turn_on", "turn_off", "toggle"];
 
+/* Any Home Assistant action (app/actions.js): `s` "domain.service", `tg` what it is aimed at (entities, areas, devices), `d` its data, `q` ask first. */
+function cleanDo(a) {
+  if (typeof a.s !== "string" || !/^[a-z0-9_]{1,40}\.[a-z0-9_]{1,80}$/.test(a.s)) return null;
+  var out = { t: "do", s: a.s },
+    tg = {};
+  [["entity_id", ENTRE], ["area_id", /^[a-z0-9_]{1,80}$/], ["device_id", /^[A-Za-z0-9_-]{1,64}$/]].forEach(function (k) {
+    var v = a.tg && a.tg[k[0]],
+      list = (Array.isArray(v) ? v : []).filter(function (x, i, all) {
+        return typeof x === "string" && k[1].test(x) && all.indexOf(x) === i;
+      });
+    if (list.length) tg[k[0]] = list.slice(0, 20);
+  });
+  if (Object.keys(tg).length) out.tg = tg;
+  if (a.d && typeof a.d === "object" && !Array.isArray(a.d) && Object.keys(a.d).length && JSON.stringify(a.d).length <= 1000) out.d = JSON.parse(JSON.stringify(a.d));
+  if (a.q) out.q = 1;
+  if (typeof a.n === "string" && a.n.trim()) out.n = a.n.trim().slice(0, 40);
+  return out;
+}
+
 function cleanRmAct(a) {
+  if (a && a.t === "do") return cleanDo(a);
+  /* a room of a robot vacuum appliance, on its map picture */
+  if (a && a.t === "room") return typeof a.r === "string" && /^[A-Za-z0-9_-]{1,24}$/.test(a.r) ? { t: "room", r: a.r } : null;
   if (!a || typeof a !== "object" || typeof a.e !== "string" || !ENTRE.test(a.e)) return null;
   var d = a.e.split(".")[0];
   if (!a.t || a.t === "ent") return RM_ENT_DOMS.indexOf(d) >= 0 ? { t: "ent", e: a.e } : null;
@@ -212,6 +169,25 @@ function cleanRmAct(a) {
   if (a.t === "webos") return d === "media_player" && typeof a.b === "string" && /^[A-Z0-9_]{1,20}$/.test(a.b) ? (a.r ? { t: "webos", e: a.e, b: a.b, r: 1 } : { t: "webos", e: a.e, b: a.b }) : null;
   if (a.t === "src") return d === "media_player" && typeof a.v === "string" && a.v && a.v.length <= 60 ? { t: "src", e: a.e, v: a.v } : null;
   return null;
+}
+
+/* A ready-made remote's own button settings (app/remotebuttons.js): hidden, an action of the remote builder, or an entity that fills it. Null when nothing is left. */
+function cleanRbx(o) {
+  var out = {};
+  if (!o || typeof o !== "object") return null;
+  ["power", "settings", "mute", "back", "home", "playpause", "volup", "voldown", "chup", "chdown", "keyboard", "brightness", "apps"].forEach(function (role) {
+    var c = o[role],
+      doms = { keyboard: ["remote", "media_player", "text", "input_text", "script"], brightness: ["number", "input_number"], apps: ["media_player", "select", "input_select"] }[role];
+    if (!c || typeof c !== "object") return;
+    if (c.off) out[role] = { off: 1 };
+    else if (doms) {
+      if (typeof c.e === "string" && ENTRE.test(c.e) && doms.indexOf(c.e.split(".")[0]) >= 0) out[role] = { e: c.e };
+    } else {
+      var a = cleanRmAct(c.a);
+      if (a && a.t !== "room") out[role] = { a: a };
+    }
+  });
+  return Object.keys(out).length ? out : null;
 }
 
 /* The remote of a device: a grid of buttons (width and height in cells, gaps, five-way pads) or a picture with touch areas over it. */
@@ -278,9 +254,11 @@ function cleanRemote(r) {
     var label = typeof x.l === "string" ? x.l.slice(0, 24) : "",
       btn = { a: a, i: iconOk(x.i) ? x.i : x.i === "" && label ? "" : "info", l: label, s: s, h: h };
     if (x.q) btn.q = 1;
-    if (["red", "green", "yellow", "blue"].indexOf(x.k) >= 0) btn.k = x.k;
+    if (typeof x.k === "string" && /^(red|green|yellow|blue|#[0-9a-f]{6})$/.test(x.k)) btn.k = x.k;
     out.btns.push(btn);
   });
+  /* the grid drawn as the built-in remotes are */
+  if (r && r.look === "native") out.look = "native";
   return out;
 }
 
@@ -299,14 +277,51 @@ function cleanAppliance(a) {
       door: ["binary_sensor", "sensor"],
       permission: ["binary_sensor", "switch", "input_boolean"],
       level: ["number", "input_number", "select", "input_select"],
+      vacuum: ["vacuum"],
+      battery: ["sensor"],
+      map: ["camera", "image"],
+      position: ["sensor"],
+      no_go: ["sensor"],
+      walls: ["sensor"],
+      dock: ["button", "input_button", "script"],
     },
     extraDoms = ["select", "input_select", "number", "input_number", "switch", "input_boolean", "binary_sensor", "sensor", "button", "input_button", "script"],
     out = { type: "other", slots: {}, extra: [] };
-  if (a && ["oven", "washer", "dryer", "dishwasher", "coffee", "fridge", "projector", "other"].indexOf(a.type) >= 0) out.type = a.type;
+  if (a && ["oven", "washer", "dryer", "dishwasher", "coffee", "fridge", "projector", "vacuum", "custom", "other"].indexOf(a.type) >= 0) out.type = a.type;
   Object.keys(slotDoms).forEach(function (k) {
     var e = a && a.slots && a.slots[k];
     if (typeof e === "string" && ENTRE.test(e) && slotDoms[k].indexOf(e.split(".")[0]) >= 0) out.slots[k] = e;
   });
+  /* a custom device made from a whole Home Assistant device keeps what is not shown behind one line */
+  if (a && a.fold) out.fold = 1;
+  /* blocks added to its popup, each with entities of its own (app/appliance.js) */
+  var added = (a && Array.isArray(a.add) ? a.add : [])
+    .slice(0, 12)
+    .map(function (x) {
+      if (!x || typeof x.id !== "string" || !/^x[a-z]{1,11}$/.test(x.id) || ["dial", "ring", "bar", "readings", "actions", "settings"].indexOf(x.t) < 0) return null;
+      var block = { id: x.id, t: x.t, slots: {} };
+      Object.keys(slotDoms).forEach(function (k) {
+        var e = x.slots && x.slots[k];
+        if (typeof e === "string" && ENTRE.test(e) && slotDoms[k].indexOf(e.split(".")[0]) >= 0) block.slots[k] = e;
+      });
+      if (typeof x.l === "string" && x.l.trim()) block.l = x.l.trim().slice(0, 24);
+      return block;
+    })
+    .filter(function (x, i, all) {
+      return x && all.findIndex(function (y) { return y && y.id === x.id; }) === i;
+    });
+  if (added.length) out.add = added;
+  /* the order of the parts of its popup, and the parts hidden (app/appliance.js) */
+  if (a && a.parts && typeof a.parts === "object") {
+    var parts = {};
+    ["order", "hide"].forEach(function (k) {
+      var l = (Array.isArray(a.parts[k]) ? a.parts[k] : []).filter(function (x, i, all) {
+        return typeof x === "string" && /^[a-z]{1,12}$/.test(x) && all.indexOf(x) === i;
+      });
+      if (l.length) parts[k] = l.slice(0, 12);
+    });
+    if (Object.keys(parts).length) out.parts = parts;
+  }
   /* A name given to a slot on this appliance (a projector's Program is its Source). */
   if (a && a.names && typeof a.names === "object")
     Object.keys(slotDoms).forEach(function (k) {
@@ -318,12 +333,88 @@ function cleanAppliance(a) {
     });
   /* Rows of any entity that can be read or set, each with a label, an optional group heading, and whether it is shown on the appliance's page or behind its Details line. */
   (a && Array.isArray(a.extra) ? a.extra : []).slice(0, 40).forEach(function (x) {
-    if (x && typeof x.e === "string" && ENTRE.test(x.e) && extraDoms.indexOf(x.e.split(".")[0]) >= 0) {
+    /* a custom device takes any entity; the others the ones their rows can show */
+    if (x && typeof x.e === "string" && ENTRE.test(x.e) && (out.type === "custom" || extraDoms.indexOf(x.e.split(".")[0]) >= 0)) {
       var row = { e: x.e, l: typeof x.l === "string" ? x.l.slice(0, 30) : "" };
       if (typeof x.g === "string" && x.g.trim()) row.g = x.g.trim().slice(0, 24);
       if (x.o) row.o = 1;
       out.extra.push(row);
     }
+  });
+  if (out.type === "vacuum" || (a && a.vac)) out.vac = cleanVac(a && a.vac);
+  return out;
+}
+
+/* A robot vacuum appliance's own configuration (app/appliancevac.js): rooms, settings and what Start does. */
+function cleanVac(v) {
+  var word = function (s, re) {
+      return typeof s === "string" && re.test(s) ? s : "";
+    },
+    label = function (s) {
+      return typeof s === "string" ? s.slice(0, 24) : "";
+    },
+    list = function (x, n) {
+      return Array.isArray(x) ? x.slice(0, n) : [];
+    };
+  v = v && typeof v === "object" ? v : {};
+  var out = { rooms: [], sets: [], run: [] };
+  if (v.nost) out.nost = 1;
+  if (v.nopr) out.nopr = 1;
+  var z = v.zones,
+    plainData = function (x) {
+      return x && typeof x === "object" && !Array.isArray(x) && JSON.stringify(x).length <= 1000;
+    };
+  if (z && word(z.action, /^[a-z_]+\.[a-z0-9_]+$/)) {
+    out.zones = { action: z.action, data: plainData(z.data) ? JSON.parse(JSON.stringify(z.data)) : {} };
+    ["no_go", "walls"].forEach(function (k) {
+      var path = word(z[k], /^[A-Za-z0-9_*|.-]{1,200}$/);
+      if (path) out.zones[k] = path;
+    });
+  }
+  list(v.rooms, 40).forEach(function (r) {
+    var k = r && word(r.k, /^[A-Za-z0-9_-]{1,24}$/);
+    if (k && !out.rooms.some(function (x) { return x.k === k; })) out.rooms.push({ k: k, l: label(r.l) });
+  });
+  list(v.sets, 6).forEach(function (s) {
+    var k = s && word(s.k, /^[A-Za-z0-9_]{1,40}$/);
+    if (!k || out.sets.some(function (x) { return x.k === k; })) return;
+    var o = { k: k, l: label(s.l), o: list(s.o, 8).filter(function (x) { return word(x, /^[^<>]{1,40}$/); }) };
+    if (word(s.e, /^(input_)?select\.[a-z0-9_]+$/)) o.e = s.e;
+    /* only for single rooms; the number the vacuum knows each value by, and the value used when none is chosen */
+    if (s.r) o.r = 1;
+    if (s.c && typeof s.c === "object") {
+      var codes = {};
+      Object.keys(s.c).slice(0, 8).forEach(function (n) {
+        if (word(n, /^[^<>]{1,40}$/) && typeof s.c[n] === "number" && isFinite(s.c[n])) codes[n] = s.c[n];
+      });
+      if (Object.keys(codes).length) o.c = codes;
+    }
+    if (word(s.d, /^[^<>]{1,40}$/)) o.d = s.d;
+    /* what each choice is called and drawn with */
+    [["n", /^[^<>]{1,24}$/], ["i", /^[a-z0-9_:-]{1,40}$/]].forEach(function (m) {
+      if (!s[m[0]] || typeof s[m[0]] !== "object") return;
+      var map = {};
+      Object.keys(s[m[0]]).slice(0, 12).forEach(function (n) {
+        if (word(n, /^[^<>]{1,40}$/) && typeof s[m[0]][n] === "string" && m[1].test(s[m[0]][n])) map[n] = s[m[0]][n];
+      });
+      if (Object.keys(map).length) o[m[0]] = map;
+    });
+    out.sets.push(o);
+  });
+  list(v.run, 4).forEach(function (r) {
+    var action = r && word(r.action, /^[a-z_]+\.[a-z0-9_]+$/);
+    if (!action || !r.data || typeof r.data !== "object" || Array.isArray(r.data) || JSON.stringify(r.data).length > 1000) return;
+    var step = { action: action, data: JSON.parse(JSON.stringify(r.data)) };
+    if (r.each) step.each = 1;
+    if (r.expect && typeof r.expect === "object") {
+      var expect = {};
+      Object.keys(r.expect).slice(0, 4).forEach(function (n) {
+        var x = r.expect[n];
+        if (/^[A-Za-z0-9_]{1,40}$/.test(n) && (typeof x === "boolean" || (typeof x === "number" && isFinite(x)) || (typeof x === "string" && x.length <= 40))) expect[n] = x;
+      });
+      if (Object.keys(expect).length) step.expect = expect;
+    }
+    out.run.push(step);
   });
   return out;
 }
@@ -356,9 +447,101 @@ function isVacuumMap(id) {
 var DEVTYPES = { media: ["tv", "receiver", "speaker"], fan: ["fan", "purifier"] };
 
 function guessDevType(d) {
-  if (d.kind === "media") return d.icon === "tv" ? "tv" : /speaker|homepod|sonos|cast|echo/i.test(d.icon + " " + d.id) ? "speaker" : "receiver";
-  if (d.kind === "fan") return /purif|air/i.test(d.icon + " " + d.name + " " + d.id) ? "purifier" : "fan";
+  /* what the entity says of itself first; names (in any one language) only when it says nothing */
+  var type = reportedType(d.id);
+  if (d.kind === "media") return type || (d.icon === "tv" ? "tv" : /speaker|homepod|sonos|cast|echo/i.test(d.icon + " " + d.id) ? "speaker" : "receiver");
+  if (d.kind === "fan") return type || (/purif|air/i.test(d.icon + " " + d.name + " " + d.id) ? "purifier" : "fan");
   return "";
+}
+
+/* The type Home Assistant's own information gives: a media player's device class, a purifier by the particle sensor on its device. "" when it says nothing. */
+function reportedType(id) {
+  var h = typeof H === "function" && H(),
+    s = h && h.states && h.states[id];
+  if (!s) return "";
+  if (id.indexOf("media_player.") === 0) return ["tv", "receiver", "speaker"].indexOf(s.attributes.device_class) >= 0 ? s.attributes.device_class : "";
+  if (id.indexOf("fan.") !== 0) return "";
+  var device = h.entities && h.entities[id] && h.entities[id].device_id;
+  return device &&
+    Object.keys(h.entities).some(function (e) {
+      var x = h.states[e];
+      return h.entities[e].device_id === device && x && /^(pm1|pm25|pm10)$/.test(x.attributes.device_class || "");
+    })
+    ? "purifier"
+    : "";
+}
+
+/* A gesture's action: the device's popup, a toggle, Home Assistant's dialog, a page, one of the remote builder's actions, or nothing. */
+function cleanAct(a) {
+  if (!a || typeof a !== "object") return null;
+  if (["popup", "toggle", "more", "none"].indexOf(a.t) >= 0) return { t: a.t };
+  if (a.t === "page") return typeof a.p === "string" && /^[a-z0-9_-]{1,24}$/.test(a.p) ? { t: "page", p: a.p } : null;
+  if (a.t === "run") {
+    var r = cleanRmAct(a.a);
+    return r && r.t !== "room" ? { t: "run", a: r } : null;
+  }
+  return null;
+}
+
+function cleanActs(o) {
+  var out = {};
+  ["tap", "hold", "dbl"].forEach(function (g) {
+    var a = cleanAct(o && o[g]);
+    if (a) out[g] = a;
+  });
+  return out;
+}
+
+/* An item's own colour, gestures, confirmation, state texts and visibility (app/customize.js). */
+function cleanCustom(d, c) {
+  var text = function (t) {
+    return typeof t === "string" && t.trim() && t.length <= 80 ? t : "";
+  };
+  if (typeof d.color === "string" && /^#[0-9a-f]{6}$/.test(d.color)) c.color = d.color;
+  var act = cleanActs(d.act);
+  if (Object.keys(act).length) c.act = act;
+  if (d.ask) c.ask = 1;
+  if (text(d.txt)) c.txt = d.txt;
+  var iff = !Array.isArray(d.txtif)
+    ? []
+    : d.txtif
+    .slice(0, 4)
+    .map(function (x) {
+      var cond = x && cleanCond(x.c);
+      return cond && text(x.t) ? { c: cond, t: x.t } : null;
+    })
+    .filter(Boolean);
+  if (iff.length) c.txtif = iff;
+  var when = Array.isArray(d.when) ? d.when.slice(0, 4).map(cleanCond).filter(Boolean) : [];
+  if (when.length) c.when = when;
+}
+
+/* The look of the whole dashboard and the defaults per type of entity. */
+function cleanLook(l) {
+  var out = {};
+  if (!l || typeof l !== "object") return out;
+  if (l.style === "mono" || l.style === "rainbow") out.style = l.style;
+  if (l.radius === "sharp" || l.radius === "round") out.radius = l.radius;
+  if (l.density === "compact" || l.density === "roomy") out.density = l.density;
+  var kc = {};
+  Object.keys(l.kc || {}).forEach(function (k) {
+    if (/^[a-z]{1,12}$/.test(k) && typeof l.kc[k] === "string" && /^#[0-9a-f]{6}$/.test(l.kc[k])) kc[k] = l.kc[k];
+  });
+  if (Object.keys(kc).length) out.kc = kc;
+  return out;
+}
+
+function cleanTypes(t) {
+  var out = {};
+  Object.keys(t || {})
+    .slice(0, 60)
+    .forEach(function (k) {
+      if (!/^[a-z_]{1,30}$/.test(k) || !t[k] || typeof t[k] !== "object") return;
+      var o = cleanActs(t[k]);
+      if (t[k].ask) o.ask = 1;
+      if (Object.keys(o).length) out[k] = o;
+    });
+  return out;
 }
 
 function cleanDev(d) {
@@ -373,12 +556,14 @@ function cleanDev(d) {
     return null;
   var id = typeof d.id === "string" ? d.id : "";
   if (id && !ENTRE.test(id)) return null;
-  if (!id && ["special", "remote", "appliance", "cscene", "scenes"].indexOf(d.kind) < 0) return null;
+  if (!id && ["special", "remote", "appliance", "cscene", "scenes", "widget"].indexOf(d.kind) < 0) return null;
   if (d.kind === "cscene" && !(typeof d.sid === "string" && /^[a-z0-9_-]{1,24}$/.test(d.sid))) return null;
   if (d.kind === "scene" && id.split(".")[0] !== "scene") return null;
   if (d.kind === "appliance" && !(typeof d.aid === "string" && /^[a-z0-9_-]{1,24}$/.test(d.aid))) return null;
   if (d.kind === "remote" && !(typeof d.rid === "string" && /^[a-z0-9_-]{1,24}$/.test(d.rid))) return null;
   var c = { id: id, name: d.name, icon: iconOk(d.icon) ? d.icon : "plug", kind: d.kind };
+  /* A widget's type, id and settings, and the size of a widget or of a device that can take one (decision D-25). */
+  if ((d.kind === "widget" || d.sz) && !(typeof cleanWidgetDev === "function" ? cleanWidgetDev(d, c) : d.kind !== "widget")) return null;
   if (typeof d.pop === "string" && POPRE.test(d.pop) && d.pop) c.pop = d.pop;
   if (d.sub) c.sub = 1;
   if (d.setup) c.setup = 1;
@@ -444,6 +629,7 @@ function cleanDev(d) {
     c.rid = d.rid;
     c.rm = cleanRemote(d.rm);
   }
+  cleanCustom(d, c);
   if (d.keep) c.keep = 1;
   if (d.hide) c.hide = 1;
   if (d.dial && d.kind === "climate") c.dial = 1;
@@ -459,7 +645,7 @@ function cleanDev(d) {
         return typeof x === "string" && re.test(x) && a.indexOf(x) === i;
       }).slice(0, 40);
     };
-    var sp = idsOf(d.spage, /^(page:[a-z0-9_-]{1,24}|area:[a-z0-9_-]{1,60}|hue:(@page|@lights|@rooms|[a-z0-9_-]{1,60}))$/),
+    var sp = idsOf(d.spage, /^(page:[a-z0-9_-]{1,24}|area:[a-z0-9_-]{1,60}|hue:(@page|@lights|@rooms|[a-z0-9_-]{1,60})|group:(room|zone):[a-z0-9-]{1,60})$/),
       xt = cleanTags(d.xtag),
       st = cleanTags(d.stag);
     if (sp.length) c.spage = sp;
@@ -467,7 +653,7 @@ function cleanDev(d) {
     if (xt.length) c.xtag = xt;
     if (d.keepname) c.keepname = 1;
   }
-  if (d.kind === "vacuum" && d.map && typeof d.map === "object") {
+  if ((d.kind === "vacuum" || (d.kind === "appliance" && d.ap && d.ap.type === "vacuum")) && d.map && typeof d.map === "object") {
     var m = {};
     if (d.map.m === 1) m.m = 1;
     if ([11, 16, 19].indexOf(d.map.ls) >= 0) m.ls = d.map.ls;
@@ -483,8 +669,81 @@ function cleanDev(d) {
   return c;
 }
 
+/* A status tile as a device of a Section: the reading, as a tile. */
+function statusDevice(s) {
+  return { id: s.id, name: String(s.l).slice(0, 40), icon: "thermo", kind: "sensor", sz: "s" };
+}
+
+/* The Status Section of a page, a plain Section: its tiles are devices added like any other (a sensor as a tile). */
+function statusSection(devs) {
+  return { id: "status", k: "devs", t: _T("status"), i: "thermo", hide: false, devs: devs || [] };
+}
+
+/* Layout 8 (decision D-27): the status tiles of a page are in two independent places. In the header: the page's own list (`stat`, edited in the header's settings), shown whenever it has tiles. In the page: a plain Status Section whose tiles are
+   devices. Until now one setting chose between them (`hdrStatus`), so a dashboard keeps what it showed: with the setting on, the tiles stay in the header and the Status Section is empty (and the Home page's climate tiles, which the header showed
+   in place of the section, are its header tiles and the section is hidden); with it off, the tiles move into the Section and the header has none. */
+function statusToSections(u) {
+  if (!u.layout || typeof u.layout !== "object") return u;
+  var hdr = !!(u.meta && u.meta.hdrStatus === true),
+    lay = JSON.parse(JSON.stringify(u.layout)),
+    stat = JSON.parse(JSON.stringify(u.stat && typeof u.stat === "object" ? u.stat : {})),
+    isWidget = function (d, w) {
+      return !!d && d.kind === "widget" && d.w === w;
+    },
+    is = function (s, w) {
+      return !!s && (s.k === w || (Array.isArray(s.devs) && s.devs.some(function (d) { return isWidget(d, w); })));
+    },
+    changed = false;
+  [["home", lay.home]]
+    .concat(
+      Object.keys(lay.rooms || {}).map(function (k) {
+        return [k, lay.rooms[k]];
+      })
+    )
+    .forEach(function (p) {
+      (Array.isArray(p[1]) ? p[1] : []).forEach(function (s) {
+        if (is(s, "status")) {
+          var tiles = Array.isArray(stat[p[0]]) ? stat[p[0]] : [],
+            own = (Array.isArray(s.devs) ? s.devs : []).filter(function (d) {
+              return !isWidget(d, "status");
+            });
+          s.k = "devs";
+          s.devs = hdr
+            ? own
+            : own.concat(
+                tiles
+                  .filter(function (t) {
+                    return t && typeof t.id === "string" && typeof t.l === "string";
+                  })
+                  .map(statusDevice)
+              );
+          if (!hdr) stat[p[0]] = [];
+          if (!s.t) s.t = _T("status");
+          if (!s.i) s.i = "thermo";
+          changed = true;
+        }
+        if (hdr && is(s, "chips")) {
+          s.hide = true;
+          changed = true;
+        }
+      });
+    });
+  if (hdr && Array.isArray(u.chips) && u.chips.length && !(stat.home && stat.home.length))
+    stat.home = u.chips
+      .filter(function (c) {
+        return c && typeof c.t === "string" && typeof c.l === "string";
+      })
+      .map(function (c) {
+        var e = { l: c.l, id: c.t, u: c.u || "°", dp: c.u ? 0 : 1 };
+        if (c.h) e.h = c.h;
+        return e;
+      });
+  return changed || hdr ? Object.assign({}, u, { layout: lay, stat: stat }) : u;
+}
+
 function cleanUI(u) {
   if (!u || typeof u !== "object") return null;
+  u = statusToSections(u);
   function ok(s, n) {
     return typeof s === "string" && s.length > 0 && s.length <= n;
   }
@@ -496,6 +755,9 @@ function cleanUI(u) {
     bats: [],
     layout: { home: [], rooms: {}, cols: {} },
     caps: {},
+    rbx: {},
+    look: {},
+    types: {},
     on: {},
     newSince: typeof u.newSince === "number" && u.newSince > 0 ? u.newSince : 0,
     ignored: Array.isArray(u.ignored)
@@ -556,6 +818,13 @@ function cleanUI(u) {
         }
         if (Object.keys(x).length) o.on[id] = x;
       });
+  if (u.rbx && typeof u.rbx === "object")
+    Object.keys(u.rbx)
+      .slice(0, 80)
+      .forEach(function (id) {
+        var x = /^media_player\.[a-z0-9_]+$/.test(id) && cleanRbx(u.rbx[id]);
+        if (x) o.rbx[id] = x;
+      });
   if (u.caps && typeof u.caps === "object")
     Object.keys(u.caps)
       .slice(0, 80)
@@ -568,6 +837,10 @@ function cleanUI(u) {
         });
         if (Object.keys(x).length) o.caps[id] = x;
       });
+  o.look = cleanLook(u.look);
+  o.types = cleanTypes(u.types);
+  var adv = cleanAdv(u.adv);
+  if (Object.keys(adv).length) o.adv = adv;
   (Array.isArray(u.rooms) ? u.rooms : []).slice(0, 24).forEach(function (r) {
     if (
       !r ||
@@ -594,7 +867,7 @@ function cleanUI(u) {
         .filter(function (id, i, a) {
           return typeof id === "string" && /^scene\.[a-z0-9_]+$/.test(id) && a.indexOf(id) === i;
         })
-        .slice(0, 80);
+        .slice(0, 400);
       if (hiddenScenes.length) room.hscn = hiddenScenes;
     }
     o.rooms.push(room);
@@ -614,8 +887,15 @@ function cleanUI(u) {
     if ((!ids[rid] && rid !== "home") || !Array.isArray(u.stat[rid])) return;
     var out = [];
     u.stat[rid].slice(0, 6).forEach(function (s) {
+      /* an Attention tile has no entity: it shows the alerts, and only while there are some */
+      if (s && s.k === "alerts") {
+        if (!out.some(function (x) { return x.k === "alerts"; })) out.push({ k: "alerts", l: ok(s.l, 30) ? s.l : _T("attention") });
+        return;
+      }
       if (!s || !ok(s.l, 30) || typeof s.id !== "string" || !ENTRE.test(s.id)) return;
       var c = { l: s.l, id: s.id };
+      /* a tile of two readings, as the Home page's climate tiles are (a temperature and a humidity) */
+      if (typeof s.h === "string" && ENTRE.test(s.h)) c.h = s.h;
       if (typeof s.u === "string" && s.u.length <= 10) c.u = s.u;
       if (typeof s.dp === "number") c.dp = Math.max(0, Math.min(3, Math.round(s.dp)));
       if (s.text) c.text = 1;
@@ -629,7 +909,7 @@ function cleanUI(u) {
   });
   var lv = u.layout && u.layout.v,
     cur = lv >= 4 ? { home: u.layout.home, rooms: u.layout.rooms || {} } : { home: null, rooms: {} };
-  o.layout.v = 6;
+  o.layout.v = 8;
   o.layout.home = cleanLayout(cur.home || seedSections("home"));
   Object.keys(ids).forEach(function (rid) {
     o.layout.rooms[rid] = cleanLayout(cur.rooms[rid] || seedSections("room:" + rid));
@@ -657,11 +937,11 @@ function scenesToDevices(s) {
   var c = Object.assign({}, s),
     devs = Array.isArray(s.devs) ? s.devs.slice() : [];
   (Array.isArray(s.scn) ? s.scn : []).forEach(function (id) {
-    devs.push({ kind: "cscene", sid: id, id: "", name: "Scene", icon: "scene" });
+    devs.push({ kind: "cscene", sid: id, id: "", name: _T("scene_default_name"), icon: "scene" });
   });
   (Array.isArray(s.sents) ? s.sents : []).forEach(function (e) {
     if (typeof e === "string" && /^scene\.[a-z0-9_]+$/.test(e))
-      devs.push({ kind: "scene", id: e, name: e.split(".")[1].replace(/_/g, " ").slice(0, 40) || "Scene", icon: "scene" });
+      devs.push({ kind: "scene", id: e, name: e.split(".")[1].replace(/_/g, " ").slice(0, 40) || _T("scene_default_name"), icon: "scene" });
   });
   if (s.k === "scenes" || (s.scs && !(s.scn || []).length && !(s.sents || []).length) || s.spage || s.stag || s.sarea)
     devs.push({
@@ -684,6 +964,250 @@ function scenesToDevices(s) {
   return c;
 }
 
+/* The tiles of At a glance (decision D-25: they are kept on the widget): which are hidden, their order, the ones made by hand and the lights masters shown as rows. Null when there is nothing to keep. */
+function cleanGlance(gl) {
+  if (!gl || typeof gl !== "object") return null;
+  var o;
+  var cs = [];
+  (Array.isArray(gl.c) ? gl.c : []).slice(0, 12).forEach(function (x) {
+    if (
+      x &&
+      typeof x.id === "string" &&
+      /^x[a-z0-9]{3,8}$/.test(x.id) &&
+      cs.every(function (y) {
+        return y.id !== x.id;
+      }) &&
+      typeof x.t === "string" &&
+      x.t &&
+      x.t.length <= 24 &&
+      GL_DOMS.indexOf(x.dom) >= 0
+    ) {
+      var c = { id: x.id, t: x.t, dom: x.dom };
+      if (iconOk(x.i)) c.i = x.i;
+      if (typeof x.dc === "string" && /^[a-z_]{1,30}$/.test(x.dc)) c.dc = x.dc;
+      cs.push(c);
+    }
+  });
+  var okIds = GL_IDS.concat(
+      cs.map(function (c) {
+        return c.id;
+      })
+    ),
+    pk = function (a) {
+      return (Array.isArray(a) ? a : []).filter(function (x, i, r) {
+        return okIds.indexOf(x) >= 0 && r.indexOf(x) === i;
+      });
+    };
+  o = { o: pk(gl.o), h: pk(gl.h), c: cs };
+  /* The lights masters the At a glance lights popup shows as rows ("page~master"); the lights of the others are listed one by one. */
+  var lm = (Array.isArray(gl.lm) ? gl.lm : [])
+    .filter(function (x, i, r) {
+      return typeof x === "string" && /^[a-z0-9_-]{1,24}~[a-z][a-z0-9_]{1,14}$/.test(x) && r.indexOf(x) === i;
+    })
+    .slice(0, 40);
+  if (lm.length) o.lm = lm;
+  return o;
+}
+
+/* The keys of a lights master's settings (decision D-25: a master is a widget of a Section, its settings are the widget's). They go with it when it is moved or copied; the two that hide the section's own lights and sync (mhl, mhs) are about the section it was in. */
+var LM_KEYS = ["mn", "mall", "mo", "mm", "ml", "mgl", "mtab", "lx", "mhide", "mxt", "mpw", "mps", "msync", "msyncid", "scn", "msrc", "mf", "mtop", "mgr"];
+var LM_OWN = LM_KEYS.concat(["mhl", "mhs", "master"]);
+
+/* The settings of a lights master as they are kept: its name, the lights chosen for it (manual) or none (the lights of its Section), its power button, scenes, folders and so on. `own` is a master made from its Section's lights (the one the Section's lights rows give way to). Unknown or invalid settings are dropped. */
+function cleanMaster(s, id) {
+  var o = { id: id, master: 1 };
+  if (s.own) o.own = 1;
+  if (typeof s.mn === "string" && s.mn.trim()) o.mn = s.mn.trim().slice(0, 40);
+  if (s.mall) o.mall = 1;
+  /* Manual: the lights chosen for the master, each with an optional name and icon. */
+  if (s.mm) {
+    o.mm = 1;
+    o.ml = (Array.isArray(s.ml) ? s.ml : [])
+      .slice(0, 100)
+      .map(cleanDev)
+      .filter(function (c, i, a) {
+        return c && c.kind === "light" && c.id && a.findIndex(function (x) { return x && x.id === c.id; }) === i;
+      });
+  }
+  /* Lights a master shows that no section or chosen list holds as a device (a group's own lights, for example): kept as devices so that their settings open from the master. */
+  var lx = (Array.isArray(s.lx) ? s.lx : [])
+    .slice(0, 100)
+    .map(cleanDev)
+    .filter(function (c, i, a) {
+      return c && c.kind === "light" && c.id && a.findIndex(function (x) { return x && x.id === c.id; }) === i;
+    });
+  if (lx.length) o.lx = lx;
+  if (s.mgl) o.mgl = 1;
+  if (s.mhide) o.mhide = 1;
+  if (["color", "white", "fx", "scenes", "sync"].indexOf(s.mtab) >= 0) o.mtab = s.mtab;
+  if (s.mhl) o.mhl = 1;
+  if (s.mhs) o.mhs = 1;
+  if (s.mpw === "scene") {
+    o.mpw = "scene";
+    if (typeof s.mps === "string" && /^[a-z0-9_.-]{1,80}$/.test(s.mps)) o.mps = s.mps;
+  }
+  if (s.msync) o.msync = 1;
+  if (typeof s.msyncid === "string" && ENTRE.test(s.msyncid)) o.msyncid = s.msyncid;
+  /* The room the At a glance lights popup lists it under: the room of the page it is on (not set), or the Home Assistant room of its lights. */
+  if (s.mgr === "ha") o.mgr = "ha";
+  if (Array.isArray(s.mo))
+    o.mo = s.mo
+      .filter(function (x, i, a) {
+        return typeof x === "string" && ENTRE.test(x) && a.indexOf(x) === i;
+      })
+      .slice(0, 100);
+  /* The scenes page of the lights master: where its scenes come from, the folders the owner made and the order of the tiles outside them. */
+  var key = function (x) {
+    return typeof x === "string" && /^[a-z0-9_.-]{1,80}$/.test(x);
+  };
+  if (Array.isArray(s.msrc) || (Array.isArray(s.mpa) && s.mpa.length))
+    o.msrc = (Array.isArray(s.msrc) ? s.msrc : ["hue"])
+      .map(function (x) {
+        /* the scenes of a plugin were one source (and areas for it, mpa); they are Hue rooms among the rooms now */
+        return x === "hue" || x === "plugin" ? "hue:@lights" : x === "page" ? "page" : x;
+      })
+      .filter(function (x, i, a) {
+        return (x === "page" || (typeof x === "string" && (/^(page:[a-z0-9_-]{1,24}|area:[a-z0-9_-]{1,60})$/.test(x) || x === "ha:@page" || /^hue:(@lights|@page|@rooms|[a-z0-9_-]{1,60})$/.test(x) || /^group:(room|zone):[a-z0-9-]{1,60}$/.test(x) || (/^tag:/.test(x) && cleanTags([x.slice(4)]).length)))) && a.indexOf(x) === i;
+      })
+      .slice(0, 40);
+  if (Array.isArray(s.mpa) && s.mpa.length) {
+    o.msrc = o.msrc.filter(function (x) {
+      return x !== "hue:@lights";
+    });
+    s.mpa.forEach(function (a) {
+      if (typeof a === "string" && /^[a-z0-9_-]{1,60}$/.test(a) && a !== "-" && o.msrc.indexOf("hue:" + a) < 0) o.msrc.push("hue:" + a);
+    });
+  }
+  /* Scenes tagged with any of these are left out of what the sources bring in (not of the scenes made from its own +). */
+  var xt = cleanTags(s.mxt);
+  if (xt.length) o.mxt = xt;
+
+  if (Array.isArray(s.mf)) {
+    var folders = s.mf
+      .filter(function (f) {
+        return f && typeof f.id === "string" && /^[a-z0-9]{1,12}$/.test(f.id) && typeof f.n === "string" && Array.isArray(f.s);
+      })
+      .slice(0, 30)
+      .map(function (f) {
+        return { id: f.id, n: f.n.slice(0, 40), s: f.s.filter(key).slice(0, 200) };
+      })
+      .filter(function (f) {
+        return f.s.length;
+      });
+    if (folders.length) o.mf = folders;
+  }
+  /* A folder's tile is "f:" and its id in the order. */
+  if (Array.isArray(s.mtop))
+    o.mtop = s.mtop
+      .filter(function (x) {
+        return key(x) || (typeof x === "string" && /^f:[a-z0-9]{1,12}$/.test(x));
+      })
+      .slice(0, 600);
+  if (Array.isArray(s.scn))
+    o.scn = s.scn
+      .filter(function (x, i, a) {
+        return typeof x === "string" && /^[a-z0-9_-]{1,24}$/.test(x) && a.indexOf(x) === i;
+      })
+      .slice(0, 200);
+  return o;
+}
+
+/* A section that has a master (its own settings on it, or the ones it holds in masters) has them as widgets of it now (Layout 7): the section's own as the widget named for the section, so its key stays "page~section", the held ones under the id they had. */
+function mastersToWidgets(s) {
+  if (!s.master && !(Array.isArray(s.masters) && s.masters.length)) return s;
+  var c = Object.assign({}, s),
+    list = [],
+    mk_ = function (id, x) {
+      return { kind: "widget", id: "", w: "lmaster", wid: id, name: _T("lights_master"), icon: "lights", wx: x };
+    };
+  if (s.master) {
+    var own = { own: 1 };
+    LM_OWN.concat(["mpa"]).forEach(function (k) {
+      if (s[k] !== undefined && s[k] !== null) own[k] = s[k];
+    });
+    list.push(mk_(s.id, own));
+  }
+  (Array.isArray(s.masters) ? s.masters : []).slice(0, 12).forEach(function (m) {
+    /* a held master was always manual: the lights are chosen for it */
+    if (m && typeof m.id === "string") list.push(mk_(m.id, Object.assign({}, m, { mm: 1 })));
+  });
+  LM_OWN.concat(["mpa", "masters"]).forEach(function (k) {
+    delete c[k];
+  });
+  c.devs = list.concat(Array.isArray(s.devs) ? s.devs : []);
+  return c;
+}
+
+/* Layout 7 (decision D-25): the sections that were not plain Sections become plain Sections whose devices and widgets carry what the type had. Note: a note widget. Readings: the devices as tiles. Chart: a chart
+   widget with its sensors and range. Camera: the cameras at size l. The section keeps its name and icon (the type's, when none was given). */
+function sectionToWidgets(s) {
+  var c = Object.assign({}, s),
+    devs = Array.isArray(s.devs) ? s.devs : [],
+    named = function (name, icon) {
+      if (!c.t) c.t = name;
+      if (!c.i) c.i = icon;
+    },
+    widget = function (w, name, icon, wx) {
+      return { kind: "widget", id: "", w: w, name: name, icon: icon, wx: wx };
+    };
+  if (s.k === "note") {
+    named(_T("note"), "info");
+    c.devs = devs.concat([widget("note", _T("note"), "info", { txt: s.txt })]);
+  } else if (s.k === "read") {
+    named(_T("readings"), "drop");
+    c.devs = devs.map(function (d) {
+      return d && d.id ? Object.assign({}, d, { sz: "s" }) : d;
+    });
+  } else if (s.k === "chart") {
+    named(_T("chart"), "thermo");
+    c.devs = [
+      widget("chart", _T("chart"), "thermo", {
+        ds: devs
+          .filter(function (d) {
+            return d && d.id && !d.hide;
+          })
+          .map(function (d) {
+            return { id: d.id, name: d.name };
+          }),
+        r: s.r,
+      }),
+    ];
+  } else if (s.k === "security") {
+    named(_T("security"), "lock");
+    c.devs = devs.concat([widget("security", _T("security"), "lock", {})]);
+  } else if (s.k === "cameras") {
+    named(_T("cameras"), "cam");
+    c.devs = devs.concat([widget("cameras", _T("cameras"), "cam", {})]);
+  } else if (s.k === "energy") {
+    named(_T("energy_and_usage"), "plug");
+    c.devs = devs.concat([widget("energy", _T("energy_and_usage"), "plug", { price: s.price, cur: s.cur })]);
+  } else if (s.k === "alerts" || s.k === "rooms" || s.k === "now" || s.k === "status" || s.k === "chips") {
+    var T = { alerts: ["attention", "alert"], rooms: ["rooms", "home"], now: ["on_now", "power"], status: ["status_tiles", "thermo"], chips: ["climate_overview", "thermo"] }[s.k];
+    named(_T(T[0]), T[1]);
+    c.devs = devs.concat([widget(s.k, _T(T[0]), T[1], {})]);
+  } else if (s.k === "glance") {
+    named(_T("at_a_glance"), "home");
+    c.devs = devs.concat([widget("glance", _T("at_a_glance"), "home", { gl: s.gl })]);
+  } else if (s.k === "pinned") {
+    named(_T("pinned"), "pin");
+    c.devs = devs.concat([widget("pinned", _T("pinned"), "pin", { pins: s.pins, lay: s.lay })]);
+    delete c.lay;
+  } else if (s.k === "link") {
+    named(_T("linked_section"), "swap");
+    c.devs = devs.concat([widget("link", _T("linked_section"), "swap", { ref: s.ref })]);
+  } else if (s.k === "camera") {
+    named(_T("camera"), "cam");
+    c.devs = devs.map(function (d) {
+      return d && d.kind === "camera" && d.id ? Object.assign({}, d, { sz: "l" }) : d;
+    });
+  }
+  ["txt", "r", "price", "cur", "gl", "pins", "ref"].forEach(function (k) {
+    delete c[k];
+  });
+  c.k = "devs";
+  return c;
+}
+
 function cleanLayout(a) {
   var out = [],
     seen = {};
@@ -694,6 +1218,9 @@ function cleanLayout(a) {
     /* Layout 5: the sections that held devices (Lights, Media, Climate, Controls, Sensors, Other devices, Devices) are one kind, Section; each keeps the name and icon its type gave it. Quick actions are Scenes. */
     /* Layout 6: the scenes a Section showed (a scenes section's, or the ones kept on a Section) are devices of it now: each chosen scene, and one collection of scenes for the pages, tags and area it took in. */
     if (s.k === "scenes" || s.k === "quick" || s.scs) s = scenesToDevices(s);
+    /* Layout 7: the sections that were not plain Sections but held devices or text are plain Sections with widgets (see sectionToWidgets). */
+    if (["note", "read", "chart", "camera", "security", "cameras", "energy", "alerts", "rooms", "now", "status", "chips", "glance", "pinned", "link"].indexOf(s.k) >= 0) s = sectionToWidgets(s);
+    if (s.master || s.masters) s = mastersToWidgets(s);
     var old = LEGACY_SECTYPES[s.k],
       k = old ? (old[2] || "devs") : typeof s.k === "string" && SECTYPES[s.k] ? s.k : "devs",
       ty = SECTYPES[k],
@@ -702,46 +1229,6 @@ function cleanLayout(a) {
     else if (old && old[0]) o.t = old[0];
     if (iconOk(s.i)) o.i = s.i;
     else if (old && old[1]) o.i = old[1];
-    if (k === "glance" && s.gl && typeof s.gl === "object") {
-      var cs = [];
-      (Array.isArray(s.gl.c) ? s.gl.c : []).slice(0, 12).forEach(function (x) {
-        if (
-          x &&
-          typeof x.id === "string" &&
-          /^x[a-z0-9]{3,8}$/.test(x.id) &&
-          cs.every(function (y) {
-            return y.id !== x.id;
-          }) &&
-          typeof x.t === "string" &&
-          x.t &&
-          x.t.length <= 24 &&
-          GL_DOMS.indexOf(x.dom) >= 0
-        ) {
-          var c = { id: x.id, t: x.t, dom: x.dom };
-          if (iconOk(x.i)) c.i = x.i;
-          if (typeof x.dc === "string" && /^[a-z_]{1,30}$/.test(x.dc)) c.dc = x.dc;
-          cs.push(c);
-        }
-      });
-      var okIds = GL_IDS.concat(
-          cs.map(function (c) {
-            return c.id;
-          })
-        ),
-        pk = function (a) {
-          return (Array.isArray(a) ? a : []).filter(function (x, i, r) {
-            return okIds.indexOf(x) >= 0 && r.indexOf(x) === i;
-          });
-        };
-      o.gl = { o: pk(s.gl.o), h: pk(s.gl.h), c: cs };
-      /* The lights masters the At a glance lights popup shows as rows ("page~master"); the lights of the others are listed one by one. */
-      var lm = (Array.isArray(s.gl.lm) ? s.gl.lm : [])
-        .filter(function (x, i, r) {
-          return typeof x === "string" && /^[a-z0-9_-]{1,24}~[a-z][a-z0-9_]{1,14}$/.test(x) && r.indexOf(x) === i;
-        })
-        .slice(0, 40);
-      if (lm.length) o.gl.lm = lm;
-    }
     var wh = s.when;
     if (
       wh &&
@@ -754,164 +1241,105 @@ function cleanLayout(a) {
     )
       o.when = { id: wh.id, is: wh.is, not: !!wh.not };
     if (layCols(s.lay)) o.lay = s.lay;
-    if (k === "chart" && (s.r === "6h" || s.r === "24h" || s.r === "7d" || s.r === "30d"))
-      o.r = s.r;
-    if (k === "energy") {
-      var pr = Number(s.price);
-      if (isFinite(pr) && pr > 0 && pr <= 1000) o.price = pr;
-      if (typeof s.cur === "string" && s.cur.length <= 4) o.cur = s.cur;
-    }
-    if (k === "note" && typeof s.txt === "string") o.txt = s.txt.slice(0, 600);
+    if (s.span === 1 || s.span === 2 || s.span === 3 || s.span === 4) o.span = s.span;
     var an = (Array.isArray(s.and) ? s.and : []).slice(0, 4).map(cleanCond).filter(Boolean);
     if (an.length) o.and = an;
-    if (
-      k === "link" &&
-      typeof s.ref === "string" &&
-      /^[a-z0-9_-]{1,24}:[a-z][a-z0-9_]{1,14}$/.test(s.ref)
-    )
-      o.ref = s.ref;
-    if (k === "devs" && s.master) o.master = 1;
-    if (k === "devs" && s.master && typeof s.mn === "string" && s.mn.trim()) o.mn = s.mn.trim().slice(0, 40);
-    if (k === "devs" && s.master && s.mall) o.mall = 1;
-    if (k === "devs" && s.master) {
-      /* Manual: the lights chosen for the master, each with an optional name and icon. */
-      if (s.mm) {
-        o.mm = 1;
-        o.ml = (Array.isArray(s.ml) ? s.ml : [])
-          .slice(0, 100)
-          .map(cleanDev)
-          .filter(function (c, i, a) {
-            return c && c.kind === "light" && c.id && a.findIndex(function (x) { return x && x.id === c.id; }) === i;
-          });
-      }
-      /* Lights a master shows that no section or chosen list holds as a device (a group's own lights, for example): kept as devices so that their settings open from the master. */
-      var lx = (Array.isArray(s.lx) ? s.lx : [])
-        .slice(0, 100)
-        .map(cleanDev)
-        .filter(function (c, i, a) {
-          return c && c.kind === "light" && c.id && a.findIndex(function (x) { return x && x.id === c.id; }) === i;
-        });
-      if (lx.length) o.lx = lx;
-      if (s.mgl) o.mgl = 1;
-      if (s.mhide) o.mhide = 1;
-      if (["color", "white", "fx", "scenes", "sync"].indexOf(s.mtab) >= 0) o.mtab = s.mtab;
-      if (s.mhl) o.mhl = 1;
-      if (s.mhs) o.mhs = 1;
-      if (s.mpw === "scene") {
-        o.mpw = "scene";
-        if (typeof s.mps === "string" && /^[a-z0-9_.-]{1,80}$/.test(s.mps)) o.mps = s.mps;
-      }
-      if (s.msync) o.msync = 1;
-      if (typeof s.msyncid === "string" && ENTRE.test(s.msyncid)) o.msyncid = s.msyncid;
-      /* The room the At a glance lights popup lists it under: the room of the page it is on (not set), or the Home Assistant room of its lights. */
-      if (s.mgr === "ha") o.mgr = "ha";
-    }
-    /* More lights masters in the section, each a holder of the same settings under an id of its own (see app/lightsmasters.js). They are always manual: the lights are chosen for them. */
-    if (k === "devs" && Array.isArray(s.masters)) {
-      var held = [];
-      s.masters.slice(0, 12).forEach(function (h) {
-        if (!h || typeof h.id !== "string" || !/^[a-z][a-z0-9_]{1,14}$/.test(h.id) || seen[h.id]) return;
-        var c = cleanLayout([Object.assign({}, h, { k: "devs", master: 1, mm: 1, hide: false, masters: null })])[0];
-        if (!c) return;
-        seen[h.id] = 1;
-        ["k", "hide", "devs", "t", "i", "when", "and", "lay"].forEach(function (x) {
-          delete c[x];
-        });
-        held.push(c);
-      });
-      if (held.length) o.masters = held;
-    }
-    if (k === "devs" && s.master && Array.isArray(s.mo))
-      o.mo = s.mo
-        .filter(function (x, i, a) {
-          return typeof x === "string" && ENTRE.test(x) && a.indexOf(x) === i;
-        })
-        .slice(0, 100);
-    if (k === "pinned" && Array.isArray(s.pins)) o.pins = cleanPins(s.pins);
+    /* the contents of a Popup widget (app/popupwidget.js) */
+    if (k === "devs" && typeof s.of === "string" && WIDRE.test(s.of)) o.of = s.of;
+    /* blocks added to a device's popup (app/popupwidget.js): the popup they belong to */
+    if (o.of && typeof s.pk === "string" && POPKEYRE.test(s.pk)) o.pk = s.pk;
     if ((k === "scenes" || k === "devs") && Array.isArray(s.scn))
       o.scn = s.scn
         .filter(function (x, i, a) {
           return typeof x === "string" && /^[a-z0-9_-]{1,24}$/.test(x) && a.indexOf(x) === i;
         })
-        .slice(0, 40);
-    if (k === "devs") {
-      /* The scenes page of the lights master: where its scenes come from, the folders the owner made and the order of the tiles outside them. */
-      var key = function (x) {
-        return typeof x === "string" && /^[a-z0-9_.-]{1,80}$/.test(x);
-      };
-      if (Array.isArray(s.msrc) || (Array.isArray(s.mpa) && s.mpa.length))
-        o.msrc = (Array.isArray(s.msrc) ? s.msrc : ["hue"])
-          .map(function (x) {
-            /* the scenes of a plugin were one source (and areas for it, mpa); they are Hue rooms among the rooms now */
-            return x === "hue" || x === "plugin" ? "hue:@lights" : x === "page" ? "page" : x;
-          })
-          .filter(function (x, i, a) {
-            return (x === "page" || (typeof x === "string" && (/^(page:[a-z0-9_-]{1,24}|area:[a-z0-9_-]{1,60})$/.test(x) || /^hue:(@lights|@page|@rooms|[a-z0-9_-]{1,60})$/.test(x) || (/^tag:/.test(x) && cleanTags([x.slice(4)]).length)))) && a.indexOf(x) === i;
-          })
-          .slice(0, 40);
-      if (Array.isArray(s.mpa) && s.mpa.length) {
-        o.msrc = o.msrc.filter(function (x) {
-          return x !== "hue:@lights";
-        });
-        s.mpa.forEach(function (a) {
-          if (typeof a === "string" && /^[a-z0-9_-]{1,60}$/.test(a) && a !== "-" && o.msrc.indexOf("hue:" + a) < 0) o.msrc.push("hue:" + a);
-        });
-      }
-      /* Scenes tagged with any of these are left out of what the sources bring in (not of the scenes made from its own +). */
-      var xt = cleanTags(s.mxt);
-      if (xt.length) o.mxt = xt;
-
-      if (Array.isArray(s.mf)) {
-        var folders = s.mf
-          .filter(function (f) {
-            return f && typeof f.id === "string" && /^[a-z0-9]{1,12}$/.test(f.id) && typeof f.n === "string" && Array.isArray(f.s);
-          })
-          .slice(0, 30)
-          .map(function (f) {
-            return { id: f.id, n: f.n.slice(0, 40), s: f.s.filter(key).slice(0, 80) };
-          })
-          .filter(function (f) {
-            return f.s.length;
-          });
-        if (folders.length) o.mf = folders;
-      }
-      /* A folder's tile is "f:" and its id in the order. */
-      if (Array.isArray(s.mtop))
-        o.mtop = s.mtop
-          .filter(function (x) {
-            return key(x) || (typeof x === "string" && /^f:[a-z0-9]{1,12}$/.test(x));
-          })
-          .slice(0, 240);
-    }
+        .slice(0, 200);
     if (ty.own) {
       o.devs = [];
-      (Array.isArray(s.devs) ? s.devs : []).slice(0, 80).forEach(function (d) {
+      /* A lights master is named by its id, which no other master of the page, and no section but its own, may have (the Section's own master has the Section's id). */
+      var mine = {};
+      (Array.isArray(s.devs) ? s.devs : []).slice(0, 200).forEach(function (d) {
         var c = cleanDev(d);
+        if (c && c.kind === "widget" && c.w === "lmaster") {
+          if (mine[c.wid] || (c.wid !== s.id && seen[c.wid]) || c.wid.length > 15) c = null;
+          else mine[c.wid] = seen[c.wid] = 1;
+        }
         if (c) o.devs.push(c);
       });
     }
     out.push(o);
   });
+  return dropOrphanPopups(out);
+}
+
+/* The key of a popup that blocks can be added to: "ac:climate.den", "appliance:ap1", "adv:switch.plug". */
+var POPKEYRE = /^[a-z-]{1,12}:[A-Za-z0-9_.:-]{1,100}$/;
+
+/* What is changed about the Advanced settings of an entity: hidden items, their order, their names and entities added to them. */
+function cleanAdv(a) {
+  var out = {},
+    item = function (x) {
+      return typeof x === "string" && (ENTRE.test(x) || x === "__care" || x === "__pad");
+    },
+    list = function (v, n) {
+      return (Array.isArray(v) ? v : []).filter(function (x, i, all) {
+        return item(x) && all.indexOf(x) === i;
+      }).slice(0, n);
+    };
+  Object.keys(a || {})
+    .slice(0, 200)
+    .forEach(function (id) {
+      var c = a[id],
+        x = {};
+      if (!ENTRE.test(id) || !c || typeof c !== "object") return;
+      ["hide", "order", "add"].forEach(function (k) {
+        var l = list(c[k], k === "add" ? 20 : 100);
+        if (l.length) x[k] = l;
+      });
+      var names = {};
+      Object.keys(c.name || {})
+        .slice(0, 100)
+        .forEach(function (e) {
+          if (ENTRE.test(e) && typeof c.name[e] === "string" && c.name[e].trim()) names[e] = c.name[e].trim().slice(0, 30);
+        });
+      if (Object.keys(names).length) x.name = names;
+      if (Object.keys(x).length) out[id] = x;
+    });
   return out;
+}
+
+/* A popup's contents go with its widget: a Section `of` a widget that is no longer on the page is dropped (and then those of popups that were inside it). */
+function dropOrphanPopups(list) {
+  var owners = {};
+  list.forEach(function (s) {
+    (s.devs || []).forEach(function (d) {
+      if (d.kind === "widget" && d.w === "popup") owners[d.wid] = 1;
+    });
+  });
+  var kept = list.filter(function (s) {
+    return !s.of || s.pk || owners[s.of];
+  });
+  return kept.length < list.length ? dropOrphanPopups(kept) : kept;
 }
 
 /* The devices of a page are whatever its sections hold. UI.devs is rebuilt from them; it is saved with the layout for the code that looks a page's devices up by room. */
 function devIndex(o) {
   var idx = {};
   o.rooms.forEach(function (r) {
-    var l = [];
-    ((o.layout.rooms || {})[r.id] || []).forEach(function (s) {
+    var l = [],
+      secs = (o.layout.rooms || {})[r.id] || [];
+    /* the page's own Sections first: what is also in a popup is listed once */
+    secs.filter(function (s) { return !s.of; }).concat(secs.filter(function (s) { return s.of; })).forEach(function (s) {
       var have = {};
       (s.devs || []).forEach(function (d) {
         if (d.id) have[d.id] = 1;
+        if (s.of && d.id && l.some(function (x) { return x.id === d.id; })) return;
         l.push(d);
       });
       /* The lights chosen for a lights master (its own, or one the section holds) are lights of the page too: room counts, the room's everything-off and conditions see them, also when no section lists them. */
-      (s.mm ? s.ml || [] : []).concat(
-        (s.masters || []).reduce(function (a, m) {
-          return a.concat(m.ml || []);
-        }, [])
-      ).forEach(function (d) {
+      (s.devs || []).reduce(function (a, m) {
+        return m.kind === "widget" && m.w === "lmaster" && m.wx ? a.concat(m.wx.mm ? m.wx.ml || [] : []) : a;
+      }, []).forEach(function (d) {
         if (d && d.id && !have[d.id] && !l.some(function (x) { return x.id === d.id; })) {
           have[d.id] = 1;
           l.push(d);
@@ -925,6 +1353,7 @@ function devIndex(o) {
 
 function applyUI() {
   devIndex(UI);
+  lookApply();
   accessInit();
   var mt = UI.meta || {
     homeTab: _T("home"),

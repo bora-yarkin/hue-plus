@@ -13,11 +13,19 @@ function popupEntity(key) {
 function popupDef(key) {
   var d = popupDefBase(key),
     ent = d && popupEntity(key);
+  /* blocks added to this popup (decision D-47), before its Advanced settings button */
+  if (d && d.build && moreSection(key)) {
+    var own = d.build;
+    d.build = function (b) {
+      own(b);
+      moreBlocks(b, key);
+    };
+  }
   if (ent) {
     var inner = d.build;
     d.build = function (b) {
       inner(b);
-      if (ISADMIN && !(UIDEV[ent] && UIDEV[ent].noadv) && advList(ent).length) {
+      if (advButton(ent) && !advDevOff(ent)) {
         var n = advList(ent).length;
         b.appendChild(
           pill("tune", _T("advanced_settings"), {
@@ -38,6 +46,27 @@ function popupDef(key) {
 /* What each popup is made of, by the part of the key before its first colon ("light:light.desk" is "light"): a function of the rest of the key that gives { title, icon, build(body) }.
    A popup is added here and opened with showPopup(key). The keys of plugins are in PLUGIN_PAGES and are looked at first. */
 var POPUP_DEFS = {
+  "ap-device": function (rid) {
+    return { title: _T("ap_whole"), icon: "plug", build: function (b) { apDevicePage(b, rid); } };
+  },
+  "advset": function (id) {
+    return { title: _T("advset_title"), icon: "tune", build: function (b) { advSetPage(b, id); } };
+  },
+  "advitem": function (id) {
+    return { title: _T("advset_title"), icon: "tune", build: function (b) { advItemPage(b, id); } };
+  },
+  "ap-block": function (key) {
+    return { title: _T("ap_parts"), icon: "tune", build: function (b) { apBlockPage(b, key); } };
+  },
+  "ap-parts": function (id) {
+    return { title: _T("ap_parts"), icon: "tune", build: function (b) { apPartsPage(b, id); } };
+  },
+  "act-edit": function () {
+    return { title: _T("act_any"), icon: "play", build: actEditPage };
+  },
+  "act-pick": function () {
+    return { title: _T("act_pick"), icon: "search", build: actPickPage };
+  },
   "adv": function (id) {
     return {
       title: (UIDEV[id] && UIDEV[id].name ? UIDEV[id].name + " · " : "") + _T("advanced"),
@@ -270,8 +299,28 @@ var POPUP_DEFS = {
       },
     };
   },
+  "wcontent": function (id) {
+    var d = widgetOfSection(id.split(":")[0], id.split(":")[1], id.split(":")[2]);
+    return {
+      title: (d && d.name) || _T("widget"),
+      icon: (d && widgetDef(d.w) && widgetDef(d.w).icon) || "info",
+      build: function (b) {
+        widgetContentPage(b, id);
+      },
+    };
+  },
+  "wfolder": function (id) {
+    var d = widgetOfSection(id.split(":")[0], id.split(":")[1], id.split(":")[2]);
+    return {
+      title: (d && d.name) || _T("folder"),
+      icon: "plus",
+      build: function (b) {
+        folderPage(b, id);
+      },
+    };
+  },
   "lmaster-edit": function (id) {
-    var sec = secById(id.split(":")[0], id.split(":")[1]);
+    var sec = masterById(id.split(":")[0], id.split(":")[1]);
     return {
       title: (sec && sec.mn) || _T("lights_master"),
       icon: "lights",
@@ -283,7 +332,7 @@ var POPUP_DEFS = {
   "lmaster-part": function (id) {
     var part = id.split(":")[0],
       key = id.slice(part.length + 1),
-      sec = secById(key.split(":")[0], key.split(":")[1]);
+      sec = masterById(key.split(":")[0], key.split(":")[1]);
     return {
       title: ((sec && sec.mn) || _T("lights_master")) + " · " + _T("lm_part_" + part),
       icon: "lights",
@@ -349,7 +398,7 @@ var POPUP_DEFS = {
       title: (UIDEV[id] || {}).name || _T("air_conditioner"),
       icon: "ac",
       build: function (b) {
-        b.appendChild((UIDEV[id] || {}).dial ? acDial(id) : acSlider(id, _T("air_conditioner")));
+        b.appendChild(climateTarget(id, _T("air_conditioner"), !!(UIDEV[id] || {}).dial));
         acSelects(b, id);
       },
     };
@@ -359,6 +408,7 @@ var POPUP_DEFS = {
     return {
       title: cv.name || A(id).friendly_name || _T("cover"),
       icon: cv.icon || "swap",
+      kind: "cover",
       build: function (b) {
         coverPopup(b, id);
       },
@@ -424,6 +474,7 @@ var POPUP_DEFS = {
     return {
       title: gv.name || _T("vacuum"),
       icon: gv.icon || "vac",
+      kind: "clean",
       build: function (b) {
         vacPopup(b, id);
       },
@@ -454,6 +505,18 @@ var POPUP_DEFS = {
   },
   "scene-pick": function (id) {
     return { title: _T("add_device"), icon: "plus", build: scenePick };
+  },
+  "stg-share": function (id) {
+    return { title: _T("siri_and_homekit"), icon: "mic", build: sharePage };
+  },
+  "share-how": function (id) {
+    return {
+      title: _T("run_it_from_shortcuts"),
+      icon: "scene",
+      build: function (b) {
+        shareHowPage(b, id);
+      },
+    };
   },
   "stg-areas": function (id) {
     return { title: _T("areas"), icon: "target", build: stgAreas };
@@ -509,6 +572,7 @@ var POPUP_DEFS = {
     return {
       title: md2 ? md2.name : _T("room"),
       icon: md2 ? md2.icon : "home",
+      kind: "other",
       build: function (b) {
         roomDetails(b, id);
       },
@@ -557,7 +621,7 @@ var POPUP_DEFS = {
   "manage-room-access": function (id) {
     var rr = roomById(id);
     return {
-      title: _T("access") + (rr ? rr.name : _T("room")),
+      title: _T("access", { x: (rr ? rr.name : _T("room")) }),
       icon: "lock",
       build: function (b) {
         roomAccessList(b, id);
@@ -630,6 +694,7 @@ var POPUP_DEFS = {
     return {
       title: hr ? hr.name : _T("room"),
       icon: hr ? hr.icon || "home" : "home",
+      kind: "other",
       build: function (b) {
         roomHeaderPage(b, id);
       },
@@ -857,6 +922,67 @@ var POPUP_DEFS = {
       },
     };
   },
+  "rm-pick": function () {
+    return { title: _T("rm_pick"), icon: "plus", build: rmPickPage };
+  },
+  "rm-member": function () {
+    var e = RMEDIT;
+    return { title: e ? rmName(e.d.wx, e.k) : _T("rm_title"), icon: e ? rmIcon(e.d.wx, e.k) : "tv", build: rmMemberPage };
+  },
+  rmaster: function (id) {
+    return remoteMasterPopup(id);
+  },
+  "vacap-room": function (id) {
+    return { title: _T("room_preferences"), icon: "tune", build: function (b) { vacapRoomPage(b, id); } };
+  },
+  "vacap-r": function (id) {
+    return { title: _T("vacap_room"), icon: "vac", build: function (b) { vacapItemPage(b, id, "rooms"); } };
+  },
+  "vacap-s": function (id) {
+    return { title: _T("vacap_settings"), icon: "tune", build: function (b) { vacapItemPage(b, id, "sets"); } };
+  },
+  "vacap-a": function (id) {
+    return { title: _T("vacap_start_actions"), icon: "play", build: function (b) { vacapItemPage(b, id, "run"); } };
+  },
+  "vacap-zones": function (id) {
+    return { title: _T("vacap_zones"), icon: "target", build: function (b) { vacapZonePage(b, id); } };
+  },
+  "vacap-text": function (id) {
+    return { title: _T("vacap_text"), icon: "edit", build: function (b) { vacapTextPage(b, id); } };
+  },
+  "setup": function () {
+    return { title: _T("setup_title"), icon: "tune", build: setupPage };
+  },
+  "vacap-pick": function () {
+    return {
+      title: _T("vacap_pick_room"),
+      icon: "vac",
+      build: function (b) {
+        var p = VACAPPICK;
+        if (!p) return;
+        if (!p.rooms.length) b.appendChild(hintRow(_T("vacap_no_rooms")));
+        p.rooms.forEach(function (r) {
+          b.appendChild(
+            pill("vac", r.l || r.k, {
+              tap: function () {
+                popBack();
+                p.done({ t: "room", r: r.k });
+              },
+            })
+          );
+        });
+      },
+    };
+  },
+  "g-alerts": function (id) {
+    return {
+      title: _T("attention"),
+      icon: "alert",
+      build: function (b) {
+        b.appendChild(alertsDevice(true));
+      },
+    };
+  },
   "g-batteries": function (id) {
     return { title: _T("batteries"), icon: "battery", build: batsPopup };
   },
@@ -867,17 +993,76 @@ var POPUP_DEFS = {
     return { title: _T("media"), icon: "tv", build: mediaHub };
   },
   "g-robot": function (id) {
-    var gv0 = devsOf("vacuum")[0];
+    var gv0 = vacuumList()[0];
     return {
       title: _T("robot_vacuum"),
       icon: "vac",
       build: function (b) {
-        if (gv0) vacPopup(b, gv0.id);
+        if (!gv0) return;
+        if (gv0.d.kind === "appliance") vacapPage(b, gv0.d);
+        else vacPopup(b, gv0.id);
       },
     };
   },
 };
 POPUP_DEFS["gmedia"] = POPUP_DEFS["media"];
+
+/* Customising items, types, the look and the person's own attention rules (app/customize.js, which loads after this file: its pages are asked for when opened). */
+[
+  ["colour-pick", "pick_a_colour", "palette", function () { return colorPickPage; }],
+  ["preset", "preset_title", "plus", function () { return presetPage; }],
+  ["cust", "customize", "palette", function () { return custPage; }],
+  ["cust-cond", "condition", "check", function () { return custCondPage; }],
+  ["look", "look_title", "palette", function () { return lookPage; }],
+  ["types", "types_title", "tune", function () { return typesPage; }],
+  ["type", "types_title", "tune", function () { return typePage; }],
+  ["my-alerts", "my_alerts", "alert", function () { return myAlertsPage; }],
+  ["my-alert", "my_alerts", "alert", function () { return myAlertPage; }],
+].forEach(function (p) {
+  POPUP_DEFS[p[0]] = function (id) {
+    return {
+      title: p[0] === "colour-pick" && CPICK ? CPICK.title : _T(p[1]),
+      icon: p[2],
+      build: function (b) {
+        p[3]()(b, id);
+      },
+    };
+  };
+});
+
+/* A Popup widget's popup, and the button settings of a ready-made remote. */
+POPUP_DEFS["wpop"] = function (id) {
+  var p = id.split(":"),
+    s = popupSection(p[0], p[1]),
+    w = secOrder(scopeKey(p[0])).reduce(function (found, x) {
+      return found || (x.devs || []).filter(function (d) { return d.wid === p[1] && d.w === "popup"; })[0];
+    }, null);
+  return {
+    title: w ? w.name : s ? secName(s) : _T("popup_widget"),
+    icon: (w && w.icon) || "apps",
+    build: function (b) {
+      popupBody(b, p[0], p[1], w && w.name);
+    },
+  };
+};
+POPUP_DEFS["rbx"] = function (id) {
+  return {
+    title: _T("rbx_title"),
+    icon: "tune",
+    build: function (b) {
+      rbxPage(b, id);
+    },
+  };
+};
+POPUP_DEFS["rbx-role"] = function (id) {
+  return {
+    title: _T("rbx_" + id.split(":")[1]),
+    icon: RBX_ICON[id.split(":")[1]] || "tune",
+    build: function (b) {
+      rbxRolePage(b, id);
+    },
+  };
+};
 POPUP_DEFS["gvac"] = POPUP_DEFS["vac"];
 
 function popupDefBase(key) {
@@ -1075,8 +1260,27 @@ function showPopup(key, push, layer) {
     h.appendChild(back);
   }
   var t = mk("div", "sh-t pane", ic(def.power ? "power" : def.icon) + "<span></span>");
+  if (def.kind) t.querySelector(".ic").dataset.k = def.kind;
   t.querySelector("span:last-child").textContent = def.title;
   h.appendChild(t);
+  /* A popup that can show one of several things (a remote master) names them in a dropdown of its title. */
+  if (def.titleMenu && def.titleMenu.options.length > 1) {
+    t.classList.add("menu-t");
+    t.setAttribute("role", "button");
+    t.setAttribute("tabindex", "0");
+    t.setAttribute("aria-haspopup", "true");
+    t.appendChild(mk("span", "chev", svg("chev")));
+    var openTitle = function () {
+      openMenu(t, def.titleMenu.options, def.titleMenu.current, def.titleMenu.pick, def.titleMenu.fmt);
+    };
+    t.addEventListener("click", openTitle);
+    t.addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter" || ev.key === " ") {
+        ev.preventDefault();
+        openTitle();
+      }
+    });
+  }
   /* A popup with a power button has it in the place of the icon at the left of its title: every light of the master on or off. */
   if (def.power) {
     var pw = t.querySelector(".ic");

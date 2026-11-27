@@ -111,9 +111,9 @@ function ruleEvalCond(c) {
     var me = H() && H().user ? H().user.id : "";
     return !c.ids.length || c.ids.indexOf(me) >= 0;
   }
-  if (c.c === "state") return V_(c.id) === c.is;
+  if (c.c === "state") return condValue(c) === c.is;
   if (c.c === "sensor") {
-    var x = parseFloat(V_(c.id));
+    var x = parseFloat(condValue(c));
     if (!isFinite(x)) return false;
     return c.op === "above" ? x > c.val : c.op === "below" ? x < c.val : x >= c.val && x <= c.val2;
   }
@@ -124,7 +124,13 @@ function ruleEvalCond(c) {
 function ruleSig(scope) {
   return secOrder(scope)
     .map(function (s) {
-      return s.hide ? "h" : ruleOk(s) ? "1" : "0";
+      /* an item shown only while something holds draws the page again as well */
+      var items = (s.devs || [])
+        .map(function (d) {
+          return d.when ? (itemShown(d) ? "1" : "0") : "";
+        })
+        .join("");
+      return (s.hide ? "h" : ruleOk(s) ? "1" : "0") + items;
     })
     .join("");
 }

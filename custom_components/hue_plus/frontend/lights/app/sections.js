@@ -3,14 +3,7 @@
 /* Pinned items, quick actions and scenes belong to the section that shows them; a scene is stored once in the library and sections list its id. */
 function secById(scope, sid) {
   var list = secOrder(scopeKey(scope));
-  for (var i = 0; i < list.length; i++) {
-    if (list[i].id === sid) return list[i];
-    /* a lights master held by a section (app/lightsmasters.js) is found by its own id, with the settings of a master as a section has them */
-    var held = (list[i].masters || []).filter(function (m) {
-      return m.id === sid;
-    })[0];
-    if (held) return held;
-  }
+  for (var i = 0; i < list.length; i++) if (list[i].id === sid) return list[i];
   return null;
 }
 
@@ -26,65 +19,6 @@ var SECTYPES = {
       noun: _T("device_2"),
       add: "devices",
     },
-    camera: {
-      t: _T("camera"),
-      i: "cam",
-      d: _T("live_view_with_controls"),
-      own: 1,
-      wide: 1,
-      noun: _T("camera_2"),
-      add: "camera",
-    },
-    read: {
-      t: _T("readings"),
-      i: "drop",
-      d: _T("tiles_with_the_current_value_of_sens"),
-      own: 1,
-      noun: _T("reading"),
-      add: "sensors",
-    },
-    chart: {
-      t: _T("chart"),
-      i: "thermo",
-      d: _T("history_of_up_to_four_sensors"),
-      own: 1,
-      noun: _T("sensor"),
-      add: "sensors",
-    },
-    note: { t: _T("note"), i: "info", d: _T("free_text") },
-    security: { t: _T("security"), i: "lock", d: _T("locks_alarms_doors_and_windows") },
-    energy: { t: _T("energy_and_usage"), i: "plug", d: _T("power_now_and_usage_over_the_week") },
-    cameras: { t: _T("cameras"), i: "cam", d: _T("all_cameras_in_one_grid") },
-    status: {
-      t: _T("status_tiles"),
-      i: "thermo",
-      d: _T("readings_for_this_page_such_as_tempe"),
-      one: 1,
-      wide: 1,
-    },
-    alerts: {
-      t: _T("attention"),
-      i: "alert",
-      d: _T("things_that_need_attention"),
-      one: 1,
-      wide: 1,
-    },
-    chips: {
-      t: _T("climate_overview"),
-      i: "thermo",
-      d: _T("temperature_and_humidity_at_a_glance"),
-      one: 1,
-      wide: 1,
-    },
-    rooms: { t: _T("rooms"), i: "home", d: _T("links_to_every_page"), one: 1 },
-    glance: {
-      t: _T("at_a_glance"),
-      i: "home",
-      d: _T("counts_of_what_is_on_open_or_running"),
-      one: 1,
-    },
-    pinned: { t: _T("pinned"), i: "pin", d: _T("your_favourite_devices"), wide: 1 },
-    link: { t: _T("linked_section"), i: "swap", d: _T("shows_a_section_from_another_page") },
   },
   /* What the sections of layout 4 and earlier are called now: [name, icon, kind they become]. Quick actions are Scenes. */
   LEGACY_SECTYPES = {
@@ -96,33 +30,7 @@ var SECTYPES = {
     other: [_T("other_devices"), "plug"],
     quick: [_T("quick_actions_2"), "scene"],
     scenes: [_T("scenes"), "scene"],
-  },
-  /* The order the Add section list shows them in, by what they are for. */
-  SEC_PICK = [
-    "devs",
-    "glance",
-    "rooms",
-    "alerts",
-    "chips",
-    "status",
-    "pinned",
-    "chart",
-    "read",
-    "note",
-    "security",
-    "energy",
-    "camera",
-    "cameras",
-    "link",
-  ],
-  /* The sections a new Home page starts with. */
-  HOME_TPL = [
-    ["alerts", "alerts"],
-    ["glance", "glance"],
-    ["rooms", "rooms"],
-  ],
-  /* A new room page starts with its status tiles and one empty Section (suggested sections are offered when a room is made, see suggestSections). */
-  ROOM_TPL = ["status"];
+  };
 
 function secName(s) {
   return s.t || (SECTYPES[s.k] || SECTYPES.devs).t;
@@ -132,14 +40,16 @@ function secIcon(s) {
   return s.i && iconOk(s.i) ? s.i : (SECTYPES[s.k] || SECTYPES.devs).i;
 }
 
+/* A new Home page starts with Attention, At a glance, Rooms and Scenes; a new room page with its status tiles and one empty Section (suggested sections are offered when a room is made, see suggestSections). */
 function seedSections(scope) {
   return scope === "home"
-    ? HOME_TPL.map(function (x) {
-        return { id: x[0], k: x[1], hide: false };
-      }).concat([{ id: "scenes", k: "devs", t: _T("scenes"), i: "scene", hide: false, devs: [{ id: "scenes-home", kind: "scenes", name: _T("scenes"), icon: "scene", spage: ["page:home"] }] }])
-    : ROOM_TPL.map(function (id) {
-        return { id: id, k: id, hide: false };
-      }).concat([{ id: "main", k: "devs", hide: false, devs: [] }]);
+    ? [
+        widgetSection("alerts", "alerts"),
+        widgetSection("glance", "glance"),
+        widgetSection("rooms", "rooms"),
+        { id: "scenes", k: "devs", t: _T("scenes"), i: "scene", hide: false, devs: [{ id: "scenes-home", kind: "scenes", name: _T("scenes"), icon: "scene", spage: ["page:home"] }] },
+      ]
+    : [statusSection([]), { id: "main", k: "devs", hide: false, devs: [] }];
 }
 
 /* Sections for a list of devices, one for each of what they are (lights, media, climate, controls, sensors, other devices; cameras as a camera section), named and iconned for it. Only the ones that have devices. */
@@ -162,7 +72,17 @@ function groupSections(list) {
   var cams = list.filter(function (d) {
     return d.kind === "camera";
   });
-  if (cams.length) out.push({ id: "camera", k: "camera", hide: false, devs: cams });
+  if (cams.length)
+    out.push({
+      id: "camera",
+      k: "devs",
+      t: _T("camera"),
+      i: "cam",
+      hide: false,
+      devs: cams.map(function (d) {
+        return Object.assign({}, d, { sz: "l" });
+      }),
+    });
   return out;
 }
 
@@ -247,36 +167,50 @@ function pageKey() {
   return CURSCOPE === "home" ? "home" : CURSCOPE.slice(5);
 }
 
-/* Builds one section of the page from its type. */
+/* Builds one section of the page. */
 function secBuildEl(s) {
-  var k = s.k || "devs",
-    pk = pageKey();
-  if (k === "link") return linkSection(s);
-  if (k === "alerts") return alertsBox();
-  if (k === "chips") return homeStatus();
-  if (k === "rooms") return secRooms();
-  if (k === "glance") return secGlance();
-  if (k === "pinned") return pinsSection();
-  if (k === "status") return roomStatus(pk);
   return customSection(s);
 }
 
-/* A linked section shows another page's section, so one section is edited once and appears wherever it is linked. */
-function secKindOf(s) {
-  if (s.k === "link" && s.ref) {
-    var q = s.ref.split(":"),
-      r = secById(q[0], q[1]);
-    if (r && r.k !== "link") return r.k;
-  }
-  return s.k;
+/* The temperature of a room for its tile on the Home page: the first of the header's status tiles that is one, else the first sensor of the page that is a temperature. */
+function roomTempId(k) {
+  var isTemp = function (id) {
+    return typeof id === "string" && dom(id) === "sensor" && A(id).device_class === "temperature";
+  };
+  var tile = (UI.stat[k] || []).filter(function (s) {
+    return !s.text && isTemp(s.id);
+  })[0];
+  if (tile) return tile.id;
+  var d = ((UI.devs || {})[k] || []).filter(function (x) {
+    return x.kind === "sensor" && isTemp(x.id);
+  })[0];
+  return d ? d.id : "";
 }
 
-function linkSection(s) {
-  var q = (s.ref || "").split(":"),
-    src = s.ref ? secById(q[0], q[1]) : null,
+/* The section a linked section shows, or null. */
+function linkTarget(d) {
+  var q = ((d.wx && d.wx.ref) || "").split(":");
+  return q[1] ? secById(q[0], q[1]) : null;
+}
+
+/* The Section of the current page that holds a widget. */
+function hostSection(d) {
+  return (
+    secOrder(CURSCOPE).filter(function (s) {
+      return (s.devs || []).indexOf(d) >= 0;
+    })[0] || null
+  );
+}
+
+/* How deep linked sections show linked sections: a link to a section that links back would never end. */
+var LINKDEPTH = 0;
+
+function linkSection(d) {
+  var src = linkTarget(d),
     ed = editing(),
-    host = secKey();
-  if (!src || src.k === "link") {
+    host = hostSection(d),
+    q = ((d.wx && d.wx.ref) || "").split(":");
+  if (!src || src === host || LINKDEPTH > 3) {
     return ed
       ? section(secT("link", _T("linked_section")), secI("link", "swap"), [
           pill("swap", _T("choose_a_section_to_show_here"), {
@@ -284,7 +218,7 @@ function linkSection(s) {
               return _T("the_linked_section_is_missing_or_not");
             },
             tap: function () {
-              showPopup("sec-link:" + host + ":" + s.id, true);
+              showPopup("sec-link:" + secKey() + ":" + host.id + ":" + d.wid, true);
             },
           }),
         ])
@@ -295,9 +229,11 @@ function linkSection(s) {
     pe = CURSEC;
   CURSCOPE = scopeKey(q[0]);
   CURSEC = src;
+  LINKDEPTH++;
   try {
     return secBuildEl(src);
   } finally {
+    LINKDEPTH--;
     CURSCOPE = pc;
     CURSEC = pe;
   }
@@ -306,8 +242,8 @@ function linkSection(s) {
 function secLinkPage(b, key) {
   var p = key.split(":"),
     host = p[0],
-    e = secById(host, p[1]);
-  if (!e) return;
+    w = widgetOfSection(host, p[1], p[2]);
+  if (!w) return;
   ["home"]
     .concat(
       UI.rooms.map(function (r) {
@@ -315,9 +251,8 @@ function secLinkPage(b, key) {
       })
     )
     .forEach(function (pid) {
-      if (pid === host) return;
       var list = secOrder(scopeKey(pid)).filter(function (s) {
-        return s.k !== "link";
+        return !s.of && !(pid === host && s.id === p[1]);
       });
       if (!list.length) return;
       b.appendChild(sep(TITLES[pid] || pid, pid === "home" ? "home" : "bed"));
@@ -325,18 +260,16 @@ function secLinkPage(b, key) {
         b.appendChild(
           pill(secIcon(s), secName(s), {
             on: function () {
-              return e.ref === pid + ":" + s.id;
+              return w.wx.ref === pid + ":" + s.id;
             },
             sub: function () {
               return (SECTYPES[s.k] || SECTYPES.devs).t;
             },
             tap: function () {
-              e.ref = pid + ":" + s.id;
+              w.wx.ref = pid + ":" + s.id;
               setSecOrder(scopeKey(host), secOrder(scopeKey(host)));
               uiChanged();
-              STACK.pop();
-              CURRENT = null;
-              showPopup("manage-sec:" + key, false);
+              popBack();
             },
           })
         );
@@ -356,9 +289,10 @@ function liveOf(el) {
 
 function secList(scope) {
   var list = [];
+  CAMN = 0;
   RULESIG[scope] = ruleSig(scope);
   secOrder(scope).forEach(function (s) {
-    if (s.hide && !editing()) return;
+    if (s.of || (s.hide && !editing())) return;
     var ok = ruleOk(s);
     if (!ok && !editing()) return;
     CURSEC = s;
@@ -377,7 +311,7 @@ function secList(scope) {
     outer.push(liveOf(el));
     if (!ok) ruleMark(el);
     if (s.hide) hideMark(el);
-    list.push({ el: el, wide: !!(SECTYPES[secKindOf(s)] || {}).wide, id: s.id });
+    list.push({ el: el, wide: secIsWide(s), span: s.span || 0, id: s.id });
   });
   return list;
 }
@@ -421,7 +355,7 @@ function readText(id) {
 }
 
 function readTile(d) {
-  var t = mk("div", "gb pane", "<b></b><span></span>"),
+  var t = mk("div", "gb pane wgt w-" + sizeOf(d), "<b></b><span></span>"),
     b = t.firstChild;
   t.lastChild.textContent = d.name || d.id;
   function up() {
@@ -430,6 +364,20 @@ function readTile(d) {
   up();
   reg(up);
   return t;
+}
+
+/* What a device is on a page: a widget by its type, a camera at size l by its live picture (a row while the page is edited), a sized sensor a tile, any other a row. */
+function deviceItem(d, ed) {
+  var el = deviceDrawn(d, ed);
+  return ed ? el : itemDecorate(el, d);
+}
+
+function deviceDrawn(d, ed) {
+  var z = sizeOf(d);
+  if (d.kind === "widget") return widgetRow(d, ed);
+  if (d.kind === "camera" && z === "l" && d.id) return ed ? null : cameraLive(d);
+  if (z !== "row" && d.id) return readTile(d);
+  return devRow(d);
 }
 
 function secKey() {
@@ -446,14 +394,24 @@ function widgetAdd(lk, k) {
   showPopup("manage-add:" + lk, true);
 }
 
+/* The Columns setting of a Section, for what it holds that builds its own grid of tiles (At a glance, Rooms, Climate overview, Cameras, Security ...): each such grid takes the number of columns chosen, as the rows of a plain Section do, and one column on a narrow screen as everywhere. */
+function applySecLay(el, lay) {
+  var n = layCols(lay);
+  if (!el || !n) return el;
+  [].forEach.call(el.querySelectorAll(".grid2,.grid3,.glance,.camgrid"), function (g) {
+    if (g.closest(".hdr")) return;
+    g.classList.remove("grid2", "grid3", "camgrid", "g2", "g3", "g4");
+    g.classList.add("gridl");
+    if (n > 1) g.classList.add("g" + n);
+    g.style.gridTemplateColumns = "";
+  });
+  return el;
+}
+
 function customSection(s) {
-  var k = s.k || "devs";
-  if (k === "note") return noteSection(s);
-  if (k === "security") return cardSection(s, securityList(), _T("security"), "lock");
-  if (k === "energy") return cardSection(s, energyList(s), _T("energy_and_usage"), "plug");
-  if (k === "cameras") return cardSection(s, cameraList(), _T("cameras"), "cam");
-  if (k === "chart") return chartSection(s);
-  if (k === "camera") return cameraSection(s);
+  var k = s.k || "devs",
+    only = widgetAlone(s);
+  if (only) return only.hide && !editing() ? null : applySecLay(widgetDef(only.w).section(only, s), s.lay);
   var ed = editing(),
     lk = "~" + secKey() + "~" + s.id,
     src = [],
@@ -462,14 +420,15 @@ function customSection(s) {
     ttl = s.t || ty.t,
     ico = secIcon(s);
   (s.devs || []).forEach(function (d) {
-    if (!ed && (d.hide || (d.id && modeOf(d.id).mode === "hide"))) return;
+    if (!ed && (d.hide || !itemShown(d) || (d.id && modeOf(d.id).mode === "hide"))) return;
     /* A lights master can leave its lights and the sync out of the section; it keeps them itself. */
     if (!ed && k === "devs" && d.id && masterLeavesOut(s, d)) return;
-    var r = k === "read" ? (d.id ? readTile(d) : null) : devRow(d);
-    if (!r && ed) r = k === "read" ? readTile(d) : pill(d.icon || "plug", d.name, {});
+    var r = deviceItem(d, ed);
+    if (!r && ed) r = pill(d.icon || "plug", d.name, {});
     if (!r) return;
+    var wf = d.kind === "widget" ? widgetDef(d.w) : null;
     rows.push(
-      edMark(r, devEditor(lk, d), !!d.hide)
+      edMark(r, wf && wf.edit ? function () { wf.edit(d); } : devEditor(lk, d), !!d.hide)
     );
     src.push(d);
   });
@@ -488,37 +447,19 @@ function customSection(s) {
       rows.length > 0
     );
   }
-  var mids = k === "devs" && s.master ? masterLightIds(s) : [];
-  /* More lights masters held by the section (app/lightsmasters.js): each with the lights chosen for it, shown while the page is edited too so it can be opened. */
-  var extras = k === "devs" ? (s.masters || []).filter(function (m) { return masterLightIds(m).length > (ed ? 0 : 1) && (ed || !m.mhide); }) : [];
-  /* A lights master keeps its section on the page when it has hidden every row of it: the master is the section then. */
-  if (!rows.length && !ed && !(s.master && mids.length > 1) && !extras.length) return null;
-  /* Lights master: one light at the top that controls every light of the section (or the lights chosen for it); off unless the section turns it on. While the page is edited it opens its settings. */
-  var masterRows = [];
-  if (k === "devs" && s.master && mids.length > 1 && (ed || !s.mhide)) {
-    var mr = lightsMasterRow(secKey() + "~" + s.id, mids, s.mn, s.mall, s.mo, masterMeta(s));
-    masterRows.push(
-      edMark(mr, function () {
-        showPopup("lmaster-edit:" + secKey() + ":" + s.id, true);
-      })
-    );
-  }
-  extras.forEach(function (m) {
-    masterRows.push(
-      edMark(lightsMasterRow(secKey() + "~" + m.id, masterLightIds(m), m.mn, m.mall, m.mo, masterMeta(m)), function () {
-        showPopup("lmaster-edit:" + secKey() + ":" + m.id, true);
-      })
-    );
-  });
-  rows = masterRows.concat(rows);
+  if (!rows.length && !ed) return null;
   var body = rows;
-  if (k === "read") {
-    var g = mk("div", "glance");
-    g.style.gridTemplateColumns = "repeat(auto-fill,minmax(124px,1fr))";
+  if (
+    rows.some(function (r) {
+      return r.classList.contains("wgt");
+    })
+  ) {
+    /* Widgets and sized devices: the Section is a grid of four columns; a row takes all four. */
+    var wg = mk("div", "wgrid");
     rows.forEach(function (r) {
-      g.appendChild(r);
+      wg.appendChild(r);
     });
-    body = [g];
+    body = [wg];
   } else if (layCols(s.lay) > 1) {
     var gl = mk("div", "gridl g" + layCols(s.lay));
     rows.forEach(function (r) {
@@ -528,71 +469,24 @@ function customSection(s) {
   }
   if (add) body.push(add);
   var sx = section(ttl, ico, body);
-  return sx;
+  return applySecLay(sx, s.lay);
 }
 
-/* Camera: a live view of each camera with its controls on the picture. */
-function cameraSection(s) {
-  var ed = editing(),
-    lk = "~" + secKey() + "~" + s.id,
-    cams = (s.devs || []).filter(function (d) {
-      return d.id && (ed || (!d.hide && modeOf(d.id).mode !== "hide"));
-    });
-  if (!cams.length && !ed) return null;
-  var items = [],
-    rows = [];
-  cams.forEach(function (d, i) {
-    var box = mk("div", "vidbox"),
-      owner = i ? "page" + i : "page";
-    function startPage() {
-      box.innerHTML = "";
-      stream(box, d.id, owner, false);
-      camControls(box, d.id);
-    }
-    box.dataset.cam = d.id;
-    box._start = startPage;
-    if (!PATCH_BUILD) startPage();
-    if (i === 0) CAMPAGE = { box: box, start: startPage };
-    items.push(box);
-    if (ed) {
-      var r = edMark(pill("axis", d.name, { tap: function () {} }), devEditor(lk, d), !!d.hide);
-      rows.push(r);
-      items.push(r);
-    }
-  });
-  if (ed) {
-    edSort(rows, function (f, t) {
-      edReorder(s.devs, cams, f, t);
-      uiChanged();
-    });
-    items.push(
-      edAdd(
-        widgetAddLabel("camera"),
-        function () {
-          widgetAdd(lk, "camera");
-        },
-        null,
-        cams.length > 0
-      )
-    );
-  }
-  return section(secName(s), secIcon(s), items);
-}
+/* A camera at size l: its live picture with the controls on it. The first of a page is the one the page starts and stops with the page (owner "page"). */
+var CAMN = 0;
 
-function noteSection(s) {
-  var ed = editing(),
-    txt = (s.txt || "").trim();
-  if (!txt && !ed) return null;
-  var c = mk("div", "notec pane");
-  if (txt) c.textContent = s.txt;
-  else {
-    c.textContent = _T("empty_note_open_this_section_s_setti");
-    c.classList.add("dim");
+function cameraLive(d) {
+  var box = mk("div", "vidbox"),
+    owner = CAMN++ ? "page" + CAMN : "page";
+  function startPage() {
+    box.innerHTML = "";
+    stream(box, d.id, owner, false);
+    camControls(box, d.id);
   }
-  edMark(c, function () {
-    showPopup("manage-sec:" + secKey() + ":" + s.id, false);
-  });
-  return section(s.t || _T("note"), s.i && iconOk(s.i) ? s.i : "info", [c]);
+  box.dataset.cam = d.id;
+  box._start = startPage;
+  if (!PATCH_BUILD) startPage();
+  return box;
 }
 
 /* Chart: history of up to four sensors, drawn from Home Assistant's recorder. */
@@ -801,48 +695,21 @@ function chartDraw(box, ds, data, rng, sid) {
   box.appendChild(tl);
 }
 
-function chartSection(s) {
-  var ed = editing(),
-    lk = "~" + secKey() + "~" + s.id,
-    ttl = s.t || _T("chart"),
-    ico = s.i && iconOk(s.i) ? s.i : "thermo",
-    ds = (s.devs || [])
-      .filter(function (d) {
-        return d.id && !d.hide;
-      })
-      .slice(0, 4);
-  if (!ds.length) {
-    if (!ed) return null;
-    return section(ttl, ico, [
-      pill("info", _T("no_sensors_yet"), {
-        sub: function () {
-          return _T("add_one_or_more_sensors_to_draw_a_ch");
-        },
-      }),
-      edAdd(
-        _T("add_device"),
-        function () {
-          ADDPRE = "sensors";
-          showPopup("manage-add:" + lk, true);
-        },
-        null
-      ),
-    ]);
-  }
+function chartCard(sid, ds, r0) {
   var card = mk("div", "chartc pane"),
     rg = mk("div", "rg"),
     plot = mk("div", "pl"),
     lg = mk("div", "lg"),
     legs = [];
   function rng() {
-    return CHR[s.id] || s.r || "24h";
+    return CHR[sid] || r0 || "24h";
   }
   ["6h", "24h", "7d", "30d"].forEach(function (r) {
     var b = mk("div", "rbtn pane" + (r === rng() ? " act" : ""));
     b.textContent = r;
     b.addEventListener("click", function (e) {
       e.stopPropagation();
-      CHR[s.id] = r;
+      CHR[sid] = r;
       [].forEach.call(rg.children, function (c) {
         c.classList.toggle("act", c === b);
       });
@@ -880,7 +747,7 @@ function chartSection(s) {
           plot.appendChild(hintRow(_T("couldn_t_load_the_history_2")));
           return;
         }
-        chartDraw(plot, ds, data, r, s.id);
+        chartDraw(plot, ds, data, r, sid);
       }
     );
   }
@@ -888,10 +755,7 @@ function chartSection(s) {
   card.appendChild(rg);
   card.appendChild(plot);
   card.appendChild(lg);
-  edMark(card, function () {
-    showPopup("manage-sec:" + secKey() + ":" + s.id, false);
-  });
-  return section(ttl, ico, [card]);
+  return card;
 }
 
 function roomFloors(keys) {
@@ -940,13 +804,11 @@ function secRooms() {
       cams = ds.filter(function (d) {
         return d.kind === "camera";
       }).length;
-    var tt = (UI.stat[k] || []).filter(function (s) {
-        return !s.text && /°/.test(s.u || "");
-      })[0],
+    var tt = roomTempId(k),
       temp = function () {
         if (!tt) return "";
-        var v = sv(tt.id, tt.u || "", tt.dp === undefined ? 1 : tt.dp);
-        return v === "Offline" || v === "–" ? "" : " · " + v;
+        var v = readText(tt);
+        return v === "–" ? "" : " · " + v;
       };
     var label = ls.length
       ? function () {
@@ -955,10 +817,11 @@ function secRooms() {
       : function () {
           return (
             (cams
-              ? cntS(cams, _T("camera").toLowerCase(), _T("cameras").toLowerCase())
-              : ds.length + (ds.length === 1 ? " device" : " devices")) + temp()
+              ? cntS(cams, _T("camera").toLocaleLowerCase(globalThis.HC_LANG), _T("cameras").toLocaleLowerCase(globalThis.HC_LANG))
+              : _T(ds.length === 1 ? "device_n" : "devices_n", { n: ds.length })) + temp()
           );
         };
+    /* A room's own icon is not a kind of device: every room is the accent. */
     var rt = tile(
       r.icon || "home",
       r.name,
@@ -984,6 +847,7 @@ function secRooms() {
       },
       !UIROOM[k]
     );
+    rt.dataset.k = "other";
     if (r.img) {
       rt.classList.add("hasimg");
       rt.insertBefore(rimgEl(r.img), rt.firstChild);
@@ -1017,6 +881,97 @@ function secRooms() {
   });
   if (ed) nodes.push(edAdd(_T("add_room"), addRoom));
   return section(secT("rooms", _T("rooms")), secI("rooms", "home"), nodes);
+}
+
+/* What is running right now, wherever it is: a row for every player, air conditioner and fan that is on, with the room it is in, and one row for the lights that names the rooms they are on in. Each row is the device's own row, so it opens the device's own popup. The section is hidden while nothing is on. */
+function secNow() {
+  var box = mk("div", "nowbox"),
+    key = null;
+  function running(d) {
+    var st = V_(d.id);
+    if (d.kind === "media") return !(UIDEV[d.id] || {}).nonp && mediaOn(d.id);
+    if (d.kind === "climate") return !!st && ["off", "unknown", "unavailable"].indexOf(st) < 0;
+    if (d.kind === "fan") return isOn(d.id);
+    return false;
+  }
+  function litRooms() {
+    var by = {};
+    devsOf("light").forEach(function (d) {
+      if (isOn(d.id)) by[d.room] = (by[d.room] || 0) + 1;
+    });
+    return UI.rooms
+      .filter(function (r) {
+        return by[r.id];
+      })
+      .map(function (r) {
+        return r.name + " " + by[r.id];
+      });
+  }
+  function build() {
+    var devs = devsOf().filter(running),
+      lit = litRooms(),
+      k = devs
+        .map(function (d) {
+          return d.room + d.id;
+        })
+        .join("|") +
+        "#" +
+        lit.join("|") +
+        "#" +
+        editing();
+    if (k === key) return;
+    key = k;
+    box.innerHTML = "";
+    var empty = !devs.length && !lit.length;
+    box.style.display = empty && !editing() ? "none" : "";
+    if (empty && !editing()) return;
+    var sec = section(secT("now", _T("on_now")), secI("now", "power"), []);
+    if (lit.length) {
+      var ids = devsOf("light")
+          .filter(function (d) {
+            return isOn(d.id);
+          })
+          .map(function (d) {
+            return d.id;
+          }),
+        lr = pill("lights", _T("lights"), {
+          on: function () {
+            return true;
+          },
+          sub: function () {
+            return lit.join(" · ");
+          },
+          tap: function () {
+            showPopup("g-lights", false);
+          },
+        });
+      reg(function () {
+        tintIcon(lr, avgLight(lightUnits(ids).filter(isOn)));
+      });
+      sec.appendChild(lr);
+    }
+    devs.forEach(function (d) {
+      var row = devRow(d);
+      if (!row) return;
+      var where = mk("span", "where");
+      where.textContent = (roomById(d.room) || {}).name || "";
+      row.querySelector(".nm").appendChild(where);
+      sec.appendChild(row);
+    });
+    if (empty)
+      sec.appendChild(
+        pill("info", _T("nothing_is_on"), {
+          sub: function () {
+            return _T("lights_players_air_conditioners_and");
+          },
+        })
+      );
+    box.appendChild(sec);
+    if (box._attach) box._attach();
+  }
+  reg(build);
+  build();
+  return box;
 }
 
 function secGlance() {
@@ -1106,7 +1061,7 @@ function secGlance() {
       }
     );
   var meds = gxDevs("media", devsOf("media"));
-  if (meds.length)
+  if (meds.length || hubRemotes().length)
     GT.media = tile(
       "media",
       _T("media"),
@@ -1131,7 +1086,7 @@ function secGlance() {
         showPopup("g-tvs", false);
       }
     );
-  var vacs = devsOf("vacuum");
+  var vacs = vacuumList();
   if (vacs.length)
     GT.robot = tile(
       "vac",
@@ -1142,7 +1097,7 @@ function secGlance() {
       },
       null,
       function () {
-        showPopup(devPop(vacs[0]), false);
+        showPopup(vacs[0].pop, false);
       }
     );
   glanceFill(glanceG, GT);

@@ -91,9 +91,13 @@ function aboutPage(b) {
 var CATS = [
   ["appearance", _T("appearance"), "appearance", "palette"],
   ["wall", _T("wall_mode"), "stg-wall", "tv"],
+  ["look", _T("look_title"), "look", "palette"],
+  ["types", _T("types_title"), "types", "tune"],
+  ["myalerts", _T("my_alerts"), "my-alerts", "alert"],
   ["dev", _T("devices_2"), "stg-dev", "plug"],
   ["lgroups", _T("lgs_title"), "lgroups", "lights"],
   ["areas", _T("areas"), "stg-areas", "target"],
+  ["share", _T("siri_and_homekit"), "stg-share", "mic"],
   ["effects", _T("effects"), "stg-effects", "sparkle"],
   ["access", _T("users_and_access"), "stg-access", "lock"],
   ["notify", _T("notifications"), "stg-notify", "bell"],
@@ -103,9 +107,9 @@ var CATS = [
 
 /* The five groups Settings is in: what a category belongs to. A category a plugin adds is under Plugins. */
 var CAT_GROUPS = [
-  ["display", "stg_group_display", ["appearance", "wall"]],
-  ["dashboard", "stg_group_dashboard", ["dev", "lgroups", "areas", "effects"]],
-  ["people", "stg_group_people", ["access", "notify"]],
+  ["display", "stg_group_display", ["appearance", "look", "wall"]],
+  ["dashboard", "stg_group_dashboard", ["dev", "types", "lgroups", "areas", "share", "effects"]],
+  ["people", "stg_group_people", ["access", "notify", "myalerts"]],
   ["data", "stg_group_data", ["hist", "data"]],
   ["plugins", "stg_group_plugins", null],
 ];
@@ -121,11 +125,15 @@ function catGroup(id) {
 function stgNavSub(id) {
   if (PLUGIN_SETTINGS[id]) return PLUGIN_SETTINGS[id].sub ? PLUGIN_SETTINGS[id].sub() : "";
   if (id === "appearance") return themeLight() ? _T("light") : _T("dark");
+  if (id === "look") return _T("look_sub");
+  if (id === "types") return _T("types_sub");
+  if (id === "myalerts") return _T("my_alerts_sub");
   if (id === "wall")
-    return PREFS.wall ? _T("on_2") + " · " + Math.round(PREFS.wallIdle / 60) + " min" : _T("off");
+    return PREFS.wall ? _T("on_2") + " · " + _T("minutes_short", { n: Math.round(PREFS.wallIdle / 60) }) : _T("off");
   if (id === "dev") return _T("new_devices_and_devices_that_are_not");
   if (id === "lgroups") return _T("lgs_sub");
   if (id === "areas") return _T("where_the_lights_are_for_live_scenes");
+  if (id === "share") return _T("scenes_for_siri_homekit_and_shortcuts");
   if (id === "effects") return _T("the_effects_of_your_lights_and_files_to_ad");
   if (id === "access") return _T("who_can_do_what");
   if (id === "hist") return _T("recent_activity");
@@ -133,7 +141,7 @@ function stgNavSub(id) {
     var a = Object.keys(NRULES).filter(function (k) {
       return nrule(k).on;
     }).length;
-    return a ? a + " " + _T("active_2") : _T("nothing_sent_yet");
+    return a ? _T("active_2", { x: a }) : _T("nothing_sent_yet");
   }
   return _T("backups_and_change_log");
 }
@@ -142,22 +150,25 @@ var STG_INDEX = [
   [_T("appearance"), _T("appearance_look_theme_accent_colour"), "appearance", null],
   [_T("wall_mode"), _T("wall_mode_screensaver_clock_photos_d"), "wall", null],
   [_T("devices_2"), _T("devices_new_add_lights"), "dev", null],
-  [_T("lgs_title"), "light groups helper group lights combine make new", "lgroups", null],
-  [_T("areas"), "areas rooms lights placement live scenes entertainment", "areas", null],
-  [_T("effects"), "effects catalogue import file json groups calibration brands", "effects", null],
-  [_T("users_and_access"), "access users permissions confirm hide read only", "access", null],
-  [_T("history"), "history log changes undo", "hist", null],
-  [_T("notifications"), "notifications alerts battery offline", "notify", null],
-  [_T("backup_and_about"), "backup about diagnostics", "data", null],
-  [_T("change_log"), "changes undo who edit history", "data", "manage-log"],
-  [_T("backup_and_restore"), "download export import restore", "data", "manage-backup"],
-  [_T("stg_idx_header"), "header clock greeting size weather people slim names page", "dev", "manage-names"],
-  [_T("stg_idx_batteries"), "batteries battery low tracked", "notify", "manage-bats"],
-  [_T("stg_idx_alerts"), "alerts any entity notification rule washer door", "notify", "stg-notify"],
-  [_T("stg_idx_photos"), "wall photos screensaver gallery night dim idle", "wall", "stg-wall"],
-  [_T("stg_idx_effects_file"), "effects file import json example syntax", "effects", "stg-effects"],
-  [_T("stg_idx_users"), "standard users rooms devices rules pin display size", "access", "stg-access"],
+  [_T("lgs_title"), _T("kw_light_groups_helper_group_lights_combine"), "lgroups", null],
+  [_T("areas"), _T("kw_areas_rooms_lights_placement_live_scenes"), "areas", null],
+  [_T("effects"), _T("kw_effects_catalogue_import_file_json_group"), "effects", null],
+  [_T("users_and_access"), _T("kw_access_users_permissions_confirm_hide_re"), "access", null],
+  [_T("history"), _T("kw_history_log_changes_undo"), "hist", null],
+  [_T("notifications"), _T("kw_notifications_alerts_battery_offline"), "notify", null],
+  [_T("backup_and_about"), _T("kw_backup_about_diagnostics"), "data", null],
+  [_T("change_log"), _T("kw_changes_undo_who_edit_history"), "data", "manage-log"],
+  [_T("backup_and_restore"), _T("kw_download_export_import_restore"), "data", "manage-backup"],
+  [_T("stg_idx_header"), _T("kw_header_clock_greeting_weather_people_nam"), "dev", "manage-names"],
+  [_T("stg_idx_batteries"), _T("kw_batteries_battery_low_tracked"), "notify", "manage-bats"],
+  [_T("stg_idx_alerts"), _T("kw_alerts_any_entity_notification_rule_wash"), "notify", "stg-notify"],
+  [_T("stg_idx_photos"), _T("kw_wall_photos_screensaver_gallery_night_di"), "wall", "stg-wall"],
+  [_T("stg_idx_effects_file"), _T("kw_effects_file_import_json_example_syntax"), "effects", "stg-effects"],
+  [_T("stg_idx_users"), _T("kw_standard_users_rooms_devices_rules_pin_d"), "access", "stg-access"],
 ];
+
+/* The user manual, on the repository's page. */
+var MANUAL_URL = "https://github.com/bora-yarkin/home-control/blob/main/docs/manual/README.md";
 
 /* Settings: a list of categories, each opening as its own popup page. The search box finds a category or one of its pages. */
 function settingsRoot(b) {
@@ -192,6 +203,15 @@ function settingsRoot(b) {
         })
       );
     } else if (cats.length) list.appendChild(sep(_T(g[1]), "home"));
+    if (g[0] === "dashboard" && ISADMIN)
+      list.appendChild(
+        pill("sparkle", _T("setup_title"), {
+          sub: function () {
+            return _T("setup_sub");
+          },
+          tap: setupOpen,
+        })
+      );
     cats.forEach(function (c) {
       list.appendChild(
         pill(c[3], c[1], {
@@ -205,6 +225,17 @@ function settingsRoot(b) {
       );
     });
   });
+  list.appendChild(sep(_T("help"), "info"));
+  list.appendChild(
+    pill("info", _T("user_manual"), {
+      sub: function () {
+        return _T("user_manual_sub");
+      },
+      tap: function () {
+        window.open(MANUAL_URL, "_blank", "noopener");
+      },
+    })
+  );
   inp.addEventListener("input", function () {
     var q = inp.value.trim().toLowerCase(),
       prev = CUR;
@@ -268,12 +299,19 @@ function stgDevices(b) {
       })
     );
   b.appendChild(
-    prefPill(
-      "tune",
-      _T("advanced_settings_buttons_on_devices"),
-      "adv",
-      _T("shows_advanced_settings_at_the_botto")
-    )
+    pill("tune", _T("advanced_settings_buttons_on_devices"), {
+      on: function () {
+        return !advAllOff();
+      },
+      sub: function () {
+        return advAllOff() ? _T("off") : _T("shows_advanced_settings_at_the_botto");
+      },
+      tap: function () {
+        if (advAllOff()) delete UI.meta.noadv;
+        else UI.meta.noadv = 1;
+        uiChanged();
+      },
+    })
   );
   stgRows(b, [
     [
@@ -295,6 +333,7 @@ function stgAreas(b) {
     }).length;
     b.appendChild(
       pill(r.icon || "home", r.name, {
+        kind: "other",
         sub: function () {
           return n ? cntS(n, _T("area"), _T("areas")) : _T("no_areas_yet");
         },
