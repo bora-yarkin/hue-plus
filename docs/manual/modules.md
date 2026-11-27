@@ -16,7 +16,7 @@ Live scenes aren't here. [Home Control](https://github.com/bora-yarkin/home-cont
 
 ## The Hue panel
 
-<img src="../images/panel-room.png" width="300" alt="A room in the Hue panel">
+<img src="../images/panel-room.png" width="300" alt="A room in the Hue panel"> <img src="../images/panel-scenes.png" width="300" alt="Scenes">
 
 Switch on the Dashboard module and a Hue entry appears in the sidebar, for administrators.
 

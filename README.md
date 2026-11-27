@@ -5,13 +5,16 @@ Home Assistant's Hue integration covers the basics. Hue Plus adds the rest: grad
 It's unofficial and has nothing to do with Signify.
 
 <p>
-  <img src="docs/images/panel-home.png" width="32%" alt="Rooms and zones">
-  <img src="docs/images/panel-room.png" width="32%" alt="A room with its scenes and lights">
-  <img src="docs/images/panel-light.png" width="32%" alt="Colour wheel">
+  <img src="docs/images/panel-light.png" width="32%" alt="Colour wheel for a room's lights">
+  <img src="docs/images/panel-scenes.png" width="32%" alt="Scenes">
+  <img src="docs/images/panel-sync.png" width="32%" alt="Spotify sync">
 </p>
 <p>
+  <img src="docs/images/panel-home.png" width="32%" alt="Rooms">
+  <img src="docs/images/panel-room.png" width="32%" alt="A room with its scenes, lights and switches">
   <img src="docs/images/panel-automations.png" width="32%" alt="Automations">
-  <img src="docs/images/panel-sync.png" width="32%" alt="Spotify sync">
+</p>
+<p>
   <img src="docs/images/panel-settings.png" width="32%" alt="Settings">
 </p>
 
