@@ -1151,6 +1151,8 @@
     registerDeviceKind: function (d) {
       REGISTERED.deviceKinds.push(d);
     },
+    /* which lights stand for other lights: Home Control's own question, this panel draws Hue's rooms and zones itself */
+    registerGroupCheck: function () {},
     registerPlayback: function (d) {
       REGISTERED.playback.push(d);
     },

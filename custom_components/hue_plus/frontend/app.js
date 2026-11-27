@@ -1154,6 +1154,8 @@ var HOST_CSS = ":root{--bg:#1b1c20;--bg-warm:#2b2926;--bar:#14151a;--head:#23242
     registerDeviceKind: function (d) {
       REGISTERED.deviceKinds.push(d);
     },
+    /* which lights stand for other lights: Home Control's own question, this panel draws Hue's rooms and zones itself */
+    registerGroupCheck: function () {},
     registerPlayback: function (d) {
       REGISTERED.playback.push(d);
     },
