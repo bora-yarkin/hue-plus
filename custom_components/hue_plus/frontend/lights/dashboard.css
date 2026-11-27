@@ -241,6 +241,10 @@ svg.open .key{opacity:0}
 .rb-sec{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:var(--fs-s);letter-spacing:.06em;color:var(--ink2);margin:var(--sp-head)}
 .rb-sec b{font-size:var(--fs-s);color:var(--ink);letter-spacing:0;font-weight:500}
 .rb-chips{display:flex;gap:8px}
+/* a picture with touch areas is shown whole, so that its areas stay where they are drawn */
+.rb-map.pane.vacap-map{max-height:none;overflow:hidden}
+.vacap-spot{position:absolute;cursor:pointer;border-radius:6px}
+.vacap-spot.on{background:color-mix(in srgb,var(--acc) 38%,transparent);outline:2px solid var(--acc);outline-offset:-2px}
 .rb-chip{padding:6px 14px;border-radius:999px;font-size:var(--fs-s);cursor:pointer;color:var(--ink);transition:opacity .2s}
 .rooms{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-s);margin-bottom:var(--sp-s)}
 .room{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:var(--r-m);font-size:var(--fs-s);cursor:pointer;user-select:none;text-align:center}
@@ -270,18 +274,20 @@ body.editing .dock .di{touch-action:none}
 :where(.pill,.erow,.sel.selrow,.seg,.grid2,.grid3,.gridl,.rrow,.ptz,.touch,.glance,.notec,.chartc,.subsec){margin-bottom:var(--sp)}
 .eyebrow{font-size:var(--fs-xs);letter-spacing:.2em;text-transform:uppercase;color:var(--ink2)}
 .sec-h:after{content:"";flex:1;height:1px;background:var(--f-line)}
-.hdr{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:22px 28px;margin-bottom:22px;background:var(--f-card)!important;border-radius:20px}
+.hdr{padding:22px 28px;margin-bottom:22px;background:var(--f-card)!important;border-radius:20px}
+.hdrow{display:flex;justify-content:space-between;align-items:center;gap:16px;position:relative;z-index:1}
 .hdr .rt{display:flex;align-items:center;gap:14px}
 .hb{display:flex;gap:10px}
-@media(max-width:480px){.hdr{padding:16px 18px;gap:10px}
+@media(max-width:480px){.hdr{padding:16px 18px}
+.hdrow{gap:10px}
 .title{font-size:26px}
 #clk{font-size:32px}
 .hdr .rt{gap:4px;flex-direction:column;align-items:flex-end}
 .hb{gap:8px}
-#sbtn,#gbtn{width:38px;height:38px}
+#obtn,#sbtn,#gbtn{width:38px;height:38px}
 .eyebrow{white-space:nowrap}
 }
-#sbtn,#gbtn{width:42px;height:42px}
+#obtn,#sbtn,#gbtn{width:42px;height:42px}
 .qagrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 10px}
 .qa{display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 6px 9px;cursor:pointer;text-align:center;user-select:none;touch-action:manipulation}
 .qa .ic{width:40px;height:40px}
@@ -375,9 +381,6 @@ to{background-position:-200% 0}
 .dock{position:fixed;left:50%;bottom:max(16px,calc(var(--sab,0px) * .6 + 6px));transform:translateX(-50%);z-index:10;display:flex;gap:4px;padding:6px;max-width:calc(100% - 20px);overflow-x:auto;scrollbar-width:none;background:var(--f-card)!important;border:1px solid var(--f-line)!important;box-shadow:var(--f-shadow)!important;border-radius:var(--r-m)}
 .dock::-webkit-scrollbar{display:none}
 /* real light colour, quick action editing, icon picker */
-.pre.pre.pgrid.accgrid{display:grid;margin:14px 4px}
-.pgrid.accgrid .swc{width:auto}
-.pgrid.accgrid .cap{display:none}
 .pgrid{display:grid;justify-items:center;gap:14px 6px;grid-template-columns:repeat(auto-fill,minmax(46px,1fr))}
 .cd{width:14px;height:14px;border-radius:50%;flex:none;border:1.5px solid rgba(255,255,255,.7);box-shadow:0 0 8px rgba(0,0,0,.4);margin-right:8px;display:none}
 .qa.editing{border-style:dashed}
@@ -397,15 +400,16 @@ to{background-position:-200% 0}
 .rnd.sm{width:34px;height:34px}
 .rnd.sm svg{width:17px;height:17px}
 .hint{font-size:var(--fs-s);color:var(--ink2);margin:0 6px var(--sp)}
-@media(max-width:600px){.hdr{flex-wrap:wrap;padding:16px 18px 14px;gap:8px 12px}
-.hdr>div:first-child{flex:1 1 100%;min-width:0}
+@media(max-width:600px){.hdr{padding:16px 18px 14px}
+.hdrow{flex-wrap:wrap;gap:8px 12px}
+.hdrow>div:first-child{flex:1 1 100%;min-width:0}
 .title{font-size:28px;margin-top:2px;overflow-wrap:anywhere}
 .hdr .rt{flex:1 1 100%;flex-direction:row-reverse;justify-content:space-between;align-items:center;gap:8px}
 .clock{text-align:left}
 #clk{font-size:36px}
 #dt{font-size:var(--fs-s)}
 .hb{gap:8px}
-#sbtn,#gbtn{width:40px;height:40px}
+#obtn,#sbtn,#gbtn{width:40px;height:40px}
 }
 .edtb{display:none;gap:6px;margin-left:auto}
 body.editing .edtb{display:flex}
@@ -422,10 +426,12 @@ body.light .idd-row:hover,body.light .idd-row.on{background:rgba(20,24,31,.07)}
 .idd-n{font-size:var(--fs-m);text-transform:capitalize}
 .idd-foot{margin-top:8px;border-top:1px solid var(--edge);padding-top:8px}
 .idd-add{font-size:var(--fs-m);color:var(--aE);cursor:pointer;padding:4px 6px}
-#rwall{position:fixed;inset:0;z-index:0;pointer-events:none}
-#rwall img{width:100%;height:100%;object-fit:cover}
-#rwall::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.62))}
-body.light #rwall::after{background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.8))}
+/* The picture of a room is the backdrop of its header: it fills the top of the page and fades into the page colour, and the header card lets it show through. */
+#rwall,.rwall-x{position:fixed;left:0;right:0;top:0;height:min(340px,52vh);z-index:0;pointer-events:none}
+#rwall img,.rwall-x img{width:100%;height:100%;object-fit:cover}
+#rwall::after,.rwall-x::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.5) 60%,var(--f-bg))}
+body.light #rwall::after,body.light .rwall-x::after{background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,.6) 60%,var(--f-bg))}
+body.rwall .hdr{background:transparent!important;border-color:transparent!important}
 .offbar{position:fixed;left:50%;top:10px;transform:translate(-50%,-160%);z-index:120;padding:9px 16px;border-radius:var(--r-m);font-size:var(--fs-m);font-weight:600;background:#8a2433;color:#fff;border:1px solid rgba(255,255,255,.35);transition:transform .3s;max-width:calc(100% - 32px);text-align:center}
 body.off .offbar{transform:translate(-50%,0)}
 :focus-visible{outline:3px solid var(--aE);outline-offset:2px}
@@ -569,7 +575,7 @@ body.editing main{padding-top:calc(94px + env(safe-area-inset-top,0px))}
 .gridl.lp-pg>:last-child:nth-child(odd){grid-column:1/-1}
 .chartc{padding:12px 14px 12px}
 .chartc .rg{display:flex;justify-content:flex-end;gap:6px;margin-bottom:8px}
-.chartc .rg .rbtn{min-height:28px;padding:0 11px;border-radius:var(--r-s);font-size:var(--fs-s)}
+.chartc .rg .rbtn{min-height:28px;padding:0 11px;border-radius:var(--r-row);font-size:var(--fs-s)}
 .chartc .plw{position:relative}
 .chartc svg{width:100%;height:132px;display:block;overflow:visible;color:var(--ink)}
 .chartc .ax{position:absolute;left:2px;top:-2px;font-size:var(--fs-xs);color:var(--ink2)}
@@ -589,13 +595,6 @@ textarea.sq{resize:none;line-height:1.4;padding:11px 0}
 .hchips:empty{display:none}
 .hchip{display:flex;align-items:center;gap:6px;padding:5px 12px 5px 9px;border-radius:999px;font-size:var(--fs-s);font-weight:500;color:var(--ink);border:1px solid rgba(255,255,255,.18);white-space:nowrap;background:var(--f-raise);border-color:var(--f-line2)}
 .hchip svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
-.hdr.slim{padding:12px 20px;border-radius:var(--r-l);margin-bottom:16px}
-.hdr.slim .eyebrow{display:none}
-.hdr.slim .title{font-size:26px;margin-top:0}
-.hdr.slim #clk{font-size:30px}
-.hdr.slim #dt{display:none}
-.hdr.slim .hchips{margin-top:6px}
-.hdr.slim.greet .eyebrow{display:block}
 .sec-h{display:flex;align-items:center;gap:10px;font-size:var(--fs-l);font-weight:600;color:var(--ink);margin:var(--sp-head);letter-spacing:.01em}
 .pill .sb,.tile .sb{font-size:var(--fs-s);letter-spacing:.005em}
 .gb span{font-size:var(--fs-s);color:var(--ink2)}
@@ -641,10 +640,6 @@ body.editing main{padding-top:calc(94px + var(--sat,0px))}
 body.pinhdr:not(.editing) main{padding-top:0}
 body.pinhdr:not(.editing) .hdr{position:sticky;top:calc(12px + var(--sat,0px));margin-top:calc(12px + var(--sat,0px));z-index:6}
 body.pinhdr:not(.editing) .wrap::before{content:"";position:fixed;top:0;left:0;right:0;height:calc(40px + var(--sat,0px));z-index:5;background:var(--f-bg);pointer-events:none}
-/* A slim header without a clock is one row: the name on the left, search and settings on the right. */
-@media(max-width:600px){.hdr.slim.noclock{flex-wrap:nowrap}
-.hdr.slim.noclock>div:first-child{flex:1 1 auto}
-.hdr.slim.noclock .rt{flex:0 0 auto}}
 .sep .rnd{order:1;margin-left:8px}
 .sep .secact{width:30px;height:30px}
 .sep .secact svg{width:16px;height:16px}
@@ -866,10 +861,7 @@ body.pinhdr:not(.editing) .wrap::before{content:"";position:fixed;top:0;left:0;r
 .rm-t.ed,.rm-gap.ed,.rm-dpad.ed{outline:1px dashed var(--f-line2,var(--f-line));outline-offset:-4px}
 .rm-t:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .rm-k{border:0}
-.rm-k-red{background:color-mix(in srgb,#e5484d 70%,var(--f-card))}
-.rm-k-green{background:color-mix(in srgb,#30a46c 70%,var(--f-card))}
-.rm-k-yellow{background:color-mix(in srgb,#f5c542 75%,var(--f-card))}
-.rm-k-blue{background:color-mix(in srgb,#3e7bfa 70%,var(--f-card))}
+.rm-k{background:color-mix(in srgb,var(--rmk) 72%,var(--f-card))}
 .rm-gap{min-width:0;border-radius:var(--r-m)}
 .rm-gap.ed{display:flex;align-items:center;justify-content:center;font-size:var(--fs-s);color:var(--ink2)}
 .rm-dpad{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:2px;min-width:0;padding:4px;border-radius:50%;aspect-ratio:1;align-self:center;justify-self:center;width:100%;max-width:100%}
@@ -882,6 +874,16 @@ body.pinhdr:not(.editing) .wrap::before{content:"";position:fixed;top:0;left:0;r
 .rm-grid>.touch,.rm-grid>.pill,.rm-grid>.sel,.rm-grid>.art,.rm-grid>.rm-comp{margin:0;min-width:0}
 .rm-grid>.touch{height:auto;min-height:0;align-items:center;padding-bottom:0}
 .rm-grid>.touch.ed{color:var(--ink2)}
+/* the grid drawn as the built-in remotes: their buttons, spacing and touchpad */
+.rm-grid.rm-native{gap:var(--sp);margin-bottom:var(--sp);grid-auto-rows:auto}
+/* rows take what is in them, so the touchpad is as tall as the built-in one on any screen */
+.rm-native>.rm-t{min-height:54px;flex-direction:row;gap:6px;border-radius:var(--r-row);font-size:var(--fs-m)}
+.rm-native>.rm-t svg{width:22px;height:22px}
+.rm-native>.rm-t .rm-l{font-size:var(--fs-m);font-weight:400}
+.rm-grid.rm-native>.touch{height:clamp(260px,40vh,340px)}
+/* a remote master's speaker (or input list) in an empty cell */
+.rm-gap>.rm-slot,.rm-gap>.sel.tvsrc{margin:0;height:100%}
+.rm-gap>.rm-slot>.rm-spk,.rm-gap>.sel.tvsrc{min-height:54px;padding-top:0;padding-bottom:0}
 .rm-grid>.touch svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.6}
 .rm-dpad:focus-visible,.rm-dp:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 
@@ -955,3 +957,171 @@ body.pinhdr:not(.editing) .wrap::before{content:"";position:fixed;top:0;left:0;r
 .ml-kids{padding:8px 0 0 22px}
 
 .pill.danger,.pill.danger .nm{color:#ff6b62}
+
+/* ---- Kind colours: what a row is shows in its icon, what it is doing shows in its tint ---- */
+[data-k=light]{--kc:#e9ae3c}
+[data-k=climate]{--kc:#4fa8e0}
+[data-k=heat]{--kc:#ee8442}
+[data-k=media]{--kc:#a487f2}
+[data-k=security]{--kc:#45bd84}
+[data-k=power]{--kc:#bcd04a}
+[data-k=clean]{--kc:#3fc2b4}
+[data-k=scene]{--kc:#e774a8}
+[data-k=appliance]{--kc:#e0a060}
+[data-k=cover]{--kc:#8fb3a0}
+[data-k=alert]{--kc:#f0a24a}
+[data-k=link]{--kc:#8d9fe0}
+[data-k=other]{--kc:var(--acc)}
+body.light [data-k=light]{--kc:#c98a0a}
+body.light [data-k=climate]{--kc:#1f86c8}
+body.light [data-k=heat]{--kc:#d4631a}
+body.light [data-k=media]{--kc:#7b5bdc}
+body.light [data-k=security]{--kc:#1f9a63}
+body.light [data-k=power]{--kc:#7f9a10}
+body.light [data-k=clean]{--kc:#14968a}
+body.light [data-k=scene]{--kc:#c93f80}
+body.light [data-k=appliance]{--kc:#b9772a}
+body.light [data-k=cover]{--kc:#4f8570}
+body.light [data-k=alert]{--kc:#c97a10}
+body.light [data-k=link]{--kc:#5a6fc4}
+.ic[data-k],.pill[data-k] .ic,.tile[data-k] .ic,.sel[data-k] .ic{color:color-mix(in srgb,var(--kc) 78%,var(--ink2))}
+.pill[data-k] .ic[data-k],.tile[data-k] .ic[data-k],.sel[data-k] .ic[data-k]{--kc:inherit}
+.opts[data-k] .opt .ic[data-k],.rooms[data-k] .room .ic[data-k]{--kc:inherit}
+.pill.on[data-k]:not(.lc):not(.lci),.tile.on[data-k]:not(.lc):not(.lci){background:color-mix(in srgb,var(--kc) 13%,var(--f-card))!important;border-color:color-mix(in srgb,var(--kc) 48%,var(--f-line))!important}
+.pill.on[data-k]:not(.lc):not(.lci) .ic,.tile.on[data-k]:not(.lc):not(.lci) .ic{background:color-mix(in srgb,var(--kc) 34%,var(--f-raise));border-color:color-mix(in srgb,var(--kc) 58%,var(--f-line2));color:var(--ink)}
+/* A row that is playing shows its artwork in the icon circle and a play and pause button at its end. */
+.ic.art{overflow:hidden;border-radius:10px;padding:0}
+.ic.art img{width:100%;height:100%;object-fit:cover;display:block}
+.pill .pact{flex:none;order:3;width:36px;height:36px;margin-left:8px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;color:var(--ink);background:color-mix(in srgb,var(--kc,var(--acc)) 28%,var(--f-raise));border:1px solid color-mix(in srgb,var(--kc,var(--acc)) 55%,var(--f-line2))}
+.pill .pact svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.pill .pact:focus-visible{outline-offset:2px}
+/* A section of four or more plain rows lays them out in as many columns as fit. */
+.sec.dense{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));column-gap:var(--sp)}
+.sec.dense>.sec-h{grid-column:1/-1}
+.sec.dense>.pill{min-height:52px}
+.sec.dense>.pill .ic{width:36px;height:36px}
+.sec.dense>.pill .ic svg{width:20px;height:20px}
+.pill .nm .where{font-size:var(--fs-s);font-weight:400;color:var(--ink2);margin-left:8px}
+/* ---- Type: a clear order of size and weight, so titles, section names, row names and values read apart ---- */
+.title{font-weight:600;letter-spacing:-.03em}
+#clk{font-weight:300;letter-spacing:-.02em}
+.sec-h{font-size:var(--fs-s);font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2)}
+.sec-h svg{width:16px;height:16px}
+.subsec>.sec-h{text-transform:none;letter-spacing:.01em}
+.pill .nm,.tile .nm{font-size:15.5px;font-weight:600;letter-spacing:-.005em}
+.pill .sb,.tile .sb{font-size:var(--fs-s);font-weight:400}
+.pill .vl{font-weight:500}
+.pill.on .vl{color:var(--ink)}
+.gb b{font-weight:600;letter-spacing:-.01em}
+.gb span{font-size:var(--fs-xs);letter-spacing:.03em}
+
+/* ---- The sky behind the header (sky.js paints the canvas). With a sky the header is one piece: its text is light in both themes, a scrim (as strong as the sky is bright) keeps it readable, and the buttons and chips are outlines on the sky, not dark discs cut out of it. ---- */
+.hdr{position:relative;overflow:hidden}
+.hsky{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none;z-index:0;opacity:0;transition:opacity 1.2s;--scrim:.3}
+.hsky.on{opacity:1}
+.hsky canvas{position:absolute;inset:0 0 auto 0;width:100%;height:100%;display:block}
+.hsky::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,12,20,calc(var(--scrim) + .3)) 0,rgba(8,12,20,calc(var(--scrim) + .08)) 36%,rgba(8,12,20,var(--scrim)) 100%),linear-gradient(0deg,rgba(8,12,20,calc(var(--scrim) * .8)) 0,transparent 45%)}
+body.rwall .hsky{display:none}
+.hdr:has(.hsky.on){--ink:#f5f7fa;--ink2:rgba(245,247,250,.8);border-color:rgba(255,255,255,.14)!important}
+.hdr:has(.hsky.on) #clk,.hdr:has(.hsky.on) #dt,.hdr:has(.hsky.on) .title,.hdr:has(.hsky.on) .eyebrow,.hdr:has(.hsky.on) .hchip{text-shadow:0 1px 2px rgba(0,0,0,.35),0 1px 12px rgba(0,0,0,.4)}
+.hdr:has(.hsky.on) .rnd.pane,.hdr:has(.hsky.on) .hchip{background:rgba(255,255,255,.09)!important;border:1px solid rgba(255,255,255,.3)!important;color:var(--ink);box-shadow:none!important}
+.hdr:has(.hsky.on) .rnd.pane:hover,.hdr:has(.hsky.on) .rnd.pane:active{background:rgba(255,255,255,.2)!important}
+.hdr>.hskytop{position:absolute;inset:0 0 auto 0;width:100%;height:100%;z-index:3;pointer-events:none;border-radius:inherit}
+/* The status of a page as a row of the header: a pill for each reading, the same pills as the weather and lights chips (label, then value). The header grows by the row. */
+.hdr>.hstat{position:relative;z-index:1;overflow:hidden}
+.hdr .hstin{padding-top:12px}
+.hdr .hstat .glance{display:flex!important;flex-wrap:wrap;gap:8px;grid-template-columns:none!important;margin-bottom:0}
+.hdr .hstat .gb{display:flex;flex-direction:row-reverse;align-items:baseline;gap:7px;padding:5px 12px;border-radius:999px;text-align:left;font-size:var(--fs-s);white-space:nowrap;background:var(--f-raise)!important;border:1px solid var(--f-line2)!important;box-shadow:none!important}
+.hchip.tap,.hdr .hstat .gb.tap{cursor:pointer}
+.hdr .hstat .gb b{display:inline;font-size:var(--fs-s);font-weight:600;letter-spacing:0}
+.hdr .hstat .gb span{font-size:var(--fs-s);letter-spacing:0;color:var(--ink2)}
+.hdr .hstat .gb.off b::before{margin-right:5px}
+.hdr:has(.hsky.on) .hstat .gb{background:rgba(255,255,255,.09)!important;border-color:rgba(255,255,255,.3)!important;text-shadow:0 1px 2px rgba(0,0,0,.35),0 1px 10px rgba(0,0,0,.35)}
+.pill.danger .ic,.pill.danger .ic[data-k],.pill.danger[data-k] .ic{color:#ff6b62}
+/* Siri and HomeKit: the two switches under a scene's name. */
+.shr{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:8px}
+.shr-c{display:inline-flex;align-items:center;gap:2px;font-size:var(--fs-s);color:var(--ink2);cursor:pointer;-webkit-user-select:none;user-select:none}
+.shr-c .swt{margin-left:8px}
+.shr-c.dim{opacity:.5}
+.shr-c:focus-visible{outline-offset:3px}
+.hkqr{display:flex;justify-content:center;padding:14px;margin-bottom:var(--sp);border-radius:var(--r-row);background:#fff}
+.hkqr img{width:min(240px,70%);height:auto;display:block}
+
+/* Widgets and sized devices (decision D-25): a Section is a grid of four columns; xs is one column, s two, m and l all four. */
+.wgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp);margin-bottom:var(--sp)}
+.wgrid>*{grid-column:1/-1;margin-bottom:0;min-width:0}
+.wgrid>.w-xs{grid-column:span 1}
+.wgrid>.w-s{grid-column:span 2}
+.wgrid>.w-l{min-height:220px}
+
+/* Home screen widgets (decision D-25, app/homewidgets.js): the dashboard's own parts, and what they need on top. */
+.wgrid>.w-xs,.wgrid>.w-s{min-height:112px}
+.wgrid>.gb{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:12px}
+.wgrid>.gb>span,.wgrid>.gb>b{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wgrid>.w-xs.gb>b,.wgrid>.w-xs .rg2 b{font-size:var(--fs-m)}
+.wt{gap:4px}
+.wt.clk>b{font-size:30px;letter-spacing:-.5px}
+.wt.ringw .rg2{position:relative;width:min(64px,100%);aspect-ratio:1}
+.wt.ringw .rg2 svg{width:100%;height:100%}
+.wt.ringw circle{fill:none;stroke-width:6}
+.wt.ringw .bg{stroke:var(--f-line)}
+.wt.ringw .fg{stroke:var(--acc);stroke-linecap:round;transition:stroke-dashoffset .4s}
+.wt.ringw .rg2 b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:var(--fs-s)}
+.wt.spark .pl{width:100%;height:30px;display:flex;align-items:center;justify-content:center;font-size:var(--fs-xs);color:var(--ink2)}
+.wt.spark svg{width:100%;height:100%;overflow:visible}
+.wt.spark path{fill:none;stroke:var(--acc);stroke-width:1.6;vector-effect:non-scaling-stroke}
+.wt.fold{cursor:pointer}
+.wt.fold .fg{display:grid;grid-template-columns:repeat(2,auto);gap:4px}
+.wt.fold .fg .ic{width:26px;height:26px}
+.wt.fold .fg .ic[data-k]{--kc:var(--acc)}
+.np{display:flex;align-items:center;gap:12px;padding:12px;border-radius:var(--r-row);cursor:pointer}
+.np .art{width:56px;height:56px;border-radius:var(--r-row);background:var(--f-raise) center/cover;flex:none}
+.np .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.np .tx b,.np .tx span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.np .tx span{font-size:var(--fs-xs);color:var(--ink2)}
+.np .ctl{display:flex;gap:var(--sp-s);flex:none}
+.snapw{aspect-ratio:16/9;margin-bottom:0}
+.snapw img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.snapw span{position:absolute;left:12px;right:12px;bottom:10px;color:#fff;text-shadow:0 1px 3px #000a;font-size:var(--fs-s);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wl{margin-bottom:0}
+.stk .sb>*{margin-bottom:0}
+.stk .sd{display:flex;justify-content:center;gap:5px;margin-top:6px;cursor:pointer}
+.stk .sd i{width:6px;height:6px;border-radius:50%;background:var(--f-line2)}
+.stk .sd i.on{background:var(--acc)}
+.notec.tapedit{cursor:pointer}
+.asheet input{width:100%;box-sizing:border-box;border-radius:var(--r-m);padding:12px 14px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.22);color:var(--ink);font:inherit;outline:none}
+
+/* A widget that is a card of its own (Agenda, To-do, Vacuum): a header, a small button, and compact lines. */
+.wcard{padding:12px 14px;border-radius:var(--r-row)}
+.wcard .wh{display:flex;align-items:center;gap:10px;min-height:36px}
+.wcard .wh .ic{width:32px;height:32px;flex:none}
+.wcard .wh b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--fs-l);font-weight:600}
+.wcard .wh .wsub{font-size:var(--fs-xs);color:var(--ink2);white-space:nowrap}
+.wcard .wh .wadd,.wcard .wh .wpen{width:34px;height:34px;flex:none;cursor:pointer}
+.wcard .wb{margin-top:6px}
+.wcard .wr{display:flex;align-items:center;gap:12px;min-height:46px;padding:6px 0;border-top:1px solid var(--f-line)}
+.wcard .wr .nm{flex:1;min-width:0;font-weight:500}
+.wcard .wr .dd{display:flex;flex-direction:column;align-items:center;width:38px;flex:none;line-height:1.1}
+.wcard .wr .dd b{font-size:var(--fs-l)}
+.wcard .wr .dd span{font-size:var(--fs-xs);color:var(--ink2)}
+.wcard .wr .tx{display:flex;flex-direction:column;min-width:0}
+.wcard .wr .sb{font-size:var(--fs-xs);color:var(--ink2)}
+.wcard .wr .ck2{width:24px;height:24px;border-radius:50%;border:2px solid var(--ink2);flex:none;box-sizing:border-box;cursor:pointer}
+.wcard .wr.done .ck2{background:var(--acc);border-color:var(--acc)}
+.wcard .wr.done .nm{opacity:.5;text-decoration:line-through}
+.wcard .wbar{display:flex;gap:var(--sp);padding-top:4px}
+.wcard .wbar .rbtn{flex:1}
+/* Remote master: the title that is a dropdown, and the speaker's volume with what it plays (beside power, under it, or in now playing's place). */
+.sh-t.menu-t{cursor:pointer}
+.sh-t.menu-t{padding-right:12px}
+.sh-t.menu-t>.chev{margin-left:auto;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.28);flex:none;box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
+.sh-t.menu-t>.chev svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.rm-slot>.rm-spk{margin:0}
+.rm-spk .ic img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.rm-spk .ic{overflow:hidden}
+.pill.rm-spk .tx .nm,.pill.rm-spk .tx .sb{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rm-spk .tx{min-width:0}
+.rrow>.rm-beside{grid-column:2/-1;min-width:0}
+.rrow>.rm-beside>.rm-spk{min-height:54px;padding-top:0;padding-bottom:0}
+.rm-under,.rm-only{margin-bottom:var(--sp)}
+

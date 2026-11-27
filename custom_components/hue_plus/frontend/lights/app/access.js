@@ -15,7 +15,7 @@ var AMODES = ["allow", "confirm", "view", "hide"],
     hide: _T("hidden"),
   };
 
-var ADMINPOP = /^(kwiz|kpick|remote-(build|keys|key|media|btn)|lgroup:|lgnew|manage|pick-|access-|scene-edit|scene-pick|live-|areas|area-edit|lpscene:|stg-|adv:|settings$)/;
+var ADMINPOP = /^(kwiz|kpick|rm-(pick|member)|remote-(build|keys|key|media|btn)|lgroup:|lgnew|manage|pick-|access-|scene-edit|scene-pick|live-|areas|area-edit|lpscene:|stg-|share-how|adv:|vacap-|setup$|settings$|rbx(-role)?:|cust|preset$|look$|types?(:|$)|my-alert|act-|ap-device|ap-parts|ap-block|advset|advitem)/;
 
 function cleanRule(r) {
   if (!r || AMODES.indexOf(r.m) < 0) return null;
@@ -114,7 +114,7 @@ function visDevs(rid) {
 
 function defaultMsg(m) {
   var r = m.room && TITLES[m.room];
-  return r ? _T("are_you_sure_this_controls") + r + "." : _T("are_you_sure");
+  return r ? _T("are_you_sure_this_controls", { x: r }) : _T("are_you_sure");
 }
 
 function gate(ids, proceed) {
@@ -207,7 +207,7 @@ function accSummary(uid) {
   return (
     _T("everything_else_value") +
     (u.def ? MODELAB[u.def.m] : _T("allowed")) +
-    (n ? " · " + n + (n === 1 ? " exception" : " exceptions") : "")
+    (n ? " · " + _T(n === 1 ? "exception_n" : "exceptions_n", { n: n }) : "")
   );
 }
 
@@ -300,6 +300,7 @@ function accessUser(b, uid) {
       var rr = u.rooms[r.id];
       box.appendChild(
         pill(r.icon || "home", r.name, {
+          kind: "other",
           sub: function () {
             var n = u.devs
               ? Object.keys(u.devs).filter(function (id) {
@@ -421,7 +422,7 @@ function roomAccessList(b, rid) {
                 return rr
                   ? MODELAB[rr.m]
                   : s && s.def
-                    ? _T("same_as_everything_else_2") + MODELAB[s.def.m]
+                    ? _T("same_as_everything_else_2", { x: MODELAB[s.def.m] })
                     : _T("full_access");
               },
               tap: function () {
@@ -437,7 +438,8 @@ function roomAccessList(b, rid) {
 }
 
 function sceneAllowed(sc) {
-  if (ISADMIN || !ACCESS_ME || sc.room === "home") return true;
+  /* an auto scene belongs to no room; where it may be played is asked when it is */
+  if (ISADMIN || !ACCESS_ME || sc.auto || sc.room === "home") return true;
   var m = modeOf("", sc.room).mode;
   return m !== "view" && m !== "hide";
 }

@@ -4,7 +4,7 @@
 /* The section of a lights master, by its name. */
 function masterSec(sid) {
   var at = String(sid).split("~");
-  return at.length === 2 ? secById(at[0], at[1]) : null;
+  return at.length === 2 ? masterById(at[0], at[1]) : null;
 }
 
 /* The lights it controls. Automatic: every light of its section, also the ones hidden in the section (hiding is for the page; the master still has them), except what this person may not see. Manual: the lights chosen for it. */
@@ -116,7 +116,7 @@ function masterModeRows(box, sec, scope, redraw) {
     box.appendChild(
       pill("plus", _T("master_choose_lights"), {
         sub: function () {
-          return (sec.ml || []).length + " " + _T("lights").toLowerCase();
+          return _T("n_lights", { n: (sec.ml || []).length });
         },
         tap: function () {
           showPopup("lmaster-lights:" + key, true);
@@ -180,8 +180,9 @@ function masterLightList(box, sec, scope, redraw) {
         group = sec.mgl && lpIsGroup(n),
         edit = n.key.indexOf("light.") === 0 ? editLight(n) : null,
         row = pill(n.icon || "light", n.name, {
+          kind: "light",
           sub: function () {
-            return group ? lpCount(n) + " " + _T("lights").toLowerCase() : n.key;
+            return group ? _T("n_lights", { n: lpCount(n) }) : n.key;
           },
           tap: edit,
         });
@@ -359,7 +360,7 @@ function masterSectionRows(box, sec) {
 /* Choosing the lights of a manual master: every light of Home Assistant, searched by name and filtered by area; a tap adds or takes out. */
 function masterLightsPage(b, key) {
   var p = key.split(":"),
-    sec = secById(p[0], p[1]);
+    sec = masterById(p[0], p[1]);
   if (!sec) return;
   masterLightsChooser(b, sec, uiChanged);
 }
@@ -458,7 +459,7 @@ function masterLightsChooser(b, sec, changed) {
 /* The scene the power button runs: one of the scenes of the master's own list, or none. */
 function masterSceneRunPage(b, key) {
   var p = key.split(":"),
-    sec = secById(p[0], p[1]);
+    sec = masterById(p[0], p[1]);
   if (!sec) return;
   var S0 = { root: { key: "m:" + p[0] + "~" + p[1], cmd: lightUnits(masterLightIds(sec)) } },
     rows = [];

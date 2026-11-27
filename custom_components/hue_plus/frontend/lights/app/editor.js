@@ -398,6 +398,8 @@ function resetPage(sc) {
     devs = [];
   old.forEach(function (x) {
     (x.devs || []).forEach(function (d) {
+      /* the overviews are in the fresh sections already */
+      if (d.kind === "widget" && widgetDef(d.w) && widgetDef(d.w).section) return;
       devs.push(d);
     });
   });
@@ -412,16 +414,14 @@ function resetPage(sc) {
       secForDevice(fresh, d).devs.push(d);
     });
   old.forEach(function (x) {
-    if (!x.pins && !x.scn) return;
+    if (!x.scn) return;
     var t = fresh.filter(function (y) {
-      return y.k === x.k && !y.pins && !y.scn;
+      return y.k === x.k && !y.scn;
     })[0];
-    if (t) {
-      if (x.pins) t.pins = x.pins;
-      if (x.scn) t.scn = x.scn;
-    }
+    if (t) t.scn = x.scn;
   });
-  setSecOrder(sc, fresh);
+  /* what is in the popups stays with their widgets */
+  setSecOrder(sc, fresh.concat(old.filter(function (x) { return x.of; })));
   uiChanged();
 }
 
@@ -461,7 +461,6 @@ function secAdd(sc, k) {
     hide: false,
   };
   if (ty.own) e.devs = [];
-  if (k === "chart") e.r = "24h";
   arr.push(e);
   setSecOrder(sc, arr);
   uiChanged();
@@ -469,19 +468,39 @@ function secAdd(sc, k) {
 }
 
 /* The kinds of section there are, by what they are for, for the Add section list. */
-var SEC_GROUPS = [
-  ["sec_group_section", "tune", ["devs"]],
-  ["sec_group_overview", "home", ["glance", "rooms", "alerts", "chips", "status"]],
-  ["sec_group_scenes", "scene", ["pinned"]],
-  ["sec_group_information", "info", ["chart", "read", "note", "security", "energy"]],
-  ["sec_group_cameras", "cam", ["camera", "cameras"]],
-  ["sec_group_tools", "swap", ["link"]],
-];
+var SEC_GROUPS = [["sec_group_section", "tune", ["devs"]]];
 
 function secTypesPage(b, scopeId) {
   var sc = scopeKey(scopeId),
     have = secOrder(sc);
   b.appendChild(mkHint(_T("choose_what_the_new_section_shows_yo")));
+  b.appendChild(
+    pill("sd", _T("preset_load"), {
+      sub: function () {
+        return _T("preset_load_sub");
+      },
+      tap: function () {
+        presetOpen(scopeId);
+      },
+    })
+  );
+  b.appendChild(sep(_T("widgets"), "tune"));
+  Object.keys(WIDGETS).forEach(function (w) {
+    var f = WIDGETS[w];
+    b.appendChild(
+      pill(f.icon, f.title, {
+        sub: function () {
+          return f.desc || "";
+        },
+        tap: function () {
+          var e = secAddWidget(sc, w);
+          STACK.pop();
+          CURRENT = null;
+          showPopup("manage-sec:" + scopeId + ":" + e.id, true);
+        },
+      })
+    );
+  });
   SEC_GROUPS.forEach(function (g) {
     b.appendChild(sep(_T(g[0]), g[1]));
     g[2].forEach(function (k) {
@@ -517,6 +536,17 @@ function secTypesPage(b, scopeId) {
   });
 }
 
+/* A new plain Section holding one new widget, named and iconned as the widget is. */
+function secAddWidget(sc, w) {
+  var arr = secOrder(sc),
+    f = widgetDef(w),
+    e = { id: newSecId(arr), k: "devs", hide: false, t: f.title.slice(0, 40), i: f.icon, devs: [newWidgetDev(w)] };
+  arr.push(e);
+  setSecOrder(sc, arr);
+  uiChanged();
+  return e;
+}
+
 /* Back to the popup that opened this one, or closed if it was opened directly. */
 function popBack() {
   if (POPGUARD && POPGUARD(popBack)) return;
@@ -544,20 +574,26 @@ function secOrderPage(b, key) {
       if (!h.isConnected || !h._items) return;
       var its = masonVisible(h),
         n = h._n || colCount(h),
-        fl = masonFlags(its, n),
+        sp = masonSpans(its, n),
         W = h.clientWidth,
         cw = (W - (n - 1) * 24) / n;
       its.forEach(function (it, j) {
         var x = parseFloat((/translate\(([-\d.]+)px/.exec(it.el.style.transform) || [0, 0])[1]);
         out[it.id] =
-          fl[j] && n > 1 ? _T("full_width") : _T("column") + " " + (Math.round(x / (cw + 24)) + 1);
+          sp[j] > 1 && sp[j] >= n
+            ? _T("full_width")
+            : sp[j] > 1
+              ? _T("columns") + " " + (Math.round(x / (cw + 24)) + 1) + "–" + (Math.round(x / (cw + 24)) + sp[j])
+              : _T("column") + " " + (Math.round(x / (cw + 24)) + 1);
       });
     });
     return out;
   }
   function draw() {
     box.innerHTML = "";
-    var o = secOrder(sc),
+    var o = secOrder(sc).filter(function (s) {
+        return !s.of;
+      }),
       cm = colMap(),
       hint = mk("div", "hint"),
       rows = [];
@@ -573,10 +609,13 @@ function secOrderPage(b, key) {
       box.appendChild(r);
     });
     makeSortable(box, rows, function (from, to) {
-      var a = secOrder(sc),
+      var all = secOrder(sc),
+        a = all.filter(function (s) {
+          return !s.of;
+        }),
         x = a.splice(from, 1)[0];
       a.splice(to, 0, x);
-      setSecOrder(sc, a);
+      setSecOrder(sc, a.concat(all.filter(function (s) { return s.of; })));
       uiChanged();
       setTimeout(draw, 250);
     });
@@ -730,7 +769,7 @@ var ADDPRE = null,
 /* The section of a page a device goes into when no section was chosen: one that already holds a device of its kind, else the first Section, else a new one. */
 function secForDevice(arr, d) {
   var secs = arr.filter(function (x) {
-    return x.k === "devs";
+    return x.k === "devs" && !x.of;
   });
   var same = secs.filter(function (x) {
     return (x.devs || []).some(function (y) {
@@ -765,7 +804,9 @@ function pageDevIds(rid) {
   var scope = rid.charAt(0) === "~" ? rid.split("~")[1] : rid,
     sc = scope === "home" ? "home" : "room:" + scope,
     out = {};
-  secOrder(sc).forEach(function (s) {
+  /* Adding into a popup: only what is in that popup is taken. Adding to a page: what is only in a popup is still offered. */
+  var own = rid.charAt(0) === "~" ? secById(scope, rid.split("~")[2]) : null;
+  (own && own.of ? [own] : secOrder(sc).filter(function (s) { return !s.of; })).forEach(function (s) {
     (s.devs || []).forEach(function (d) {
       if (d.id) out[d.id] = 1;
     });
@@ -838,7 +879,7 @@ function roomNewPage(b) {
             sections = draft.area && draft.suggest ? groupSections(areaDevices(draft.area)) : [];
           if (!sections.length) sections = [{ id: "main", k: "devs", hide: false, devs: [] }];
           UI.rooms.push({ id: id, name: draft.name || _T("new_room"), short: "", icon: "home", area: draft.area });
-          UI.layout.rooms[id] = [{ id: "status", k: "status", hide: false }].concat(sections);
+          UI.layout.rooms[id] = [statusSection([])].concat(sections);
           uiChanged();
           toast(_T("rn_created"));
           closeSheet();
@@ -886,100 +927,8 @@ function secEditor(b, key) {
   function draw() {
     var k = e.k || "devs",
       ty = SECTYPES[k] || SECTYPES.devs;
-    if (k === "link") {
-      var lq = (e.ref || "").split(":"),
-        ls = e.ref ? secById(lq[0], lq[1]) : null;
-      box.appendChild(
-        pill("swap", ls ? secName(ls) : _T("no_section_chosen"), {
-          sub: function () {
-            return ls
-              ? (TITLES[lq[0]] || lq[0]) + " · " + _T("tap_to_choose_another_2")
-              : _T("tap_to_choose");
-          },
-          tap: function () {
-            showPopup("sec-link:" + key, true);
-          },
-        })
-      );
-      if (ls && ls.k !== "link")
-        box.appendChild(
-          pill("plus", _T("make_an_independent_copy"), {
-            sub: function () {
-              return _T("stops_following_the_original_section");
-            },
-            tap: function () {
-              var c = JSON.parse(JSON.stringify(ls));
-              c.id = newSecId(order);
-              delete c.ref;
-              order[order.indexOf(e)] = c;
-              setSecOrder(sk, order);
-              uiChanged();
-              popBack();
-            },
-          })
-        );
-    }
-    if (k === "energy") {
-      box.appendChild(sep(_T("cost"), "plug"));
-      box.appendChild(
-        numRow(
-          "plug",
-          _T("price_per_kwh_empty_hides_the_cost"),
-          e.price,
-          function (v) {
-            if (v && v > 0) e.price = Math.round(v * 10000) / 10000;
-            else delete e.price;
-            save();
-          },
-          0,
-          1000
-        )
-      );
-      box.appendChild(
-        textRow(
-          "edit",
-          _T("currency_symbol"),
-          e.cur || "",
-          function (v) {
-            if (v) e.cur = v.slice(0, 4);
-            else delete e.cur;
-            save();
-          },
-          4
-        )
-      );
-    }
-    if (k === "alerts") {
-      box.appendChild(sep(_T("show_these_alerts"), "alert"));
-      [
-        ["battery", _T("low_batteries"), "battery"],
-        ["vacuum", _T("robot_vacuum_needs_attention"), "vac"],
-        ["camera", _T("camera_offline"), "cam"],
-        ["climate", _T("air_conditioner_offline"), "ac"],
-        ["lights", _T("light_unavailable"), "lights"],
-      ].forEach(function (a) {
-        box.appendChild(
-          pill(a[2], a[1], {
-            on: function () {
-              return alertOn(a[0]);
-            },
-            tap: function () {
-              var off = ((STORE.cfg && STORE.cfg.alertOff) || []).slice(),
-                i = off.indexOf(a[0]);
-              if (i >= 0) off.splice(i, 1);
-              else off.push(a[0]);
-              STORE.cfg = cleanCfg(Object.assign({}, STORE.cfg, { alertOff: off }));
-              storeChanged();
-              refresh();
-            },
-          })
-        );
-      });
-    }
     /* Sections that list items can show them in one, two or three columns. Pinned items and quick actions already had a default shape (2 columns, 4 tiles), which stays when nothing is chosen. */
-    if (
-      ["devs", "pinned"].indexOf(k) >= 0
-    ) {
+    if (k === "devs") {
       box.appendChild(sep(_T("layout"), "tune"));
       box.appendChild(
         dropRow(
@@ -1001,49 +950,35 @@ function secEditor(b, key) {
         )
       );
     }
-    if (k === "chart")
-      (box.appendChild(sep(_T("time_range"), "clock")),
-        box.appendChild(
-          seg(
-            [
-              ["6h", _T("6_hours")],
-              ["24h", _T("24_hours")],
-              ["7d", _T("7_days")],
-              ["30d", _T("30_days")],
-            ],
-            e.r || "24h",
-            function (v) {
-              e.r = v;
-              delete CHR[sid];
-              save();
-              redrawBox(box, draw);
-            }
-          )
-        ));
-    if (k === "note")
-      (box.appendChild(sep(_T("text"), "edit")),
-        box.appendChild(
-          areaRow(
-            _T("write_a_note"),
-            e.txt || "",
-            function (v) {
-              e.txt = v.slice(0, 600);
-              save();
-            },
-            600
-          )
-        ));
-    if (k === "pinned")
-      box.appendChild(
-        pill("pin", _T("pinned_items"), {
-          sub: function () {
-            return (e.pins || []).length + " / 12";
-          },
-          tap: function () {
-            showPopup("pick-pin:" + key, true);
-          },
-        })
-      );
+    /* How many of the page's columns the Section takes. It shrinks with the screen: on a phone every Section is one column, and a Section is never wider than the page has columns. */
+    var pcn = pageCols(sk) || 2;
+    box.appendChild(sep(_T("width"), "tune"));
+    box.appendChild(
+      dropRow(
+        _T("width"),
+        ["auto"].concat(
+          Array.apply(null, Array(Math.max(1, pcn))).map(function (_, i) {
+            return i + 1;
+          })
+        ),
+        function () {
+          return e.span || "auto";
+        },
+        function (v) {
+          if (v === "auto") delete e.span;
+          else e.span = v;
+          save();
+          redrawBox(box, draw);
+        },
+        "tune",
+        function (v) {
+          return v === "auto" ? _T("automatic") : v >= pcn && pcn > 1 ? _T("full_width") : v === 1 ? _T("one_column") : _T("n_columns", { n: v });
+        }
+      )
+    );
+    var wh = mk("div", "hint");
+    wh.textContent = _T("a_section_is_one_column_on_a_narrow_scre");
+    box.appendChild(wh);
     /* Whether it is shown and when, then the actions. */
     box.appendChild(sep(_T("dp_in_the_section"), "home"));
     box.appendChild(
@@ -1081,6 +1016,13 @@ function secEditor(b, key) {
           });
         },
       });
+    acts.push(
+      pill("sd", _T("preset_save"), {
+        tap: function () {
+          presetSave(e);
+        },
+      })
+    );
     if (!ty.one)
       acts.push(
         pill("plus", _T("duplicate_this_section"), {
@@ -1088,12 +1030,26 @@ function secEditor(b, key) {
             var c = JSON.parse(JSON.stringify(e));
             c.id = newSecId(order);
             c.t = (e.t || ty.t).slice(0, 36) + " 2";
+            /* the widgets it holds are copies with ids of their own (a lights master is named by its id) */
+            (c.devs || []).forEach(function (x) {
+              if (x.kind !== "widget") return;
+              x.wid = x.w === "lmaster" ? masterNewId(sk === "home" ? "home" : sk.slice(5)) : widgetNewId();
+              if (x.wx && x.w === "lmaster") x.wx.id = x.wid;
+            });
+            /* a copied Popup widget gets a copy of what is in it */
+            (c.devs || []).forEach(function (x, i) {
+              if (x.w !== "popup") return;
+              var inside = order.filter(function (y) {
+                return y.of === e.devs[i].wid;
+              })[0];
+              if (!inside) return;
+              var copy = JSON.parse(JSON.stringify(inside));
+              copy.of = x.wid;
+              copy.id = newSecId(order.concat(c));
+              order.push(copy);
+            });
             order.splice(order.indexOf(e) + 1, 0, c);
             setSecOrder(sk, order);
-            /* the lights masters it holds are copies with ids of their own */
-            (c.masters || []).forEach(function (m) {
-              m.id = masterNewId(sk === "home" ? "home" : sk.slice(5));
-            });
             uiChanged();
             toast(_T("section_duplicated"));
           },

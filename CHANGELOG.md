@@ -2,6 +2,12 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semantic versioning](https://semver.org/).
 
+## [0.24.2] - 2026-11-27
+
+### Changed
+
+- The light popup in the Hue panel is the current one from Home Control 0.35.1.
+
 ## [0.24.1] - 2026-11-27
 
 ### Fixed

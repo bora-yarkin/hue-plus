@@ -2,13 +2,13 @@
    the scene that plays has a pen and three dots beside it. Which scenes are in it is the section's own choice (`msrc`, with the scenes made from its + in `scn`), not the scenes sections': removing a scenes section changes nothing here.
    What the section keeps (app/model.js): scn (the scenes made here), msrc (where else they come from), mf (the folders: { id, n, s: [keys] }) and mtop (the order of the tiles that are outside folders). */
 
-/* The section a lights master popup is for: the page it is on and its settings. A master is named "page~section" (a page's Lights section can have the same id as another page's). */
+/* The master a lights master popup is for: the page it is on and its settings, a Section's own master and every other alike. A master is named "page~id" (a page's Lights section can have the same id as another page's). */
 function mscSection(root) {
   var at = String((root && root.key) || "")
       .replace(/^m:/, "")
       .split("~"),
-    e = at.length === 2 ? secById(at[0], at[1]) : null;
-  return e && e.k === "devs" ? { scope: at[0], e: e } : null;
+    e = at.length === 2 ? masterById(at[0], at[1]) : null;
+  return e ? { scope: at[0], e: e } : null;
 }
 
 /* Where the scenes of a section come from when it has not chosen: the Hue scenes of its lights' areas, as the Effects page used to list them. */
@@ -43,7 +43,12 @@ function mscItems(S) {
     })
     .forEach(stored);
   (e.msrc || MSC_DEFAULT_SRC).forEach(function (src) {
-    if (src.indexOf("hue:") === 0) {
+    if (src === "ha:@page") {
+      /* Home Assistant's own scenes of the page's area (a plugin's are its source above) */
+      haSceneIds(page.area).forEach(function (id) {
+        add(id, "entity", sceneShortName(A(id).friendly_name || id, { name: page.name, area: page.area }, e));
+      });
+    } else if (src.indexOf("hue:") === 0) {
       /* The scenes a plugin owns in a room (an area of Home Assistant): of the lights' areas, of the page's area, or of the area named. */
       var picked = (e.msrc || MSC_DEFAULT_SRC).filter(function (x) {
           return x.indexOf("page:") === 0 || x.indexOf("area:") === 0;
@@ -65,6 +70,11 @@ function mscItems(S) {
       ids.forEach(function (id) {
         add(id, "plugin", A(id).friendly_name || A(id).name || id);
       });
+    } else if (src.indexOf("group:") === 0) {
+      /* The scenes a plugin owns in one of its groups (Hue's rooms and zones). */
+      sceneGroupIds(src).forEach(function (id) {
+        add(id, "plugin", A(id).friendly_name || A(id).name || id);
+      });
     } else if (src === "page" || src.indexOf("page:") === 0) {
       /* The scenes made for a page: "page" is this page, as it was called before pages could be chosen. */
       var room = src === "page" ? ref.scope : src.slice(5);
@@ -79,10 +89,36 @@ function mscItems(S) {
       });
     }
   });
+  /* A room's scene and the scene of the same name in a zone of it say which is which. */
+  var words = sceneNameSuffixes(
+    out
+      .filter(function (it) {
+        return it.kind === "plugin";
+      })
+      .map(function (it) {
+        return it.id;
+      })
+  );
+  out.forEach(function (it) {
+    if (words[it.id]) it.name += words[it.id];
+  });
   return out;
 }
 
+/* The `scene.*` entities of an area that no plugin owns. */
+function haSceneIds(area) {
+  if (!area) return [];
+  return sceneIds(area)
+    .map(function (x) {
+      return x[0];
+    })
+    .filter(function (id) {
+      return !pluginSceneKind(id);
+    });
+}
+
 function mscKindLabel(it) {
+  if (it.kind === "entity") return _T("scene_kind_ha");
   return it.kind === "plugin" ? _T("scene_kind_plugin") || _T("scene_source_fallback") : it.kind === "auto" ? _T("auto_scene") : it.kind === "live" ? _T("live_scene") : _T("classic_scene");
 }
 
@@ -98,6 +134,8 @@ function mscColours(it, cb) {
     if (kind && kind.palette) kind.palette(it.id, cb);
     return;
   }
+  /* Home Assistant does not say what colours its scene sets: its tile is in the dashboard's accent */
+  if (it.kind === "entity") return cb([flatAccent()]);
   var list = it.kind === "auto" ? it.sc.auto.colors : it.kind === "live" ? (it.sc.live && it.sc.live.palette) || [] : (it.sc.acts || []).map(function (a) {
       return a.col;
     });
@@ -116,7 +154,7 @@ function mscActive(it) {
     var kind = pluginSceneKind(it.id);
     return !!(kind && kind.active(it.id));
   }
-  if (it.kind === "auto") return false;
+  if (it.kind === "auto" || it.kind === "entity") return false;
   return it.kind === "live" ? !!liveRun(it.sc) : sceneActive(it.sc);
 }
 
@@ -126,6 +164,10 @@ function mscDynamic(it) {
 
 /* Starts it (or stops it, when it plays and can be stopped), on the lights of the master. A still scene that is on is switched off by tapping it again: it has nothing to stop, so the lights go off. */
 function mscPlay(S, it) {
+  if (it.kind === "entity") {
+    liveStopOn(S.root.cmd);
+    return call("scene", "turn_on", { entity_id: it.id });
+  }
   if (it.kind === "auto") return autoScenePlay(it.sc, S.root.cmd);
   if (it.kind === "live") return liveToggle(it.sc);
   if (!mscDynamic(it) && mscActive(it)) return call("light", "turn_off", { entity_id: S.root.cmd });
@@ -142,6 +184,7 @@ function mscPlay(S, it) {
 
 /* Opens the page that edits it, over the panel: the panel comes back when it is left, on this page. */
 function mscEdit(S, it) {
+  if (it.kind === "entity") return toast(_T("scene_edit_in_ha"));
   LPBACK = { root: S.root.key, mode: S.mode, sel: S.sel };
   if (it.kind === "auto") autoSceneEdit(it.sc);
   else if (it.kind === "live") liveMakerEdit(it.sc);
@@ -181,7 +224,7 @@ function mscMore(S, it, ref, redraw) {
         redraw();
       },
     });
-  if (it.kind === "plugin" ? kind && kind.remove : true)
+  if (it.kind === "plugin" ? kind && kind.remove : it.kind !== "entity")
     list.push({
       label: _T("delete_scene"),
       danger: true,
@@ -810,12 +853,12 @@ function mscSourceRows(box, sec, scope, redraw) {
     {
       get: function () {
         return list().filter(function (x) {
-          return x.indexOf("page:") === 0 || x.indexOf("area:") === 0 || x.indexOf("hue:") === 0;
+          return x.indexOf("page:") === 0 || x.indexOf("area:") === 0 || x.indexOf("hue:") === 0 || x.indexOf("group:") === 0;
         });
       },
       set: function (tokens) {
         put(function (x) {
-          return x.indexOf("page:") !== 0 && x.indexOf("area:") !== 0 && x.indexOf("hue:") !== 0;
+          return x.indexOf("page:") !== 0 && x.indexOf("area:") !== 0 && x.indexOf("hue:") !== 0 && x.indexOf("group:") !== 0;
         }, tokens);
       },
     },

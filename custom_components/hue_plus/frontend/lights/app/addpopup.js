@@ -6,7 +6,7 @@ function addCandidate(rid, c) {
   /* A scene made on the dashboard is a device that points to it. */
   if (c.id.indexOf("dscene:") === 0) {
     var sc = sceneById(c.id.slice(7)),
-      sd = { id: "", sid: c.id.slice(7), name: "Scene", icon: (sc && sc.icon) || "scene", kind: "cscene" };
+      sd = { id: "", sid: c.id.slice(7), name: _T("scene_default_name"), icon: (sc && sc.icon) || "scene", kind: "cscene" };
     return { d: sd, at: placeDevice(rid, sd), wizard: false };
   }
   var kind = DOMKIND[dom(c.id)] || "sensor",
@@ -76,7 +76,7 @@ function devAdd(b, rid) {
 /* The line that says how many are checked (and that they become one group). */
 function addCount(f) {
   var n = f.order.length;
-  f.count.textContent = n ? n + _T("add_selected") + (f.st.group ? " · " + _T("lg_as_one_group") : "") : "";
+  f.count.textContent = n ? _T("add_selected", { x: n }) + (f.st.group ? " · " + _T("lg_as_one_group") : "") : "";
   f.count.style.display = n ? "" : "none";
 }
 
@@ -149,11 +149,26 @@ function addList(f) {
   var kind = ADDDOMS[f.st.dom][1][0];
   if (kind === "__remote") return addRemoteEntry(f);
   if (kind === "__appliance") return addApplianceEntries(f);
+  if (kind === "__widget") return addWidgetEntries(f);
   addEntities(f);
 }
 
 /* A remote is not an entity: it is made here, then filled with buttons. */
+/* Remotes: a ready-made one (any media player is chosen; its popup is the remote), the Remote master, and one built by hand. */
 function addRemoteEntry(f) {
+  f.box.appendChild(
+    pill("tv", _T("rm_ready"), {
+      sub: function () {
+        return _T("rm_ready_sub");
+      },
+      tap: function () {
+        pickEntity(_T("rm_ready"), ["media_player"], null, function (id) {
+          addReadyRemote(f.rid, id);
+        });
+      },
+    })
+  );
+  f.box.appendChild(addWidgetEntry(f, "rmaster"));
   f.box.appendChild(
     pill("media", _T("rm_new_remote"), {
       sub: function () {
@@ -169,7 +184,140 @@ function addRemoteEntry(f) {
   );
 }
 
+/* Puts the chosen player where the Add popup was opened, as a TV. A player with no remote entity of its own is asked which one sends its keys (a cast player's box often has its
+   remote under another integration); without one it keeps the plain media controls. */
+function addReadyRemote(rid, id) {
+  var name = String(A(id).friendly_name || id).slice(0, 40),
+    list = devList(rid),
+    d = list.filter(function (x) {
+      return x.id === id;
+    })[0],
+    at;
+  if (d) at = { rid: rid, i: list.indexOf(d) };
+  else {
+    var made = addCandidate(rid, { id: id, name: name });
+    d = made.d;
+    at = made.at;
+    d.icon = "tv";
+    d.dt = "tv";
+    uiChanged();
+    toast(_T("added", { x: name }));
+  }
+  if (tvRemoteOf(id)) return showPopup("manage-dev:" + at.rid + ":" + at.i, false);
+  setTimeout(function () {
+    toast(_T("rm_ready_choose_remote"));
+    pickEntity(_T("rm_ready_choose_remote"), ["remote"], null, function (remote) {
+      d.links = [remote].concat(d.links || []).slice(0, 12);
+      uiChanged();
+    });
+  }, 0);
+}
+
+/* One widget type of the registry as a row that adds it and opens its settings. */
+function addWidgetEntry(f, w) {
+  var def = WIDGETS[w];
+  return pill(def.icon, def.title, {
+    sub: function () {
+      return def.desc || "";
+    },
+    tap: function () {
+      var at = placeDevice(f.rid, newWidgetDev(w));
+      uiChanged();
+      POPGUARD = null;
+      showPopup("manage-dev:" + at.rid + ":" + at.i, false);
+    },
+  });
+}
+
+function addWidgetEntries(f) {
+  /* the Remote master is with the remotes */
+  Object.keys(WIDGETS)
+    .filter(function (w) {
+      return w !== "rmaster";
+    })
+    .forEach(function (w) {
+      f.box.appendChild(addWidgetEntry(f, w));
+    });
+}
+
+/* Choosing the device, for the page `rid`. */
+function apDevicePage(b, rid) {
+  var h = H(),
+    w = mk("div", "sqw pane", svg("search")),
+    inp = mk("input", "sq"),
+    box = mk("div"),
+    list = Object.keys(h.devices || {})
+      .map(function (id) {
+        var dv = h.devices[id],
+          area = dv.area_id && h.areas && h.areas[dv.area_id];
+        return { id: id, name: String(dv.name_by_user || dv.name || ""), area: area ? area.name : "", n: apDeviceEntities(id).length };
+      })
+      .filter(function (x) {
+        return x.name && x.n;
+      })
+      .sort(function (a, b) {
+        return a.name.localeCompare(b.name);
+      });
+  inp.type = "text";
+  inp.placeholder = _T("search");
+  inp.setAttribute("aria-label", _T("search"));
+  inp.setAttribute("autocomplete", "off");
+  w.appendChild(inp);
+  b.appendChild(w);
+  b.appendChild(box);
+  function draw() {
+    var words = norm(inp.value).trim().split(/\s+/).filter(Boolean),
+      found = list.filter(function (x) {
+        var hay = norm(x.name + " " + x.area);
+        return words.every(function (t) {
+          return hay.indexOf(t) >= 0;
+        });
+      });
+    found.slice(0, 60).forEach(function (x) {
+      box.appendChild(
+        pill("plug", x.name, {
+          sub: function () {
+            return (x.area ? x.area + " · " : "") + _T("px_entities", { n: x.n });
+          },
+          tap: function () {
+            var d = apFromDevice(x.id);
+            devList(rid).push(d);
+            uiChanged();
+            showPopup("ap-edit:" + d.aid, false);
+          },
+        })
+      );
+    });
+    if (found.length > 60) box.appendChild(hintRow(_T("act_more_found", { n: found.length - 60 })));
+    if (!found.length) box.appendChild(hintRow(_T("nothing_found")));
+  }
+  inp.addEventListener("input", function () {
+    redrawBox(box, draw);
+  });
+  redrawBox(box, draw);
+}
+
 function addApplianceEntries(f) {
+  f.box.appendChild(
+    pill("edit", _T("preset_device_file"), {
+      sub: function () {
+        return _T("preset_device_file_sub");
+      },
+      tap: function () {
+        presetOpen(f.rid);
+      },
+    })
+  );
+  f.box.appendChild(
+    pill("plug", _T("ap_whole"), {
+      sub: function () {
+        return _T("ap_whole_sub");
+      },
+      tap: function () {
+        showPopup("ap-device:" + f.rid, true);
+      },
+    })
+  );
   Object.keys(AP_TYPES).forEach(function (t) {
     f.box.appendChild(
       pill(AP_TYPES[t].icon, _T(AP_TYPES[t].l), {
@@ -284,7 +432,7 @@ function addEntities(f) {
       });
     f.box.appendChild(row);
   });
-  if (items.length > shown.length) f.box.appendChild(hintRow(items.length - shown.length + _T("more_type_to_narrow_the_list")));
+  if (items.length > shown.length) f.box.appendChild(hintRow(_T("more_type_to_narrow_the_list", { x: items.length - shown.length })));
 }
 
 /* Adds what is checked. With Light group checked the checked lights are not added one by one: the new group form opens for them, and the group is made when that is saved. */
@@ -315,7 +463,7 @@ function addSave(f, leave) {
     });
     if (rest.length) {
       uiChanged();
-      toast(_T("added") + (rest.length === 1 ? rest[0].name + "”" : rest.length + _T("add_devices_word")));
+      toast(rest.length === 1 ? _T("added", { x: rest[0].name }) : _T("added_n", { n: rest.length }));
     }
     return rest.length === 1 && wizard ? wizard : null;
   }
