@@ -4,6 +4,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semant
 
 ## [Unreleased]
 
+### Fixed
+
+- The Hue panel stopped part way through loading (`registerGroupCheck is not a function`), so what the pages add after that point was missing.
+
+## [Unreleased]
+
 ## [0.24.0] - 2026-11-24
 
 ### Fixed
