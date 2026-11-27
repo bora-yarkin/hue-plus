@@ -40,7 +40,7 @@ export function makeHass(query) {
     state("select.bedroom_scene", "Nightlight", { friendly_name: "Scene", options: ["Nightlight"] }),
     state("switch.hue_spotify_sync", "off", { friendly_name: "Hue Spotify sync" }),
     state("number.hue_spotify_sync_sync_brightness", "80", { friendly_name: "Brightness", min: 1, max: 100, step: 1 }),
-    state("sensor.hue_spotify_sync_now_playing", "Running in Menace", { friendly_name: "Now playing", artists: ["Enforcer"], album: "Diamonds", is_playing: true, playback_device: "Living room speaker" }),
+    state("sensor.hue_spotify_sync_now_playing", "Morning Light", { friendly_name: "Now playing", artists: ["The Example Band"], album: "First Light", is_playing: true, playback_device: "Living room speaker" }),
     state("select.hue_spotify_sync_style", "Classic", { friendly_name: "Style", options: ["Classic", "Pulse"] }),
     state("select.hue_spotify_sync_intensity", "high", { friendly_name: "Intensity", options: ["auto", "subtle", "moderate", "high", "extreme"] }),
     state("select.hue_spotify_sync_palette", "auto", { friendly_name: "Color", options: ["auto", "journey", "nocturnal", "blush", "drift", "flare"], colors: { journey: [[20, 90, 110], [230, 160, 60]], nocturnal: [[50, 40, 150], [120, 220, 240]], blush: [[250, 200, 200], [240, 150, 150]], drift: [[230, 150, 120], [90, 90, 200]], flare: [[30, 80, 200], [250, 120, 20]] } }),
