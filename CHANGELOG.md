@@ -2,13 +2,15 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/). Versions follow [semantic versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.24.1] - 2026-11-27
 
 ### Fixed
 
 - The Hue panel stopped part way through loading (`registerGroupCheck is not a function`), so what the pages add after that point was missing.
 
-## [Unreleased]
+### Changed
+
+- A new README, a user manual and screenshots of the panel.
 
 ## [0.24.0] - 2026-11-24
 
