@@ -1,87 +1,60 @@
 # Philips Hue Plus
 
-An unofficial Home Assistant integration that adds what the built-in Hue integration does not show. It uses the connection
-the Hue integration already has to your bridge, so there is no second login. Not affiliated with or endorsed by Signify.
+Home Assistant's Hue integration covers the basics. Hue Plus adds the rest: gradient zones, effects, scene editing, the bridge's own automations and settings, Spotify sync, and a Hue panel in your sidebar that works much like the Hue app.
 
-Needs Home Assistant 2026.10 or newer and a v2 bridge (Bridge Pro or Bridge v2). Hue Plus can connect to the bridge itself (no Hue integration needed), or use the connection of the Hue integration when that is set up, side by side with it.
+It's unofficial and has nothing to do with Signify.
 
-## It does not break what you have
+<p>
+  <img src="docs/images/panel-home.png" width="32%" alt="Rooms and zones">
+  <img src="docs/images/panel-room.png" width="32%" alt="A room with its scenes and lights">
+  <img src="docs/images/panel-light.png" width="32%" alt="Colour wheel">
+</p>
+<p>
+  <img src="docs/images/panel-automations.png" width="32%" alt="Automations">
+  <img src="docs/images/panel-sync.png" width="32%" alt="Spotify sync">
+  <img src="docs/images/panel-settings.png" width="32%" alt="Settings">
+</p>
 
-When you add Hue Plus, the setup screen asks what to do with the Hue integration's own entities:
+## What you get
 
-- **Leave them alone** (the default). Nothing is hidden, renamed or removed: your dashboards, automations and groups keep working as they are.
-  Hue Plus's entity for each Hue entity has the same name ending in `_plus` (`light.floor_light` and `light.floor_light_plus`), and it follows the Hue entity: its area, name, icon, labels and whether you hid it, and its device's area and name, are copied from the Hue entity and Hue device whenever they change and when Home Assistant starts. The copying goes one way (Hue to Hue Plus), so a setting changed on a `_plus` entity itself is put back.
-- **Hide and rename them.** The Hue integration's entities are hidden and renamed (`light.floor_light` becomes `light.floor_light_hue`) and Hue Plus's take their names, so existing dashboards and automations use Hue Plus. Removing Hue Plus gives the names back.
+- Lights, rooms and zones with colour, white, transitions and each light's effects
+- A light for every colour zone of a gradient light, with styles and colour effects
+- Motion, temperature, light level and contact sensors, batteries, buttons and dials
+- Bridge settings: firmware updates, authorised apps, power-on behaviour, identify, searching for new devices
+- Actions to create and edit scenes, rooms, zones, entertainment areas and automations
+- Spotify sync and the Hue Play HDMI Sync Box (experimental)
+- The Hue panel (off until you switch it on)
 
-The choice is made once, when Hue Plus is added. To change it, remove Hue Plus and add it again.
+You choose which of these you want, per bridge.
 
-## Modules
+It can sit next to the Hue integration without touching anything, or take over from it. It also works on its own, without the Hue integration.
 
-Each module is switched on or off per bridge in the integration's options.
+## Installing
 
-| Module | What it adds |
-|---|---|
-| **Bridge** | Firmware state and install for the bridge and every device; the apps allowed on the bridge; the bridge's own automations as switches; automatic update time; Zigbee channel; internet and remote-access state; per-light power-on behaviour, identify, timed effects, signals; search for new devices. Services for scenes, smart scenes, rooms, zones, entertainment areas, automations, Matter sharing (removing a fabric), bridge settings and raw requests. Actions that cannot be undone need `confirm: true`; every service is for administrators only. |
-| **Bridge, more** | Routines for a room or zone made from the bridge's own templates (wake-up, go-to-sleep, timer); what each press of a dimmer, smart button or tap switch does; smart scenes that change through the day; motion sensor on/off and sensitivity (experimental); Home and Away state. |
-| **Lights** | Hue Plus's own light entities, next to or in place of the Hue integration's (see above): every light, room and zone, with brightness, colour, white, transitions, flash and each light's effects. In *hide and rename* mode the Hue integration's entities are hidden and renamed (`light.floor_light` becomes `light.floor_light_hue`) and Hue Plus's take the name they had, so automations and dashboards keep working. Switching the module off, or removing Hue Plus, gives them back. |
-| **Devices** | The Hue integration's other entities, on Hue Plus's devices: motion, temperature, light-level and contact sensors, batteries, buttons and dials (as event entities), the bridge's scenes and smart scenes, motion-aware switches and selects. Like the lights, in *hide and rename* mode the Hue integration's own are hidden and renamed and Hue Plus's take their names. The bridge's automations show as switches here, so the bridge module does not add its own. |
-| **Zones** | A light for each colour zone of a gradient light (the gradient light itself is the main light, named like the device, with its zones listed in its attributes). Styles (linear, mirrored, scattered, segmented), flip, colour effects with a colour and speed of your choice, raw gradient points. |
-| **Live scenes** | Not here any more: live scenes and areas are played by [Home Control](https://github.com/bora-yarkin/home-control), for any light, and Hue Plus is its expansion pack for Hue lights (`home_control.json`, the native effects through `hue_plus.play_effect`). Hue Plus keeps reading a Hue scene (`hue_plus.import_hue_scene`) so Home Control can import it as a live scene. |
-| **Dashboard** | A **Hue** panel in the sidebar that looks and works like the Hue app: Home (rooms and zones, a room with its scenes, lights and controls, a light with the colour wheel), Automations, Sync and Settings, with every page Hue Plus has. It keeps nothing in Home Assistant: it shows and writes the bridge. Independent of Home Control and of any other dashboard. For administrators only. Off by default. |
-| **Streaming** | **Experimental.** `stream_colors` sends colours straight to the lights of an entertainment area for a while, and `stop_streaming` ends it. Needs its own registration with the bridge (press the link button when asked). Off by default. |
-| **Spotify sync** | Start and stop Hue's cloud Spotify sync and set its brightness, delay, intensity, palette, style and area. **Experimental**: it uses a private Signify service that can change without notice, and requires a linked Spotify Sync UUID. You can enter a manual token or connect your own Hue developer app for automatic renewal. Off by default. |
+You need Home Assistant 2026.10 or newer and a v2 bridge (Bridge Pro or the square v2 bridge).
 
-## Experimental parts
-
-Some code is written for hardware the author does not own, from Signify's documentation and the bridge's own error messages,
-and tested only against fakes. It is marked *experimental* where it appears and listed in `docs/testing.md`. If you own the
-hardware, please try it and send a fix: the `configure_sensor` service, the Hue Play HDMI Sync Box entry (`syncbox/`), and anything about Hue Secure.
-
-## Hue Play HDMI Sync Box (experimental)
-
-*Add integration → Philips Hue Plus → A Hue Play HDMI Sync Box*: enter the box's address, hold the button on the box until its light
-turns green, submit. The box gets a device with a sync switch, mode, HDMI input, intensity, brightness and an HDMI signal sensor. Not
-tried on a real box by the author.
-
-## Install
-
-With the Marketplace (Home Assistant 2026.11 and later; this repository is not in its default list, so add it yourself): *Settings → Marketplace*,
-three-dot menu or *Add from link*, enter `https://github.com/bora-yarkin/hue-plus`, then download *Philips Hue Plus* and restart Home Assistant. Older versions: HACS, *Custom repositories*, category *Integration*.
-Then *Settings → Devices & services → Add integration → Philips Hue Plus*. **A Hue bridge the Hue integration already has** rides on its connection; choose what
-happens to the Hue integration's entities (see above; the default changes nothing). **A Hue bridge, connected directly** needs no Hue integration: enter the
-bridge's address, press the round button on the bridge, and Hue Plus registers itself and remembers the certificate the bridge showed (a bridge showing another
-one is refused). If the Hue integration already has that bridge, Hue Plus uses its connection. If the bridge's address changes, use *Reconfigure*.
+1. Add `https://github.com/bora-yarkin/hue-plus` to the Marketplace as a custom repository (HACS on versions before 2026.11).
+2. Download Philips Hue Plus and restart Home Assistant.
+3. Go to Settings → Devices & services → Add integration → Philips Hue Plus.
 
 Without the Marketplace, copy `custom_components/hue_plus` into your configuration folder and restart.
 
-Hue Plus has its own copies of the platforms of the Hue integration (`custom_components/hue_plus/hue/`, Apache-2.0, see `NOTICE.md`), so it does not need that integration, in either way of connecting. An entry that uses the Hue integration's connection can switch to a connection of its own without losing anything (*Reconfigure → Use my own connection to the bridge*); the Hue integration can be removed afterwards.
+[Setting up](docs/manual/setup.md) walks through the choices you're asked to make.
 
-Devices: Home Assistant gives a device to one integration only, so Hue Plus makes its own devices (the bridge, and each
-light or accessory it has an entity for), named like the Hue ones and linked to the bridge.
+## Documentation
 
-## Spotify Sync credentials
+- [Setting up](docs/manual/setup.md)
+- [Modules and the Hue panel](docs/manual/modules.md)
+- [Spotify sync and the Sync Box](docs/manual/sync.md)
+- [Actions](docs/manual/actions.md)
+- [Using it from your own dashboard](docs/other-dashboards.md)
 
-Link Spotify to your Hue account in the Hue app first. Use the separate token extractor to obtain either the token export or the UUID-only handoff.
+For the best dashboard, pair it with [Home Control](https://github.com/bora-yarkin/home-control). Live scenes that move across a room are played by Home Control.
 
-- **Manual token.** Open the Hue Plus entry's options and choose **Spotify Sync token**. Paste the `auth` and `uuid` values from the token export. When Hue rejects the token, renew it in the extractor and enter the replacement in Home Assistant.
-- **Developer OAuth.** Open the bridge's **Configure → Spotify Sync token**, turn on **Enter developer credentials**, and submit. Register the callback URL displayed on the next screen in your Remote Hue API app. Enter the App ID, Client ID, Client Secret, and the extractor's UUID there, then sign in to Hue in the browser. Hue Plus checks the Sync connection before saving the setup and renews its token automatically. If Hue revokes access, use the Home Assistant reauthentication prompt.
+## Experimental parts
 
-The bridge entry and its Spotify entities are shared between these methods. To switch back to manual renewal, enter a manual token in options.
-
-## Services
-
-The full list with every field is in `custom_components/hue_plus/services.yaml` and shows in *Developer tools → Actions*.
-Examples:
-
-```yaml
-action: hue_plus.delete_scene
-data: {scene: Relax, confirm: true}
-```
-
-## Other dashboards
-
-Hue Plus works with any dashboard: see `docs/other-dashboards.md` for the entities, services and the websocket command (`hue_plus/capabilities`) a screen can use.
+I don't own all the hardware Hue Plus supports. Some of it is written from Signify's documentation and the bridge's own error messages, and tested only against fakes. That covers motion sensor configuration, the HDMI Sync Box and anything Hue Secure. These are marked experimental, and listed in [docs/testing.md](docs/testing.md). If you have the hardware, reports and fixes are welcome.
 
 ## Licence
 
-GPL-3.0-or-later. See `LICENSE`. Contributions are welcome: see `.github/CONTRIBUTING.md`.
+GPL-3.0-or-later, see `LICENSE`. The platforms in `custom_components/hue_plus/hue/` are copied from Home Assistant's Hue integration under Apache 2.0, see `NOTICE.md`. [Contributing](.github/CONTRIBUTING.md).

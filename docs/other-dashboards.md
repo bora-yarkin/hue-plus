@@ -1,7 +1,7 @@
 # Using Hue Plus from your own dashboard
 
-Hue Plus has no screen of its own. Everything it does is available to any dashboard through ordinary Home Assistant
-entities, services and two websocket commands.
+Apart from its optional Hue panel, Hue Plus works through ordinary Home Assistant entities and actions, plus a websocket
+command, so any dashboard can use it.
 
 ## Entities
 
